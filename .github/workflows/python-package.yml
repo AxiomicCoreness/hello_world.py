@@ -1,9 +1,3 @@
-"""git clone https://github.com/AxiomicCoreness/hello_world.py.git
-cd hello_world.py
-# Replace .github/workflows/python-package.yml with the updated content
-git add .github/workflows/python-package.yml
-git commit -m "Update workflow with pre-initialization env setup and post-execution functional callbacks"
-git push origin main"""
 name: Sovereign Hamiltonian — Capabilities Verification
 
 on:
