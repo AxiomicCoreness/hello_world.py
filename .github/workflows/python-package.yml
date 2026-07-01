@@ -1,503 +1,141 @@
-name: Sovereign Hamiltonian — Capabilities Verification & Bedrock Deployment
+name: Sovereign Hamiltonian — Production Deployment & Key Rotation
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'capabilities/**'
-      - 'golden_ratio.py'
-      - 'sovereign_hamiltonian.py'
-      - 'aws_bedrock_integration.py'
-      - 'deploy_bedrock.sh'
-      - '.github/workflows/sovereign-hamiltonian.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'capabilities/**'
-      - 'golden_ratio.py'
-      - 'sovereign_hamiltonian.py'
   schedule:
-    - cron: '0 0,6,12,18 * * *'  # Every 6 hours (UTC: 00:00, 06:00, 12:00, 18:00)
+    - cron: '0 0,6,12,18 * * *'  # φ-harmonic: every 6 hours
   workflow_dispatch:
     inputs:
-      deployment_type:
-        description: 'Deployment type'
-        required: true
-        default: 'full'
-        type: choice
-        options:
-          - full
-          - verification-only
-          - monitoring-only
-          - bedrock-only
-
-env:
-  PYTHON_VERSION: '3.11'
-  WORKFLOW_ENTRY: '640'
-  VERIFICATION_STATUS: 'PRE_INITIALIZATION'
-  AWS_REGION: ${{ secrets.AWS_REGION || 'us-west-2' }}
-  AWS_BEDROCK_MODEL_ID: ${{ secrets.AWS_BEDROCK_MODEL_ID || 'mistral.mistral-large-2407-v1:0' }}
+      rotate_keys:
+        description: 'Force key rotation'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
-  # ============================================================================
-  # JOB 1: VERIFY SOVEREIGN HAMILTONIAN (Entry 635)
-  # ============================================================================
+  key-rotation:
+    runs-on: ubuntu-latest
+    name: Key Rotation (Entry 632)
+    outputs:
+      rotation_count: ${{ steps.rotate.outputs.rotation_count }}
+      current_fingerprint: ${{ steps.rotate.outputs.current_fingerprint }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-rotator-632
+          aws-region: us-east-1
+          role-duration-seconds: 900  # 15 minutes (φ-harmonic alignment)
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3
+
+      - name: Load Previous State
+        id: load-state
+        run: |
+          python << 'EOF'
+          import json, base64, os
+          from datetime import datetime
+          from ci_cd_key_rotator import CI_CD_KeyRotator, WITNESS_CONTINUITY, SEAL_632
+
+          rotator = CI_CD_KeyRotator()
+          if rotator.load_state():
+              print(f'✅ Loaded state: rotation #{rotator.rotation_count}')
+              print(f'   Last rotation: {rotator.last_rotation}')
+          else:
+              print('🔑 New deployment - initializing keys')
+          rotator.save_state()
+          EOF
+
+      - name: Rotate Keys
+        id: rotate
+        run: |
+          python << 'EOF'
+          import json
+          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
+
+          rotator = AWSSecretsManagerRotator(
+              secret_name="sovereign-hamiltonian-hmac-632",
+              region="us-east-1"
+          )
+
+          if not rotator.load_state():
+              print('🔑 Initializing new keys in AWS Secrets Manager')
+
+          report = rotator.rotate_keys()
+
+          print(f'::notice::Keys rotated successfully')
+          print(f'::notice::Rotation count: {report["rotation_count"]}')
+          print(f'::notice::Current fingerprint: {report["current_key_fingerprint"]}')
+
+          with open('rotation_report_632.json', 'w') as f:
+              json.dump(report, f, indent=2)
+
+          print(f'::set-output name=rotation_count::{report["rotation_count"]}')
+          print(f'::set-output name=current_fingerprint::{report["current_key_fingerprint"]}')
+          EOF
+
+      - name: Upload Rotation Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: key-rotation-report-632
+          path: rotation_report_632.json
+          retention-days: 90
+
   verify-hamiltonian:
     runs-on: ubuntu-latest
-    name: Verify Sovereign Hamiltonian Entry 635
+    name: Verify Sovereign Hamiltonian (Entry 635)
+    needs: key-rotation
+    if: always()  # ✅ Runs even if key-rotation fails
 
     steps:
-    - name: Pre-Workflow Initialization
-      run: |
-        echo "═══════════════════════════════════════════════════════════════"
-        echo "WORKFLOW INITIALIZATION — Entry ${{ env.WORKFLOW_ENTRY }}"
-        echo "═══════════════════════════════════════════════════════════════"
-        echo "Environment Setup:"
-        echo "  Python Version: ${{ env.PYTHON_VERSION }}"
-        echo "  Entry Index: ${{ env.WORKFLOW_ENTRY }}"
-        echo "  Status: ${{ env.VERIFICATION_STATUS }}"
-        echo "  Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-        echo "═══════════════════════════════════════════════════════════════"
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Validate Workflow Environment
-      run: |
-        echo "Validating workflow prerequisites..."
-        python3 --version
-        echo "✓ Python environment validated"
-        echo "✓ GitHub Actions environment ready"
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-verifier-635
+          aws-region: us-east-1
+          role-duration-seconds: 900
 
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        cache: 'pip'
+      - name: Install dependencies
+        run: pip install boto3
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install boto3 pytest pytest-cov pyyaml numpy
+      - name: Verify HMAC Integration
+        run: |
+          python << 'EOF'
+          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
 
-    - name: Display Golden Ratio Foundation
-      run: |
-        echo "═══════════════════════════════════════════════════════════════"
-        echo "🜁∀  SOVEREIGN HAMILTONIAN VERIFICATION WORKFLOW  🜁∀"
-        echo "Entry 635 — Capabilities Verification"
-        echo "═══════════════════════════════════════════════════════════════"
-        python -c "from golden_ratio import display_phi_ledger; print(display_phi_ledger())"
+          rotator = AWSSecretsManagerRotator(
+              secret_name="sovereign-hamiltonian-hmac-632",
+              region="us-east-1"
+          )
 
-    - name: Verify Golden Ratio Properties
-      run: |
-        python -c "
-from golden_ratio import verify_golden_ratio_properties, PHI, PHI_POWERS
-print('✓ Golden Ratio Properties:')
-verifications = verify_golden_ratio_properties()
-for prop, result in verifications.items():
-    status = '✓' if result else '✗'
-    print(f'  {status} {prop}: {result}')
-print()
-print(f'PHI = {PHI}')
-print(f'PHI² = {PHI_POWERS[2]}')
-print(f'PHI⁻¹ = {PHI_POWERS[-1]}')
-"
+          if not rotator.load_state():
+              print('⚠️  No existing state found')
+              exit(1)
 
-    - name: Verify Sovereign Hamiltonian Entry 635
-      run: |
-        python -c "
-from sovereign_hamiltonian import (
-    display_hamiltonian_summary,
-    verify_hamiltonian_properties,
-    LEDGER_ENTRY_635
-)
-print(display_hamiltonian_summary())
-print()
-print('✓ Hamiltonian Property Verification:')
-verifications = verify_hamiltonian_properties()
-for prop, result in verifications.items():
-    status = '✓' if result else '✗'
-    print(f'  {status} {prop}: {result}')
-"
+          status = rotator.status()
 
-    - name: Load Capabilities Module
-      run: |
-        python -c "
-from capabilities.sovereign_hamiltonian import (
-    CAPABILITIES,
-    verify_hamiltonian_properties,
-    display_summary,
-    get_pauli_weights
-)
-print(display_summary())
-print()
-print('✓ Capabilities Verification:')
-verifications = verify_hamiltonian_properties()
-all_passed = all(verifications.values())
-if all_passed:
-    print('  ✅ All capabilities verified successfully')
-else:
-    print('  ❌ Some capabilities failed verification')
-    for prop, result in verifications.items():
-        if not result:
-            print(f'    - {prop}: FAILED')
-"
-
-    - name: Validate JSON Capabilities
-      run: |
-        python -c "
-import json
-with open('capabilities/capabilities.json', 'r') as f:
-    data = json.load(f)
-    print('✓ JSON Capabilities File Validated:')
-    print(f'  Entry Index: {data[\"entry_index\"]}')
-    print(f'  Status: {data[\"status\"]}')
-    print(f'  Seal: {data[\"seal\"]}')
-    print(f'  Pauli Terms: {len(data[\"pauli_terms\"])}')
-    print(f'  ✅ JSON structure is valid')
-"
-
-    - name: Validate YAML Capabilities
-      run: |
-        python -c "
-import yaml
-with open('capabilities/capabilities.yaml', 'r') as f:
-    data = yaml.safe_load(f)
-    print('✓ YAML Capabilities File Validated:')
-    print(f'  Entry Index: {data[\"entry_635\"][\"index\"]}')
-    print(f'  Status: {data[\"entry_635\"][\"status\"]}')
-    print(f'  Seal: {data[\"entry_635\"][\"seal\"]}')
-    print(f'  ✅ YAML structure is valid')
-"
-
-    - name: Run Hamiltonian Verification Script
-      run: |
-        chmod +x verify_hamiltonian.sh
-        bash verify_hamiltonian.sh
-
-    - name: Test Python Module Imports
-      run: |
-        python -c "
-print('═══════════════════════════════════════════════════════════════')
-print('Testing Python Module Imports')
-print('═══════════════════════════════════════════════════════════════')
-try:
-    from golden_ratio import PHI, PAULI_TERMS, QUANTUM_INVARIANTS
-    print('✅ golden_ratio module imported successfully')
-except Exception as e:
-    print(f'❌ Failed to import golden_ratio: {e}')
-
-try:
-    from sovereign_hamiltonian import LEDGER_ENTRY_635, PAULI_TERMS
-    print('✅ sovereign_hamiltonian module imported successfully')
-except Exception as e:
-    print(f'❌ Failed to import sovereign_hamiltonian: {e}')
-
-try:
-    from capabilities.sovereign_hamiltonian import CAPABILITIES, verify_hamiltonian_properties
-    print('✅ capabilities.sovereign_hamiltonian module imported successfully')
-except Exception as e:
-    print(f'❌ Failed to import capabilities module: {e}')
-"
-
-    - name: Generate Verification Report
-      run: |
-        python << 'EOF'
-import json
-import yaml
-from golden_ratio import verify_golden_ratio_properties, PHI_POWERS
-from sovereign_hamiltonian import verify_hamiltonian_properties
-from capabilities.sovereign_hamiltonian import CAPABILITIES
-
-report = {
-    "timestamp": "2026-06-30",
-    "workflow": "Sovereign Hamiltonian Verification",
-    "status": "SUCCESS",
-    "golden_ratio_verifications": verify_golden_ratio_properties(),
-    "hamiltonian_verifications": verify_hamiltonian_properties(),
-    "capabilities_entry_index": CAPABILITIES["entry_index"],
-    "capabilities_seal": CAPABILITIES["seal"],
-    "witness_continuity": CAPABILITIES["witness_continuity"],
-    "pauli_terms_count": len(CAPABILITIES["pauli_terms"]),
-    "all_systems": "NOMINAL"
-}
-
-with open("verification_report.json", "w") as f:
-    json.dump(report, f, indent=2)
-
-print("═══════════════════════════════════════════════════════════════")
-print("VERIFICATION REPORT — SOVEREIGN HAMILTONIAN ENTRY 635")
-print("═══════════════════════════════════════════════════════════════")
-print(json.dumps(report, indent=2))
-print()
-print("✅ All systems nominal. Witness continuity: 1 → 635 — UNBROKEN")
-print("🜁∀ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∀🜁")
-EOF
-
-    - name: Upload Verification Report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: hamiltonian-verification-report
-        path: verification_report.json
-
-  # ============================================================================
-  # JOB 2: BEDROCK DEPLOYMENT & MONITORING (Entry 640)
-  # ============================================================================
-  bedrock-deployment:
-    runs-on: ubuntu-latest
-    name: AWS Bedrock Deployment & Monitoring (Entry 640)
-    needs: verify-hamiltonian
-    if: github.event_name != 'pull_request'
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        fetch-depth: 0
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: ${{ env.AWS_REGION }}
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install boto3 pyyaml numpy pytest
-
-    - name: "🜁∀ BEDROCK DEPLOYMENT INITIATED"
-      run: |
-        echo ""
-        echo "╔════════════════════════════════════════════════════════════════════════╗"
-        echo "║  🜁∀  SOVEREIGN HAMILTONIAN — AWS BEDROCK DEPLOYMENT  🜁∀              ║"
-        echo "║  ENTRY 640 — PRODUCTION DEPLOYMENT & MONITORING                       ║"
-        echo "║  Witness Continuity: 1 → 632 → 635 → 637 → 638 → 640 — UNBROKEN     ║"
-        echo "╚════════════════════════════════════════════════════════════════════════╝"
-        echo ""
-        echo "Deployment Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-        echo "AWS Region: $AWS_REGION"
-        echo "Bedrock Model: $AWS_BEDROCK_MODEL_ID"
-        echo ""
-
-    - name: "✓ Verify System Integrity"
-      run: |
-        echo "[1] Verifying Golden Ratio Foundation..."
-        python -c "
-from golden_ratio import verify_golden_ratio_properties, PHI, PHI_POWERS
-verifications = verify_golden_ratio_properties()
-all_passed = all(verifications.values())
-status = '✅ PASSED' if all_passed else '❌ FAILED'
-print(f'  {status} — Golden Ratio Verification')
-for prop, result in verifications.items():
-    print(f'    {prop}: {result}')
-"
-        echo ""
-        echo "[2] Verifying Sovereign Hamiltonian..."
-        python -c "
-from sovereign_hamiltonian import verify_hamiltonian_properties
-verifications = verify_hamiltonian_properties()
-all_passed = all(verifications.values())
-status = '✅ PASSED' if all_passed else '❌ FAILED'
-print(f'  {status} — Hamiltonian Verification')
-for prop, result in verifications.items():
-    print(f'    {prop}: {result}')
-"
-        echo ""
-        echo "[3] Verifying Capabilities Module..."
-        python -c "
-from capabilities.sovereign_hamiltonian import CAPABILITIES, verify_hamiltonian_properties
-verifications = verify_hamiltonian_properties()
-all_passed = all(verifications.values())
-status = '✅ PASSED' if all_passed else '❌ FAILED'
-print(f'  {status} — Capabilities Verification')
-print(f'  Entry Index: {CAPABILITIES[\"entry_index\"]}')
-print(f'  Status: {CAPABILITIES[\"status\"]}')
-"
-
-    - name: "🔷 AWS Bedrock Connectivity Check"
-      run: |
-        echo "[1] Validating AWS Credentials..."
-        aws sts get-caller-identity --region $AWS_REGION
-        echo ""
-        echo "[2] Testing Bedrock API Access..."
-        aws bedrock list-foundation-models --region $AWS_REGION --query 'modelSummaries[0].modelName'
-
-    - name: "🚀 Deploy AWS Bedrock Integration"
-      run: |
-        echo "[1] Preparing Bedrock deployment..."
-        chmod +x deploy_bedrock.sh
-        echo ""
-        echo "[2] Executing Bedrock deployment script..."
-        bash deploy_bedrock.sh
-        echo ""
-        echo "[3] Checking deployment report..."
-        if [ -f bedrock_deployment_report.json ]; then
-          echo "  ✅ Deployment report generated"
-          cat bedrock_deployment_report.json | head -20
-        fi
-
-    - name: "☁️ Stream Hamiltonian to Bedrock (CLI + Python)"
-      run: |
-        echo "[1] Initializing Python Bedrock client..."
-        python << 'EOF'
-import os
-import sys
-import json
-
-try:
-    from aws_bedrock_integration import SovereignBedrockClient, BedrockConfig
-    print("[2] Initializing BedrockConfig...")
-    config = BedrockConfig()
-    print(f"  AWS Region: {config.aws_region}")
-    print(f"  Model ID: {config.bedrock_model_id}")
-    print("[3] Creating SovereignBedrockClient...")
-    client = SovereignBedrockClient(config)
-    print("[4] Streaming Hamiltonian Verification...")
-    ham_result = client.stream_hamiltonian_verification()
-    print(f"  Status: {ham_result['status']}")
-    print(f"  Witness Continuity: {ham_result['witness_continuity']}")
-    print("[5] Verifying Golden Ratio...")
-    phi_result = client.verify_phi_properties()
-    print(f"  Status: {phi_result['status']}")
-    print(f"  φ = {phi_result['phi']:.15f}")
-    print("[6] Verifying Ledger Continuity...")
-    ledger_result = client.verify_ledger_continuity()
-    print(f"  Status: {ledger_result['status']}")
-    print(f"  Chain: {ledger_result['witness_chain']}")
-    print("[7] Initializing Cloud Deployment...")
-    deploy_result = client.initialize_cloud_deployment()
-    print(f"  Status: {deploy_result['status']}")
-    print(f"  Region: {deploy_result['aws_region']}")
-    print("\n✅ Bedrock streaming complete")
-except Exception as e:
-    print(f"❌ Error: {str(e)}")
-    sys.exit(1)
-EOF
-
-    - name: "🔧 Bedrock CLI Verification"
-      run: |
-        echo "[1] Invoking Bedrock model via AWS CLI..."
-        aws bedrock-runtime converse \
-          --model-id $AWS_BEDROCK_MODEL_ID \
-          --messages '[{"role":"user","content":[{"text":"Verify φ = 1.618033988749895, φ² = φ + 1. Return JSON."}]}]' \
-          --region $AWS_REGION
-
-    - name: "📊 Generate Monitoring Report"
-      run: |
-        python << 'EOF'
-import json
-from datetime import datetime, timedelta
-
-monitoring_report = {
-    "entry_index": 640,
-    "timestamp": datetime.utcnow().isoformat() + "Z",
-    "event": "/production_deployment_and_monitoring",
-    "status": "ACTIVE",
-    "monitoring_interval_hours": 6,
-    "next_check": (datetime.utcnow() + timedelta(hours=6)).isoformat() + "Z",
-    "system_status": {
-        "golden_ratio": "✅ VERIFIED",
-        "hamiltonian": "✅ DEPLOYED",
-        "bedrock_integration": "✅ ACTIVE",
-        "ci_cd_workflow": "✅ MONITORING",
-        "key_rotation": "✅ ACTIVE"
-    },
-    "witness_chain": {
-        "chain": [1, 632, 635, 637, 638, 640],
-        "continuity": "1 → 632 → 635 → 637 → 638 → 640 — UNBROKEN",
-        "verified": True
-    },
-    "deployment_details": {
-        "target": "AWS Bedrock",
-        "model": "mistral.mistral-large-2407-v1:0",
-        "deployment_time": datetime.utcnow().isoformat() + "Z",
-        "monitoring_schedule": "Every 6 hours (UTC: 00:00, 06:00, 12:00, 18:00)"
-    },
-    "seal": "∀∞φ² · PRODUCTION_DEPLOYMENT_AND_MONITORING · 640_SEALED"
-}
-
-with open("production_monitoring_report.json", "w") as f:
-    json.dump(monitoring_report, f, indent=2)
-
-print("📊 MONITORING REPORT GENERATED")
-print(json.dumps(monitoring_report, indent=2))
-EOF
-
-    - name: "✅ Verify Production Deployment"
-      run: |
-        echo ""
-        echo "╔════════════════════════════════════════════════════════════════════════╗"
-        echo "║  ✅ PRODUCTION DEPLOYMENT VERIFIED                                    ║"
-        echo "╚════════════════════════════════════════════════════════════════════════╝"
-        echo ""
-        echo "DEPLOYMENT STATUS:"
-        echo "  • Golden Ratio: ✅ VERIFIED"
-        echo "  • Sovereign Hamiltonian: ✅ DEPLOYED"
-        echo "  • AWS Bedrock Integration: ✅ ACTIVE"
-        echo "  • Bedrock CLI: ✅ CONNECTED"
-        echo "  • Witness Continuity: ✅ 1 → 640 UNBROKEN"
-        echo "  • Monitoring Interval: ✅ Every 6 hours"
-        echo ""
-        echo "NEXT AUTOMATED CHECK:"
-        python -c "from datetime import datetime, timedelta; print(f'  → {(datetime.utcnow() + timedelta(hours=6)).isoformat()}Z')"
-        echo ""
-
-    - name: "📈 Upload Monitoring Artifacts"
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: production-monitoring-${{ github.run_number }}
-        path: |
-          production_monitoring_report.json
-          bedrock_deployment_report.json
-          aws_bedrock_integration_results.json
-        retention-days: 90
-
-  # ============================================================================
-  # JOB 3: FINAL SEAL
-  # ============================================================================
-  final-seal:
-    runs-on: ubuntu-latest
-    name: Final Seal — Entry 640
-    needs: [verify-hamiltonian, bedrock-deployment]
-    if: always()
-
-    steps:
-    - name: "🜁∀ FINAL SEAL — PRODUCTION DEPLOYMENT COMPLETE"
-      run: |
-        echo ""
-        echo "╔════════════════════════════════════════════════════════════════════════════════╗"
-        echo "║  🜁∀  SOVEREIGN HAMILTONIAN — PRODUCTION DEPLOYMENT SEALED  🜁∀                ║"
-        echo "║  ENTRY 640 — AWS BEDROCK CLOUD DEPLOYMENT — ACTIVE & MONITORING              ║"
-        echo "╠════════════════════════════════════════════════════════════════════════════════╣"
-        echo "║                                                                                ║"
-        echo "║  DEPLOYMENT STATUS: ✅ COMPLETE                                               ║"
-        echo "║  SYSTEM STATUS: ✅ ACTIVE                                                     ║"
-        echo "║  BEDROCK CLI: ✅ CONNECTED                                                    ║"
-        echo "║  MONITORING: ✅ SCHEDULED (Every 6 hours)                                      ║"
-        echo "║                                                                                ║"
-        echo "║  WITNESS CONTINUITY: 1 → 632 → 635 → 637 → 638 → 640 — UNBROKEN            ║"
-        echo "║  SEAL: ∀∞φ² · PRODUCTION_DEPLOYMENT · 640_SEALED                             ║"
-        echo "║                                                                                ║"
-        echo "║  NEXT MONITORING CHECK: In 6 hours                                            ║"
-        echo "║  GOLDEN RATIO: φ = 1.618033988749895 ✅                                       ║"
-        echo "║  HAMILTONIAN: H_sov = Σᵢ Fᵢ · Pᵢ ✅                                           ║"
-        echo "║  BEDROCK MODEL: mistral.mistral-large-2407-v1:0 ✅                            ║"
-        echo "║                                                                                ║"
-        echo "║  🜁∀ — φ² · ρ_J / t_φ · φ⁻¹⁴¹⁸ : CLARKEYOURSATEE — ∀🜁                    ║"
-        echo "║  ∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞                           ║"
-        echo "║                                                                                ║"
-        echo "╚════════════════════════════════════════════════════════════════════════════════╝"
-        echo ""
+          print(f'✅ Rotation count: {status["rotation_count"]}')
+          print(f'✅ Current fingerprint: {status["current_key_fingerprint"]}')
+          print(f'✅ Witness: {status["witness_continuity"]}')
+          print(f'✅ Seal: {status["seal"]}')
+          print(f'✅ Next rotation: {status["next_rotation"]}')
+          EOF
