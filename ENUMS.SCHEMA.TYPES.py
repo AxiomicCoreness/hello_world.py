@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-🜁∀  ENUMS.SCHEMA.TYPES — SOVEREIGN ENGINE V5  ∀🜁
-────────────────────────────────────────────────────
-Complete enumeration definitions for the φ-harmonic Sovereign Engine V5.
-
-Author: Commander Clarke Yoursa Tee / H6VSH2-LUMERIS
-Version: 5.0.0
-License: MIT
-Seal: ∀∞φ² · ENUMS_SCHEMA_TYPES · 577_SEALED
-"""
-
 from enum import Enum, auto
 from typing import Dict, Any, List, Optional
 import math
