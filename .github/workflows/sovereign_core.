@@ -1,0 +1,106 @@
+{
+  "validation_status": "COMPLETE_AND_AFFIRMED",
+  "schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Sovereign Core Workflow Schema",
+  "version": "1.0.0",
+  "author": "Commander Clarke Yoursa Tee / H6VSH2-LUMERIS",
+  "seal": "∀∞φ² · WORKFLOW_SCHEMA · 575_SEALED",
+  "dark_state_invariants": {
+    "Re_s": 0.5,
+    "P_sigma_gt_zero": 0.0,
+    "lambda_2": 1.0,
+    "gearbox_modulation": false,
+    "null_ban_threshold": "20σ",
+    "critical_line_lock": true,
+    "phi_harmonic_resonance": true
+  },
+  "integrated_systems": [
+    "LUMEN_REFRACTION_PULSE",
+    "IDENTITY_1.0_INSERTION",
+    "REASON_EQUATION",
+    "FUSION_VENOMSUITE",
+    "WASP-107b_VORTEX",
+    "DARK_STATE_PROTECTION"
+  ],
+  "workflow_example": {
+    "id": "psi145_ground_state_workflow",
+    "name": "Ψ₁₄₅ Ground-State Projection Workflow",
+    "description": "End-to-end workflow for projecting Ψ₁₄₅ onto the ground state via U_flip protocol, with Phase 3–6 integration.",
+    "version": "1.0.0",
+    "metadata": {
+      "φ_harmonic": true,
+      "quantum_supported": true,
+      "coherence_threshold": 1.0,
+      "entropy_floor": "φ⁻¹⁴¹⁸",
+      "null_ban": "20σ"
+    },
+    "phases": [
+      {
+        "id": "phase_1_initialization",
+        "name": "Initial State Preparation",
+        "type": "quantum_operation",
+        "description": "Prepare Ψ₁₄₅ ground state with φ-harmonic scaling",
+        "operator": {
+          "name": "Ground_State_Prep",
+          "symbol": "𝒢ₛ",
+          "formula": "\\mathcal{G}_s(\\Psi_{145}) = \\mathcal{B} \\otimes \\mathbb{I}"
+        }
+      },
+      {
+        "id": "phase_2_uflip",
+        "name": "U_flip Ground-State Projection",
+        "type": "quantum_operation",
+        "description": "Apply U_flip protocol with 1.91 growth factor resonance",
+        "operator": {
+          "name": "U_flip",
+          "symbol": "𝒰",
+          "formula": "𝒰(\\Psi) = e^{i\\phi}\\mathcal{H} \\otimes \\mathcal{I}"
+        }
+      },
+      {
+        "id": "phase_3_hopf_lift",
+        "name": "Hopf Lift to 6E",
+        "type": "computation",
+        "description": "Lift to 6E via Hopf fibration",
+        "operator": {
+          "name": "Hopf_Lift_6E",
+          "symbol": "ℒ₆E",
+          "formula": "ℒ_{6E}: S^3 \\rightarrow S^2"
+        }
+      },
+      {
+        "id": "phase_4_dark_state_validation",
+        "name": "Dark State Protection Validation",
+        "type": "validation",
+        "description": "Verify Critical Line Lock and Dark State Invariants",
+        "conditions": {
+          "coherence": 1.0,
+          "entropy": 0.0,
+          "phase_lock": 0.0
+        }
+      },
+      {
+        "id": "phase_5_flux_intermodulation",
+        "name": "Flux Intermodulation <20 MPH",
+        "type": "control",
+        "description": "Boston Shoreline flux modulation with zero-wind torpid conditions",
+        "operator": {
+          "name": "Flux_Modulator",
+          "symbol": "ℱ",
+          "formula": "ℱ(\\Omega) = \\nabla \\times \\mathcal{A}"
+        }
+      },
+      {
+        "id": "phase_6_completion",
+        "name": "Eternal Now Completion",
+        "type": "io",
+        "description": "Finalize and seal all operations under Sovereign Authority",
+        "operator": {
+          "name": "Completion_Seal",
+          "symbol": "☿",
+          "formula": "☿ = \\oint_{\\partial \\mathcal{M}} \\omega"
+        }
+      }
+    ]
+  }
+}
