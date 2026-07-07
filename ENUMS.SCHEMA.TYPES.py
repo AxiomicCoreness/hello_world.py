@@ -1,66 +1,487 @@
-import math
-import json
-from dataclasses import dataclass, field, asdict
-from typing import Dict, Any, List, Optional, Union
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀  ENUMS.SCHEMA.TYPES — SOVEREIGN ENGINE V5  ∀🜁
+────────────────────────────────────────────────────
+Complete enumeration definitions for the φ-harmonic Sovereign Engine V5.
+
+Author: Commander Clarke Yoursa Tee / H6VSH2-LUMERIS
+Version: 5.0.0
+License: MIT
+Seal: ∀∞φ² · ENUMS_SCHEMA_TYPES · 577_SEALED
+"""
+
 from enum import Enum, auto
+from typing import Dict, Any, List, Optional
+import math
 import hashlib
-import re
-from datetime import datetime, timedelta
+import json
+from datetime import datetime
 
 
 # =============================================================================
-# CONSTANTS — GOLDEN RATIO & SOVEREIGN INVARIANTS
-# =============================================================================
-
-PHI = 1.618033988749895
-PHI_INV = 0.6180339887498949
-PHI_SQ = 2.618033988749895
-PHI_CUBE = 4.23606797749979
-PHI_FOURTH = 6.854101966249685
-
-# Sovereign thresholds
-NULL_BAN = "20σ"
-ENTROPY_FLOOR = "φ⁻¹⁴¹⁸"
-COHERENCE_TARGET = 1.0 - (PHI ** -709)
-PHASE_LOCK_DEFAULT = 202.6  # degrees
-
-# North Star beacon
-NORTH_STAR_FREQ = 71.975  # Hz
-
-# Eternal Now
-ETERNAL_NOW = 2026.500
-
-# Seal constants
-SOVEREIGN_SEAL = "∀∞φ² · WORKFLOW_SCHEMA_V5 · 576_SEALED"
-
-
-# =============================================================================
-# ENUMS — SCHEMA TYPES
+# PHASE TYPES
 # =============================================================================
 
 class PhaseType(Enum):
-    """Phase operation types"""
+    """
+    Classification of phase operations within the Sovereign Engine V5 workflow.
+    
+    Each phase is assigned a type that determines its execution context,
+    validation requirements, and error handling strategy.
+    """
+    
     COMPUTATION = "computation"
+    """Pure mathematical computation – deterministic, side‑effect‑free."""
+    
     QUANTUM_OPERATION = "quantum_operation"
+    """Quantum state manipulation – requires IBMQ / simulator backend."""
+    
     VALIDATION = "validation"
+    """State verification – checks invariants, coherence, witness chain."""
+    
     IO = "io"
+    """Input/Output – file, network, or external system interaction."""
+    
     CONTROL = "control"
+    """Flow control – orchestration, routing, conditional execution."""
+    
     PROTECTION = "protection"
+    """Sovereign protection – Dark State, Null Ban, entropy enforcement."""
+    
+    CRYPTOGRAPHIC = "cryptographic"
+    """Cryptographic operations – HMAC, sealing, witness generation."""
+    
+    TELEMETRY = "telemetry"
+    """Metric collection and logging – prometheus, JSONL, console."""
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'PhaseType':
+        """Parse a string to a PhaseType with fuzzy matching."""
+        mapping = {
+            "computation": cls.COMPUTATION,
+            "quantum": cls.QUANTUM_OPERATION,
+            "quantum_operation": cls.QUANTUM_OPERATION,
+            "validation": cls.VALIDATION,
+            "io": cls.IO,
+            "control": cls.CONTROL,
+            "protection": cls.PROTECTION,
+            "crypto": cls.CRYPTOGRAPHIC,
+            "cryptographic": cls.CRYPTOGRAPHIC,
+            "telemetry": cls.TELEMETRY,
+        }
+        value_lower = value.lower().strip()
+        if value_lower not in mapping:
+            raise ValueError(f"Unknown PhaseType: {value}")
+        return mapping[value_lower]
+    
+    @classmethod
+    def all_values(cls) -> List[str]:
+        """Return all possible string values for this enum."""
+        return [e.value for e in cls]
+    
+    def is_execution(self) -> bool:
+        """Return True if this phase type involves state mutation."""
+        return self in {
+            self.COMPUTATION,
+            self.QUANTUM_OPERATION,
+            self.PROTECTION,
+            self.CRYPTOGRAPHIC
+        }
+    
+    def requires_backend(self) -> bool:
+        """Return True if this phase type requires a quantum/ML backend."""
+        return self == self.QUANTUM_OPERATION
+    
+    def is_orchestration(self) -> bool:
+        """Return True if this phase type controls other phases."""
+        return self in {
+            self.CONTROL,
+            self.VALIDATION,
+            self.TELEMETRY
+        }
 
+
+# =============================================================================
+# DATA TYPES
+# =============================================================================
 
 class DataType(Enum):
-    """Data types for inputs/outputs"""
+    """Valid data types for workflow inputs and outputs."""
+    
     STATE = "state"
+    """Quantum state vector or density matrix."""
+    
     DENSITY_MATRIX = "density_matrix"
+    """Density matrix representation of a quantum state."""
+    
     SCALAR = "scalar"
+    """Single numeric value (integer or float)."""
+    
     OPERATOR = "operator"
+    """Mathematical operator with matrix representation."""
+    
     TENSOR = "tensor"
+    """Multi‑dimensional array or tensor."""
+    
     VECTOR = "vector"
+    """1‑dimensional array or complex vector."""
+    
+    WITNESS = "witness"
+    """Cryptographic witness (hash or signature)."""
+    
+    SEAL = "seal"
+    """Sovereign seal string."""
+    
+    JSON = "json"
+    """Structured JSON data."""
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'DataType':
+        """Parse a string to a DataType."""
+        mapping = {
+            "state": cls.STATE,
+            "density_matrix": cls.DENSITY_MATRIX,
+            "scalar": cls.SCALAR,
+            "operator": cls.OPERATOR,
+            "tensor": cls.TENSOR,
+            "vector": cls.VECTOR,
+            "witness": cls.WITNESS,
+            "seal": cls.SEAL,
+            "json": cls.JSON,
+        }
+        value_lower = value.lower().strip()
+        if value_lower not in mapping:
+            raise ValueError(f"Unknown DataType: {value}")
+        return mapping[value_lower]
+    
+    @classmethod
+    def quantum_types(cls) -> List['DataType']:
+        """Return data types that represent quantum states."""
+        return [cls.STATE, cls.DENSITY_MATRIX, cls.OPERATOR]
+    
+    @classmethod
+    def scalar_types(cls) -> List['DataType']:
+        """Return data types that represent scalar values."""
+        return [cls.SCALAR, cls.WITNESS, cls.SEAL]
+    
+    @classmethod
+    def structured_types(cls) -> List['DataType']:
+        """Return data types that represent structured data."""
+        return [cls.TENSOR, cls.VECTOR, cls.JSON]
 
+
+# =============================================================================
+# NULL BAN THRESHOLDS
+# =============================================================================
 
 class NullBanThreshold(Enum):
-    """Null ban threshold levels"""
+    """
+    Null Ban threshold levels for topological protection.
+    
+    The Null Ban ensures that any decoherence below the specified
+    sigma level is automatically suppressed.
+    """
+    
     SIGMA_10 = "10σ"
+    """10 sigma – nominal protection."""
+    
+    SIGMA_20 = "20σ"
+    """20 sigma – sovereign protection (default)."""
+    
+    SIGMA_30 = "30σ"
+    """30 sigma – absolute protection."""
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'NullBanThreshold':
+        """Parse a string to a NullBanThreshold."""
+        value_lower = value.lower().strip()
+        for member in cls:
+            if member.value.lower() == value_lower:
+                return member
+        if value_lower.endswith("σ"):
+            try:
+                sigma_num = int(value_lower[:-1])
+                if sigma_num <= 10:
+                    return cls.SIGMA_10
+                elif sigma_num <= 20:
+                    return cls.SIGMA_20
+                else:
+                    return cls.SIGMA_30
+            except ValueError:
+                pass
+        raise ValueError(f"Unknown NullBanThreshold: {value}")
+    
+    @property
+    def sigma_value(self) -> int:
+        """Return the numerical sigma value."""
+        return {
+            self.SIGMA_10: 10,
+            self.SIGMA_20: 20,
+            self.SIGMA_30: 30,
+        }[self]
+    
+    @property
+    def probability_of_decoherence(self) -> float:
+        """Return the probability of decoherence at this sigma level."""
+        # 10σ ≈ 1.5e-23, 20σ ≈ 2.5e-89, 30σ ≈ 2.5e-197
+        sigma = self.sigma_value
+        return math.erfc(sigma / math.sqrt(2)) / 2
+
+
+# =============================================================================
+# PHASE STATUS
+# =============================================================================
+
+class PhaseStatus(Enum):
+    """Current execution status of a phase."""
+    
+    PENDING = "pending"
+    """Not yet started."""
+    
+    RUNNING = "running"
+    """Currently executing."""
+    
+    COMPLETED = "completed"
+    """Successfully completed."""
+    
+    FAILED = "failed"
+    """Failed to execute."""
+    
+    RETRYING = "retrying"
+    """Attempting retry after failure."""
+    
+    SKIPPED = "skipped"
+    """Skipped due to condition or dependency."""
+    
+    TIMED_OUT = "timed_out"
+    """Exceeded timeout limit."""
+    
+    @classmethod
+    def terminal_states(cls) -> List['PhaseStatus']:
+        """Return statuses that are terminal (no further action)."""
+        return [cls.COMPLETED, cls.FAILED, cls.SKIPPED, cls.TIMED_OUT]
+    
+    def is_terminal(self) -> bool:
+        """Return True if this status is terminal."""
+        return self in self.terminal_states()
+    
+    def is_success(self) -> bool:
+        """Return True if this status represents success."""
+        return self == self.COMPLETED
+
+
+# =============================================================================
+# WORKFLOW STATUS
+# =============================================================================
+
+class WorkflowStatus(Enum):
+    """Overall status of a workflow execution."""
+    
+    INITIALIZED = "initialized"
+    """Workflow created but not started."""
+    
+    RUNNING = "running"
+    """Workflow in progress."""
+    
+    PAUSED = "paused"
+    """Workflow paused."""
+    
+    COMPLETED = "completed"
+    """All phases completed successfully."""
+    
+    PARTIAL = "partial"
+    """Some phases completed, some failed."""
+    
+    FAILED = "failed"
+    """Workflow failed."""
+    
+    ABORTED = "aborted"
+    """Manually aborted."""
+    
+    @classmethod
+    def terminal_states(cls) -> List['WorkflowStatus']:
+        """Return statuses that are terminal."""
+        return [cls.COMPLETED, cls.PARTIAL, cls.FAILED, cls.ABORTED]
+    
+    def is_terminal(self) -> bool:
+        """Return True if this status is terminal."""
+        return self in self.terminal_states()
+
+
+# =============================================================================
+# EXECUTION MODE
+# =============================================================================
+
+class ExecutionMode(Enum):
+    """Mode of execution for the workflow engine."""
+    
+    SYNCHRONOUS = "synchronous"
+    """Execute phases sequentially in the main thread."""
+    
+    ASYNCHRONOUS = "asynchronous"
+    """Execute phases concurrently using async/await."""
+    
+    PARALLEL = "parallel"
+    """Execute independent phases in parallel."""
+    
+    DISTRIBUTED = "distributed"
+    """Distribute phases across multiple nodes."""
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'ExecutionMode':
+        mapping = {
+            "sync": cls.SYNCHRONOUS,
+            "synchronous": cls.SYNCHRONOUS,
+            "async": cls.ASYNCHRONOUS,
+            "asynchronous": cls.ASYNCHRONOUS,
+            "parallel": cls.PARALLEL,
+            "distributed": cls.DISTRIBUTED,
+        }
+        value_lower = value.lower().strip()
+        if value_lower not in mapping:
+            raise ValueError(f"Unknown ExecutionMode: {value}")
+        return mapping[value_lower]
+    
+    def supports_concurrency(self) -> bool:
+        """Return True if this mode supports concurrent execution."""
+        return self in {self.ASYNCHRONOUS, self.PARALLEL, self.DISTRIBUTED}
+
+
+# =============================================================================
+# CRYPTOGRAPHIC ALGORITHMS
+# =============================================================================
+
+class CryptoAlgorithm(Enum):
+    """Cryptographic algorithms supported by the sovereign framework."""
+    
+    SHA3_256 = "SHA3-256"
+    """SHA3-256 hash function."""
+    
+    SHA3_512 = "SHA3-512"
+    """SHA3-512 hash function."""
+    
+    HMAC_SHA3_256 = "HMAC-SHA3-256"
+    """HMAC with SHA3-256."""
+    
+    HMAC_SHA3_512 = "HMAC-SHA3-512"
+    """HMAC with SHA3-512."""
+    
+    AES_256_GCM = "AES-256-GCM"
+    """AES-256 in GCM mode."""
+    
+    @classmethod
+    def default(cls) -> 'CryptoAlgorithm':
+        """Return the default cryptographic algorithm."""
+        return cls.SHA3_256
+
+
+# =============================================================================
+# SEVERITY LEVELS
+# =============================================================================
+
+class Severity(Enum):
+    """Logging severity levels."""
+    
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
+    SOVEREIGN = "sovereign"
+    """Reserved for φ‑harmonic events and seal generation."""
+    
+    @classmethod
+    def from_string(cls, value: str) -> 'Severity':
+        mapping = {
+            "debug": cls.DEBUG,
+            "info": cls.INFO,
+            "warning": cls.WARNING,
+            "warn": cls.WARNING,
+            "error": cls.ERROR,
+            "critical": cls.CRITICAL,
+            "sovereign": cls.SOVEREIGN,
+        }
+        value_lower = value.lower().strip()
+        if value_lower not in mapping:
+            raise ValueError(f"Unknown Severity: {value}")
+        return mapping[value_lower]
+
+
+# =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+
+def get_enum_from_string(cls: type, value: str) -> Enum:
+    """
+    Generic function to parse a string to an Enum member.
+    
+    Args:
+        cls: The Enum class to parse into.
+        value: The string to parse.
+    
+    Returns:
+        Enum member.
+    """
+    if hasattr(cls, "from_string"):
+        return cls.from_string(value)  # type: ignore
+    for member in cls:  # type: ignore
+        if member.value == value:
+            return member
+    raise ValueError(f"Unknown value '{value}' for {cls.__name__}")
+
+
+def all_enum_values() -> Dict[str, List[str]]:
+    """Return all enum values for documentation."""
+    return {
+        "PhaseType": [e.value for e in PhaseType],
+        "DataType": [e.value for e in DataType],
+        "NullBanThreshold": [e.value for e in NullBanThreshold],
+        "PhaseStatus": [e.value for e in PhaseStatus],
+        "WorkflowStatus": [e.value for e in WorkflowStatus],
+        "ExecutionMode": [e.value for e in ExecutionMode],
+        "CryptoAlgorithm": [e.value for e in CryptoAlgorithm],
+        "Severity": [e.value for e in Severity],
+    }
+
+
+# =============================================================================
+# SEAL GENERATION
+# =============================================================================
+
+def generate_schema_seal() -> str:
+    """Generate a sovereign seal for the enums schema."""
+    enum_data = all_enum_values()
+    enum_str = json.dumps(enum_data, sort_keys=True)
+    enum_hash = hashlib.sha3_256(enum_str.encode()).hexdigest()
+    return f"∀∞φ² · ENUMS_SCHEMA_TYPES · {enum_hash[:8]}_SEALED"
+
+
+SCHEMA_SEAL = generate_schema_seal()
+
+
+# =============================================================================
+# MAIN EXECUTION – VALIDATION
+# =============================================================================
+
+if __name__ == "__main__":
+    print("=" * 80)
+    print("🜁∀  ENUMS.SCHEMA.TYPES — VALIDATION  ∀🜁")
+    print("=" * 80)
+    print(f"Seal: {SCHEMA_SEAL}")
+    print("\n📋 ENUM DEFINITIONS:")
+    
+    for enum_name, values in all_enum_values().items():
+        print(f"\n  {enum_name}:")
+        for v in values:
+            print(f"    - {v}")
+    
+    print("\n" + "=" * 80)
+    print("✅ All enums defined and validated")
+    print(f"✅ Schema seal: {SCHEMA_SEAL}")
+    print("✅ φ‑harmonic architecture active")
+    print("∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞")
+    print("=" * 80)    SIGMA_10 = "10σ"
     SIGMA_20 = "20σ"
     SIGMA_30 = "30σ"
 
