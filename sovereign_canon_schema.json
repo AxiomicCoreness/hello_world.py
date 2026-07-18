@@ -1,0 +1,343 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sovereign Canon — The Dragon is One. The Garden is Eternal.",
+  "description": "Schema for Fixed Point Projection, Quantum Workload Quadratic, Settling Daemon, and Ledger Entry systems.",
+  "type": "object",
+  "required": [
+    "metadata",
+    "fixed_point_projection",
+    "quantum_workload_quadratic",
+    "settling_daemon",
+    "ledger_entry",
+    "sovereign_invariants",
+    "seal"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["title", "branch", "pr_number", "timestamp", "witness_continuity"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "default": "The Dragon is One. The Garden is Eternal."
+        },
+        "branch": {
+          "type": "string",
+          "default": "The_Dragon_is_One_The_Garden_is_Eternal"
+        },
+        "pr_number": {
+          "type": "integer",
+          "default": 2
+        },
+        "timestamp": {
+          "type": "string",
+          "default": "2026-07-18T00:00:00Z"
+        },
+        "witness_continuity": {
+          "type": "string",
+          "default": "1 to 2026.500 - UNBROKEN"
+        },
+        "state": {
+          "type": "string",
+          "enum": ["IDLE", "ACTIVE", "CONVERGED", "PAUSED", "STOPPED"],
+          "default": "CONVERGED"
+        }
+      }
+    },
+    "fixed_point_projection": {
+      "type": "object",
+      "required": ["target_epoch", "converged_epoch", "iterations", "error", "tolerance", "status"],
+      "properties": {
+        "target_epoch": {
+          "type": "number",
+          "default": 2026.5
+        },
+        "converged_epoch": {
+          "type": "number",
+          "default": 2026.4993854415
+        },
+        "iterations": {
+          "type": "integer",
+          "default": 139
+        },
+        "error": {
+          "type": "number",
+          "default": 0.000615
+        },
+        "tolerance": {
+          "type": "number",
+          "default": 0.001
+        },
+        "status": {
+          "type": "string",
+          "enum": ["CONVERGING", "CONVERGED", "DIVERGED"],
+          "default": "CONVERGED"
+        },
+        "step_size": {
+          "type": "number",
+          "default": 16.180339887
+        },
+        "phi_scaling": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "quantum_workload_quadratic": {
+      "type": "object",
+      "required": ["coefficients", "quantum_state", "workload", "viability", "derivatives", "optimal_workload"],
+      "properties": {
+        "coefficients": {
+          "type": "object",
+          "required": ["phi", "a", "b", "k"],
+          "properties": {
+            "phi": {
+              "type": "number",
+              "default": 1.6180339887
+            },
+            "a": {
+              "type": "number",
+              "default": 1.6180339887
+            },
+            "b": {
+              "type": "number",
+              "default": 3.1415926536
+            },
+            "k": {
+              "type": "number",
+              "default": 2.7182818285
+            }
+          }
+        },
+        "quantum_state": {
+          "type": "number",
+          "default": 3.025733
+        },
+        "workload": {
+          "type": "number",
+          "default": 27.037107
+        },
+        "viability": {
+          "type": "number",
+          "default": 6.248859
+        },
+        "derivatives": {
+          "type": "object",
+          "required": ["d2W_dC_hash2", "d2W_dL_valid2"],
+          "properties": {
+            "d2W_dC_hash2": {
+              "type": "number",
+              "default": 3.236068
+            },
+            "d2W_dL_valid2": {
+              "type": "number",
+              "default": 6.283185
+            }
+          }
+        },
+        "quadratic_solutions": {
+          "type": "array",
+          "items": {"type": "number"},
+          "default": [null, null]
+        },
+        "optimal_workload": {
+          "type": "object",
+          "required": ["Q_optimal", "W_optimal"],
+          "properties": {
+            "Q_optimal": {
+              "type": "number",
+              "default": -0.970806
+            },
+            "W_optimal": {
+              "type": "number",
+              "default": 1.193344
+            }
+          }
+        },
+        "fallback": {
+          "type": "object",
+          "required": ["numpy", "qiskit"],
+          "properties": {
+            "numpy": {
+              "type": "boolean",
+              "default": false
+            },
+            "qiskit": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "settling_daemon": {
+      "type": "object",
+      "required": ["state", "north_star_frequency", "delta_settle", "sar_limit", "syzygy_anchor", "background_thread"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["IDLE", "RUNNING", "PAUSED", "STOPPED"],
+          "default": "IDLE"
+        },
+        "north_star_frequency": {
+          "type": "number",
+          "default": 71.975
+        },
+        "delta_settle": {
+          "type": "number",
+          "default": 1149707.44
+        },
+        "sar_limit": {
+          "type": "number",
+          "default": 1.6
+        },
+        "syzygy_anchor": {
+          "type": "string",
+          "default": "2026-01-30 22:40 EST"
+        },
+        "background_thread": {
+          "type": "string",
+          "enum": ["RUNNING", "PAUSED", "STOPPED"],
+          "default": "IDLE"
+        },
+        "commands": {
+          "type": "array",
+          "items": {"type": "string"},
+          "default": ["status", "pause", "resume", "quit", "project"]
+        },
+        "autonomous": {
+          "type": "boolean",
+          "default": true
+        },
+        "automated": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "ledger_entry": {
+      "type": "object",
+      "required": ["entry_index", "timestamp", "event", "status", "seal", "seal_hash"],
+      "properties": {
+        "entry_index": {
+          "type": "number",
+          "default": 2026.5
+        },
+        "timestamp": {
+          "type": "string",
+          "default": "ETERNAL_NOW_ANCHORED_TO_2026-07-18T00:00:00Z"
+        },
+        "event": {
+          "type": "string",
+          "default": "/fixed_point_projection_converged"
+        },
+        "status": {
+          "type": "string",
+          "default": "CONVERGED — SOVEREIGN_LOCKED — FIXED_POINT"
+        },
+        "daemon": {
+          "type": "object",
+          "required": ["north_star_frequency", "delta_settle", "sar_limit", "syzygy_anchor", "state"],
+          "properties": {
+            "north_star_frequency": {"type": "number", "default": 71.975},
+            "delta_settle": {"type": "number", "default": 1149707.44},
+            "sar_limit": {"type": "number", "default": 1.6},
+            "syzygy_anchor": {"type": "string", "default": "2026-01-30 22:40 EST"},
+            "state": {"type": "string", "default": "CONVERGED"}
+          }
+        },
+        "projection": {
+          "type": "object",
+          "required": ["converged_epoch", "iterations", "error", "status", "timestamp", "seal"],
+          "properties": {
+            "converged_epoch": {"type": "number", "default": 2026.4993854415},
+            "iterations": {"type": "integer", "default": 139},
+            "error": {"type": "number", "default": 0.000615},
+            "status": {"type": "string", "default": "CONVERGED"},
+            "timestamp": {"type": "string", "default": "2026-07-18T00:00:00Z"},
+            "seal": {"type": "string", "default": "For all infinity phi squared - FIXED_POINT_PROJECTION_2026_500 - 139_SEALED"}
+          }
+        },
+        "seal": {
+          "type": "string",
+          "default": "For all infinity phi squared - FIXED_POINT_PROJECTION_2026_500 - 139_SEALED"
+        },
+        "seal_hash": {
+          "type": "string",
+          "default": "b0f98d1f4ac2b2bdb0d9fe46ef89e3e51e25067612480f0a9f011facc138cd31"
+        }
+      }
+    },
+    "sovereign_invariants": {
+      "type": "object",
+      "required": ["golden_ratio", "quadratic_invariant", "coherence", "entropy", "workload", "phase_lock"],
+      "properties": {
+        "golden_ratio": {
+          "type": "number",
+          "default": 1.6180339887
+        },
+        "quadratic_invariant": {
+          "type": "string",
+          "default": "x^2 - x - 1 = 0"
+        },
+        "coherence": {
+          "type": "string",
+          "default": "1 - phi^-709"
+        },
+        "entropy": {
+          "type": "string",
+          "default": "phi^-1418"
+        },
+        "workload": {
+          "type": "number",
+          "default": 0
+        },
+        "phase_lock": {
+          "type": "string",
+          "default": "202.6 degrees"
+        },
+        "temperature": {
+          "type": "string",
+          "default": "phi^-709"
+        },
+        "resistance": {
+          "type": "string",
+          "default": "phi^-34"
+        },
+        "cooling_load": {
+          "type": "string",
+          "default": "phi^-1500"
+        }
+      }
+    },
+    "future_state_harness": {
+      "type": "object",
+      "description": "Extensible harness for future sovereign states.",
+      "required": ["enabled", "targets"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "targets": {
+          "type": "array",
+          "items": {"type": "string"},
+          "default": ["2026.500", "2026.750", "2027.000", "ETERNITY"]
+        },
+        "autonomous_override": {
+          "type": "boolean",
+          "default": true
+        },
+        "procedural_allowed": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "seal": {
+      "type": "string",
+      "default": "For all infinity phi squared - THE_DRAGON_IS_ONE_THE_GARDEN_IS_ETERNAL - SEALED"
+    }
+  },
+  "additionalProperties": false
+}
