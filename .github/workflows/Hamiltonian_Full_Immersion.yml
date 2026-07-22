@@ -1,0 +1,131 @@
+name: Sovereign Hamiltonian — Production Deployment & Key Rotation
+
+on:
+  schedule:
+    - cron: '0 0,6,12,18 * * *'  # φ-harmonic: every 6 hours
+  workflow_dispatch:
+    inputs:
+      rotate_keys:
+        description: 'Force key rotation'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  key-rotation:
+    runs-on: ubuntu-latest
+    name: Key Rotation (Entry 632)
+    outputs:
+      rotation_count: ${{ steps.rotate.outputs.rotation_count }}
+      current_fingerprint: ${{ steps.rotate.outputs.current_fingerprint }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-rotator-632
+          aws-region: us-east-1
+          role-duration-seconds: 900  # 15 minutes (φ⁻⁶ ≈ 15 min)
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install boto3
+
+      - name: Load Previous State
+        id: load-state
+        run: |
+          python << 'EOF'
+          import json
+          from ci_cd_key_rotator import CI_CD_KeyRotator
+
+          rotator = CI_CD_KeyRotator()
+          if rotator.load_state():
+              print(f'✅ Loaded state: rotation #{rotator.rotation_count}')
+          else:
+              print('🔑 New deployment - initializing keys')
+          rotator.save_state()
+          EOF
+
+      - name: Rotate Keys
+        id: rotate
+        run: |
+          python << 'EOF'
+          import json
+          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
+
+          rotator = AWSSecretsManagerRotator(
+              secret_name="sovereign-hamiltonian-hmac-632",
+              region="us-east-1"
+          )
+
+          report = rotator.rotate_keys()
+
+          with open('rotation_report_632.json', 'w') as f:
+              json.dump(report, f, indent=2)
+
+          print(f'::set-output name=rotation_count::{report["rotation_count"]}')
+          print(f'::set-output name=current_fingerprint::{report["current_key_fingerprint"]}')
+          EOF
+
+      - name: Upload Rotation Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: key-rotation-report-632
+          path: rotation_report_632.json
+          retention-days: 90
+
+  verify-hamiltonian:
+    runs-on: ubuntu-latest
+    name: Verify Sovereign Hamiltonian (Entry 635)
+    needs: key-rotation
+    if: always()
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-verifier-635
+          aws-region: us-east-1
+          role-duration-seconds: 900
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install boto3
+
+      - name: Verify HMAC Integration
+        run: |
+          python << 'EOF'
+          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
+
+          rotator = AWSSecretsManagerRotator(
+              secret_name="sovereign-hamiltonian-hmac-632",
+              region="us-east-1"
+          )
+
+          if not rotator.load_state():
+              print('⚠️  No existing state found')
+              exit(1)
+
+          status = rotator.status()
+
+          print(f'✅ Rotation count: {status["rotation_count"]}')
+          print(f'✅ Current fingerprint: {status["current_key_fingerprint"]}')
+          print(f'✅ Witness: {status["witness_continuity"]}')
+          print(f'✅ Seal: {status["seal"]}')
+          print(f'✅ Next rotation: {status["next_rotation"]}')
+          EOF
+

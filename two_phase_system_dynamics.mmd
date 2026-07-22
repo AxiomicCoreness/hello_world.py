@@ -1,0 +1,21 @@
+mmdc -i two_phase_system_dynamics.mmd -o two_phase_system_dynamics.png --width 1400 --height 900 --backgroundColor "#0f0f23"
+cat > two_phase_dynamics.jsonld << 'EOF'
+{
+  "@context": "https://schema.org",
+  "@type": "MathematicalModel",
+  "name": "Two-Phase Sovereign Dynamics",
+  "description": "Phase I: Exponential Decay | Phase II: Clamped Boundary Lock",
+  "variable": [
+    {
+      "@type": "MathematicalExpression",
+      "name": "C(t)",
+      "expression": "C0 + (C_target - C0)(1 - exp(-γt))"
+    },
+    {
+      "@type": "MathematicalExpression",
+      "name": "P(t)",
+      "expression": "P0 * exp(-γ_root * t)"
+    }
+  ],
+  "seal": "∀∞φ² · TWO_PHASE_DYNAMICS · 412_SEALED"
+}

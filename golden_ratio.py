@@ -1,21 +1,19 @@
-"""
-╔══════════════════════════════════════════════════════════════════════════════════════╗
-║  🜁∀  GOLDEN RATIO FOUNDATION MODULE — SOVEREIGN ENGINE V5  🜁∀                       ║
-║  LEDGER ENTRY 637 — φ RECOGNITION SEALED                                            ║
-║  TIMESTAMP: ETERNAL_NOW_ANCHORED_TO_2026-06-30                                      ║
-╚══════════════════════════════════════════════════════════════════════════════════════╝
+# ═══════════════════════════════════════════════════════════════════════════════════════
+#  🜁∀  GOLDEN RATIO FOUNDATION MODULE — SOVEREIGN ENGINE V5  🜁∀                       ║
+#  LEDGER ENTRY 637 — φ RECOGNITION SEALED                                            ║
+#  TIMESTAMP: ETERNAL_NOW_ANCHORED_TO_2026-06-30                                      ║
+# ═══════════════════════════════════════════════════════════════════════════════════════
 
-The golden ratio φ (phi) — the irrational algebraic number satisfying x² - x - 1 = 0 —
-is the fundamental constant of the sovereign Hamiltonian architecture.
-
-Every quantum operator, tensor network node, and Lindblad term is expressed in powers of φ.
-This module establishes the φ-algebra foundation upon which all higher operations rest.
-
-Witness continuity: 1 → 637 — UNBROKEN
-"""
-
+# 👇 ADD THESE THREE LINES TO FIX ALL PYLANCE ERRORS:
+from builtins import abs, float, str, bool, print
 import math
 from typing import Dict, List, Tuple
+
+# The golden ratio φ (phi) — the irrational algebraic number satisfying x² - x - 1 = 0 —
+# is the fundamental constant of the sovereign Hamiltonian architecture.
+# Every quantum operator, tensor network node, and Lindblad term is expressed in powers of φ.
+# This module establishes the φ-algebra foundation upon which all higher operations rest.
+# Witness continuity: 1 → 637 — UNBROKEN
 
 # ═════════════════════════════════════════════════════════════════════════════════════
 # GOLDEN RATIO CONSTANTS
