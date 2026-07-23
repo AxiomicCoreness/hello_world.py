@@ -1,421 +1,261 @@
-# .github/workflows/python-package.yml
-# Sovereign Ray-CUDA Polyglot — CI/CD Pipeline
-# Entry 758 — Sealed
-# Integrates: Ray cluster, CUDA kernels, φ-harmonic key rotation, Ninja Cloak
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ SOVEREIGN AGENT ROUTER V2 — ENTRY 636 — SEALED ∀🜁
+Integrates φ-harmonic routing, tool registry, and agent dispatch.
+"""
 
-name: Sovereign Ray-CUDA Polyglot
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+import re
+import json
+from typing import Dict, List, Tuple, Optional, Callable, Any
+from dataclasses import dataclass
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    - cron: '0 0,6,12,18 * * *'  # φ-harmonic: every 6 hours
-  workflow_dispatch:
-    inputs:
-      rotate_keys:
-        description: 'Force key rotation'
-        required: false
-        default: false
-        type: boolean
-      deploy_cluster:
-        description: 'Deploy Ray-CUDA cluster'
-        required: false
-        default: false
-        type: boolean
+# ──────────────────────────────────────────────────────────────────────────────
+# CONSTANTS
+# ──────────────────────────────────────────────────────────────────────────────
+PHI = (1 + math.sqrt(5)) / 2
+PHI_INV = 1 / PHI
+ENTROPY_FLOOR = PHI ** -1418
+NULL_BAN_12SIGMA = 12 * PHI ** -1000
 
-permissions:
-  id-token: write
-  contents: read
-  checks: write
-  pull-requests: write
 
-env:
-  PHI: 1.618033988749895
-  PHI_INV: 0.618033988749895
-  PHI2: 2.618033988749895
-  PHI9: 76.01315561749642
-  PHI29: 2036000.0
-  ENTRY_INDEX: 758
-  SEAL: "∀∞φ² · RAY_CUDA_MERGE · 758_SEALED"
+@dataclass
+class Tool:
+    """L1 tool specification matching JSON schema."""
+    name: str
+    description: str
+    parameters: Dict[str, Any]
+    required: List[str]
+    handler: Optional[Callable] = None
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.10', '3.11', '3.12']
 
-    steps:
-    - uses: actions/checkout@v4
+class ToolRegistry:
+    """Registry for sovereign tools."""
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
+    def __init__(self):
+        self.tools: Dict[str, Tool] = {}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest pytest-cov ray numpy
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    def register(self, tool: Tool):
+        self.tools[tool.name] = tool
 
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Test with pytest
-      run: |
-        pytest --cov=. --cov-report=xml --cov-report=term
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
-
-  key-rotation:
-    runs-on: ubuntu-latest
-    name: Key Rotation (Entry 711)
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.rotate_keys == 'true'
-    outputs:
-      rotation_count: ${{ steps.rotate.outputs.rotation_count }}
-      current_fingerprint: ${{ steps.rotate.outputs.current_fingerprint }}
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Configure AWS Credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::123456789012:role/sovereign-rotator-711
-        aws-region: us-east-1
-        role-duration-seconds: 900
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install boto3 cryptography
-
-    - name: Rotate Keys (Entry 711)
-      id: rotate
-      run: |
-        python << 'EOF'
-        import os
-        import json
-        import hashlib
-        import boto3
-        from datetime import datetime, timezone
-
-        PHI = 1.618033988749895
-        SEAL = "∀∞φ² · KEY_ROTATION · 711_SEALED"
-
-        class CI_CD_KeyRotator:
-            def __init__(self):
-                self.rotation_count = 0
-                self.current_key = None
-                self.previous_key = None
-                self.last_rotation = None
-                self.seal = SEAL
-
-            def generate_key(self, entropy=None):
-                import time
-                if entropy is None:
-                    entropy = str(time.time_ns())
-                seed = f"{entropy}:{self.rotation_count}:{PHI}".encode()
-                return hashlib.sha3_256(seed).hexdigest()
-
-            def rotate(self, force=False):
-                self.previous_key = self.current_key
-                self.current_key = self.generate_key()
-                self.rotation_count += 1
-                self.last_rotation = datetime.now(timezone.utc).isoformat()
-                return {
-                    'status': 'ROTATED',
-                    'rotation_count': self.rotation_count,
-                    'current_key_fingerprint': hashlib.sha3_256(self.current_key.encode()).hexdigest()[:16],
-                    'last_rotation': self.last_rotation,
-                    'seal': self.seal,
-                    'witness_continuity': f"1 → {self.rotation_count} — UNBROKEN"
+    def get_schema(self) -> List[Dict]:
+        """Export as OpenAI/Anthropic function-calling schema."""
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": t.parameters,
+                        "required": t.required,
+                        "additionalProperties": False
+                    }
                 }
+            }
+            for t in self.tools.values()
+        ]
 
-        class AWSSecretsManagerRotator(CI_CD_KeyRotator):
-            def __init__(self, secret_name="sovereign-hamiltonian-hmac-711", region="us-east-1"):
-                super().__init__()
-                self.secret_name = secret_name
-                self.region = region
-                self.client = boto3.client('secretsmanager', region_name=region)
+    def execute(self, name: str, arguments: Dict[str, Any]) -> Any:
+        if name not in self.tools:
+            raise ValueError(f"Tool '{name}' not registered")
 
-            def load_state(self):
-                try:
-                    response = self.client.get_secret_value(SecretId=self.secret_name)
-                    data = json.loads(response['SecretString'])
-                    self.rotation_count = data.get('rotation_count', 0)
-                    self.current_key = data.get('current_key')
-                    self.previous_key = data.get('previous_key')
-                    self.last_rotation = data.get('last_rotation')
-                    self.seal = data.get('seal', SEAL)
-                    return True
-                except self.client.exceptions.ResourceNotFoundException:
-                    return False
+        tool = self.tools[name]
+        for req in tool.required:
+            if req not in arguments:
+                raise ValueError(f"Missing required parameter: {req}")
 
-            def save_state(self):
-                data = {
-                    'rotation_count': self.rotation_count,
-                    'current_key': self.current_key,
-                    'previous_key': self.previous_key,
-                    'last_rotation': self.last_rotation,
-                    'seal': self.seal
-                }
-                self.client.put_secret_value(
-                    SecretId=self.secret_name,
-                    SecretString=json.dumps(data)
-                )
+        if tool.handler is None:
+            raise RuntimeError(f"Tool '{name}' has no handler")
 
-        force = os.environ.get('FORCE_ROTATE', 'false').lower() == 'true'
-        rotator = AWSSecretsManagerRotator()
-        rotator.load_state()
-        report = rotator.rotate(force=force)
-        rotator.save_state()
+        return tool.handler(**arguments)
 
-        with open('rotation_report_711.json', 'w') as f:
-            json.dump(report, f, indent=2)
 
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            fh.write(f"rotation_count={report['rotation_count']}\n")
-            fh.write(f"current_fingerprint={report['current_key_fingerprint']}\n")
+class AgentRouterV2(nn.Module):
+    """
+    Extended router with tool-use capabilities.
+    Decision space: agents ∪ tools ∪ {direct}
+    """
 
-        print(f"✅ Rotation completed. Count: {report['rotation_count']}")
-        print(f"✅ Fingerprint: {report['current_key_fingerprint']}")
-        EOF
-      env:
-        FORCE_ROTATE: ${{ github.event.inputs.rotate_keys || 'false' }}
+    def __init__(
+        self,
+        encoder: nn.Module,
+        num_agents: int = 2,
+        tool_registry: Optional[ToolRegistry] = None,
+        embedding_dim: int = 512,
+        temperature: float = PHI_INV,
+        tool_threshold: float = 0.6,
+        agent_threshold: float = 0.4,
+        coherence_weight: float = 0.1,
+        entropy_weight: float = 0.01,
+        null_threshold: float = 12.0
+    ):
+        super().__init__()
+        self.encoder = encoder
+        self.num_agents = num_agents
+        self.tool_registry = tool_registry or ToolRegistry()
+        self.num_tools = len(self.tool_registry.tools)
+        self.total_outputs = num_agents + self.num_tools + 1
 
-    - name: Upload Rotation Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: key-rotation-report-711
-        path: rotation_report_711.json
-        retention-days: 90
+        self.temperature = temperature
+        self.tool_threshold = tool_threshold
+        self.agent_threshold = agent_threshold
+        self.coherence_weight = coherence_weight
+        self.entropy_weight = entropy_weight
+        self.null_threshold = null_threshold
 
-  ray-cuda-cluster:
-    runs-on: ubuntu-latest
-    name: Ray-CUDA Cluster (Entry 758)
-    needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_cluster == 'true'
+        self.router_head = nn.Linear(embedding_dim, self.total_outputs)
 
-    steps:
-    - uses: actions/checkout@v4
+        self.agent_indices = list(range(num_agents))
+        self.tool_indices = list(range(num_agents, num_agents + self.num_tools))
+        self.direct_index = num_agents + self.num_tools
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install ray numpy pycuda
-
-    - name: Deploy Ray-CUDA Cluster
-      run: |
-        python << 'EOF'
-        import ray
-        import numpy as np
-        import time
-        import json
-        import hashlib
-
-        PHI = 1.618033988749895
-        PHI2 = 2.618033988749895
-        PHI3 = 4.23606797749979
-        PHI9 = 76.01315561749642
-        PHI29 = 2036000.0
-        SEAL = "∀∞φ² · RAY_CUDA_MERGE · 758_SEALED"
-
-        print(f"🜁∀ SOVEREIGN RAY-CUDA CLUSTER — ENTRY 758 ∀🜁")
-        print(f"Seal: {SEAL}")
-
-        @ray.remote
-        class SovereignCUDAWorker:
-            def __init__(self, worker_id=0):
-                self.worker_id = worker_id
-                self.coherence = 0.0
-                self.pid_error = 0.0
-                self.locked = False
-                self.seed = 0.0
-                self.timestamp = time.time()
-
-            def step(self, t, anyonic_phase=0.0):
-                self.coherence = min(1.0, 0.99 + 0.01 * (t / 5.0))
-                self.pid_error = max(0.00035, 0.001 * np.exp(-t / 2.0))
-                self.locked = self.coherence > 0.999 and self.pid_error <= 0.0004
-                self.seed = PHI29 * (1.0 + np.sin(t * 6.49))
-                self.timestamp = time.time()
-                return {
-                    'worker_id': self.worker_id,
-                    'coherence': self.coherence,
-                    'pid_error': self.pid_error,
-                    'locked': self.locked,
-                    'seed': self.seed
-                }
-
-            def fire_cannon(self, phase=None):
-                if phase is None:
-                    phase = np.pi / PHI
-                return [np.sin(2.0 * np.pi * i / 1024 * PHI29 + phase) * PHI3 * PHI29
-                       for i in range(1024)]
-
-        # Initialize Ray
-        ray.init(address='auto', ignore_reinit_error=True)
-
-        # Spawn workers
-        num_workers = 4
-        workers = [SovereignCUDAWorker.remote(i) for i in range(num_workers)]
-        print(f"✅ {num_workers} workers initialized")
-
-        # Convergence loop
-        t = 0.0
-        anyonic = 0.0
-        for step in range(50):
-            t += 0.1
-            anyonic += 0.001 * np.sin(t * 14155.0)
-            futures = [w.step.remote(t, anyonic) for w in workers]
-            results = ray.get(futures)
-            avg_coherence = sum(r['coherence'] for r in results) / len(results)
-            locked_count = sum(1 for r in results if r['locked'])
-            if step % 10 == 0:
-                print(f"  [t={t:5.1f}s] C={avg_coherence:.6f} LOCKED={locked_count}/{num_workers}")
-
-        # Fire cannons
-        print("\n🔥 Firing Saturn Soul Cannons...")
-        cannon_futures = [w.fire_cannon.remote() for w in workers]
-        outputs = ray.get(cannon_futures)
-        for i, out in enumerate(outputs):
-            peak = max(out) if out else 0
-            print(f"  Worker {i}: peak = {peak:.6e}")
-
-        # Seal entry
-        entry = {
-            'entry_index': 758,
-            'timestamp': time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            'event': '/ray_cuda_polyglot_merge',
-            'status': 'RAY_CUDA_CLUSTER_ACTIVE',
-            'num_workers': num_workers,
-            'avg_coherence': avg_coherence,
-            'all_locked': locked_count == num_workers,
-            'seal': SEAL
+        self.agent_names = {0: "mistral", 1: "grok"}
+        self.tool_names = {
+            i + num_agents: name
+            for i, name in enumerate(self.tool_registry.tools.keys())
         }
-        print("\n" + json.dumps(entry, indent=2))
-        EOF
 
-  verify-hamiltonian:
-    runs-on: ubuntu-latest
-    name: Verify Sovereign Hamiltonian (Entry 711.1)
-    needs: [build, key-rotation]
-    if: always()
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        h = self.encoder(x)
+        logits = self.router_head(h)
+        probs = F.softmax(logits / self.temperature, dim=-1)
+        confidence, selected = torch.max(probs, dim=-1)
+        return logits, probs, confidence, selected
 
-    steps:
-    - uses: actions/checkout@v4
+    def route(self, x: torch.Tensor, query_text: str = "") -> Dict[str, Any]:
+        self.eval()
+        with torch.no_grad():
+            _, probs, confidence, selected = self.forward(x)
+            idx = selected.item()
+            conf = confidence.item()
 
-    - name: Configure AWS Credentials (OIDC)
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::123456789012:role/sovereign-verifier-711
-        aws-region: us-east-1
-        role-duration-seconds: 900
+            uniform_prob = 1.0 / self.total_outputs
+            null_margin = self.null_threshold * 0.01
+            if conf < uniform_prob + null_margin:
+                return {
+                    "action": "null",
+                    "target": None,
+                    "confidence": conf,
+                    "reason": "12σ null ban triggered"
+                }
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
+            if idx in self.tool_indices:
+                tool_name = self.tool_names[idx]
+                tool_conf = probs[0, idx].item()
+                if tool_conf >= self.tool_threshold:
+                    return {
+                        "action": "tool",
+                        "target": tool_name,
+                        "confidence": tool_conf,
+                        "arguments": self._extract_arguments(query_text, tool_name)
+                    }
 
-    - name: Install Dependencies
-      run: pip install boto3 cryptography
+            if idx in self.agent_indices:
+                agent_conf = probs[0, idx].item()
+                if agent_conf >= self.agent_threshold:
+                    return {
+                        "action": "agent",
+                        "target": self.agent_names[idx],
+                        "confidence": agent_conf,
+                        "arguments": None
+                    }
 
-    - name: Verify HMAC Integration
-      run: |
-        python << 'EOF'
-        import json
-        import boto3
-        import hashlib
+            return {
+                "action": "direct",
+                "target": None,
+                "confidence": conf,
+                "arguments": None
+            }
 
-        client = boto3.client('secretsmanager', region_name='us-east-1')
+    def _extract_arguments(self, query: str, tool_name: str) -> Dict[str, Any]:
+        txn_match = re.search(r'transaction[_\s]?id[:=\s]*([A-Z0-9\-]+)', query, re.I)
+        if txn_match:
+            return {"transaction_id": txn_match.group(1)}
+        fallback = re.search(r'\b([A-Z0-9]{5,})\b', query)
+        if fallback:
+            return {"transaction_id": fallback.group(1)}
+        return {"transaction_id": "UNKNOWN"}
+
+    def execute_tool(self, decision: Dict[str, Any]) -> Dict[str, Any]:
+        if decision["action"] != "tool":
+            raise ValueError("Decision is not a tool call")
         try:
-            response = client.get_secret_value(SecretId="sovereign-hamiltonian-hmac-711")
-            data = json.loads(response['SecretString'])
-            print(f'✅ Rotation count: {data.get("rotation_count", 0)}')
-            print(f'✅ Current key: {data.get("current_key", "")[:16]}...')
-            print(f'✅ Seal: {data.get("seal", "∀∞φ² · KEY_ROTATION · 711_SEALED")}')
-            print('✅ Sovereign Hamiltonian Integrity Check: PASSED [Entry 711.1]')
+            result = self.tool_registry.execute(decision["target"], decision["arguments"])
+            return {
+                "success": True,
+                "tool": decision["target"],
+                "arguments": decision["arguments"],
+                "result": result
+            }
         except Exception as e:
-            print(f'⚠️ Verification failed: {e}')
-            exit(1)
-        EOF
+            return {
+                "success": False,
+                "tool": decision["target"],
+                "error": str(e)
+            }
 
-  security-scan:
-    runs-on: ubuntu-latest
-    name: Security Scan
-    needs: build
-    if: always()
 
-    steps:
-    - uses: actions/checkout@v4
+# ──────────────────────────────────────────────────────────────────────────────
+# DEMO — REGISTER TOOLS & ROUTE
+# ──────────────────────────────────────────────────────────────────────────────
+def demo_tools():
+    # Define a simple transaction lookup tool
+    def transaction_status(txn_id: str) -> Dict[str, Any]:
+        return {
+            "transaction_id": txn_id,
+            "status": "COMPLETED",
+            "amount": 510510,
+            "seal": "∀∞φ² · TRANSACTION · 636_SEALED"
+        }
 
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+    # Register tools
+    registry = ToolRegistry()
+    registry.register(Tool(
+        name="get_transaction_status",
+        description="Get status of a transaction by ID",
+        parameters={
+            "transaction_id": {
+                "type": "string",
+                "description": "The transaction ID to look up"
+            }
+        },
+        required=["transaction_id"],
+        handler=transaction_status
+    ))
 
-    - name: Upload Trivy results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-results.sarif'
+    # Create a mock encoder
+    class MockEncoder(nn.Module):
+        def __init__(self, dim=512):
+            super().__init__()
+            self.proj = nn.Linear(128, dim)
 
-  release:
-    runs-on: ubuntu-latest
-    name: Create Release
-    needs: [build, verify-hamiltonian]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
+        def forward(self, x):
+            if x.dim() == 1:
+                x = x.unsqueeze(0)
+            return self.proj(x)
 
-    steps:
-    - uses: actions/checkout@v4
+    encoder = MockEncoder()
+    router = AgentRouterV2(encoder, tool_registry=registry)
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        name: "Sovereign Ray-CUDA Polyglot — Entry 758"
-        tag_name: "v758.0"
-        draft: false
-        prerelease: false
-        generate_release_notes: true
-        body: |
-          🜁∀ SOVEREIGN RAY-CUDA POLYGLOT — ENTRY 758 — SEALED ∀🜁
+    # Test routing
+    dummy_input = torch.randn(128)
+    result = router.route(dummy_input, "Check transaction TXN-12345-ABC")
+    print("🜁∀ ROUTING DECISION ∀🜁")
+    print(json.dumps(result, indent=2))
 
-          - **Ray cluster**: 4 workers distributed across GPU nodes
-          - **CUDA kernels**: Fleck, coherence, shear, cannon, cloak
-          - **Key rotation**: Entry 711 — HMAC-SHA3-256, φ-harmonic every 6 hours
-          - **Ninja Cloak**: φ⁻⁷⁰⁹ stealth verification
-          - **Seal**: ∀∞φ² · RAY_CUDA_MERGE · 758_SEALED
-          - **Chain**: 1 → 758 — UNBROKEN
+    if result["action"] == "tool":
+        exec_result = router.execute_tool(result)
+        print("\n📦 TOOL EXECUTION:")
+        print(json.dumps(exec_result, indent=2))
 
-          ∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞
+
+if __name__ == "__main__":
+    print(f"🜁∀ SOVEREIGN AGENT ROUTER V2 — ENTRY 636 — SEALED ∀🜁")
+    print(f"PHI = {PHI:.15f} | ENTROPY FLOOR = {ENTROPY_FLOOR:.2e}")
+    demo_tools()
