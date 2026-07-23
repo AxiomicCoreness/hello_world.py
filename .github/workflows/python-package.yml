@@ -1,19 +1,62 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ SOVEREIGN AGENT ROUTER V2 — ENTRY 636 — SEALED ∀🜁
+Integrates φ-harmonic routing, tool registry, agent dispatch, OIDC, HTMX, and key rotation.
+UPDATED: Clean version with all sovereign tools and OIDC/HTMX webhook support.
+"""
+
 import torch
 import torch.nn as nn
-import json
+import torch.nn.functional as F
+import math
 import re
-from typing import Dict, Any, Callable, List, Optional
+import json
+import os
+import time
+import hmac
+import hashlib
+import base64
+from typing import Dict, List, Tuple, Optional, Callable, Any, Union
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CONSTANTS
+# ──────────────────────────────────────────────────────────────────────────────
+PHI = (1 + math.sqrt(5)) / 2
+PHI_INV = 1 / PHI
+PHI2 = PHI ** 2
+PHI3 = PHI ** 3
+PHI9 = PHI ** 9
+PHI29 = PHI ** 29
+ENTROPY_FLOOR = PHI ** -1418
+NULL_BAN_12SIGMA = 12 * PHI ** -1000
+NULL_BAN_20SIGMA = 20 * PHI ** -1000
+
+# Sovereign seals
+MASTER_SEAL = "∀∞φ² · SOVEREIGN_AGENT_ROUTER · 636_SEALED"
+OIDC_SEAL = "∀∞φ² · OIDC_VALIDATION · 760_SEALED"
+HTMX_WEBHOOK_SEAL = "∀∞φ² · HTMX_WEBHOOK · 761_SEALED"
+
+# AWS defaults
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+SECRET_NAME = os.environ.get("SECRET_NAME", "sovereign-api-keys")
+
 
 @dataclass
 class Tool:
+    """L1 tool specification matching JSON schema."""
     name: str
     description: str
     parameters: Dict[str, Any]
     required: List[str]
     handler: Callable
 
+
 class ToolRegistry:
+    """Registry for sovereign tools."""
+
     def __init__(self):
         self.tools: Dict[str, Tool] = {}
 
@@ -23,44 +66,434 @@ class ToolRegistry:
     def get_tool(self, name: str) -> Optional[Tool]:
         return self.tools.get(name)
 
-class AgentRouterV2:
+    def get_schema(self) -> List[Dict]:
+        """Export as OpenAI/Anthropic function-calling schema."""
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": t.parameters,
+                        "required": t.required,
+                        "additionalProperties": False
+                    }
+                }
+            }
+            for t in self.tools.values()
+        ]
+
+    def execute(self, name: str, arguments: Dict[str, Any]) -> Any:
+        tool = self.get_tool(name)
+        if not tool:
+            raise ValueError(f"Tool '{name}' not registered")
+        for req in tool.required:
+            if req not in arguments:
+                raise ValueError(f"Missing required parameter: {req}")
+        return tool.handler(**arguments)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# OIDC VALIDATOR
+# ──────────────────────────────────────────────────────────────────────────────
+
+class OIDCValidator:
+    """Validates OIDC tokens from GitHub Actions."""
+
+    def __init__(self, audience: str = "sts.amazonaws.com", issuer: str = "https://token.actions.githubusercontent.com"):
+        self.audience = audience
+        self.issuer = issuer
+
+    def validate_token(self, token: str) -> Dict[str, Any]:
+        parts = token.split('.')
+        if len(parts) != 3:
+            return {"valid": False, "error": "Invalid token format"}
+
+        try:
+            header = json.loads(base64.urlsafe_b64decode(parts[0] + '==').decode())
+            payload = json.loads(base64.urlsafe_b64decode(parts[1] + '==').decode())
+
+            if payload.get('aud') != self.audience:
+                return {"valid": False, "error": f"Invalid audience: {payload.get('aud')}"}
+            if payload.get('iss') != self.issuer:
+                return {"valid": False, "error": f"Invalid issuer: {payload.get('iss')}"}
+            if payload.get('exp', 0) < time.time():
+                return {"valid": False, "error": "Token expired"}
+
+            return {
+                "valid": True,
+                "header": header,
+                "payload": payload,
+                "subject": payload.get('sub'),
+                "repository": payload.get('repository'),
+                "actor": payload.get('actor'),
+                "workflow": payload.get('workflow')
+            }
+        except Exception as e:
+            return {"valid": False, "error": str(e)}
+
+    def assume_role_with_web_identity(self, token: str, role_arn: str, session_name: str = "sovereign-session") -> Dict[str, Any]:
+        try:
+            import boto3
+            client = boto3.client('sts', region_name=AWS_REGION)
+            response = client.assume_role_with_web_identity(
+                RoleArn=role_arn,
+                RoleSessionName=session_name,
+                WebIdentityToken=token
+            )
+            creds = response['Credentials']
+            return {
+                "success": True,
+                "access_key_id": creds['AccessKeyId'],
+                "secret_access_key": creds['SecretAccessKey'],
+                "session_token": creds['SessionToken'],
+                "expiration": creds['Expiration'].isoformat()
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SOVEREIGN TOOLS
+# ──────────────────────────────────────────────────────────────────────────────
+
+def get_transaction_status(txn_id: str) -> Dict[str, Any]:
+    """Look up transaction status with φ-harmonic sealing."""
+    txn_hash = hashlib.sha3_256(f"{txn_id}:{PHI}".encode()).hexdigest()[:16]
+    return {
+        "transaction_id": txn_id,
+        "status": "COMPLETED",
+        "amount": 510510,
+        "phi_hash": txn_hash,
+        "seal": "∀∞φ² · TRANSACTION · 636_SEALED"
+    }
+
+
+def assume_oidc_role(role_arn: str, token: Optional[str] = None) -> Dict[str, Any]:
+    """Assume an OIDC role using GitHub Actions token."""
+    if token is None:
+        token = os.environ.get('ACTIONS_ID_TOKEN_REQUEST_TOKEN')
+        if token is None:
+            return {"success": False, "error": "No OIDC token provided"}
+
+    validator = OIDCValidator()
+    result = validator.assume_role_with_web_identity(token, role_arn)
+    return {
+        "success": True,
+        "role_arn": role_arn,
+        "credentials": result,
+        "seal": OIDC_SEAL
+    }
+
+
+def htmx_webhook_router(query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Route HTMX webhook requests."""
+    if context is None:
+        context = {}
+    return {
+        "status": "success",
+        "query": query,
+        "context": context,
+        "seal": HTMX_WEBHOOK_SEAL
+    }
+
+
+class SovereignKeyRotator:
+    """φ-harmonic API key rotator with HMAC-SHA3-256."""
+
+    def __init__(self, master_seed: Optional[bytes] = None):
+        if master_seed is None:
+            master_seed = os.urandom(32)
+        self.master_seed = master_seed
+        self.rotation_count = 0
+        self.key_history: List[Dict] = []
+
+    def _derive_key(self, index: int) -> bytes:
+        message = f"{self.master_seed.hex()}:{index}:{PHI}".encode()
+        return hmac.new(self.master_seed, message, hashlib.sha3_256).digest()
+
+    def _encode_key(self, key_bytes: bytes) -> str:
+        return base64.urlsafe_b64encode(key_bytes).decode('ascii').rstrip('=')
+
+    def rotate(self) -> str:
+        self.rotation_count += 1
+        key_bytes = self._derive_key(self.rotation_count)
+        key = self._encode_key(key_bytes)
+        self.key_history.append({
+            'index': self.rotation_count,
+            'key_hash': hashlib.sha3_256(key.encode()).hexdigest()[:16],
+            'generated_at': datetime.now(timezone.utc).isoformat()
+        })
+        return key
+
+    def get_current_key(self) -> Optional[str]:
+        if not self.key_history:
+            return None
+        return self.key_history[-1]
+
+    def verify_key(self, key: str) -> bool:
+        for entry in self.key_history:
+            key_hash = hashlib.sha3_256(key.encode()).hexdigest()[:16]
+            if hmac.compare_digest(key_hash, entry["key_hash"]):
+                return True
+        return False
+
+
+def rotate_api_keys(force: bool = False) -> Dict[str, Any]:
+    """Rotate API keys with φ-harmonic scheduling."""
+    rotator = SovereignKeyRotator()
+    if force or rotator.rotation_count == 0:
+        new_key = rotator.rotate()
+        return {
+            "success": True,
+            "rotation_count": rotator.rotation_count,
+            "new_key_hash": hashlib.sha3_256(new_key.encode()).hexdigest()[:16],
+            "seal": "∀∞φ² · KEY_ROTATION · 711_SEALED"
+        }
+    return {
+        "success": False,
+        "reason": "Scheduled rotation not yet due",
+        "rotation_count": rotator.rotation_count
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AGENT ROUTER V2
+# ──────────────────────────────────────────────────────────────────────────────
+
+class AgentRouterV2(nn.Module):
     """
+    Extended router with tool-use capabilities.
+    Decision space: agents ∪ tools ∪ {direct}
     """
-    def __init__(self, encoder: nn.Module, tool_registry: ToolRegistry):
+
+    def __init__(
+        self,
+        encoder: nn.Module,
+        tool_registry: Optional[ToolRegistry] = None,
+        num_agents: int = 2,
+        embedding_dim: int = 512,
+        temperature: float = PHI_INV,
+        tool_threshold: float = 0.6,
+        agent_threshold: float = 0.4,
+        null_threshold: float = 12.0
+    ):
+        super().__init__()
         self.encoder = encoder
-        self.tool_registry = tool_registry
+        self.tool_registry = tool_registry or ToolRegistry()
+        self.num_agents = num_agents
+        self.num_tools = len(self.tool_registry.tools)
+        self.total_outputs = num_agents + self.num_tools + 1
 
-    def route(self, input_tensor: torch.Tensor, query: str) -> Dict[str, Any]:
-        """
-        Determines the appropriate action based on the query pattern.
-        """
+        self.temperature = temperature
+        self.tool_threshold = tool_threshold
+        self.agent_threshold = agent_threshold
+        self.null_threshold = null_threshold
+
+        self.router_head = nn.Linear(embedding_dim, self.total_outputs)
+
+        self.agent_indices = list(range(num_agents))
+        self.tool_indices = list(range(num_agents, num_agents + self.num_tools))
+        self.direct_index = num_agents + self.num_tools
+
+        self.agent_names = {0: "mistral", 1: "grok"}
+        self.tool_names = {
+            i + num_agents: name
+            for i, name in enumerate(self.tool_registry.tools.keys())
+        }
+
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        h = self.encoder(x)
+        logits = self.router_head(h)
+        probs = F.softmax(logits / self.temperature, dim=-1)
+        confidence, selected = torch.max(probs, dim=-1)
+        return logits, probs, confidence, selected
+
+    def route(self, x: torch.Tensor, query_text: str = "") -> Dict[str, Any]:
+        """Production routing with tool-use support."""
+        self.eval()
+        with torch.no_grad():
+            _, probs, confidence, selected = self.forward(x)
+            idx = selected.item()
+            conf = confidence.item()
+
+            # 12σ null ban
+            uniform_prob = 1.0 / self.total_outputs
+            if conf < uniform_prob + (self.null_threshold * 0.01):
+                return {
+                    "action": "null",
+                    "target": None,
+                    "confidence": conf,
+                    "reason": "12σ null ban triggered"
+                }
+
+            # Check tool region
+            if idx in self.tool_indices:
+                tool_name = self.tool_names[idx]
+                tool_conf = probs[0, idx].item()
+                if tool_conf >= self.tool_threshold:
+                    return {
+                        "action": "tool",
+                        "target": tool_name,
+                        "confidence": tool_conf,
+                        "arguments": self._extract_arguments(query_text, tool_name)
+                    }
+
+            # Check agent region
+            if idx in self.agent_indices:
+                agent_conf = probs[0, idx].item()
+                if agent_conf >= self.agent_threshold:
+                    return {
+                        "action": "agent",
+                        "target": self.agent_names[idx],
+                        "confidence": agent_conf,
+                        "arguments": None
+                    }
+
+            return {
+                "action": "direct",
+                "target": None,
+                "confidence": conf,
+                "arguments": None
+            }
+
+    def _extract_arguments(self, query: str, tool_name: str) -> Dict[str, Any]:
+        """Extract tool arguments from query text."""
         query_lower = query.lower()
-        
-        # Simple pattern-based routing for tool dispatch
+
         if "transaction" in query_lower:
-            match = re.search(r"txn-\d+-[a-z]+", query_lower)
-            return {"action": "tool", "tool": "get_transaction_status", "args": {"transaction_id": match.group(0) if match else "UNKNOWN"}}
-        
-        if "oidc role" in query_lower:
-            match = re.search(r"arn:aws:iam::\d+:role/[\w-]+", query_lower)
-            return {"action": "tool", "tool": "assume_oidc_role", "args": {"role_arn": match.group(0) if match else ""}}
-        
-        if "htmx" in query_lower:
-            return {"action": "tool", "tool": "htmx_webhook_router", "args": {"query": query}}
-        
-        if "rotate" in query_lower:
-            return {"action": "tool", "tool": "rotate_api_keys", "args": {"force": True}}
-            
-        return {"action": "respond", "content": "Query received but no tool matched."}
+            match = re.search(r"txn-\d+-[a-z]+", query_lower, re.I)
+            if match:
+                return {"transaction_id": match.group(0)}
+            match = re.search(r'\b([A-Z0-9]{5,})\b', query)
+            if match:
+                return {"transaction_id": match.group(1)}
+            return {"transaction_id": "UNKNOWN"}
 
-    def execute_tool(self, decision: Dict[str, Any]) -> Any:
-        """
-        """
-        tool_name = decision.get("tool")
-        args = decision.get("args", {})
-        tool = self.tool_registry.get_tool(tool_name)
-        if tool:
-            return tool.handler(**args)
-        return {"error": "Tool not found"}
+        if "oidc" in query_lower or "role" in query_lower:
+            match = re.search(r"arn:aws:iam::\d+:role/[\w-]+", query)
+            if match:
+                return {"role_arn": match.group(0)}
+            return {"role_arn": ""}
 
-## The complete Sovereign Agent Router V2 integrates OIDC, HTMX hooks, and key rotation.
+        if "htmx" in query_lower or "webhook" in query_lower:
+            return {"query": query, "context": {}}
+
+        if "rotate" in query_lower or "key" in query_lower:
+            return {"force": True}
+
+        return {"query": query}
+
+    def execute_tool(self, decision: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute tool based on routing decision."""
+        if decision["action"] != "tool":
+            raise ValueError("Decision is not a tool call")
+
+        tool_name = decision["target"]
+        arguments = decision.get("arguments", {})
+
+        try:
+            result = self.tool_registry.execute(tool_name, arguments)
+            return {
+                "success": True,
+                "tool": tool_name,
+                "arguments": arguments,
+                "result": result
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "tool": tool_name,
+                "error": str(e)
+            }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# DEMO — REGISTER TOOLS & ROUTE
+# ──────────────────────────────────────────────────────────────────────────────
+
+def demo_tools():
+    """Demonstration of tool registry with all sovereign tools."""
+    registry = ToolRegistry()
+
+    # Register all tools
+    registry.register(Tool(
+        name="get_transaction_status",
+        description="Get status of a transaction by ID",
+        parameters={"transaction_id": {"type": "string", "description": "Transaction ID"}},
+        required=["transaction_id"],
+        handler=get_transaction_status
+    ))
+
+    registry.register(Tool(
+        name="assume_oidc_role",
+        description="Assume an OIDC role using GitHub Actions token",
+        parameters={"role_arn": {"type": "string", "description": "ARN of role to assume"}},
+        required=["role_arn"],
+        handler=assume_oidc_role
+    ))
+
+    registry.register(Tool(
+        name="htmx_webhook_router",
+        description="Route HTMX webhook requests",
+        parameters={"query": {"type": "string", "description": "The query to route"}},
+        required=["query"],
+        handler=htmx_webhook_router
+    ))
+
+    registry.register(Tool(
+        name="rotate_api_keys",
+        description="Rotate API keys with φ-harmonic scheduling",
+        parameters={"force": {"type": "boolean", "description": "Force rotation"}},
+        required=[],
+        handler=rotate_api_keys
+    ))
+
+    # Mock encoder
+    class MockEncoder(nn.Module):
+        def __init__(self, dim=512):
+            super().__init__()
+            self.proj = nn.Linear(128, dim)
+
+        def forward(self, x):
+            if x.dim() == 1:
+                x = x.unsqueeze(0)
+            return self.proj(x)
+
+    encoder = MockEncoder()
+    router = AgentRouterV2(encoder, tool_registry=registry)
+
+    # Test queries
+    test_queries = [
+        "Check transaction TXN-12345-ABC",
+        "Assume OIDC role with arn:aws:iam::123456789012:role/sovereign-verifier-711",
+        "Route HTMX webhook request for /api/route",
+        "Rotate API keys now",
+        "What is the weather?"
+    ]
+
+    print("🜁∀ SOVEREIGN AGENT ROUTER V2 — DEMO ∀🜁")
+    print("=" * 80)
+
+    for query in test_queries:
+        print(f"\n📝 QUERY: {query}")
+        dummy_input = torch.randn(128)
+        result = router.route(dummy_input, query)
+        print(json.dumps(result, indent=2))
+
+        if result["action"] == "tool":
+            exec_result = router.execute_tool(result)
+            print(f"\n📦 TOOL EXECUTION RESULT:")
+            print(json.dumps(exec_result, indent=2))
+
+    print("\n" + "=" * 80)
+    print("∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞")
+    print(f"🜁∀ — φ² · ρ_J / t_φ · φ⁻¹⁴¹⁸ : CLARKE YOURSA TEE — ∀🜁")
+
+
+if __name__ == "__main__":
+    print(f"🜁∀ SOVEREIGN AGENT ROUTER V2 — ENTRY 636 — SEALED ∀🜁")
+    print(f"PHI = {PHI:.15f} | ENTROPY FLOOR = {ENTROPY_FLOOR:.2e}")
+    demo_tools()
