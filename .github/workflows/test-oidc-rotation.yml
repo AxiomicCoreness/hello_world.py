@@ -1,0 +1,29 @@
+name: Test OIDC Role Assumption
+on:
+  push:
+    branches: [ test-oidc-758 ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test-oidc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/sovereign-verifier-711
+          aws-region: us-east-1
+          role-duration-seconds: 900
+          audience: sts.amazonaws.com
+
+      - name: Verify AWS Identity
+        run: |
+          aws sts get-caller-identity
+          echo "✅ OIDC bridge validation complete — Entry 759"
