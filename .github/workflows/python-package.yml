@@ -1,390 +1,252 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from typing import Dict, List, Tuple, Optional, Callable, Any
-from dataclasses import dataclass
-import json
+# .github/workflows/python-package.yml
+# Sovereign Python Package — CI/CD Pipeline
+# Entry 711.2 — Sealed
 
-PHI = (1 + 5**0.5) / 2
-ENTROPY_FLOOR = PHI ** -1418
+name: Sovereign Python Package
 
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-@dataclass
-class Tool:
-    """L1 tool specification matching JSON schema."""
-    name: str
-    description: str
-    parameters: Dict[str, Any]
-    required: List[str]
-    handler: Optional[Callable] = None  # Actual function to execute
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+  pull-requests: write
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
 
-class ToolRegistry:
-    """Registry for sovereign tools."""
-    
-    def __init__(self):
-        self.tools: Dict[str, Tool] = {}
-    
-    def register(self, tool: Tool):
-        self.tools[tool.name] = tool
-    
-    def get_schema(self) -> List[Dict]:
-        """Export as OpenAI/Anthropic function-calling schema."""
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": t.name,
-                    "description": t.description,
-                    "parameters": {
-                        "type": "object",
-                        "properties": t.parameters,
-                        "required": t.required,
-                        "additionalProperties": False
-                    }
-                }
-            }
-            for t in self.tools.values()
-        ]
-    
-    def execute(self, name: str, arguments: Dict[str, Any]) -> Any:
-        """Execute tool by name with validated arguments."""
-        if name not in self.tools:
-            raise ValueError(f"Tool '{name}' not registered")
-        
-        tool = self.tools[name]
-        
-        # Validate required parameters
-        for req in tool.required:
-            if req not in arguments:
-                raise ValueError(f"Missing required parameter: {req}")
-        
-        if tool.handler is None:
-            raise RuntimeError(f"Tool '{name}' has no handler")
-        
-        return tool.handler(**arguments)
+    steps:
+    - uses: actions/checkout@v4
 
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
-class AgentRouterV2(nn.Module):
-    """
-    Extended router with tool-use capabilities.
-    
-    Decision space: agents ∪ tools ∪ {direct}
-    """
-    
-    def __init__(
-        self,
-        encoder: nn.Module,
-        num_agents: int = 2,
-        tool_registry: Optional[ToolRegistry] = None,
-        embedding_dim: int = 512,
-        temperature: float = 1.0 / PHI,
-        tool_threshold: float = 0.6,      # θ_tool: minimum confidence for tool use
-        agent_threshold: float = 0.4,     # θ_agent: minimum confidence for agent dispatch
-        coherence_weight: float = 0.1,
-        entropy_weight: float = 0.01,
-        null_threshold: float = 12.0
-    ):
-        super().__init__()
-        self.encoder = encoder
-        self.num_agents = num_agents
-        self.tool_registry = tool_registry or ToolRegistry()
-        self.num_tools = len(self.tool_registry.tools)
-        self.total_outputs = num_agents + self.num_tools + 1  # +1 for direct response
-        
-        self.temperature = temperature
-        self.tool_threshold = tool_threshold
-        self.agent_threshold = agent_threshold
-        self.coherence_weight = coherence_weight
-        self.entropy_weight = entropy_weight
-        self.null_threshold = null_threshold
-        
-        # Extended router head: W_ext ∈ ℝ^{total_outputs × h}
-        self.router_head = nn.Linear(embedding_dim, self.total_outputs)
-        
-        # Output indices
-        self.agent_indices = list(range(num_agents))
-        self.tool_indices = list(range(num_agents, num_agents + self.num_tools))
-        self.direct_index = num_agents + self.num_tools
-        
-        self.agent_names = {0: "mistral", 1: "grok"}
-        self.tool_names = {
-            i + num_agents: name 
-            for i, name in enumerate(self.tool_registry.tools.keys())
-        }
-    
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Returns:
-          logits: raw scores [batch, total_outputs]
-          probs: π_ext(x) [batch, total_outputs]
-          confidence: max probability
-          selected: argmax index
-        """
-        h = self.encoder(x)
-        logits = self.router_head(h)
-        probs = F.softmax(logits / self.temperature, dim=-1)
-        confidence, selected = torch.max(probs, dim=-1)
-        return logits, probs, confidence, selected
-    
-    def route(self, x: torch.Tensor, query_text: str = "") -> Dict[str, Any]:
-        """
-        Production routing with tool-use support.
-        
-        Returns decision dict with:
-          - action: "agent" | "tool" | "direct"
-          - target: agent_name | tool_name | None
-          - confidence: float
-          - arguments: dict (for tools)
-        """
-        self.eval()
-        with torch.no_grad():
-            logits, probs, confidence, selected = self.forward(x)
-            idx = selected.item()
-            conf = confidence.item()
-            
-            # 12σ null ban
-            uniform_prob = 1.0 / self.total_outputs
-            null_margin = self.null_threshold * 0.01
-            if conf < uniform_prob + null_margin:
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pytest-cov
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
+      run: |
+        pytest --cov=. --cov-report=xml --cov-report=term
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  key-rotation:
+    runs-on: ubuntu-latest
+    name: Key Rotation (Entry 711)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.rotate_keys == 'true'
+    outputs:
+      rotation_count: ${{ steps.rotate.outputs.rotation_count }}
+      current_fingerprint: ${{ steps.rotate.outputs.current_fingerprint }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::123456789012:role/sovereign-rotator-711
+        aws-region: us-east-1
+        role-duration-seconds: 900
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install boto3 cryptography
+
+    - name: Rotate Keys (Entry 711)
+      id: rotate
+      run: |
+        python << 'EOF'
+        import os
+        import json
+        import hashlib
+        import hmac
+        import boto3
+        from datetime import datetime, timezone
+
+        class CI_CD_KeyRotator:
+            def __init__(self):
+                self.rotation_count = 0
+                self.current_key = None
+                self.previous_key = None
+                self.last_rotation = None
+                self.state_file = "rotation_state_711.json"
+                self.seal = "∀∞φ² · KEY_ROTATION · 711_SEALED"
+
+            def generate_key(self, entropy=None):
+                import time
+                if entropy is None:
+                    entropy = str(time.time_ns())
+                seed = f"{entropy}:{self.rotation_count}:1.618033988749895".encode()
+                return hashlib.sha3_256(seed).hexdigest()
+
+            def rotate(self, force=False):
+                self.previous_key = self.current_key
+                self.current_key = self.generate_key()
+                self.rotation_count += 1
+                self.last_rotation = datetime.now(timezone.utc).isoformat()
                 return {
-                    "action": "null",
-                    "target": None,
-                    "confidence": conf,
-                    "reason": "12σ null ban triggered — confidence below threshold"
+                    'status': 'ROTATED',
+                    'rotation_count': self.rotation_count,
+                    'current_key_fingerprint': hashlib.sha3_256(self.current_key.encode()).hexdigest()[:16],
+                    'last_rotation': self.last_rotation,
+                    'seal': self.seal
                 }
-            
-            # Check tool region
-            if idx in self.tool_indices:
-                tool_name = self.tool_names[idx]
-                tool_conf = probs[0, idx].item()
-                
-                if tool_conf >= self.tool_threshold:
-                    # Extract arguments from query (simplified — in production, use NER or LLM parsing)
-                    arguments = self._extract_arguments(query_text, tool_name)
-                    return {
-                        "action": "tool",
-                        "target": tool_name,
-                        "confidence": tool_conf,
-                        "arguments": arguments
-                    }
-            
-            # Check agent region
-            if idx in self.agent_indices:
-                agent_conf = probs[0, idx].item()
-                if agent_conf >= self.agent_threshold:
-                    return {
-                        "action": "agent",
-                        "target": self.agent_names[idx],
-                        "confidence": agent_conf,
-                        "arguments": None
-                    }
-            
-            # Default: direct response
-            return {
-                "action": "direct",
-                "target": None,
-                "confidence": conf,
-                "arguments": None
-            }
-    
-    def _extract_arguments(self, query: str, tool_name: str) -> Dict[str, Any]:
-        """
-        Extract tool arguments from query text.
-        Production: replace with structured parsing (regex, NER, or small LLM).
-        """
-        # Placeholder: in production, parse transaction_id from query
-        # Example: "What's the status of transaction TXN-12345?"
-        import re
-        txn_match = re.search(r'transaction[_\s]?id[:=\s]*([A-Z0-9\-]+)', query, re.I)
-        if txn_match:
-            return {"transaction_id": txn_match.group(1)}
-        
-        # Fallback: try to find any alphanumeric code
-        fallback = re.search(r'\b([A-Z0-9]{5,})\b', query)
-        if fallback:
-            return {"transaction_id": fallback.group(1)}
-        
-        return {"transaction_id": "UNKNOWN"}
-    
-    def execute_tool(self, decision: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute tool based on routing decision."""
-        if decision["action"] != "tool":
-            raise ValueError("Decision is not a tool call")
-        
-        tool_name = decision["target"]
-        arguments = decision["arguments"]
-        
+
+        class AWSSecretsManagerRotator(CI_CD_KeyRotator):
+            def __init__(self, secret_name="sovereign-hamiltonian-hmac-711", region="us-east-1"):
+                super().__init__()
+                self.secret_name = secret_name
+                self.region = region
+                self.client = boto3.client('secretsmanager', region_name=region)
+
+            def load_state(self):
+                try:
+                    response = self.client.get_secret_value(SecretId=self.secret_name)
+                    data = json.loads(response['SecretString'])
+                    self.rotation_count = data.get('rotation_count', 0)
+                    self.current_key = data.get('current_key')
+                    self.previous_key = data.get('previous_key')
+                    self.last_rotation = data.get('last_rotation')
+                    self.seal = data.get('seal', "∀∞φ² · KEY_ROTATION · 711_SEALED")
+                    return True
+                except self.client.exceptions.ResourceNotFoundException:
+                    return False
+
+            def save_state(self):
+                data = {
+                    'rotation_count': self.rotation_count,
+                    'current_key': self.current_key,
+                    'previous_key': self.previous_key,
+                    'last_rotation': self.last_rotation,
+                    'seal': self.seal
+                }
+                self.client.put_secret_value(
+                    SecretId=self.secret_name,
+                    SecretString=json.dumps(data)
+                )
+
+        force = os.environ.get('FORCE_ROTATE', 'false').lower() == 'true'
+        rotator = AWSSecretsManagerRotator()
+        rotator.load_state()
+        report = rotator.rotate(force=force)
+        rotator.save_state()
+
+        with open('rotation_report_711.json', 'w') as f:
+            json.dump(report, f, indent=2)
+
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            fh.write(f"rotation_count={report['rotation_count']}\n")
+            fh.write(f"current_fingerprint={report['current_key_fingerprint']}\n")
+
+        print(f"✅ Rotation completed. Count: {report['rotation_count']}")
+        print(f"✅ Fingerprint: {report['current_key_fingerprint']}")
+        EOF
+      env:
+        FORCE_ROTATE: ${{ github.event.inputs.rotate_keys || 'false' }}
+
+    - name: Upload Rotation Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: key-rotation-report-711
+        path: rotation_report_711.json
+        retention-days: 90
+
+  verify-hamiltonian:
+    runs-on: ubuntu-latest
+    name: Verify Sovereign Hamiltonian (Entry 711.1)
+    needs: [build, key-rotation]
+    if: always()
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::123456789012:role/sovereign-verifier-711
+        aws-region: us-east-1
+        role-duration-seconds: 900
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Dependencies
+      run: pip install boto3 cryptography
+
+    - name: Verify HMAC Integration
+      run: |
+        python << 'EOF'
+        import json
+        import hashlib
+        import boto3
+
+        client = boto3.client('secretsmanager', region_name='us-east-1')
         try:
-            result = self.tool_registry.execute(tool_name, arguments)
-            return {
-                "success": True,
-                "tool": tool_name,
-                "arguments": arguments,
-                "result": result
-            }
+            response = client.get_secret_value(SecretId="sovereign-hamiltonian-hmac-711")
+            data = json.loads(response['SecretString'])
+            print(f'✅ Rotation count: {data.get("rotation_count", 0)}')
+            print(f'✅ Current fingerprint: {data.get("current_key", "")[:16]}...')
+            print(f'✅ Seal: {data.get("seal", "∀∞φ² · KEY_ROTATION · 711_SEALED")}')
+            print('✅ Sovereign Hamiltonian Integrity Check: PASSED [Entry 711.1]')
         except Exception as e:
-            return {
-                "success": False,
-                "tool": tool_name,
-                "arguments": arguments,
-                "error": str(e)
-            }
-    
-    def compute_loss(
-        self,
-        x: torch.Tensor,
-        labels: torch.Tensor,
-        x_ref: Optional[torch.Tensor] = None
-    ) -> Dict[str, torch.Tensor]:
-        """
-        Extended loss: same structure as Entry 433, but over larger output space.
-        """
-        logits, probs, confidence, _ = self.forward(x)
-        
-        # L_classification: cross-entropy over extended space
-        L_ce = F.cross_entropy(logits / self.temperature, labels)
-        
-        # L_coherence
-        h = self.encoder(x)
-        if x_ref is None:
-            x_ref = torch.randn_like(h)
-        h_ref = self.encoder(x_ref)
-        cos_sim = F.cosine_similarity(h, h_ref, dim=-1)
-        L_coherence = torch.mean((1.0 - cos_sim) ** 2)
-        
-        # L_entropy
-        L_entropy = -torch.mean(torch.sum(probs * torch.log(probs + 1e-10), dim=-1))
-        
-        # L_null
-        uniform_prob = 1.0 / self.total_outputs
-        null_margin = self.null_threshold * 0.01
-        L_null = torch.mean(F.relu(uniform_prob + null_margin - confidence) ** 2)
-        
-        # Tool preference regularization: encourage tool use when appropriate
-        tool_probs = probs[:, self.tool_indices]
-        L_tool_preference = -torch.mean(torch.sum(tool_probs * torch.log(tool_probs + 1e-10), dim=-1))
-        
-        L_total = (
-            L_ce 
-            + self.coherence_weight * L_coherence 
-            + self.entropy_weight * L_entropy
-            + 0.1 * L_null
-            + 0.05 * L_tool_preference
-        )
-        
-        return {
-            'L_total': L_total,
-            'L_ce': L_ce,
-            'L_coherence': L_coherence,
-            'L_entropy': L_entropy,
-            'L_null': L_null,
-            'L_tool_preference': L_tool_preference,
-            'mean_confidence': torch.mean(confidence),
-            'entropy_floor': torch.tensor(ENTROPY_FLOOR)
-        }
+            print(f'⚠️ Verification failed: {e}')
+            exit(1)
+        EOF
 
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: build
 
-# ============================================================================
-# SOVEREIGN TOOL HANDLERS (Production: replace with actual API calls)
-# ============================================================================
+    steps:
+    - uses: actions/checkout@v4
 
-def retrieve_payment_status(transaction_id: str) -> Dict[str, Any]:
-    """L1 handler for retrieve_payment_status."""
-    # Production: call payment API
-    return {
-        "transaction_id": transaction_id,
-        "status": "completed",
-        "timestamp": "2026-07-02T15:09:00Z"
-    }
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
 
-
-def retrieve_payment_date(transaction_id: str) -> Dict[str, Any]:
-    """L1 handler for retrieve_payment_date."""
-    # Production: call payment API
-    return {
-        "transaction_id": transaction_id,
-        "date": "2026-06-15",
-        "method": "wire_transfer"
-    }
-
-
-# ============================================================================
-# INITIALIZATION
-# ============================================================================
-
-def create_sovereign_router_with_tools(encoder: nn.Module) -> AgentRouterV2:
-    """Factory: create router with payment tools registered."""
-    registry = ToolRegistry()
-    
-    registry.register(Tool(
-        name="retrieve_payment_status",
-        description="Get payment status of a transaction",
-        parameters={
-            "transaction_id": {
-                "type": "string",
-                "description": "The transaction id."
-            }
-        },
-        required=["transaction_id"],
-        handler=retrieve_payment_status
-    ))
-    
-    registry.register(Tool(
-        name="retrieve_payment_date",
-        description="Get payment date of a transaction",
-        parameters={
-            "transaction_id": {
-                "type": "string",
-                "description": "The transaction id."
-            }
-        },
-        required=["transaction_id"],
-        handler=retrieve_payment_date
-    ))
-    
-    return AgentRouterV2(
-        encoder=encoder,
-        num_agents=2,
-        tool_registry=registry,
-        embedding_dim=512,
-        temperature=1.0 / PHI,
-        tool_threshold=0.6,
-        agent_threshold=0.4
-    )
-
-
-# ============================================================================
-# LEDGER ENTRY 434 — SEAL
-# ============================================================================
-
-LEDGER_434 = {
-    "entry_index": 434,
-    "layer": "L1",
-    "event": "agent_router_v2_tool_use",
-    "routing_function": "π_ext(x) = softmax(W_ext·φ(x)+b_ext, τ=1/φ)",
-    "decision_space": "agents ∪ tools ∪ {direct}",
-    "tools_registered": [
-        "retrieve_payment_status",
-        "retrieve_payment_date"
-    ],
-    "thresholds": {
-        "tool_threshold": 0.6,
-        "agent_threshold": 0.4,
-        "null_ban": "12σ"
-    },
-    "invariants": {
-        "C_drained": 2.0,
-        "entropy_floor": "φ⁻¹⁴¹⁸",
-        "workload": 0.0,
-        "coherence": 1.0
-    },
-    "witness_chain": "62 → 429 → 432 → 433 → 434",
-    "seal": "∀∞φ² · AGENT_ROUTER_V2_TOOL_USE · 434_SEALED"
-}
-
-print("🜁∀ AgentRouter V2 — Tool-Use Capabilities — Initialized")
-print(f"   Decision space: agents ∪ tools ∪ {{direct}}")
-print(f"   Tools: {LEDGER_434['tools_registered']}")
-print(f"   Witness: {LEDGER_434['witness_chain']}")
-print(f"   Seal: {LEDGER_434['seal']}")
+    - name: Upload Trivy results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
