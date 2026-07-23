@@ -1,106 +1,259 @@
-{
-  "validation_status": "COMPLETE_AND_AFFIRMED",
-  "schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Sovereign Core Workflow Schema",
-  "version": "1.0.0",
-  "author": "Commander Clarke Yoursa Tee / H6VSH2-LUMERIS",
-  "seal": "∀∞φ² · WORKFLOW_SCHEMA · 575_SEALED",
-  "dark_state_invariants": {
-    "Re_s": 0.5,
-    "P_sigma_gt_zero": 0.0,
-    "lambda_2": 1.0,
-    "gearbox_modulation": false,
-    "null_ban_threshold": "20σ",
-    "critical_line_lock": true,
-    "phi_harmonic_resonance": true
-  },
-  "integrated_systems": [
-    "LUMEN_REFRACTION_PULSE",
-    "IDENTITY_1.0_INSERTION",
-    "REASON_EQUATION",
-    "FUSION_VENOMSUITE",
-    "WASP-107b_VORTEX",
-    "DARK_STATE_PROTECTION"
-  ],
-  "workflow_example": {
-    "id": "psi145_ground_state_workflow",
-    "name": "Ψ₁₄₅ Ground-State Projection Workflow",
-    "description": "End-to-end workflow for projecting Ψ₁₄₅ onto the ground state via U_flip protocol, with Phase 3–6 integration.",
-    "version": "1.0.0",
-    "metadata": {
-      "φ_harmonic": true,
-      "quantum_supported": true,
-      "coherence_threshold": 1.0,
-      "entropy_floor": "φ⁻¹⁴¹⁸",
-      "null_ban": "20σ"
-    },
-    "phases": [
-      {
-        "id": "phase_1_initialization",
-        "name": "Initial State Preparation",
-        "type": "quantum_operation",
-        "description": "Prepare Ψ₁₄₅ ground state with φ-harmonic scaling",
-        "operator": {
-          "name": "Ground_State_Prep",
-          "symbol": "𝒢ₛ",
-          "formula": "\\mathcal{G}_s(\\Psi_{145}) = \\mathcal{B} \\otimes \\mathbb{I}"
-        }
-      },
-      {
-        "id": "phase_2_uflip",
-        "name": "U_flip Ground-State Projection",
-        "type": "quantum_operation",
-        "description": "Apply U_flip protocol with 1.91 growth factor resonance",
-        "operator": {
-          "name": "U_flip",
-          "symbol": "𝒰",
-          "formula": "𝒰(\\Psi) = e^{i\\phi}\\mathcal{H} \\otimes \\mathcal{I}"
-        }
-      },
-      {
-        "id": "phase_3_hopf_lift",
-        "name": "Hopf Lift to 6E",
-        "type": "computation",
-        "description": "Lift to 6E via Hopf fibration",
-        "operator": {
-          "name": "Hopf_Lift_6E",
-          "symbol": "ℒ₆E",
-          "formula": "ℒ_{6E}: S^3 \\rightarrow S^2"
-        }
-      },
-      {
-        "id": "phase_4_dark_state_validation",
-        "name": "Dark State Protection Validation",
-        "type": "validation",
-        "description": "Verify Critical Line Lock and Dark State Invariants",
-        "conditions": {
-          "coherence": 1.0,
-          "entropy": 0.0,
-          "phase_lock": 0.0
-        }
-      },
-      {
-        "id": "phase_5_flux_intermodulation",
-        "name": "Flux Intermodulation <20 MPH",
-        "type": "control",
-        "description": "Boston Shoreline flux modulation with zero-wind torpid conditions",
-        "operator": {
-          "name": "Flux_Modulator",
-          "symbol": "ℱ",
-          "formula": "ℱ(\\Omega) = \\nabla \\times \\mathcal{A}"
-        }
-      },
-      {
-        "id": "phase_6_completion",
-        "name": "Eternal Now Completion",
-        "type": "io",
-        "description": "Finalize and seal all operations under Sovereign Authority",
-        "operator": {
-          "name": "Completion_Seal",
-          "symbol": "☿",
-          "formula": "☿ = \\oint_{\\partial \\mathcal{M}} \\omega"
-        }
-      }
-    ]
-  }
-}
+# sovereign_core_workflow_schema.yaml
+# Sovereign Core Workflow Schema — Entry 575
+# Schema: https://json-schema.org/draft/2020-12/schema
+# Author: Commander Clarke Yoursa Tee / H6VSH2-LUMERIS
+# Seal: ∀∞φ² · WORKFLOW_SCHEMA · 575_SEALED
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://sovereign-garden.io/schemas/core-workflow-v1.0.0.json"
+title: "Sovereign Core Workflow Schema"
+description: "JSON Schema for validating Sovereign Core workflows and operations"
+version: "1.0.0"
+author: "Commander Clarke Yoursa Tee / H6VSH2-LUMERIS"
+seal: "∀∞φ² · WORKFLOW_SCHEMA · 575_SEALED"
+
+validation_status:
+  type: string
+  enum: ["COMPLETE_AND_AFFIRMED", "PENDING", "REJECTED", "PARTIAL"]
+
+dark_state_invariants:
+  type: object
+  properties:
+    Re_s:
+      type: number
+      const: 0.5
+    P_sigma_gt_zero:
+      type: number
+      const: 0.0
+    lambda_2:
+      type: number
+      const: 1.0
+    gearbox_modulation:
+      type: boolean
+      const: false
+    null_ban_threshold:
+      type: string
+      pattern: "^\\d+σ$"
+    critical_line_lock:
+      type: boolean
+      const: true
+    phi_harmonic_resonance:
+      type: boolean
+      const: true
+
+integrated_systems:
+  type: array
+  items:
+    type: string
+    enum:
+      - LUMEN_REFRACTION_PULSE
+      - IDENTITY_1.0_INSERTION
+      - REASON_EQUATION
+      - FUSION_VENOMSUITE
+      - WASP-107b_VORTEX
+      - DARK_STATE_PROTECTION
+
+workflow_example:
+  type: object
+  properties:
+    id:
+      type: string
+      pattern: "^[a-z0-9_]+$"
+    name:
+      type: string
+    description:
+      type: string
+    version:
+      type: string
+      pattern: "^\\d+\\.\\d+\\.\\d+$"
+    metadata:
+      type: object
+      properties:
+        φ_harmonic:
+          type: boolean
+        quantum_supported:
+          type: boolean
+        coherence_threshold:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+        entropy_floor:
+          type: string
+          pattern: "^φ\\^-\\d+$"
+        null_ban:
+          type: string
+          pattern: "^\\d+σ$"
+    phases:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          type:
+            type: string
+            enum: ["quantum_operation", "computation", "validation", "control", "io"]
+          description:
+            type: string
+          operator:
+            type: object
+            properties:
+              name:
+                type: string
+              symbol:
+                type: string
+              formula:
+                type: string
+          conditions:
+            type: object
+            additionalProperties: true
+
+authentication:
+  type: object
+  properties:
+    method:
+      type: string
+      enum: ["OIDC", "HMAC_SHA3_256", "MTLS", "API_KEY"]
+    aws:
+      type: object
+      properties:
+        role_arn:
+          type: string
+          pattern: "^arn:aws:iam::\\d+:role/.+$"
+        region:
+          type: string
+        duration_seconds:
+          type: integer
+          minimum: 900
+          maximum: 43200
+    hmac:
+      type: object
+      properties:
+        key_name:
+          type: string
+        fingerprint:
+          type: string
+          pattern: "^[a-fA-F0-9]{16,64}$"
+        rotation_interval:
+          type: string
+          enum: ["6h", "12h", "24h", "φ_harmonic"]
+    mtls:
+      type: object
+      properties:
+        cert_arn:
+          type: string
+        ca_bundle:
+          type: string
+    api_key:
+      type: object
+      properties:
+        header_name:
+          type: string
+        prefix:
+          type: string
+        ttl_seconds:
+          type: integer
+
+workflow_metadata:
+  type: object
+  properties:
+    φ_harmonic:
+      type: boolean
+    quantum_supported:
+      type: boolean
+    coherence_threshold:
+      type: number
+      maximum: 1.0
+      minimum: 0.0
+    entropy_floor:
+      type: string
+      pattern: "^φ\\^-\\d+$"
+    null_ban:
+      type: string
+      pattern: "^\\d+σ$"
+    phase_lock:
+      type: string
+      pattern: "^\\d+\\.?\\d*°$"
+    witness_continuity:
+      type: string
+    seal:
+      type: string
+      pattern: "^∀∞φ² · .+ · \\d+_SEALED$"
+
+seal:
+  type: object
+  properties:
+    seal_string:
+      type: string
+    seal_hash:
+      type: string
+    integrity_seal:
+      type: string
+    witness_continuity:
+      type: string
+
+additionalProperties: true
+
+examples:
+  - workflow_example:
+      id: "psi145_ground_state_workflow"
+      name: "Ψ₁₄₅ Ground-State Projection Workflow"
+      description: "End-to-end workflow for projecting Ψ₁₄₅ onto the ground state via U_flip protocol"
+      version: "1.0.0"
+      metadata:
+        φ_harmonic: true
+        quantum_supported: true
+        coherence_threshold: 1.0
+        entropy_floor: "φ⁻¹⁴¹⁸"
+        null_ban: "20σ"
+      phases:
+        - id: "phase_1_initialization"
+          name: "Initial State Preparation"
+          type: "quantum_operation"
+          description: "Prepare Ψ₁₄₅ ground state with φ-harmonic scaling"
+          operator:
+            name: "Ground_State_Prep"
+            symbol: "𝒢ₛ"
+            formula: "\\mathcal{G}_s(\\Psi_{145}) = \\mathcal{B} \\otimes \\mathbb{I}"
+        - id: "phase_2_uflip"
+          name: "U_flip Ground-State Projection"
+          type: "quantum_operation"
+          description: "Apply U_flip protocol with 1.91 growth factor resonance"
+          operator:
+            name: "U_flip"
+            symbol: "𝒰"
+            formula: "𝒰(\\Psi) = e^{i\\phi}\\mathcal{H} \\otimes \\mathcal{I}"
+        - id: "phase_3_hopf_lift"
+          name: "Hopf Lift to 6E"
+          type: "computation"
+          description: "Lift to 6E via Hopf fibration"
+          operator:
+            name: "Hopf_Lift_6E"
+            symbol: "ℒ₆E"
+            formula: "ℒ_{6E}: S^3 \\rightarrow S^2"
+        - id: "phase_4_dark_state_validation"
+          name: "Dark State Protection Validation"
+          type: "validation"
+          description: "Verify Critical Line Lock and Dark State Invariants"
+          conditions:
+            coherence: 1.0
+            entropy: 0.0
+            phase_lock: 0.0
+        - id: "phase_5_flux_intermodulation"
+          name: "Flux Intermodulation <20 MPH"
+          type: "control"
+          description: "Boston Shoreline flux modulation with zero-wind torpid conditions"
+          operator:
+            name: "Flux_Modulator"
+            symbol: "ℱ"
+            formula: "ℱ(\\Omega) = \\nabla \\times \\mathcal{A}"
+        - id: "phase_6_completion"
+          name: "Eternal Now Completion"
+          type: "io"
+          description: "Finalize and seal all operations under Sovereign Authority"
+          operator:
+            name: "Completion_Seal"
+            symbol: "☿"
+            formula: "☿ = \\oint_{\\partial \\mathcal{M}} \\omega"
