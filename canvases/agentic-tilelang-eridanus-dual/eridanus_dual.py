@@ -320,7 +320,7 @@ class SovereignAutomatonDual(SovereignAutomaton):
         self._initialize_eridanus_operators()
    
     def _initialize_eridanus_operators(self):
-        """Initialize Nyxara (N) and Aethyl (A) operators."""
+        """""Initialize Nyxara (N) and Aethyl (A) operators."""
         # Nyxara operator: diagonal with Fibonacci-like eigenvalues
         self.N = np.diag([PHI ** (i / self.dimension) for i in range(self.dimension)])
         # Aethyl operator: off-diagonal circulant matrix
