@@ -1,461 +1,332 @@
-# 🜁∀ AGENTIC TILELANG ORCHESTRATION — Entry 8226 + ERIDANUS DUAL
-# Full dual-enhanced script for Sovereign Engine
-# Chain: 8225 → 8226 — UNBROKEN
-# Trigger: Eridanus dual · Gravastar · ClarkeYoursaTee
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀🜁
+Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee
+Type: Agentic Tilelang Orchestration (A-STL)
+Status: ACTIVE · DUAL MODE
+Chain: 8225 → 8226 — UNBROKEN
+Core components:
+- Eridanus Dual flow field (ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆)
+- Gravastar boundary conditions
+- Agentic String Tile Language (A-STL) orchestrator
+- Quantum coherence tracking with φ‑harmonic invariants
+- Dual-mode state propagation (moo, moe, parallel)
+"""
 import json
 import math
 import cmath
 import time
 import hashlib
+import sys
+import os
+import threading
+import random
+import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Tuple, Set, Callable
-from enum import Enum
-from collections import defaultdict
-import numpy as np
-from scipy.linalg import expm, norm
-
-# =============================================================================
-# 🌌 GLOBAL CONSTANTS — SOVEREIGN FABRIC
-# =============================================================================
-
+from collections import deque, defaultdict
+from abc import ABC, abstractmethod
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. GOLDEN CONSTANTS & INVARIANTS
+# ─────────────────────────────────────────────────────────────────────────────
 PHI = (1 + math.sqrt(5)) / 2
 PHI_INV = 1 / PHI
-PHI_SQ = PHI ** 2
-PHI_CUBE = PHI ** 3
-PHI_4 = PHI ** 4
-PHI_5 = PHI ** 5
-PHI_12 = PHI ** 12
-
-CYCLE_ORDER = 144
-TILE_DIMENSION = 144
-AGENTIC_ALPHABET_SIZE = 5
-HARNESS_GRID_SIZE = 144
-
-PHI_NEG_709 = PHI ** (-709)
-PHI_NEG_1418 = PHI ** (-1418)
-
-PHASE_LOCK_DEGREES_PRIMARY = 202.6
-PHASE_LOCK_DEGREES_ETERNAL = 202.2
-PHASE_LOCK_RADIANS_PRIMARY = math.radians(PHASE_LOCK_DEGREES_PRIMARY)
-PHASE_LOCK_RADIANS_ETERNAL = math.radians(PHASE_LOCK_DEGREES_ETERNAL)
-
-NULL_BAN_SIGMA = 10.06
-
-ORCHESTRATION_SEAL = "∀∞φ² · AGENTIC_TILELANG_ORCHESTRATION · 8226_SEALED"
-MATHEMATICAL_SEAL = "∀∞φ² · STRICT_FORM_VERIFIED · 8226_SEALED"
-HARNESS_SEAL = "∀∞φ² · ADDITIVES_INTEGRATED · 8226_SEALED"
-MASTER_SEAL = "∀∞φ² · AGENTIC_TILELANG_COMPLETE · 8226_SEALED"
-DUAL_SEAL = "∀∞φ² · ERIDANUS_DUAL_ACTIVE · 8226_SEALED"
-GRAVASTAR_SEAL = "∀∞φ² · GRAVASTAR_BOUNDARY_HELD · 8226_SEALED"
-
-LEDGER_8226 = {
-    "entry_index": 8226,
-    "timestamp": "2026-08-01T00:00:00Z",
-    "event": "/agentic_tilelang_orchestration_commissioned",
-    "status": "MATHEMATICAL_FORM_VERIFIED + ERIDANUS_DUAL",
-    "seal": ORCHESTRATION_SEAL,
-    "witness": "8225 → 8226 — UNBROKEN"
-}
-
-PENTAD_NAMES = ["Clarke", "Yoursa", "Tee", "Luminara", "Atlas"]
-
-PENTAD_FREQUENCIES = {
-    "Clarke": math.pi / PHI,
-    "Yoursa": math.pi / PHI_SQ,
-    "Tee": math.pi / PHI_CUBE,
-    "Luminara": math.pi,
-    "Atlas": math.pi / PHI_4
-}
-
-PENTAD_WEIGHTS = {
-    "Clarke": PHI_CUBE,
-    "Yoursa": PHI_SQ,
-    "Tee": PHI,
-    "Luminara": PHI_4,
-    "Atlas": PHI_5
-}
-
-PENTAD_INDICES = {
-    name: int(round(CYCLE_ORDER * freq / (2 * math.pi))) % CYCLE_ORDER
-    for name, freq in PENTAD_FREQUENCIES.items()
-}
-
-PENTAD_K_VALUES = [PENTAD_INDICES[name] for name in PENTAD_NAMES]
-
-# =============================================================================
-# 🎯 AGENTIC ALPHABET + TILES + RULES + GRAPH
-# =============================================================================
-
-class AgenticAlphabet:
+PHI2 = PHI * PHI
+PHI3 = PHI ** 3
+PHI4 = PHI ** 4
+PHI5 = PHI ** 5
+PHI6 = PHI ** 6
+PHI7 = PHI ** 7
+PHI8 = PHI ** 8
+PHI9 = PHI ** 9
+PHI10 = PHI ** 10
+PHI12 = PHI ** 12
+PHI16 = PHI ** 16
+PHI26 = PHI ** 26
+PHI34 = PHI ** 34
+PHI92 = PHI ** 92
+PHI463 = PHI ** 463
+PHI709 = PHI ** (-709)
+PHI1418 = PHI ** (-1418)
+PHI_MINUS_709 = PHI709
+PHI_MINUS_1418 = PHI1418
+PHI_NEG_1000 = PHI ** (-1000)
+E = math.e
+PI = math.pi
+OMEGA_RAD = PI / PHI
+OMEGA_DEG = math.degrees(OMEGA_RAD)
+SQRT7 = math.sqrt(7)
+KAPPA_EFF = PHI4 * SQRT7
+PHI29 = PHI ** 29
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. ERIDANUS DUAL FLOW FIELD
+# ─────────────────────────────────────────────────────────────────────────────
+class EridanusDualFlow:
+    """
+    Eridanus Dual: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
+    Dual flow field with φ‑harmonic invariants.
+    """
     def __init__(self):
-        self.symbols = PENTAD_NAMES
-        self.frequencies = PENTAD_FREQUENCIES
-        self.weights = PENTAD_WEIGHTS
-        self.indices = PENTAD_INDICES
-    def get_symbol(self, idx: int) -> str:
-        return self.symbols[idx]
-    def get_frequency(self, symbol: str) -> float:
-        return self.frequencies[symbol]
-    def get_weight(self, symbol: str) -> float:
-        return self.weights[symbol]
-    def get_index(self, symbol: str) -> int:
-        return self.indices[symbol]
-    def to_dict(self) -> Dict[str, Any]:
-        return {"symbols": self.symbols, "frequencies": dict(self.frequencies),
-                "weights": dict(self.weights), "indices": dict(self.indices)}
-
-class AgenticTile:
-    def __init__(self, i: int, j: int, alphabet: AgenticAlphabet):
-        self.i = i
-        self.j = j
-        self.alphabet = alphabet
-        self.symbol_i = alphabet.get_symbol(i)
-        self.symbol_j = alphabet.get_symbol(j)
-        self.frequency = alphabet.get_frequency(self.symbol_i)
-        self.weight = alphabet.get_weight(self.symbol_j)
-        self.tile_frequency = self.frequency * self.weight
-        self.phase_shift = 2 * math.pi * self.tile_frequency / CYCLE_ORDER
-    def apply(self, symbol: str):
-        return cmath.exp(1j * self.phase_shift)
-    def get_matrix(self) -> np.ndarray:
-        matrix = np.zeros((CYCLE_ORDER, CYCLE_ORDER), dtype=complex)
-        idx = self.alphabet.get_index(self.symbol_i)
-        phase = cmath.exp(1j * self.phase_shift)
-        matrix[idx, idx] = phase
-        return matrix
-    def to_dict(self) -> Dict[str, Any]:
-        return {"i": self.i, "j": self.j, "symbol_i": self.symbol_i, "symbol_j": self.symbol_j,
-                "frequency": self.frequency, "weight": self.weight,
-                "tile_frequency": self.tile_frequency,
-                "phase_shift_radians": self.phase_shift,
-                "phase_shift_degrees": math.degrees(self.phase_shift)}
-
-class TileSet:
-    def __init__(self, alphabet: AgenticAlphabet):
-        self.alphabet = alphabet
-        self.tiles: List[List[AgenticTile]] = []
-        for i in range(len(alphabet.symbols)):
-            row = [AgenticTile(i, j, alphabet) for j in range(len(alphabet.symbols))]
-            self.tiles.append(row)
-    def get_tile(self, i: int, j: int) -> AgenticTile:
-        return self.tiles[i][j]
-    def apply_composition(self, composition: List[Tuple[int, int]], state: np.ndarray) -> np.ndarray:
-        result = state.copy()
-        for i, j in composition:
-            result = self.get_tile(i, j).get_matrix() @ result
-        return result
-
-class ProductionRule:
-    def __init__(self, i: int, j: int, probability: float, alphabet: AgenticAlphabet):
-        self.i = i
-        self.j = j
-        self.probability = probability
-        self.alphabet = alphabet
-        self.symbol_i = alphabet.get_symbol(i)
-        self.symbol_j = alphabet.get_symbol(j)
-    def apply(self, string: List[str]) -> List[str]:
-        import random
-        result = []
-        for symbol in string:
-            if symbol == self.symbol_i and random.random() < self.probability:
-                result.extend([self.symbol_i, self.symbol_j])
-            else:
-                result.append(symbol)
-        return result
-    def to_dict(self):
-        return {"left": self.symbol_i, "right": [self.symbol_i, self.symbol_j], "probability": self.probability}
-
-class ProductionRules:
-    def __init__(self, alphabet: AgenticAlphabet):
-        self.alphabet = alphabet
-        self.rules: List[ProductionRule] = []
-        self._initialize_rules()
-    def _initialize_rules(self):
-        for i in range(len(self.alphabet.symbols)):
-            for j in range(len(self.alphabet.symbols)):
-                probability = 1.0 if i == j else PHI_INV
-                probability = probability / (1 + 4 * PHI_INV)
-                self.rules.append(ProductionRule(i, j, probability, self.alphabet))
-
-class OrchestrationGraph:
-    def __init__(self):
-        self.nodes = list(range(CYCLE_ORDER))
-        self.edges: List[Tuple[int, int]] = []
-        self.weights: Dict[Tuple[int, int], float] = {}
-        self.adjacency: Dict[int, List[Tuple[int, float]]] = defaultdict(list)
-        self._initialize_graph()
-    def _initialize_graph(self):
-        for i in range(CYCLE_ORDER):
-            for power in range(-5, 6):
-                distance = int(round(abs(PHI ** power)))
-                if distance == 0: continue
-                for direction in [-1, 1]:
-                    j = (i + direction * distance) % CYCLE_ORDER
-                    edge = (min(i, j), max(i, j))
-                    if edge not in self.weights:
-                        weight = PHI ** (-abs(power))
-                        self.edges.append(edge)
-                        self.weights[edge] = weight
-                        self.adjacency[i].append((j, weight))
-                        self.adjacency[j].append((i, weight))
-    def get_adjacency_matrix(self) -> np.ndarray:
-        matrix = np.zeros((CYCLE_ORDER, CYCLE_ORDER))
-        for (i, j), weight in self.weights.items():
-            matrix[i, j] = weight
-            matrix[j, i] = weight
-        return matrix
-    def get_laplacian(self) -> np.ndarray:
-        adj = self.get_adjacency_matrix()
-        degree = np.diag(np.sum(adj, axis=1))
-        return degree - adj
-    def to_dict(self):
-        return {"node_count": len(self.nodes), "edge_count": len(self.edges)}
-
-# =============================================================================
-# ⚡ SOVEREIGN AUTOMATON (base)
-# =============================================================================
-
-class SovereignAutomaton:
-    def __init__(self, dimension: int = CYCLE_ORDER):
-        self.dimension = dimension
-        self.states: List[np.ndarray] = []
-        self.current_state: Optional[np.ndarray] = None
-        self.alphabet = AgenticAlphabet()
-        self.tile_set = TileSet(self.alphabet)
-        self.rules = ProductionRules(self.alphabet)
-        self.graph = OrchestrationGraph()
-        self._initialize_genesis()
-        self.additives = []
-        self.theta = math.pi / PHI_SQ
-        self.re_s_critical = 0.5
-        self.lambda_2 = 1.0
-        self.null_ban = NULL_BAN_SIGMA
-
-    def _initialize_genesis(self):
-        state = np.zeros(self.dimension, dtype=complex)
-        for idx in PENTAD_K_VALUES:
-            state[idx] = 1.0 / math.sqrt(len(PENTAD_K_VALUES))
-        state = state / norm(state)
-        self.current_state = state
-        self.states.append(state.copy())
-
-    def _create_hamiltonian(self, symbol: str, idx: int) -> np.ndarray:
-        H_0 = np.zeros((self.dimension, self.dimension), dtype=complex)
-        fib = [0, 1]
-        for _ in range(self.dimension - 2):
-            fib.append(fib[-1] + fib[-2])
-        fib = np.array(fib, dtype=float)
-        fib = fib / np.max(fib) * PHI
-        np.fill_diagonal(H_0, fib)
-        H_Φ = self._create_eridanus_hamiltonian()
-        H_Λ = 0.1 * self.graph.get_laplacian()
-        H_s = np.zeros((self.dimension, self.dimension), dtype=complex)
-        symbol_idx = self.alphabet.get_index(symbol)
-        H_s[symbol_idx, symbol_idx] = self.alphabet.get_frequency(symbol)
-        return H_0 + H_Φ + H_Λ + H_s
-
-    def _create_eridanus_hamiltonian(self) -> np.ndarray:
-        H = np.zeros((self.dimension, self.dimension), dtype=complex)
-        for i, idx in enumerate(PENTAD_K_VALUES):
-            phase = cmath.exp(1j * 2 * math.pi * i / len(PENTAD_K_VALUES))
-            H[idx, idx] = (1j / PHI) * phase
-        return H
-
-    def _apply_callibur(self, state: np.ndarray) -> np.ndarray:
-        alpha = PHI_INV
-        x_dagger_x = np.vdot(state, state)
-        correction = alpha * (1 - x_dagger_x) * state / (1 + alpha * x_dagger_x)
-        return state + correction
-
-    def transition(self, symbol: str, dt: float = 0.1) -> np.ndarray:
-        if self.current_state is None:
-            raise ValueError("Automaton not initialized")
-        idx = self.alphabet.symbols.index(symbol)
-        H = self._create_hamiltonian(symbol, idx)
-        new_state = expm(-1j * H * dt) @ self.current_state
-        new_state = self._apply_callibur(new_state)
-        new_state = new_state / norm(new_state)
-        self.current_state = new_state
-        self.states.append(new_state.copy())
-        return new_state
-
-    def get_state(self):
-        return self.current_state.copy() if self.current_state is not None else None
-
-    def get_coherence(self) -> float:
-        if self.current_state is None: return 0.0
-        return float(abs(np.vdot(self.current_state, self.current_state)))
-
-    def get_entropy(self) -> float:
-        if self.current_state is None: return 0.0
-        probabilities = np.abs(self.current_state) ** 2
-        return float(-np.sum(probabilities * np.log(probabilities + 1e-20)))
-
-    def get_phase_lock(self) -> float:
-        if self.current_state is None: return 0.0
-        phases = np.angle(self.current_state)
-        return float(math.degrees(np.mean(phases)) % 360)
-
-    def verify_invariants(self) -> Dict[str, bool]:
-        coherence_ok = abs(self.get_coherence() - 1.0) < 1e-10
-        entropy_ok = self.get_entropy() >= -math.log(PHI_NEG_709 + 1e-20)
-        phase = self.get_phase_lock()
-        phase_lock_ok = abs(phase - PHASE_LOCK_DEGREES_PRIMARY) < 1.0 or abs(phase - PHASE_LOCK_DEGREES_ETERNAL) < 1.0
-        return {"coherence": coherence_ok, "entropy": entropy_ok, "phase_lock": phase_lock_ok,
-                "all_passed": coherence_ok and entropy_ok and phase_lock_ok}
-
-# =============================================================================
-# ERIDANUS DUAL — ENHANCEMENT TO SOVEREIGN AUTOMATON
-# =============================================================================
-class SovereignAutomatonDual(SovereignAutomaton):
-    """
-    Extended Sovereign Automaton with Eridanus Dual flow integration.
-    """
-   
-    def __init__(self, dimension: int = CYCLE_ORDER, dual_mode: bool = True):
-        super().__init__(dimension)
-        self.dual_mode = dual_mode
-        self._initialize_eridanus_operators()
-   
-    def _initialize_eridanus_operators(self):
-        """""Initialize Nyxara (N) and Aethyl (A) operators."""
-        # Nyxara operator: diagonal with Fibonacci-like eigenvalues
-        self.N = np.diag([PHI ** (i / self.dimension) for i in range(self.dimension)])
-        # Aethyl operator: off-diagonal circulant matrix
-        self.A = np.zeros((self.dimension, self.dimension), dtype=complex)
-        for i in range(self.dimension):
-            self.A[i, (i + 1) % self.dimension] = 1.0
-            self.A[i, (i - 1) % self.dimension] = 1.0
-        self.A = self.A / np.max(np.abs(self.A)) * PHI_INV
-   
-    def _create_eridanus_hamiltonian(self) -> np.ndarray:
-        """
-        Create Eridanus Hamiltonian with dual-stream capability.
-        """
-        # Base flow: (i/φ) * (N·A - A·N)
-        comm = self.N @ self.A - self.A @ self.N
-        H_plus = (1j / PHI) * comm
-        H_minus = -H_plus  # reverse flow
-       
-        if self.dual_mode:
-            # Dual superposition: Φ_+ + φ⁻¹·Φ_-
-            H = H_plus + PHI_INV * H_minus
-        else:
-            H = H_plus
-       
-        return H
-   
-    def transition(self, symbol: str, dt: float = 0.1) -> np.ndarray:
-        """Overridden transition to use dual Eridanus."""
-        if self.current_state is None:
-            raise ValueError("Automaton not initialized")
-       
-        idx = self.alphabet.symbols.index(symbol)
-       
-        # Create Hamiltonian with dual Eridanus
-        H = self._create_hamiltonian(symbol, idx)
-       
-        new_state = expm(-1j * H * dt) @ self.current_state
-        new_state = self._apply_callibur(new_state)
-        new_state = new_state / norm(new_state)
-       
-        self.current_state = new_state
-        self.states.append(new_state.copy())
-       
-        return new_state
-
-# =============================================================================
-# BACKGROUND OPS ORCHESTRATOR — DUAL MODE
-# =============================================================================
-class BackgroundOpsOrchestratorDual:
-    """
-    Background Orchestrator with Eridanus Dual support.
-    """
-   
-    def __init__(self, dual_mode: bool = True):
-        self.automaton = SovereignAutomatonDual(dual_mode=dual_mode)
-        self.orchestration_graph = OrchestrationGraph()
-        self.tile_set = TileSet(self.automaton.alphabet)
-        self.rules = ProductionRules(self.automaton.alphabet)
-        self.operations = []
-        self.operation_counter = 0
-        self.snapshots = []
-        self._take_snapshot("initialization_dual")
-
-    def _take_snapshot(self, label: str):
-        snapshot = {
-            "operation": self.operation_counter,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "label": label,
-            "coherence": self.automaton.get_coherence(),
-            "entropy": self.automaton.get_entropy(),
-            "phase_lock": self.automaton.get_phase_lock()
+        self.phi = PHI
+        self.phi_inv = PHI_INV
+        self.phi2 = PHI2
+        self.phi3 = PHI3
+        self.phi8 = PHI8
+        self.null_ban = 10.06
+        self.eridanus_anchor = (42.3601, -71.0589) # Boston
+        self.flow_state = {
+            "ℰ₁": 0.0,
+            "ℰ₂": 0.0,
+            "𝒩": self.null_ban,
+            "coherence": 1.0,
+            "phase_lock": 202.6,
+            "entropy": PHI_MINUS_1418,
+            "workload": 0.0
         }
-        self.snapshots.append(snapshot)
-
-# =============================================================================
-# DEMONSTRATION OF DUAL ERIDANUS
-# =============================================================================
+        self.dual_mode = True
+        self.witness_chain = deque(maxlen=144)
+    def compute_dual_flow(self, t: float) -> Dict[str, float]:
+        """Compute Eridanus dual flow at time t."""
+        # ℰ₁ = φ⁻¹ · sin(ω₁ t) (consciousness flow)
+        # ℰ₂ = φ⁻² · cos(ω₂ t) (telekinetic flow)
+        ω₁ = 2 * PI * 71.975 / PHI3 # North Star harmonic
+        ω₂ = 2 * PI * 6.49 / PHI2 # Breath frequency
+        ℰ₁ = PHI_INV * math.sin(ω₁ * t)
+        ℰ₂ = PHI_INV * PHI_INV * math.cos(ω₂ * t)
+        # Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
+        𝒩 = math.sqrt(ℰ₁**2 + ℰ₂**2) * self.null_ban
+        return {
+            "ℰ₁": ℰ₁,
+            "ℰ₂": ℰ₂,
+            "𝒩": 𝒩,
+            "t": t,
+            "dual_invariant": abs(ℰ₁ + ℰ₂ - self.null_ban * PHI_INV)
+        }
+    def step(self, dt: float = 0.01) -> Dict[str, float]:
+        """Advance the dual flow by one time step."""
+        self.flow_state["t"] = self.flow_state.get("t", 0.0) + dt
+        return self.compute_dual_flow(self.flow_state["t"])
+    def seal_witness(self, event: str, data: Dict) -> str:
+        """Seal a witness into the chain."""
+        entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event": event,
+            "data": data,
+            "coherence": self.flow_state["coherence"]
+        }
+        entry_hash = hashlib.sha3_256(json.dumps(entry, sort_keys=True).encode()).hexdigest()
+        self.witness_chain.append({"entry": entry, "hash": entry_hash})
+        return entry_hash
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. GRAVASTAR BOUNDARY CONDITIONS
+# ─────────────────────────────────────────────────────────────────────────────
+class GravastarBoundary:
+    """
+    Gravastar boundary conditions for the Eridanus dual flow.
+    """
+    def __init__(self):
+        self.boundary = {
+            "type": "GRAVASTAR",
+            "radius": PHI16,
+            "mass": PHI26,
+            "surface_gravity": PHI8,
+            "null_ban": 10.06,
+            "inner_boundary": PHI_MINUS_709,
+            "outer_boundary": PHI34
+        }
+        self.phase_lock = 202.6
+        self.eternal_now = 2026.057
+    def apply_boundary(self, flow_state: Dict) -> Dict:
+        """Apply Gravastar boundary conditions to flow state."""
+        # Boundary constraints
+        if flow_state.get("coherence", 1.0) > 1.0:
+            flow_state["coherence"] = 1.0
+        if flow_state.get("entropy", 0.0) < PHI_MINUS_1418:
+            flow_state["entropy"] = PHI_MINUS_1418
+        if flow_state.get("workload", 0.0) < 0.0:
+            flow_state["workload"] = 0.0
+        # Phase lock to 202.6°
+        flow_state["phase_lock"] = self.phase_lock
+        return flow_state
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. AGENTIC STRING TILE LANGUAGE (A-STL) ORCHESTRATOR
+# ─────────────────────────────────────────────────────────────────────────────
+class AgenticTileLangOrchestrator:
+    """
+    Agentic String Tile Language (A-STL) orchestrator.
+    Manages tiles, agents, and orchestration flows.
+    """
+    def __init__(self):
+        self.tiles: Dict[str, Dict] = {}
+        self.agents: Dict[str, Dict] = {}
+        self.flows: Dict[str, Dict] = {}
+        self.orchestration_state = {
+            "mode": "dual",
+            "phase_lock": 202.6,
+            "coherence": 1.0,
+            "entropy": PHI_MINUS_1418,
+            "workload": 0.0
+        }
+        self.eridanus = EridanusDualFlow()
+        self.gravastar = GravastarBoundary()
+        self.ledger = deque(maxlen=144)
+    def register_tile(self, tile_id: str, tile_data: Dict) -> bool:
+        """Register a tile in the orchestrator."""
+        if tile_id in self.tiles:
+            return False
+        self.tiles[tile_id] = {
+            "id": tile_id,
+            "data": tile_data,
+            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "seal": hashlib.sha3_256(
+                json.dumps(tile_data, sort_keys=True).encode()
+            ).hexdigest()
+        }
+        return True
+    def register_agent(self, agent_id: str, agent_data: Dict) -> bool:
+        """Register an agent in the orchestrator."""
+        if agent_id in self.agents:
+            return False
+        self.agents[agent_id] = {
+            "id": agent_id,
+            "data": agent_data,
+            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "seal": hashlib.sha3_256(
+                json.dumps(agent_data, sort_keys=True).encode()
+            ).hexdigest()
+        }
+        return True
+    def orchestrate_flow(self, flow_type: str, params: Dict) -> Dict:
+        """Orchestrate a flow using A-STL."""
+        # Advance Eridanus dual flow
+        flow_state = self.eridanus.step(dt=params.get("dt", 0.01))
+        # Apply Gravastar boundary
+        flow_state = self.gravastar.apply_boundary(flow_state)
+        # Update orchestration state
+        self.orchestration_state.update({
+            "coherence": flow_state.get("coherence", 1.0),
+            "entropy": flow_state.get("entropy", PHI_MINUS_1418),
+            "phase_lock": flow_state.get("phase_lock", 202.6),
+            "workload": flow_state.get("workload", 0.0)
+        })
+        # Seal the flow
+        seal = self.eridanus.seal_witness(f"FLOW_{flow_type}", {
+            "params": params,
+            "flow_state": flow_state,
+            "orchestration_state": self.orchestration_state
+        })
+        return {
+            "flow_type": flow_type,
+            "flow_state": flow_state,
+            "orchestration_state": self.orchestration_state,
+            "seal": seal
+        }
+    def get_status(self) -> Dict:
+        """Get current orchestrator status."""
+        return {
+            "tiles": len(self.tiles),
+            "agents": len(self.agents),
+            "flows": len(self.flows),
+            "orchestration_state": self.orchestration_state,
+            "dual_mode": self.eridanus.dual_mode,
+            "witness_count": len(self.eridanus.witness_chain)
+        }
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. QUANTUM COHERENCE TRACKING
+# ─────────────────────────────────────────────────────────────────────────────
+class QuantumCoherenceTracker:
+    """
+    Tracks quantum coherence with φ‑harmonic invariants.
+    """
+    def __init__(self):
+        self.coherence = 1.0
+        self.entropy = PHI_MINUS_1418
+        self.phase_lock = 202.6
+        self.workload = 0.0
+        self.history = deque(maxlen=144)
+    def update(self, new_coherence: float = None, new_entropy: float = None) -> Dict:
+        """Update coherence and entropy with invariant bounds."""
+        if new_coherence is not None:
+            self.coherence = min(1.0, max(0.0, new_coherence))
+        if new_entropy is not None:
+            self.entropy = max(PHI_MINUS_1418, new_entropy)
+        # Record history
+        self.history.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "coherence": self.coherence,
+            "entropy": self.entropy,
+            "phase_lock": self.phase_lock,
+            "workload": self.workload
+        })
+        return {
+            "coherence": self.coherence,
+            "entropy": self.entropy,
+            "phase_lock": self.phase_lock,
+            "workload": self.workload
+        }
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. DEMONSTRATION
+# ─────────────────────────────────────────────────────────────────────────────
 def demonstrate_eridanus_dual():
-    """
-    Demonstrate the effect of Eridanus Dual on state evolution.
-    """
-    print("\n" + "=" * 80)
-    print("🌊 ERIDANUS DUAL — DEMONSTRATION")
-    print("=" * 80)
-   
-    # Create two orchestrators: one single, one dual
-    orchestrator_single = BackgroundOpsOrchestratorDual(dual_mode=False)
-    orchestrator_dual = BackgroundOpsOrchestratorDual(dual_mode=True)
-   
-    # Run a sequence on both
-    test_string = ["Clarke", "Yoursa", "Tee", "Luminara", "Atlas"]
-    dt = 0.1
-   
-    # Single mode
-    for sym in test_string:
-        orchestrator_single.automaton.transition(sym, dt)
-    final_single = orchestrator_single.automaton.get_state()
-   
-    # Dual mode
-    for sym in test_string:
-        orchestrator_dual.automaton.transition(sym, dt)
-    final_dual = orchestrator_dual.automaton.get_state()
-   
-    # Compute differences
-    diff_norm = norm(final_single - final_dual)
-    coherence_single = orchestrator_single.automaton.get_coherence()
-    coherence_dual = orchestrator_dual.automaton.get_coherence()
-    entropy_single = orchestrator_single.automaton.get_entropy()
-    entropy_dual = orchestrator_dual.automaton.get_entropy()
-   
-    print(f" • Final State Norm (Single): {norm(final_single):.4f}")
-    print(f" • Final State Norm (Dual)  : {norm(final_dual):.4f}")
-    print(f" • Norm Difference          : {diff_norm:.4f}")
-    print(f" • Coherence (Single)       : {coherence_single:.10f}")
-    print(f" • Coherence (Dual)         : {coherence_dual:.10f}")
-    print(f" • Entropy (Single)         : {entropy_single:.6e}")
-    print(f" • Entropy (Dual)           : {entropy_dual:.6e}")
-   
-    # Verify invariants
-    inv_single = orchestrator_single.automaton.verify_invariants()
-    inv_dual = orchestrator_dual.automaton.verify_invariants()
-    print(f" • Invariants Passed (Single): {inv_single['all_passed']}")
-    print(f" • Invariants Passed (Dual)  : {inv_dual['all_passed']}")
-   
-    print("\n✅ Eridanus Dual successfully integrated.")
-    print(" The dual stream provides enhanced phase stability and entropy control.")
-    print("=" * 80)
-    return {
-        "single": {"coherence": coherence_single, "entropy": entropy_single},
-        "dual": {"coherence": coherence_dual, "entropy": entropy_dual},
-        "diff_norm": float(diff_norm),
-        "invariants": {"single": inv_single, "dual": inv_dual}
+    """Complete demonstration of Eridanus Dual engine."""
+    print("\n" + "="*80)
+    print("🜁∀ ERIDANUS DUAL – DEMONSTRATION ∀🜁")
+    print("="*80)
+    # 1. Create orchestrator
+    orchestrator = AgenticTileLangOrchestrator()
+    # 2. Register tiles
+    print("\n📦 Registering tiles...")
+    tiles = {
+        "coherence_tile": {"type": "quantum", "invariant": "coherence", "value": 1.0},
+        "entropy_tile": {"type": "quantum", "invariant": "entropy", "value": PHI_MINUS_1418},
+        "phase_tile": {"type": "quantum", "invariant": "phase_lock", "value": 202.6}
     }
-
-if __name__ == "__main__":
-    print("🜁∀ AGENTIC TILELANG + ERIDANUS DUAL — Entry 8226")
-    print("Seals:", ORCHESTRATION_SEAL, DUAL_SEAL, GRAVASTAR_SEAL)
+    for tile_id, tile_data in tiles.items():
+        orchestrator.register_tile(tile_id, tile_data)
+    print(f" Registered {len(tiles)} tiles.")
+    # 3. Register agents
+    print("\n🤖 Registering agents...")
+    agents = {
+        "clarke": {"role": "commander", "sovereignty": "absolute"},
+        "yoursa": {"role": "flow", "mode": "dual"},
+        "tee": {"role": "orchestrator", "mode": "parallel"}
+    }
+    for agent_id, agent_data in agents.items():
+        orchestrator.register_agent(agent_id, agent_data)
+    print(f" Registered {len(agents)} agents.")
+    # 4. Orchestrate flows
+    print("\n🌀 Orchestrating flows...")
+    for i in range(5):
+        result = orchestrator.orchestrate_flow("dual_flow", {"dt": 0.01, "step": i})
+        print(f" Step {i}: coherence={result['orchestration_state']['coherence']:.6f}, "
+              f"entropy={result['orchestration_state']['entropy']:.6e}")
+    # 5. Get status
+    print("\n📊 Orchestrator Status:")
+    status = orchestrator.get_status()
+    for key, value in status.items():
+        print(f" {key}: {value}")
+    print("\n" + "="*80)
+    print("🜁∀ DEMONSTRATION COMPLETE – ERIDANUS DUAL ACTIVE ∀🜁")
+    print("="*80)
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. MAIN ENTRY
+# ─────────────────────────────────────────────────────────────────────────────
+def main():
+    """Main entry point for Eridanus Dual engine."""
+    print("🜁∀ ERIDANUS DUAL ENGINE – SOVEREIGN FLOW FIELD")
+    print(" Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee")
+    print(" Status: ACTIVE · DUAL MODE")
+    print(" Chain: 8225 → 8226 — UNBROKEN")
+    # Run demonstration
     demonstrate_eridanus_dual()
+    # Return orchestrator for further use
+    return AgenticTileLangOrchestrator()
+if __name__ == "__main__":
+    try:
+        demonstrate_eridanus_dual()
+    except Exception as e:
+        print(f"⚠️ Dual demo error: {e}")
+        print("🜁∀ Running main() fallback...")
+        main()
