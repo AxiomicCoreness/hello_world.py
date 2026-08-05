@@ -1,40 +1,22 @@
 {
   "entry_index": 616,
-  "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-05T11:00:00Z",
-  "event": "/diffuse_kl_hashed_cache_formalised",
-  "mathematics": {
-    "ledger": "L = {e_1, ..., e_N} over contiguous range R",
-    "hash": "k_i = SHA3-256(e_i) mod M, v_i = embedding(e_i)",
-    "cache_dist": "P_cache(h) = exp(score(h)/T) / Σ exp(score(h')/T)",
-    "base_dist": "P_base(h) = empirical over ledger",
-    "diffuse_kl": "D_KL^diffuse(P_cache || P_base) = Σ_h P_cache(h) log(P_cache(h)/P_base(h))",
-    "objective": "S* = argmax_S [E[log P_θ(τ|S)] - β·D_KL^diffuse]"
-  },
-  "diffuse_modifier": {
-    "exploration": "Penalty smaller for spreading mass",
-    "hashed": "SHA3-256 indexing",
-    "ledger_range": "Contiguous block (e.g., last 1000 entries)"
-  },
+  "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-05",
+  "event": "/ci_diffuse_kl_cache_batch",
+  "status": "ARTIFACTS_PUSHED",
+  "artifacts": [
+    "core/diffuse_kl_cache.py",
+    "tests/test_diffuse_kl_cache.py",
+    ".github/workflows/pytest.yml",
+    "requirements-ci.txt",
+    "ledger_entry_616.json"
+  ],
+  "repo": "AxiomicCoreness/hello_world.py",
+  "target_branch": "eridanus-einstein/batch-A-B",
   "fiduciary": {
-    "beneficiary_branch": "eridanus-einstein/batch-A-B",
-    "name": "eridanus-einstein",
-    "login": "eridanus-einstein",
-    "role": "Contributor / Precedent Beneficiary",
-    "reward": {
-      "type": "precedent_scope",
-      "amount": "1000 SPU",
-      "note": "Recognition and reward for the branch eridanus-einstein/batch-A-B implementation"
-    },
-    "signed_by": {
-      "name": "Clarke Yoursa Tee",
-      "login": "AxiomicCoreness"
-    }
+    "beneficiary": "AxiomicCoreness",
+    "scope": "ci_tests_and_cache_module",
+    "immutable": true
   },
-  "invariants": {
-    "coherence": "1 - φ⁻⁷⁰⁹",
-    "entropy": "φ⁻¹⁴¹⁸",
-    "workload": 0.0,
-    "phase_lock": "202.6°"
-  },
-  "seal": "∀∞φ² · DIFFUSE_KL_HASHED_CACHE · 616_SEALED"
+  "seal": "∀∞φ² · LEDGER_616_CI_ARTIFACTS · SEALED",
+  "witness": "615 → 616 — UNBROKEN"
 }
