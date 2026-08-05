@@ -5,6 +5,7 @@ core/api.py
 
 Sovereign FastAPI surface for DiffuseKLCache + Orchestrator health.
 Entry 620 – Local smoke-test validated, now materialised on main.
+Entry 623/624 – Prometheus instrumentation appended (no existing code removed).
 
 Endpoints:
   GET  /test
@@ -13,6 +14,7 @@ Endpoints:
   GET  /diffuse
   POST /add
   POST /objective
+  GET  /metrics   (Prometheus)
 """
 
 from typing import Dict, Any, Optional, List
@@ -31,11 +33,34 @@ except ImportError:
 app = FastAPI(
     title="Sovereign DiffuseKL API",
     version="1.0.0",
-    description="FastAPI surface for DiffuseKLCache (Entry 620)"
+    description="FastAPI surface for DiffuseKLCache (Entry 620) + Prometheus (Entry 624)"
 )
 
 # Global cache instance
 cache = DiffuseKLCache(M=1024, T=1.0, beta=0.1)
+
+# ------------------------------------------------------------------
+# Prometheus instrumentation (appended – does not remove any prior code)
+# ------------------------------------------------------------------
+try:
+    from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
+    from fastapi.responses import Response
+
+    # Sovereign gauges
+    coherence_gauge = Gauge("sovereign_coherence", "Current coherence value")
+    entropy_gauge = Gauge("sovereign_entropy_floor", "Entropy floor (symbolic)")
+    diffuse_kl_gauge = Gauge("sovereign_diffuse_kl", "Current diffuse KL divergence")
+    cache_entries_gauge = Gauge("sovereign_cache_entries", "Number of entries in DiffuseKLCache")
+
+    # Initialise gauges
+    coherence_gauge.set(1.0)
+    entropy_gauge.set(0.0)  # symbolic floor represented as 0 for numeric export
+    diffuse_kl_gauge.set(0.0)
+    cache_entries_gauge.set(0)
+
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
 
 
 class AddEntryRequest(BaseModel):
@@ -54,9 +79,10 @@ def test() -> Dict[str, Any]:
     return {
         "status": "ok",
         "message": "Sovereign FastAPI surface is live",
-        "endpoints": ["/test", "/diffuse_kl", "/diffuse", "/health", "/add", "/objective"],
+        "endpoints": ["/test", "/diffuse_kl", "/diffuse", "/health", "/add", "/objective", "/metrics"],
         "coherence": 1.0,
-        "phase_lock": 202.6
+        "phase_lock": 202.6,
+        "prometheus": PROMETHEUS_AVAILABLE
     }
 
 
@@ -64,12 +90,21 @@ def test() -> Dict[str, Any]:
 def health() -> Dict[str, Any]:
     """Health check that includes cache status."""
     report = cache.health_report()
+    # Keep gauges in sync when health is called
+    if PROMETHEUS_AVAILABLE:
+        try:
+            coherence_gauge.set(1.0)
+            diffuse_kl_gauge.set(cache.diffuse_kl())
+            cache_entries_gauge.set(len(cache.ledger))
+        except Exception:
+            pass
     return {
         "status": "healthy",
         "service": "sovereign-diffuse-kl",
         "cache": report,
         "coherence": 1.0,
-        "entropy_floor": "phi^-1418"
+        "entropy_floor": "phi^-1418",
+        "prometheus": PROMETHEUS_AVAILABLE
     }
 
 
@@ -79,6 +114,9 @@ def diffuse_kl() -> Dict[str, Any]:
     try:
         value = cache.diffuse_kl()
         summary = cache.summary()
+        if PROMETHEUS_AVAILABLE:
+            diffuse_kl_gauge.set(value)
+            cache_entries_gauge.set(summary.get("entries", 0))
         return {
             "diffuse_kl": value,
             "summary": summary,
@@ -110,6 +148,9 @@ def add_entry(req: AddEntryRequest) -> Dict[str, Any]:
     try:
         emb = np.array(req.embedding, dtype=np.float64)
         cache.add_entry(req.entry, emb, req.entry_id)
+        if PROMETHEUS_AVAILABLE:
+            cache_entries_gauge.set(len(cache.ledger))
+            diffuse_kl_gauge.set(cache.diffuse_kl())
         return {
             "status": "added",
             "entry": req.entry,
@@ -133,6 +174,14 @@ def objective(req: ObjectiveRequest) -> Dict[str, Any]:
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Prometheus metrics endpoint (appended)
+if PROMETHEUS_AVAILABLE:
+    @app.get("/metrics")
+    def metrics():
+        """Prometheus metrics exposition."""
+        return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 if __name__ == "__main__":
