@@ -1,0 +1,19 @@
+# k8s/servicemonitor.yaml – Prometheus ServiceMonitor (Entry 624)
+# Requires Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fastapi-sovereign
+  labels:
+    app: fastapi-sovereign
+    entry: "624"
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: fastapi-sovereign
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
