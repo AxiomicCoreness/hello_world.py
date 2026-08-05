@@ -1,0 +1,13 @@
+# k8s/pdb.yaml – Gold Standard PodDisruptionBudget (Entry 623)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fastapi-sovereign
+  labels:
+    app: fastapi-sovereign
+    entry: "623"
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: fastapi-sovereign
