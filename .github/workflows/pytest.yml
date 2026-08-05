@@ -25,6 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-          pip install pytest numpy
+          pip install pytest numpy fastapi uvicorn pydantic prometheus_client
       - name: Run pytest
         run: pytest -q
+      # Appended check – does not replace existing pytest step
+      - name: Import check (api + prometheus)
+        run: |
+          python -c "from core.api import app; print('core.api import OK, routes:', len(app.routes))"
