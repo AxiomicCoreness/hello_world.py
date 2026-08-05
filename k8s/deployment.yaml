@@ -1,0 +1,50 @@
+# k8s/deployment.yaml – Sovereign FastAPI surface
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-sovereign-620
+  labels:
+    app: fastapi-sovereign
+    entry: "620"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fastapi-sovereign
+  template:
+    metadata:
+      labels:
+        app: fastapi-sovereign
+        entry: "620"
+    spec:
+      containers:
+        - name: sovereign-api
+          image: fastapi-sovereign:620
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: SOVEREIGN_MODE
+              value: "production"
+            - name: PORT
+              value: "8000"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
