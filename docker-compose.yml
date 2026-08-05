@@ -1,0 +1,24 @@
+# docker-compose.yml – Sovereign FastAPI surface
+# Usage: docker compose up --build
+version: "3.8"
+
+services:
+  sovereign-api:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: sovereign-core
+    ports:
+      - "8000:8000"
+    environment:
+      - SOVEREIGN_MODE=${SOVEREIGN_MODE:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./data:/app/data
