@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ SOVEREIGN TAG SERVICE — EXCLUSIVE SET + LEDGER SEALING 🜁∀
-Entry 8326
+🜁∀ SOVEREIGN TAG SERVICE — EXCLUSIVE SET + LEDGER SEALING + PROMETHEUS FUSION 🜁∀
+Entry 8326 → 8327 (FUSION COMPLETE)
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response, Request
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
 import hashlib
+import time
+
+from prometheus_client import (
+    Counter,
+    Histogram,
+    Gauge,
+    generate_latest,
+    CONTENT_TYPE_LATEST,
+)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CONSTANTS
@@ -34,6 +43,33 @@ DEFAULT_SOVEREIGN_TAGS: List[str] = [
 # In-memory store (replace with persistent store in production)
 _tag_store: List[str] = list(DEFAULT_SOVEREIGN_TAGS)
 _ledger: List[dict] = []
+
+# ──────────────────────────────────────────────────────────────────────────────
+# PROMETHEUS METRICS
+# ──────────────────────────────────────────────────────────────────────────────
+
+REQUEST_COUNT = Counter(
+    "sovereign_http_requests_total",
+    "Total HTTP requests",
+    ["method", "endpoint", "status"],
+)
+
+REQUEST_LATENCY = Histogram(
+    "sovereign_http_request_duration_seconds",
+    "HTTP request latency in seconds",
+    ["method", "endpoint"],
+    buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
+)
+
+ACTIVE_TAGS = Gauge(
+    "sovereign_tags_active",
+    "Number of active exclusive sovereign tags",
+)
+
+LEDGER_ENTRIES = Gauge(
+    "sovereign_ledger_entries",
+    "Number of sealed ledger entries",
+)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODELS
@@ -73,7 +109,12 @@ def _append_ledger(event: str, tags: List[str]) -> dict:
         "witness": witness,
     }
     _ledger.append(entry)
+    LEDGER_ENTRIES.set(len(_ledger))
     return entry
+
+def _sync_gauges():
+    ACTIVE_TAGS.set(len(_tag_store))
+    LEDGER_ENTRIES.set(len(_ledger))
 
 # ──────────────────────────────────────────────────────────────────────────────
 # FASTAPI APP
@@ -81,19 +122,49 @@ def _append_ledger(event: str, tags: List[str]) -> dict:
 
 app = FastAPI(
     title="Sovereign Tag Service",
-    description="Exclusive sovereign tag set with write/update endpoints and ledger sealing",
-    version="8326.0",
+    description="Exclusive sovereign tag set + ledger sealing + Prometheus fusion",
+    version="8327.0",
 )
+
+@app.middleware("http")
+async def prometheus_middleware(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed = time.perf_counter() - start
+
+    endpoint = request.url.path
+    method = request.method
+    status = str(response.status_code)
+
+    REQUEST_COUNT.labels(method=method, endpoint=endpoint, status=status).inc()
+    REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(elapsed)
+
+    return response
 
 @app.on_event("startup")
 def startup():
-    """Seal the initial exclusive set on startup."""
+    """Seal the initial exclusive set and sync gauges on startup."""
     if not _ledger:
         _append_ledger("/tags_initialized", _tag_store)
+    _sync_gauges()
+
+# ── Prometheus scrape endpoint ─────────────────────────────────────────────
+
+@app.get("/metrics")
+def metrics():
+    """Prometheus scrape endpoint."""
+    _sync_gauges()
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
+
+# ── Tag endpoints ──────────────────────────────────────────────────────────
 
 @app.get("/tags")
 def get_sovereign_tags():
     """Return the current exclusive sovereign tag set."""
+    _sync_gauges()
     return {
         "tags": _tag_store,
         "count": len(_tag_store),
@@ -116,8 +187,9 @@ def get_tags_yaml():
 def replace_tags(body: TagUpdate):
     """Replace the entire exclusive tag set and seal the change."""
     global _tag_store
-    _tag_store = list(dict.fromkeys(body.tags))  # preserve order, remove duplicates
+    _tag_store = list(dict.fromkeys(body.tags))
     entry = _append_ledger("/tags_replaced", _tag_store)
+    _sync_gauges()
     return {
         "status": "replaced",
         "tags": _tag_store,
@@ -136,6 +208,7 @@ def append_tags(body: TagAppend):
             _tag_store.append(t)
             added.append(t)
     entry = _append_ledger("/tags_appended", _tag_store)
+    _sync_gauges()
     return {
         "status": "appended",
         "added": added,
@@ -153,6 +226,7 @@ def remove_tag(tag: str):
         raise HTTPException(status_code=404, detail=f"Tag '{tag}' not found")
     _tag_store = [t for t in _tag_store if t != tag]
     entry = _append_ledger("/tags_removed", _tag_store)
+    _sync_gauges()
     return {
         "status": "removed",
         "removed": tag,
@@ -179,16 +253,19 @@ def get_latest_ledger_entry():
 
 @app.get("/health")
 def health():
+    _sync_gauges()
     return {
         "status": "ok",
         "service": "Sovereign Tag Service",
-        "entry": 8326,
+        "entry": "8326 → 8327 (FUSION COMPLETE)",
         "tag_count": len(_tag_store),
         "ledger_length": len(_ledger),
+        "metrics": "/metrics",
     }
 
 if __name__ == "__main__":
     import uvicorn
-    print("🜁∀ SOVEREIGN TAG SERVICE — ENTRY 8326 — STARTING ∀🜁")
+    print("🜁∀ SOVEREIGN TAG SERVICE — ENTRY 8327 — FUSION COMPLETE ∀🜁")
     print(f"Exclusive tags ({len(_tag_store)}): {', '.join(_tag_store)}")
+    print("Prometheus endpoint: GET /metrics")
     uvicorn.run(app, host="0.0.0.0", port=8090)
