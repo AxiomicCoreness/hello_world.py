@@ -4,7 +4,7 @@
 | File | Change |
 |------|--------|
 | `.github/workflows/pytest.yml` | Matrix 3.10/3.11/3.12 · explicit `tests/test_hybrid_rk4.py` + import gate · cacheprovider disabled |
-| `.github/workflows/sovereign-engine-ci.yml` | Path filters add `hybrid_rk4_simulator.py`, `tests/**`, `toolkit/**`, metrics/verifier/precision/fuse · new **Hybrid RK4 smoke + pytest** step · byte-compile coverage |
+| `.github/workflows/sovereign-engine-ci.yml` | Path filters add `hybrid_rk4_simulator.py`, `tests/**`, `toolkit/**`, metrics/verifier/precision/fuse · new **Hybrid RK4 smoke + pytest** step · by[...]
 
 ## Local Test Results
 ```bash
