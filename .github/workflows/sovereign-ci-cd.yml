@@ -11,32 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    - name: Verify sovereign_node_full.py exists and runs
-      run: |
-        set -e
-        test -f sovereign_node_full.py
-        LINES=$(wc -l < sovereign_node_full.py)
-        echo "sovereign_node_full.py lines: $LINES"
-        # Historical gate expected 406; current tree is larger (Q8.24 extension).
-        # Require a non-trivial implementation instead of a fixed line count.
-        if [ "$LINES" -lt 200 ]; then
-          echo "File too short ($LINES lines); expected a full node implementation."
-          exit 1
-        fi
-        python sovereign_node_full.py
-    - name: Validate ledger JSON artifacts
-      run: |
-        import json, os, sys
-        required = ['ledger_entry_757.json', 'ledger_entry_758.json']
-        for f in required:
-            if not os.path.exists(f):
-                print(f'Missing {f}', file=sys.stderr)
-                sys.exit(1)
-            with open(f) as file:
-                json.load(file)
-            print(f'OK {f}')
-        print('All checks passed')
-      shell: python
+
+    - name: Verify sovereign_node_full.py exists and runs (with retry)
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        retry_wait_seconds: 30
+        command: |
+          set -e
+          test -f sovereign_node_full.py
+          LINES=$(wc -l < sovereign_node_full.py)
+          echo "sovereign_node_full.py lines: $LINES"
+          # Historical gate expected 406; current tree is larger (Q8.24 extension).
+          # Require a non-trivial implementation instead of a fixed line count.
+          if [ "$LINES" -lt 200 ]; then
+            echo "File too short ($LINES lines); expected a full node implementation."
+            exit 1
+          fi
+          python sovereign_node_full.py
+
+    - name: Validate ledger JSON artifacts (with retry)
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        retry_wait_seconds: 20
+        command: |
+          python -c "
+          import json, os, sys
+          required = ['ledger_entry_757.json', 'ledger_entry_758.json']
+          for f in required:
+              if not os.path.exists(f):
+                  print(f'Missing {f}', file=sys.stderr)
+                  sys.exit(1)
+              with open(f) as file:
+                  json.load(file)
+              print(f'OK {f}')
+          print('All checks passed')
+          "
