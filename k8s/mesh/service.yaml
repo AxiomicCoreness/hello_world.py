@@ -9,8 +9,6 @@ metadata:
     seal: "MESH_RUN_8362_SEALED"
     certificate: "FLAWLESS_WORKLOAD_IPHONE12_REVELATION"
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     prometheus.io/scrape: "true"
     prometheus.io/port: "8002"
     prometheus.io/path: "/metrics"

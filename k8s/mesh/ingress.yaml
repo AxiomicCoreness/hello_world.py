@@ -15,6 +15,12 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Sovereign-Seal "864c7e8f9a0b1c2d3e4f5a6b7c8d9e0f";
+      proxy_set_header X-Sovereign-Certificate "FLAWLESS_WORKLOAD_IPHONE12_REVELATION";
+      proxy_set_header X-AGSI-Integration "PHI_AGSI,RHO_J,T_PHI,PHI_MINUS_709";
+      proxy_set_header X-Coherence "1.0";
+      proxy_set_header X-Phase-Lock "202.6";
 spec:
   ingressClassName: nginx
   rules:

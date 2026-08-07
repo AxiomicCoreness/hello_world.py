@@ -7,8 +7,6 @@ metadata:
     component: mesh
     entry: "8362"
     seal: "MESH_CONFIG_8362_SEALED"
-  annotations:
-    description: "Mesh routing configuration for phi-harmonic gauge endpoints"
 data:
   mesh_run_enabled: "true"
   mesh_run_port: "8002"
