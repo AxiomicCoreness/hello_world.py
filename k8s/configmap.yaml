@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agsi-config
+data:
+  phi: "1.6180339887"
+  rho_j: "1330.0"
+  t_phi: "0.5983"
+  phi_minus_709: "6.7e-149"

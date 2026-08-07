@@ -1,76 +1,52 @@
-# k8s/deployment.yaml – Gold Standard Sovereign FastAPI (Entry 623)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fastapi-sovereign
+  name: sovereign-engine
   labels:
-    app: fastapi-sovereign
-    version: "v620"
-    entry: "623"
+    app: sovereign
+    phi: "1.6180339887"
+    phase: "202.6"
+    certificate: "FLAWLESS_WORKLOAD_IPHONE12_REVELATION"
 spec:
-  replicas: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  replicas: 1
   selector:
     matchLabels:
-      app: fastapi-sovereign
+      app: sovereign
   template:
     metadata:
       labels:
-        app: fastapi-sovereign
-        version: "v620"
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
-        prometheus.io/path: "/metrics"
+        app: sovereign
     spec:
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
       containers:
-        - name: fastapi
-          image: fastapi-sovereign:620
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8000
-              name: http
-          env:
-            - name: SOVEREIGN_MODE
-              value: "production"
-            - name: LOG_LEVEL
-              value: "info"
-            - name: PORT
-              value: "8000"
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-            successThreshold: 1
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 15
-            periodSeconds: 20
-            timeoutSeconds: 3
-            failureThreshold: 5
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
+      - name: engine
+        image: axiomiccoreness/sovereign-engine:1.0.0
+        ports:
+        - containerPort: 8001
+        env:
+        - name: PHI
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: phi
+        - name: RHO_J
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: rho_j
+        - name: T_PHI
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: t_phi
+        - name: TOTAL_SEAL
+          valueFrom:
+            secretKeyRef:
+              name: sovereign-seal
+              key: total_seal
+        volumeMounts:
+        - name: ledger
+          mountPath: /data
+      volumes:
+      - name: ledger
+        persistentVolumeClaim:
+          claimName: ledger-pvc

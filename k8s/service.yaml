@@ -1,16 +1,11 @@
-# k8s/service.yaml – Sovereign FastAPI surface
 apiVersion: v1
 kind: Service
 metadata:
-  name: fastapi-sovereign-service
-  labels:
-    app: fastapi-sovereign
+  name: sovereign-engine-svc
 spec:
-  type: LoadBalancer
   selector:
-    app: fastapi-sovereign
+    app: sovereign
   ports:
-    - name: http
-      port: 80
-      targetPort: 8000
-      protocol: TCP
+    - port: 8001
+      targetPort: 8001
+  type: ClusterIP
