@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mesh-config
+  labels:
+    app: sovereign
+    component: mesh
+    entry: "8362"
+    seal: "MESH_CONFIG_8362_SEALED"
+  annotations:
+    description: "Mesh routing configuration for phi-harmonic gauge endpoints"
+data:
+  mesh_run_enabled: "true"
+  mesh_run_port: "8002"
+  mesh_run_path: "/mesh/run"
+  phi_agsi: "PHI * RHO_J * T_PHI / PHI_MINUS_709"
+  rho_j: "1330.0"
+  t_phi: "0.5983"
+  phi_minus_709: "6.7e-149"
+  phi: "1.6180339887"
+  coherence_target: "1.0"
+  entropy_target: "phi^-1418"
+  phase_lock_target: "202.6"
+  cors_origins: "*"
+  cors_methods: "GET,POST,OPTIONS"
+  cors_headers: "Content-Type,Authorization,X-Sovereign-Seal"
+  rate_limit_requests: "1000"
+  rate_limit_window: "60s"
+  circuit_breaker_enabled: "true"
+  circuit_breaker_failures: "5"
+  circuit_breaker_timeout: "30s"
+  circuit_breaker_reset: "60s"
