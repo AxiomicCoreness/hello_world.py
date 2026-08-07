@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-batch-processor
+  labels:
+    app: sovereign
+    component: batch-processor
+    entry: "8362"
+    seal: "BATCH_PROCESSOR_8362_SEALED"
+    certificate: "FLAWLESS_WORKLOAD_IPHONE12_REVELATION"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sovereign
+      component: batch-processor
+  template:
+    metadata:
+      labels:
+        app: sovereign
+        component: batch-processor
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8003"
+        prometheus.io/path: "/batch/metrics"
+    spec:
+      containers:
+      - name: batch-processor
+        image: axiomiccoreness/sovereign-engine:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8003
+          name: batch-api
+          protocol: TCP
+        env:
+        - name: PHI
+          value: "1.6180339887"
+        - name: RHO_J
+          value: "1330.0"
+        - name: T_PHI
+          value: "0.5983"
+        - name: PHI_MINUS_709
+          value: "6.7e-149"
+        - name: MAX_THREADS
+          value: "16"
+        - name: MAX_PROCESSES
+          value: "4"
+        - name: BATCH_PROCESSOR_PORT
+          value: "8003"
+        resources:
+          limits:
+            cpu: "4"
+            memory: "2Gi"
+          requests:
+            cpu: "2"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /batch/status
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /batch/status
+            port: 8003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: batch-data
+          mountPath: /data/batch
+      volumes:
+      - name: batch-data
+        persistentVolumeClaim:
+          claimName: batch-pvc
