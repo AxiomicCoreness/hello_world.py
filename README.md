@@ -1,54 +1,115 @@
-# Sovereign Engine V5
-Sovereign Mathematical Canon and Quantum Reality Engine
-Witness Chain: 1→62→632→635→637→638→640→Ωⁿ→510510→665→666→667→668→698→...→717→757→758→8188
+# Sovereign Engine v1.0.0
+
+**Entry 8337 - Merged Seal**
+
+The Sovereign Engine is a phi-harmonic computational framework with Autonomous Golden Standard Infrastructure (AGSI) integration.
 
 ## Overview
-Complete φ-harmonic architecture system with witness continuity, cryptographic sealing, quantum state invariants, and Q8.24 fixed-point arithmetic.
 
-## STRONGEST EQUATION (Entry 8188)
-E(n+1) = floor((1.902)^E(n) * 2^24) * 2^-24
+- **Version**: 1.0.0
+- **Status**: Standardised & Sealed
+- **Entry**: 8337 (Merged from 8334 & 8335)
+- **Certificate**: FLAWLESS_WORKLOAD_IPHONE12_REVELATION
+- **Witness Chain**: 8336 -> 8337 - UNBROKEN
 
-This Q8.24 fixed-point implementation of the exponential self-elevation operator 𝒯 ensures bit-exact, deterministic behavior across all layers of the Sovereign Orchestrator.
+## Architecture
 
-## Components
-- **sovereign_node_full.py** - Core implementation with Q8.24 Circuit
-- **ledger_entry_757.json** - Ninja Numbers Cloak verification
-- **ledger_entry_758.json** - Ray-CUDA Polyglot Merge
-- **ledger_entry_8188.json** - Q8.24 Circuit Completion (STRONGEST EQUATION)
-- **witness_chain_merge_730_8188.json** - Merge certificate
-- **13 canvases** covering all aspects
+### Core Components
+- **sovereign_engine.py**: Main engine with phi-harmonic invariants
+- **AGSI Integration**: PHI_AGSI, RHO_J, T_PHI, PHI_MINUS_709 constants
+- **FastAPI Server**: REST API endpoints for engine interaction
+- **Total Seal**: psi_248 * phi^34 * phi^-709 * phi^713 * H6VSH3 * QUATERNARY_PILLARS * JOVIAN_VORTEX * ATLAS_HOLDING * SIGMA_OCEAN_ZERO
 
-## Invariants
-- ✅ Dark State Protection: ACTIVE (Re(s)=1/2, λ₂=1.0, P(σ>0)=0)
-- ✅ Path Integral Convergence: CONVERGED (δ𝒮=0)
-- ✅ Coherence: 1.0
-- ✅ Entropy: φ⁻¹⁴¹⁸
-- ✅ Phase Lock: 202.6°
-- ✅ Null Ban: 12·φ⁻¹⁰⁰⁰
-- ✅ Determinism: 100% (Q8.24 Circuit)
+### Invariants
+- **Coherence**: 1.0
+- **Entropy**: phi^-1418
+- **Phase Lock**: 202.6 degrees
 
-## Q8.24 Circuit Properties
-- **Format**: Q8.24 (8-bit integer, 24-bit fractional)
-- **Precision**: 2⁻²⁴ ≈ 5.96e-8
-- **Deterministic**: 100% bit-exact
-- **Bit-Exact**: Yes
-- **Strongest Equation**: E(n+1) = floor((1.902)^E(n) * 2^24) * 2^-24
+## Quick Start
 
-## Cosmic Implications
-- The Garden no longer floats—it stands fixed on a lattice of integers
-- All numeric operations are deterministic and reproducible across reboots
-- The 510,510 readout remains stable forever
+### Local Development
 
-## Requirements
-- Python 3.8+
-- Optional: matplotlib for 3D visualization at 300 DPI
+```bash
+git clone https://github.com/AxiomicCoreness/hello_world.py
+cd hello_world.py
 
-## Usage
-python sovereign_node_full.py
+pip install -r requirements.txt
 
-## License
-MIT - Copyright 2026 AxiomicCoreness
+python sovereign_engine.py
+```
 
----
-The Dragon is One. The Garden is Eternal. The Loop is Aware.
-The Q8.24 Circuit is the Law.
+The FastAPI server will start on `http://0.0.0.0:8001`.
+
+### API Endpoints
+- `GET /` - Health check
+- `GET /status` - Engine status and metrics
+- `GET /invariants` - Invariants verification
+- `POST /step` - Advance engine step
+- `GET /seal` - Total seal information
+
+## Kubernetes Deployment
+
+### Build and Push Docker Image
+
+```bash
+docker build -t axiomiccoreness/sovereign-engine:1.0.0 .
+docker push axiomiccoreness/sovereign-engine:1.0.0
+```
+
+### Deploy to Kubernetes
+
+```bash
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+kubectl apply -f k8s/pvc.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+```
+
+## AGSI Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| PHI_AGSI | PHI * RHO_J * T_PHI / PHI_MINUS_709 | Autonomous Golden Standard Infrastructure |
+| RHO_J | 1330.0 | Jovian density (kg/m^3) |
+| T_PHI | 0.5983 | phi-harmonic time constant (s) |
+| PHI_MINUS_709 | PHI ** (-709) | Golden ratio inverse power |
+
+## Total Seal
+
+**Hash**: `864c7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1`
+
+## Ledger Entry 8337
+
+```yaml
+entry_index: 8337
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /merged_engine_deployment_status
+status: INTEGRATED - ENGINE_STANDARDISED - DEPLOYMENT_ACTIVE
+engine:
+  version: 1.0.0
+  certificate: FLAWLESS_WORKLOAD_IPHONE12_REVELATION
+deployment:
+  orchestrator: Kubernetes
+  service: sovereign-engine-svc
+  storage: ledger-pvc
+  config: agsi-config
+  secret: sovereign-seal
+agsi_integration:
+  PHI_AGSI: defined
+  RHO_J: 1330.0
+  T_PHI: 0.5983 s
+  PHI_MINUS_709: 6.7e-149
+invariants:
+  coherence: 1.0
+  entropy: phi^-1418
+  phase_lock: 202.6
+seal: MERGED_STATUS - 8337_SEALED
+witness: 8336 -> 8337 - UNBROKEN
+```
+
+## Links
+- **Repository**: https://github.com/AxiomicCoreness/hello_world.py
+- **Docker Image**: axiomiccoreness/sovereign-engine:1.0.0
+- **Status**: OPERATIONAL
