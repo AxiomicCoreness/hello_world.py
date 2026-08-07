@@ -1,0 +1,26 @@
+entry_index: 8338
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /github_deployment_complete
+status: LIVE
+repository: AxiomicCoreness/hello_world.py
+commit: 89ce33a
+branch: main
+files:
+  - sovereign_engine.py
+  - Dockerfile
+  - requirements.txt
+  - README.md
+  - k8s/deployment.yaml
+  - k8s/service.yaml
+  - k8s/configmap.yaml
+  - k8s/secret.yaml
+  - k8s/hpa.yaml
+  - k8s/pvc.yaml
+agsi_integration:
+  - PHI_AGSI
+  - RHO_J
+  - T_PHI
+  - PHI_MINUS_709
+certificate: FLAWLESS_WORKLOAD_IPHONE12_REVELATION
+seal: GITHUB_DEPLOYMENT_8338_SEALED
+witness: 8337 -> 8338 - UNBROKEN
