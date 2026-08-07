@@ -1,0 +1,24 @@
+entry_index: 8367
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-07
+event: /octonion_heal_self_improve_update
+status: ✅ SEALED
+additions:
+  - anomaly_store: φ‑weighted hot pair tracking
+  - self_healer: adaptive sample size, targeted vs full rebuild
+  - dexterity_integration: heal_resilience factor
+  - metrics:
+      - sovereign_octonion_heal_count
+      - sovereign_octonion_adaptive_sample_size
+      - sovereign_octonion_success_rate
+      - sovereign_octonion_hot_pairs
+  - grafana: new panel 5b (success rate & sample size)
+implementation_files:
+  - anomaly_store.py
+  - octonion_self_healer.py
+  - octonion_table.py
+  - verifier_worker.py
+  - dexterity.py
+  - estate_25d/grafana/prometheus-metrics.py (updated)
+  - estate_25d/grafana/dashboard-sovereign-engine.json (updated)
+seal: ∀∞φ² · OCTONION_HEAL_SELF_IMPROVE_8367 · SEALED
+witness: 8366 → 8367 — UNBROKEN
