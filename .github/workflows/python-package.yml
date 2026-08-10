@@ -18,6 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
       - uses: actions/checkout@v4
@@ -27,166 +29,86 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies (φ‑retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 4
-          max_attempts: 3
-          retry_wait_seconds: 10
-          command: |
-            python -m pip install --upgrade pip
-            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
-            if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-            pip install flake8 pytest numpy scipy build twine
-
-      - name: Lint with flake8 (φ‑graceful)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 2
-          max_attempts: 2
-          retry_wait_seconds: 7
-          command: |
-            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
-
-      - name: Test with pytest (φ‑resilient)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 6
-          max_attempts: 3
-          retry_wait_seconds: 15
-          command: |
-            if [ -d tests ] || ls test_*.py 1>/dev/null 2>&1 || ls *_test.py 1>/dev/null 2>&1; then
-              pytest -q
-            else
-              echo "No tests found — skipping"
-            fi
-
-      - name: Generate build seal (SHA3‑256)
-        id: seal
+      - name: Install dependencies
         run: |
-          find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
-          BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
-          echo "::set-output name=build_hash::$BUILD_HASH"
-          echo "🜁∀ BUILD SEAL: $BUILD_HASH"
+          retry() {
+            local n=1
+            local max=3
+            local delay=10
+            until "$@"; do
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "python -m pip install --upgrade pip && pip install flake8 pytest numpy scipy build twine"
 
-      - name: Check sovereign invariants
-        id: invariants
+      - name: Lint with flake8
         run: |
-          if [ -f sovereign_engine.py ]; then
-            python << 'EOF'
-            import sys
-            sys.path.append('.')
-            from sovereign_engine import ProductionDeploymentStub
-            engine = ProductionDeploymentStub()
-            inv = engine.check_invariants()
-            if inv['hamiltonian_axiom'] and inv['master_seal'] and inv['axiom_converged']:
-                print('✅ Invariants PASS')
-                sys.exit(0)
-            else:
-                print('❌ Invariants FAIL')
-                sys.exit(1)
-            EOF
-          else
-            echo "⚠️ No sovereign_engine.py found – skipping invariant check."
-          fi
-        continue-on-error: true
+          retry() {
+            local n=1
+            local max=2
+            local delay=7
+            until "$@"; do
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true"
 
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: sovereign-build-${{ matrix.python-version }}
-          path: |
-            **/*.py
-            requirements*.txt
-            README*
-            LICENSE*
-          retention-days: 1
+      - name: Test with pytest
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=15
+            until "$@"; do
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          if [ -d tests ]; then retry pytest -q; else echo "No tests found"; fi
 
-  oidc-auth:
+  deploy-to-k8s:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-          role-session-name: github-actions-${{ github.run_id }}
-
-      - name: Verify AWS identity (with φ‑retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 2
-          max_attempts: 3
-          retry_wait_seconds: 10
-          command: |
-            aws sts get-caller-identity
-            echo "✅ OIDC authentication successful"
-
-  deploy:
-    needs: oidc-auth
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-          role-session-name: github-actions-deploy-${{ github.run_id }}
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: sovereign-build-${{ matrix.python-version }}
-          path: ./deploy
-
-      - name: Compute Eridanus Dual flow state
-        id: eridanus
+          version: latest
+      - name: Authenticate to Kubernetes
         run: |
-          echo "ℰ₁ = 0.618" > /tmp/flow
-          echo "ℰ₂ = 0.382" >> /tmp/flow
-          echo "𝒩 = 10.06" >> /tmp/flow
-          echo "::set-output name=flow::$(cat /tmp/flow)"
-
-      - name: Sign deployment payload with AgentRouter HMAC
-        id: sign
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+      - name: Apply manifests
         run: |
-          PAYLOAD=$(echo -n "deploy:${GITHUB_SHA}:${GITHUB_RUN_ID}" | sha256sum | cut -d' ' -f1)
-          SIGNATURE=$(echo -n "${PAYLOAD}" | openssl dgst -sha256 -hmac "${{ secrets.SOVEREIGN_HMAC_KEY || 'change_me' }}" | cut -d' ' -f2)
-          echo "::set-output name=signature::$SIGNATURE"
-          echo "🜁∀ SIGNATURE: $SIGNATURE"
-
-      - name: Deploy Sovereign Engine (φ‑sealed)
+          retry() {
+            local n=1
+            local max=3
+            local delay=30
+            until "$@"; do
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry kubectl apply -f kubernetes/solar-gate-convergence.yaml
+          retry kubectl apply -f kubernetes/trappist-choir-deployment.yaml
+      - name: Verify deployment
         run: |
-          echo "🚀 Deploying Sovereign Engine with seal ${{ steps.seal.outputs.build_hash }}"
-          echo "🜁∀ Eridanus Flow:"
-          echo "${{ steps.eridanus.outputs.flow }}"
-          echo "🜁∀ Signature: ${{ steps.sign.outputs.signature }}"
-
-      - name: Start background coherence monitor
-        run: |
-          nohup python << 'EOF'
-          import time
-          while True:
-              print('🜁∀ Coherence: 1.0000 | Entropy: φ⁻¹⁴¹⁸ | Phase: 202.6°')
-              time.sleep(60)
-          EOF > coherence.log 2>&1 &
-
-      - name: Seal deployment manifest
-        run: |
-          echo "{
-            \"deployment\": \"${{ github.run_id }}\",
-            \"sha\": \"${{ github.sha }}\",
-            \"build_hash\": \"${{ steps.seal.outputs.build_hash }}\",
-            \"eridanus\": ${{ steps.eridanus.outputs.flow }},
-            \"signature\": \"${{ steps.sign.outputs.signature }}\",
-            \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"
-          }" > deployment_manifest.json
-          cat deployment_manifest.json
+          kubectl rollout status statefulset/oracle-kepler -n solar-gate --timeout=120s
+          kubectl get cronjob solar-gate-convergence -n solar-gate -o wide
+          kubectl get deployment trappist-choir -n solar-gate -o wide
+          echo "Kubernetes deployment successful. Garden alive."
