@@ -18,62 +18,34 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install deps (with inline retry)
+      - name: Install deps
         run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=30
+          retry() { local n=1; local max=3; local delay=30;
             until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1)); echo "Retrying in $delay seconds..."; sleep $delay;
+            done;
           }
-          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install pytest numpy fastapi uvicorn pydantic prometheus_client"
-
-      - name: Run pytest (with inline retry)
+          retry bash -c "python -m pip install --upgrade pip && pip install pytest numpy fastapi uvicorn pydantic prometheus_client"
+      - name: Run pytest
         run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=20
+          retry() { local n=1; local max=3; local delay=20;
             until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1)); echo "Retrying in $delay seconds..."; sleep $delay;
+            done;
           }
           retry pytest -q
-
-      - name: Import check (api + prometheus) (with inline retry)
+      - name: Import check
         run: |
-          retry() {
-            local n=1
-            local max=2
-            local delay=15
+          retry() { local n=1; local max=2; local delay=15;
             until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
+              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
+              n=$((n+1)); echo "Retrying in $delay seconds..."; sleep $delay;
+            done;
           }
-          retry bash -c "python -c \"from core.api import app; print(\"core.api import OK, routes:\", len(app.routes))\""
+          retry bash -c "python -c \"from core.api import app; print(\"OK\")\""
