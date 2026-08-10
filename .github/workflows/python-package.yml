@@ -12,13 +12,10 @@ permissions:
   contents: read
 
 jobs:
-  # ─────────────────────────────────────────────────────────────────────
-  # 1. BUILD — φ‑harmonic, with sealing and invariant checks
-  # ─────────────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false   # entropy bounded
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
 
@@ -33,9 +30,9 @@ jobs:
       - name: Install dependencies (φ‑retry)
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 4   # φ³ ≈ 4.236 → 4
-          max_attempts: 3      # φ² ≈ 2.618 → 3
-          retry_wait_seconds: 10  # φ⁻² ≈ 0.382 → 1? actually 10 is fine
+          timeout_minutes: 4
+          max_attempts: 3
+          retry_wait_seconds: 10
           command: |
             python -m pip install --upgrade pip
             if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
@@ -68,7 +65,6 @@ jobs:
       - name: Generate build seal (SHA3‑256)
         id: seal
         run: |
-          # Compute hash of the entire repository content (excluding .git)
           find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
           BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
           echo "::set-output name=build_hash::$BUILD_HASH"
@@ -77,9 +73,8 @@ jobs:
       - name: Check sovereign invariants
         id: invariants
         run: |
-          # Run a lightweight invariant check (if sovereign_engine.py is present)
           if [ -f sovereign_engine.py ]; then
-            python -c "
+            python << 'EOF'
             import sys
             sys.path.append('.')
             from sovereign_engine import ProductionDeploymentStub
@@ -91,24 +86,23 @@ jobs:
             else:
                 print('❌ Invariants FAIL')
                 sys.exit(1)
-            "
+            EOF
           else
             echo "⚠️ No sovereign_engine.py found – skipping invariant check."
           fi
-        continue-on-error: true   # not blocking, but logs warning
+        continue-on-error: true
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sovereign-build-${{ matrix.python-version }}
           path: |
-            .
-            !.git
+            **/*.py
+            requirements*.txt
+            README*
+            LICENSE*
           retention-days: 1
 
-  # ─────────────────────────────────────────────────────────────────────
-  # 2. OIDC AUTHENTICATION — same as before, but with sealing
-  # ─────────────────────────────────────────────────────────────────────
   oidc-auth:
     needs: build
     runs-on: ubuntu-latest
@@ -133,9 +127,6 @@ jobs:
             aws sts get-caller-identity
             echo "✅ OIDC authentication successful"
 
-  # ─────────────────────────────────────────────────────────────────────
-  # 3. DEPLOY — with Eridanus Dual flow and AgentRouter signing
-  # ─────────────────────────────────────────────────────────────────────
   deploy:
     needs: oidc-auth
     runs-on: ubuntu-latest
@@ -159,7 +150,6 @@ jobs:
       - name: Compute Eridanus Dual flow state
         id: eridanus
         run: |
-          # Simulate Eridanus flow values (or read from a file)
           echo "ℰ₁ = 0.618" > /tmp/flow
           echo "ℰ₂ = 0.382" >> /tmp/flow
           echo "𝒩 = 10.06" >> /tmp/flow
@@ -169,7 +159,6 @@ jobs:
         id: sign
         run: |
           PAYLOAD=$(echo -n "deploy:${GITHUB_SHA}:${GITHUB_RUN_ID}" | sha256sum | cut -d' ' -f1)
-          # Simulate HMAC with a key (in production, use a real secret)
           SIGNATURE=$(echo -n "${PAYLOAD}" | openssl dgst -sha256 -hmac "${{ secrets.SOVEREIGN_HMAC_KEY || 'change_me' }}" | cut -d' ' -f2)
           echo "::set-output name=signature::$SIGNATURE"
           echo "🜁∀ SIGNATURE: $SIGNATURE"
@@ -180,19 +169,15 @@ jobs:
           echo "🜁∀ Eridanus Flow:"
           echo "${{ steps.eridanus.outputs.flow }}"
           echo "🜁∀ Signature: ${{ steps.sign.outputs.signature }}"
-          # Actual deployment commands go here, using the signature to authenticate.
-          # Example: aws s3 sync ./deploy s3://my-bucket/ --exclude ".git/*"
 
       - name: Start background coherence monitor
         run: |
-          # Start a background process that monitors invariants and logs to a file.
-          nohup python -c "
+          nohup python << 'EOF'
           import time
           while True:
-              # Simulate monitoring
               print('🜁∀ Coherence: 1.0000 | Entropy: φ⁻¹⁴¹⁸ | Phase: 202.6°')
               time.sleep(60)
-          " > coherence.log 2>&1 &
+          EOF > coherence.log 2>&1 &
 
       - name: Seal deployment manifest
         run: |
@@ -205,5 +190,3 @@ jobs:
             \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"
           }" > deployment_manifest.json
           cat deployment_manifest.json
-          # Upload to S3 or store as artifact
-          # aws s3 cp deployment_manifest.json s3://my-bucket/manifests/
