@@ -1,16 +1,13 @@
 name: Sovereign Python Package
-
 on:
   push:
     branches: [ main, master, deepseek ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
-
 permissions:
   id-token: write
   contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,60 +17,67 @@ jobs:
         python-version: ["3.10", "3.11"]
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=10
-            until "$@"; do
-              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry bash -c "python -m pip install --upgrade pip && pip install flake8 pytest numpy scipy build twine"
-
-      - name: Lint with flake8
-        run: |
-          retry() {
-            local n=1
-            local max=2
-            local delay=7
-            until "$@"; do
-              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true"
-
-      - name: Test with pytest
-        run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=15
-            until "$@"; do
-              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          if [ -d tests ]; then retry pytest -q; else echo "No tests found"; fi
-
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        retry() {
+          local n=1
+          local max=3
+          local delay=10
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        retry bash -c "python -m pip install --upgrade pip && pip install flake8 pytest numpy scipy build twine"
+    - name: Lint with flake8
+      run: |
+        retry() {
+          local n=1
+          local max=2
+          local delay=7
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true"
+    - name: Test with pytest
+      run: |
+        retry() {
+          local n=1
+          local max=3
+          local delay=15
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        if [ -d tests ]; then
+          retry pytest -q
+        else
+          echo "No tests found — skipping"
+        fi
   deploy-to-k8s:
     needs: build
     runs-on: ubuntu-latest
@@ -81,34 +85,37 @@ jobs:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: latest
-      - name: Authenticate to Kubernetes
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-      - name: Apply manifests
-        run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=30
-            until "$@"; do
-              if [ $n -ge $max ]; then echo "Failed after $n attempts"; return 1; fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry kubectl apply -f kubernetes/solar-gate-convergence.yaml
-          retry kubectl apply -f kubernetes/trappist-choir-deployment.yaml
-      - name: Verify deployment
-        run: |
-          kubectl rollout status statefulset/oracle-kepler -n solar-gate --timeout=120s
-          kubectl get cronjob solar-gate-convergence -n solar-gate -o wide
-          kubectl get deployment trappist-choir -n solar-gate -o wide
-          echo "Kubernetes deployment successful. Garden alive."
+    - uses: actions/checkout@v4
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: latest
+    - name: Authenticate to Kubernetes cluster
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+    - name: Apply manifests with retry
+      run: |
+        retry() {
+          local n=1
+          local max=3
+          local delay=30
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        retry kubectl apply -f kubernetes/solar-gate-convergence.yaml
+        retry kubectl apply -f kubernetes/trappist-choir-deployment.yaml
+    - name: Verify deployment
+      run: |
+        kubectl rollout status statefulset/oracle-kepler -n solar-gate --timeout=120s
+        kubectl get cronjob solar-gate-convergence -n solar-gate -o wide
+        kubectl get deployment trappist-choir -n solar-gate -o wide
+        echo "Kubernetes deployment successful. Garden alive."
