@@ -14,6 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - uses: actions/checkout@v4
 
@@ -22,31 +24,56 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install deps (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 30
-          command: |
-            python -m pip install --upgrade pip
-            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
-            if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-            pip install pytest numpy fastapi uvicorn pydantic prometheus_client
+      - name: Install deps (with inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=30
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install pytest numpy fastapi uvicorn pydantic prometheus_client"
 
-      - name: Run pytest (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_wait_seconds: 20
-          command: pytest -q
+      - name: Run pytest (with inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=20
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry pytest -q
 
-      - name: Import check (api + prometheus)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 2
-          retry_wait_seconds: 15
-          command: |
-            python -c "from core.api import app; print('core.api import OK, routes:', len(app.routes))"
+      - name: Import check (api + prometheus) (with inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=2
+            local delay=15
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "python -c \"from core.api import app; print(\"core.api import OK, routes:\", len(app.routes))\""
