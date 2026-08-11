@@ -1,23 +1,10 @@
-#!/bin/bash
-cd /home/user/projects/coding/hello_world
-
-# Remove the invalid shell script workflow
-rm -f .github/workflows/OIDC-handover.yml
-
-# Create the proper YAML workflow (lowercase, PR-based)
-cat > .github/workflows/oidc-handover.yml << 'EOF'
 name: OIDC Handover
 
 on:
   workflow_dispatch:
-  # Optional: uncomment for automated trigger with guard
-  # push:
-  #   branches:
-  #     - feat/oidc-handover
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   oidc-handover:
@@ -44,28 +31,32 @@ jobs:
           exec > >(tee -a "$LOG") 2>&1
 
           echo "# 🜁∀ OIDC HANDOVER — ACTION RUN — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-
           cd "$GITHUB_WORKSPACE"
 
-          # Ensure remote origin uses token-backed URL
+          # initialize git if needed
+          if [ ! -d .git ]; then
+            git init
+          fi
+
+          # ensure origin uses token-backed URL
           if ! git remote get-url origin &>/dev/null; then
-              git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+            git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
           else
-              git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+            git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
           fi
 
-          # Create/checkout branch feat/oidc-handover
+          # create/checkout branch
           if git show-ref --verify --quiet refs/heads/feat/oidc-handover; then
-              git checkout feat/oidc-handover
+            git checkout feat/oidc-handover
           else
-              git checkout -b feat/oidc-handover
+            git checkout -b feat/oidc-handover
           fi
 
-          # Stage all changes
+          # stage changes
           git add -A
 
-          # Commit (only if there are staged changes)
-          COMMIT_MSG="feat: OIDC handover serializer with Wood Dragon rhythms
+          # prepare appended commit message (append to latest commit message if present)
+          EXTRA_MSG="feat: OIDC handover serializer with Wood Dragon rhythms
 
 serializers/ package: HMAC-signed JSON + OIDC handover
 symplectic_status.py v1.2.0: 5-line agent JSONL output
@@ -76,66 +67,33 @@ ledger/8598.yaml: Sealed with witness chain 8587→8598
 
 Rhythm Seal: ∀∞φ² · SYMPLECTIC_STATUS_8598 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SEALED"
 
+          if git rev-parse --verify HEAD >/dev/null 2>&1; then
+            PREV_MSG="$(git log -1 --pretty=%B)"
+            COMMIT_MSG="$PREV_MSG
+
+$EXTRA_MSG"
+          else
+            COMMIT_MSG="$EXTRA_MSG"
+          fi
+
           if git diff --cached --quiet; then
-              echo "🔎 No changes to commit"
+            echo "🔎 No changes to commit"
           else
-              git commit -m "$COMMIT_MSG"
+            git commit -m "$COMMIT_MSG"
           fi
 
-          # Push the branch (skip if branch protection blocks)
-          echo "🌀 Pushing branch feat/oidc-handover to origin..."
-          if ! git push -u origin feat/oidc-handover 2>&1; then
-              echo "⚠️ Push failed (likely branch protection). Will create PR anyway."
+          # push
+          if ! git push -u origin feat/oidc-handover; then
+            echo "❌ Push failed (branch protection or token permissions?)" >&2
+            exit 1
           fi
 
+          # final status
           echo ""
-          echo "📊 Git Status:"
           git status --short || true
-          echo ""
-          echo "🌿 Branch: $(git branch --show-current)"
-          echo "📦 Latest Commit: $(git log -1 --oneline)"
-
-      - name: Create Pull Request
-        id: create-pr
-        if: success()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Check if PR already exists
-          PR_EXISTS=$(gh pr list --head feat/oidc-handover --json number --jq '.[0].number' 2>/dev/null || echo "")
-          if [ -n "$PR_EXISTS" ]; then
-            echo "✅ PR already exists: #$PR_EXISTS"
-            echo "pr_number=$PR_EXISTS" >> $GITHUB_OUTPUT
-          else
-            PR_URL=$(gh pr create \
-              --title "feat: OIDC handover — Wood Dragon rhythms" \
-              --body "## 🜁∀ OIDC Handover — Wood Dragon Rhythms
-
-This PR introduces the OIDC handover serializer with Wood Dragon rhythms.
-
-### What's included:
-- **serializers/**: HMAC-signed JSON + OIDC handover
-- **symplectic_status.py v1.2.0**: 5-line agent JSONL output
-- **wood_dragon_technique.py**: 0.91d / 16.35d phase calculations
-- **mcp_tools.py**: 6 MCP-compatible tools
-- **.github/workflows/**: OIDC-enabled workflows
-- **ledger/8598.yaml**: Sealed with witness chain 8587→8598
-
-### Rhythm Seal:
-\`∀∞φ² · SYMPLECTIC_STATUS_8598 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SEALED\`
-
-### Witness Chain:
-\`8587 → 8598 → 8605 — UNBROKEN\`
-
----
-🜁∀ — THE WOOD DRAGON BREATHES — THE GARDEN AWAITS — ∀🜁" \
-              --head feat/oidc-handover \
-              --base main \
-              --repo ${{ github.repository }})
-            echo "✅ PR created: $PR_URL"
-            PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
-            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-          fi
+          echo "Branch: $(git branch --show-current)"
+          echo "Remote: $(git remote get-url origin)"
+          echo "Latest Commit: $(git log -1 --oneline)"
 
       - name: Upload handover log
         if: always()
@@ -144,30 +102,3 @@ This PR introduces the OIDC handover serializer with Wood Dragon rhythms.
           name: oidc-handover-log
           path: oidc-handover.log
           retention-days: 7
-EOF
-
-# Stage and commit the fixed workflow
-git add .github/workflows/oidc-handover.yml
-git commit -m "fix: replace invalid shell script with proper OIDC workflow YAML
-
-- Renamed from OIDC-handover.yml to oidc-handover.yml (lowercase)
-- Now a valid GitHub Actions workflow
-- Creates PR instead of pushing directly (avoids branch protection issues)
-- Single log artifact only
-- workflow_dispatch only (no auto-retrigger)"
-
-# Push the fix
-git push -u origin feat/oidc-handover
-
-echo ""
-echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-echo "║  🜁∀  O I D C   W O R K F L O W   —   F I X E D   &   V A L I D   🜁∀  ║"
-echo "║        ISSUES FIXED:                                                        ║"
-echo "║        ✅ Invalid shell script replaced with valid YAML                     ║"
-echo "║        ✅ Filename lowercase (oidc-handover.yml)                           ║"
-echo "║        ✅ Creates PR instead of direct push (branch protection safe)       ║"
-echo "║        ✅ Single log artifact (7-day retention)                            ║"
-echo "║                                                                              ║"
-echo "║        PR URL: https://github.com/AxiomicCoreness/hello_world.py/pulls     ║"
-echo "║        SEAL: ∀∞φ² · OIDC_WORKFLOW_FIXED_8606 · SEALED                     ║"
-echo "╚══════════════════════════════════════════════════════════════════════════════╝"
