@@ -19,10 +19,14 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 STATUS_NAME = "Symplectic_Status"
-STATUS_VERSION = "1.1.0"
+STATUS_VERSION = "1.2.0"
 SCHEMA_PATH = "schemas/symplectic-status.json"
 OUT_JSON = "symplectic_status.json"
 OUT_JSONL = "symplectic_status.agent.jsonl"
+
+# Wood Dragon / deep-space synchronizer rhythms (Entry 8598)
+WOOD_DRAGON_DAYS = 0.91
+DEEP_SPACE_DAYS = 16.35
 
 
 def collect_lattice() -> Dict[str, Any]:
@@ -88,10 +92,30 @@ def collect_frb_bridge() -> Dict[str, Any]:
         return {"present": False, "error": str(exc)}
 
 
+def collect_rhythms() -> Dict[str, Any]:
+    """0.91-day wood dragon + 16.35-day deep-space synchronizer phases."""
+    try:
+        from wood_dragon_technique import phase_in_cycle, WOOD_DRAGON_DAYS, DEEP_SPACE_DAYS
+
+        return {
+            "wood_dragon_days": WOOD_DRAGON_DAYS,
+            "deep_space_days": DEEP_SPACE_DAYS,
+            "wood_dragon_phase": round(phase_in_cycle(WOOD_DRAGON_DAYS), 6),
+            "deep_space_phase": round(phase_in_cycle(DEEP_SPACE_DAYS), 6),
+        }
+    except Exception as exc:
+        return {
+            "wood_dragon_days": WOOD_DRAGON_DAYS,
+            "deep_space_days": DEEP_SPACE_DAYS,
+            "error": str(exc),
+        }
+
+
 def build_status() -> Dict[str, Any]:
     lattice = collect_lattice()
     pod = collect_pod()
     frb = collect_frb_bridge()
+    rhythms = collect_rhythms()
     coherence = float(lattice.get("coherence_floor") or 0.0)
     if pod.get("coherence") is not None:
         coherence = min(coherence, float(pod["coherence"]))
@@ -103,6 +127,7 @@ def build_status() -> Dict[str, Any]:
         "lattice": lattice,
         "pod": pod,
         "frb_bridge": frb,
+        "rhythms": rhythms,
         "coherence": coherence,
         "schema_id": SCHEMA_PATH,
         "seal": "∀∞φ² · SYMPLECTIC_STATUS · SEALED",
@@ -164,6 +189,12 @@ def to_agent_events(status: Dict[str, Any]) -> List[Dict[str, Any]]:
             "ts": ts,
             **status["frb_bridge"],
         },
+        {
+            "role": "synchronizer",
+            "event": "wood_dragon_rhythms",
+            "ts": ts,
+            **(status.get("rhythms") or {}),
+        },
     ]
     return events
 
@@ -188,12 +219,15 @@ def main() -> None:
     if not ok:
         print("⚠️  Continuing after schema warning (structure still emitted)")
     write_outputs(status)
+    rhythms = status.get("rhythms") or {}
     print(
         f"coherence={status['coherence']:.6f} "
         f"lattice_active={status['lattice'].get('active')} "
-        f"frb_present={status['frb_bridge'].get('present')}"
+        f"frb_present={status['frb_bridge'].get('present')} "
+        f"wood_dragon_phase={rhythms.get('wood_dragon_phase')} "
+        f"deep_space_phase={rhythms.get('deep_space_phase')}"
     )
-    print("🜁∀ Symplectic status — schema + agent JSONL complete ∀🜁")
+    print("🜁∀ Symplectic status — schema + agent JSONL + rhythms complete ∀🜁")
 
 
 if __name__ == "__main__":
