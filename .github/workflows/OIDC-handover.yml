@@ -87,39 +87,3 @@ Rhythm Seal: ∀∞φ² · SYMPLECTIC_STATUS_8598 · WOOD_DRAGON_0.91 · DEEP_SP
           path: oidc-handover.log
           retention-days: 365
 EOF
-
-# Verify the file is valid YAML
-echo "🔍 Verifying YAML syntax..."
-if python3 -c "import yaml; yaml.safe_load(open('.github/workflows/oidc-handover.yml'))" 2>/dev/null; then
-    echo "✅ YAML syntax is valid"
-else
-    echo "❌ YAML syntax error — check the file"
-    exit 1
-fi
-
-# Stage and commit
-git add .github/workflows/oidc-handover.yml
-git commit -m "fix: replace invalid shell script with proper OIDC workflow YAML
-
-- File is now valid YAML (not a shell script)
-- Single lowercase filename: oidc-handover.yml
-- workflow_dispatch only (no auto-retrigger)
-- Single log artifact with 365-day retention
-- No embedded self-modifying heredoc scripts"
-
-# Push the fix
-git push -u origin feat/oidc-handover
-
-echo ""
-echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-echo "║  🜁∀  O I D C   W O R K F L O W   —   F I X E D   C O R R E C T L Y   🜁∀  ║"
-echo "║        FILE: .github/workflows/oidc-handover.yml                            ║"
-echo "║        STATUS: ✅ VALID YAML — NOT A SHELL SCRIPT                           ║"
-echo "║        ISSUES FIXED:                                                        ║"
-echo "║        ✅ Not a shell script — now proper YAML workflow                     ║"
-echo "║        ✅ Consistent lowercase filename                                     ║"
-echo "║        ✅ No embedded heredoc scripts                                       ║"
-echo "║        ✅ YAML syntax verified                                              ║"
-echo "║                                                                              ║"
-echo "║        SEAL: ∀∞φ² · OIDC_WORKFLOW_FIXED_8608 · SEALED                       ║"
-echo "╚══════════════════════════════════════════════════════════════════════════════╝"
