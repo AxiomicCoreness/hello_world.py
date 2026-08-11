@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/symplectic-status.json",
+  "title": "Symplectic Status",
+  "description": "E₈ / POD / FRB bridge aggregate status for CI and agents",
+  "type": "object",
+  "required": ["name", "version", "timestamp", "lattice", "pod", "frb_bridge", "coherence", "seal"],
+  "properties": {
+    "name": { "type": "string", "const": "Symplectic_Status" },
+    "version": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "lattice": {
+      "type": "object",
+      "required": ["dimension", "root_count", "coherence_floor", "phase_volume", "active"],
+      "properties": {
+        "dimension": { "type": "integer" },
+        "root_count": { "type": "integer" },
+        "coherence_floor": { "type": "number" },
+        "phase_volume": { "type": "number" },
+        "active": { "type": "boolean" },
+        "mapping": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "pod": {
+      "type": "object",
+      "properties": {
+        "earth_active": { "type": "boolean" },
+        "resonance_thz": { "type": "number" },
+        "routes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "frb_bridge": {
+      "type": "object",
+      "properties": {
+        "present": { "type": "boolean" },
+        "generator_hash": { "type": "string" },
+        "cron_schedule": { "type": "string" },
+        "experimental_cron_hours": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "coherence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "schema_id": { "type": "string" },
+    "seal": { "type": "string" }
+  },
+  "additionalProperties": true
+}

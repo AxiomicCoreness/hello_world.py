@@ -1,0 +1,55 @@
+name: Symplectic status (schema + agent JSONL)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'symplectic_status.py'
+      - 'schemas/symplectic-status.json'
+      - 'lattice/**'
+      - 'celestial/**'
+      - 'frb_bridge_lattice_instance.json'
+      - 'frb_bridge_generator.py'
+      - '.github/workflows/symplectic-status.yml'
+  workflow_dispatch:
+  schedule:
+    # every 6 hours — aligned with Garden CronJob φ-window
+    - cron: '0 */6 * * *'
+
+jobs:
+  symplectic-status:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Collect symplectic status
+        run: python symplectic_status.py
+
+      - name: Validate status against new schema
+        run: python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json
+
+      - name: Show agent JSONL head
+        run: |
+          echo "--- symplectic_status.agent.jsonl ---"
+          head -n 20 symplectic_status.agent.jsonl || true
+
+      - name: Commit status artifacts if changed
+        run: |
+          git config --global user.name "Sovereign Dragon"
+          git config --global user.email "dragon@sovereign.engine"
+          git add symplectic_status.json symplectic_status.agent.jsonl
+          if git diff --staged --quiet; then
+            echo "No symplectic status changes to commit"
+          else
+            git commit -m "chore: update symplectic status (schema + agent JSONL)"
+            git push origin main
+          fi
