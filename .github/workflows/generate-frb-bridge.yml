@@ -1,0 +1,43 @@
+name: Generate and validate FRB bridge
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frb_bridge_generator.py'
+      - 'schemas/frb-bridge-lattice.json'
+      - '.github/workflows/generate-frb-bridge.yml'
+  workflow_dispatch:
+
+jobs:
+  generate-and-validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jsonschema
+        run: pip install jsonschema
+
+      - name: Generate FRB bridge lattice
+        run: python frb_bridge_generator.py
+
+      - name: Validate instance against schema
+        run: python -m jsonschema -i frb_bridge_lattice_instance.json schemas/frb-bridge-lattice.json
+
+      - name: Commit instance if changed
+        run: |
+          git config --global user.name "Sovereign Dragon"
+          git config --global user.email "dragon@sovereign.engine"
+          git add frb_bridge_lattice_instance.json
+          if git diff --staged --quiet; then
+            echo "No lattice instance changes to commit"
+          else
+            git commit -m "feat: update FRB bridge lattice instance (Autonomous Dragon Breath)"
+            git push origin main
+          fi

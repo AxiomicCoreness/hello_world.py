@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/frb-bridge-lattice.json",
+  "title": "FRB Bridge Lattice",
+  "description": "φ-harmonic mapping between FRB 20190520b timing and Garden backend workers",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "generator_hash",
+    "frb",
+    "garden",
+    "mapping",
+    "weights",
+    "seal"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string", "const": "FRB_Bridge_Lattice" },
+    "version": { "type": "string" },
+    "generator_hash": {
+      "type": "string",
+      "minLength": 64,
+      "description": "Non-truncated generator identity hash"
+    },
+    "timestamp": { "type": "string" },
+    "frb": {
+      "type": "object",
+      "required": ["source", "repeat_interval_days", "burst_width_ms", "dm_pc_cm3"],
+      "properties": {
+        "source": { "type": "string" },
+        "repeat_interval_days": { "type": "number", "minimum": 0 },
+        "burst_width_ms": { "type": "number", "minimum": 0 },
+        "dm_pc_cm3": { "type": "number", "minimum": 0 },
+        "phi_scaled_repeat_days": { "type": "number" },
+        "phi_scaled_dm": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "garden": {
+      "type": "object",
+      "required": ["cron_schedule", "cron_interval_hours", "handshake_steps"],
+      "properties": {
+        "cron_schedule": { "type": "string" },
+        "cron_interval_hours": { "type": "number" },
+        "experimental_cron_hours": { "type": "number" },
+        "handshake_steps": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "charge_window_s": { "type": "number" },
+        "cosmic_charge_window_s": { "type": "number" },
+        "convergence_days": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "mapping": {
+      "type": "object",
+      "properties": {
+        "cron_to_repeat_ratio": { "type": "number" },
+        "phi5_approx": { "type": "number" },
+        "analogue": { "type": "string" },
+        "optimisation": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "weights": {
+      "type": "object",
+      "required": ["phi2", "phi_inv", "phi_inv2"],
+      "properties": {
+        "phi2": { "type": "number" },
+        "phi_inv": { "type": "number" },
+        "phi_inv2": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "seal": { "type": "string" }
+  },
+  "additionalProperties": true
+}
