@@ -3,20 +3,25 @@
   "name": "FRB_Bridge_Lattice",
   "version": "1.0.0",
   "generator_hash": "frb_bridge_generator_b418a3a5a7bfc5d30a49893a406b1506f598dbecb9a6ff4b55cc1cc735257cde",
-  "timestamp": "2026-08-11T15:53:00+00:00",
+  "timestamp": "2026-08-11T15:55:33.921857+00:00",
   "frb": {
     "source": "FRB 20190520b",
     "repeat_interval_days": 3.2,
     "burst_width_ms": 1.0,
     "dm_pc_cm3": 1204.0,
-    "phi_scaled_repeat_days": 3.1416407864998736,
-    "phi_scaled_dm": 1213.0
+    "phi_scaled_repeat_days": 3.141640786499874,
+    "phi_scaled_dm": 29034.441853748638
   },
   "garden": {
     "cron_schedule": "0 */6 * * *",
     "cron_interval_hours": 6.0,
-    "experimental_cron_hours": 18.123,
-    "handshake_steps": ["phi3", "phi4", "phi5", "phi6"],
+    "experimental_cron_hours": 18.13,
+    "handshake_steps": [
+      "phi3",
+      "phi4",
+      "phi5",
+      "phi6"
+    ],
     "charge_window_s": 60.0,
     "cosmic_charge_window_s": 6.436,
     "convergence_days": 4.0
