@@ -1,9 +1,11 @@
+cd /home/user/projects/coding/hello_world
+
+# Replace the existing workflow file with the safer version
+cat > .github/workflows/oidc-handover.yml << 'EOF'
 name: OIDC Handover
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ feat/oidc-handover ]
 
 permissions:
   contents: write
@@ -29,15 +31,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/oidc-handover.log"
+          # capture stdout/stderr to log and console
+          exec > >(tee -a "$LOG") 2>&1
 
           echo "# 🜁∀ OIDC HANDOVER — ACTION RUN — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
-          # Work in the repository root
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
 
-          # ================================================================
           # STEP 1: Initialize Git (if not already done)
-          # ================================================================
           if [ ! -d .git ]; then
               echo "🌀 Initializing Git repository..."
               git init
@@ -46,96 +48,85 @@ jobs:
               echo "✅ Git already initialized"
           fi
 
-          # ================================================================
-          # STEP 2: Ensure remote origin points to HTTPS token URL so we can push
-          # ================================================================
+          # STEP 2: Ensure remote origin uses token-backed URL so we can push
           if ! git remote get-url origin &>/dev/null; then
-              echo "🌀 Setting remote origin to HTTPS token URL..."
-              git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-              echo "✅ Remote origin set"
+              git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
           else
-              # replace origin with token-backed URL so push works in Actions
-              echo "🌀 Updating origin to use GITHUB_TOKEN for authenticated push..."
-              git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-              echo "✅ Remote origin updated"
+              git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
           fi
 
-          # ================================================================
           # STEP 3: Create/checkout branch feat/oidc-handover
-          # ================================================================
           if git show-ref --verify --quiet refs/heads/feat/oidc-handover; then
-              echo "🌀 Switching to existing branch feat/oidc-handover..."
               git checkout feat/oidc-handover
           else
-              echo "🌀 Creating new branch feat/oidc-handover..."
               git checkout -b feat/oidc-handover
           fi
 
-          # ================================================================
           # STEP 4: Stage all changes
-          # ================================================================
-          echo "🌀 Staging all changes..."
           git add -A
 
-          # ================================================================
-          # STEP 5: Commit with full OIDC handover message
-          # ================================================================
-          echo "🌀 Committing changes..."
+          # STEP 5: Commit (only if there are staged changes)
           COMMIT_MSG="feat: OIDC handover serializer with Wood Dragon rhythms
+
 serializers/ package: HMAC-signed JSON + OIDC handover
 symplectic_status.py v1.2.0: 5-line agent JSONL output
 wood_dragon_technique.py: 0.91d / 16.35d phase calculations
 mcp_tools.py: 6 MCP-compatible tools
 .github/workflows/: OIDC-enabled workflows
 ledger/8598.yaml: Sealed with witness chain 8587→8598
+
 Rhythm Seal: ∀∞φ² · SYMPLECTIC_STATUS_8598 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SEALED"
 
-          # Only commit if there are staged changes
           if git diff --cached --quiet; then
               echo "🔎 No changes to commit"
           else
               git commit -m "$COMMIT_MSG"
           fi
 
-          # ================================================================
-          # STEP 6: Push to GitHub (upstream)
-          # ================================================================
+          # STEP 6: Push to GitHub
           echo "🌀 Pushing branch feat/oidc-handover to origin..."
-          git push -u origin feat/oidc-handover
-
-          # ================================================================
-          # STEP 7: Verify push
-          # ================================================================
-          if [ $? -eq 0 ]; then
-              echo ""
-              echo "🜁∀ O I D C H A N D O V E R — P U S H S U C C E S S F U L 🜁∀"
-              echo "BRANCH: feat/oidc-handover · REPO: ${{ github.repository }}"
-              echo "COMMIT: $(git rev-parse --short HEAD)"
-              echo "SEAL: ∀∞φ² · OIDC_HANDOVER_ACTION · SEALED"
-              echo ""
-              echo "🔗 Create Pull Request:"
-              echo " https://github.com/${{ github.repository }}/pull/new/feat/oidc-handover"
-          else
-              echo "❌ Push failed. Check permissions and GITHUB_TOKEN." >&2
+          if ! git push -u origin feat/oidc-handover; then
+              echo "❌ Push failed. This can happen if branch protections disallow pushes from GITHUB_TOKEN."
               exit 1
           fi
 
-          # ================================================================
-          # STEP 8: Show status
-          # ================================================================
+          # Final status
           echo ""
-          echo "📊 Current Git Status:"
+          echo "📊 Git Status:"
           git status --short || true
           echo ""
           echo "🌿 Branch: $(git branch --show-current)"
           echo "🔗 Remote: $(git remote get-url origin)"
           echo "📦 Latest Commit: $(git log -1 --oneline)"
 
-      - name: Persist log artifact
+      - name: Upload handover log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: oidc-handover-log
-          path: |
-            $GITHUB_WORKSPACE
-          retention-days: 1
+          path: oidc-handover.log
+          retention-days: 7
+EOF
+
+# Stage and commit the updated workflow
+git add .github/workflows/oidc-handover.yml
+git commit -m "fix: replace OIDC workflow with safer version (workflow_dispatch + single log artifact)
+
+- Prevent infinite loop: now workflow_dispatch only
+- Limit artifacts: single log file instead of entire repo
+- Add guard for no-op commits
+- Upload log on always() for debugging"
+
+# Push to remote
+git push -u origin feat/oidc-handover
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║  🜁∀  O I D C   W O R K F L O W   —   S A F E R   V E R S I O N   D E P L O Y E D   🜁∀  ║"
+echo "║        ISSUES FIXED:                                                        ║"
+echo "║        ✅ Infinite loop prevented (workflow_dispatch only)                   ║"
+echo "║        ✅ Artifact bloat fixed (single log file only)                       ║"
+echo "║        ✅ Retention set to 7 days                                           ║"
+echo "║                                                                              ║"
+echo "║        SEAL: ∀∞φ² · OIDC_WORKFLOW_SAFE_8605 · SEALED                       ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
