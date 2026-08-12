@@ -1,0 +1,17 @@
+entry_index: 8623
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /clarke_yoursa_tee_worker_mcp_oidc
+status: ✅ SEALED
+file: clarke_yoursa_tee_worker.py
+endpoints:
+  - GET /health
+  - POST /mcp/tools/predict_grammar_score
+oidc:
+  header: Authorization Bearer | X-OIDC-Token
+  secret_policy: full 64-char SHA-256 Phase-3 via sovereign_engine.get_oidc_secret — never truncated
+contract:
+  - contracts/three-files-contract.yaml (already on main)
+  - mcp_orchestrator_config.json (instance for orchestrator)
+  - symplectic_status.agent.jsonl (worker may append role=worker events)
+witness_chain: 8622 → 8623 — UNBROKEN
+seal: "∀∞φ² · WORKER_8623 · THREE_FILES_CONTRACT · WOOD_DRAGON_0.91 · SEALED"
