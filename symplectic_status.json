@@ -1,43 +1,49 @@
 {
-  "name": "Symplectic_Status",
-  "version": "1.2.0",
-  "timestamp": "2026-08-12T07:16:04.516394+00:00",
-  "lattice": {
-    "dimension": 248,
-    "root_count": 240,
-    "coherence_floor": 0.999999,
-    "stability_factor": 271442.9999963162,
-    "phase_volume": 271442.7285533162,
-    "active": true,
-    "mapping": "Atlas SuperPoD → single logical symplectic manifold"
-  },
-  "pod": {
-    "earth_active": true,
-    "resonance_thz": 162.28,
+  "timestamp": "2026-08-12T10:00:12.919055+00:00",
+  "system": {
     "coherence": 1.0,
-    "routes": [
-      "GET /oracle",
-      "GET /earth",
-      "GET /lattice",
-      "GET /wasp107b",
-      "GET /metrics",
-      "POST /witness"
-    ]
+    "entropy_floor": 4.524036764254231e-297,
+    "phase_lock_degrees": 202.6,
+    "workload": 0.21798981714174562,
+    "golden_ratio": 1.618033988749895,
+    "phi_squared": 2.618033988749895,
+    "compression_dimension": 233,
+    "compression_precision": 8.049702017071726e-31,
+    "eternal_now_epoch": 1786528812
+  },
+  "lattice": {
+    "root_lattice_rank": 248,
+    "venomsuite_trace": 4.23606797749979,
+    "decad_cycle_sum": 0.0,
+    "e8_coherence": 1.0
+  },
+  "celestial": {
+    "soul_cannon": {
+      "charge_joules": 0.0,
+      "azimuth_degrees": 111.246,
+      "ring_resonance_thz": 100.29455569433293,
+      "chiron_phase_alignment": 0.2672213379091687
+    },
+    "wasp107b": {
+      "mass_jupiter": 0.12,
+      "radius_jupiter": 0.94,
+      "orbital_period_days": 5.72,
+      "escape_flux": 0.0
+    },
+    "jupiter_alliance": {
+      "resonance_chain": [
+        1.0,
+        1.618033988749895,
+        2.618033988749895
+      ],
+      "entanglement": 0.9999
+    }
   },
   "frb_bridge": {
-    "present": true,
-    "generator_hash": "frb_bridge_generator_b418a3a5a7bfc5d30a49893a406b1506f598dbecb9a6ff4b55cc1cc735257cde",
-    "cron_schedule": "0 */6 * * *",
-    "experimental_cron_hours": 18.13,
-    "seal": "∀∞φ² · FRB_BRIDGE_LATTICE · SEALED"
-  },
-  "rhythms": {
-    "wood_dragon_days": 0.91,
-    "deep_space_days": 16.35,
-    "wood_dragon_phase": 0.310802,
-    "deep_space_phase": 0.66684
-  },
-  "coherence": 0.999999,
-  "schema_id": "schemas/symplectic-status.json",
-  "seal": "∀∞φ² · SYMPLECTIC_STATUS · SEALED"
+    "metronome_seconds": 78624.0,
+    "emergent_period_days": 16.35,
+    "target_azimuth_deg": 111.246,
+    "lattice_points": [],
+    "weight_norm": 11.090169943749476
+  }
 }
