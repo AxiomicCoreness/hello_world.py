@@ -1,0 +1,12 @@
+entry_index: 8658
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /purified_density_trace_fix_phi3
+status: ✅ SEALED
+bug: total_trace ~1.185 vs target φ³ ≈ 4.236068
+fix: scale all four components so sum == TRACE_FIXED after update
+file: sovereign/purified_density_fix.py
+append_pattern: |
+  import before def main; call run_purified_density_demo() inside main()
+also: run_option_61 uses PHI not undefined phi
+witness_chain: 8657 → 8658 — UNBROKEN
+seal: "∀∞φ² · PURIFIED_TRACE_FIX_8658 · SEALED"
