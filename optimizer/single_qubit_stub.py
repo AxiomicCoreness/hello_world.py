@@ -26,7 +26,6 @@ import numpy as np
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = 1.0 / PHI
 
-# Pauli matrices
 I2 = np.eye(2, dtype=complex)
 SX = np.array([[0, 1], [1, 0]], dtype=complex)
 SY = np.array([[0, -1j], [1j, 0]], dtype=complex)
@@ -108,7 +107,7 @@ class QubitStub:
     def invariants(self) -> Dict[str, Any]:
         rho = density(self.psi)
         x, y, z = bloch(rho)
-r = math.sqrt(x * x + y * y + z * z)
+        r = math.sqrt(x * x + y * y + z * z)
         return {
             "trace": float(np.real(np.trace(rho))),
             "purity": purity(rho),
