@@ -141,5 +141,130 @@
         "unit": "none"
       }
     }
+  },
+  {
+    "id": 106,
+    "title": "Hyperian Up & Compression Rank",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "hyperian_up",
+        "legendFormat": "Hyperian up",
+        "refId": "A"
+      },
+      {
+        "expr": "sovereign_compression_rank_budget",
+        "legendFormat": "rank budget (144)",
+        "refId": "B"
+      },
+      {
+        "expr": "sovereign_compression_rank_realized_max",
+        "legendFormat": "rank realized max (7)",
+        "refId": "C"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 107,
+    "title": "Sim Earth Resonance",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "sim_earth_resonance_thz",
+        "legendFormat": "resonance THz",
+        "refId": "A"
+      },
+      {
+        "expr": "sim_earth_phase_rad",
+        "legendFormat": "phase rad",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 108,
+    "title": "Wood Dragon & Deep Space Periods",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "wood_dragon_pulse_days",
+        "legendFormat": "0.91 d pulse",
+        "refId": "A"
+      },
+      {
+        "expr": "deep_space_sync_days",
+        "legendFormat": "16.35 d sync",
+        "refId": "B"
+      },
+      {
+        "expr": "frb_period_seconds",
+        "legendFormat": "τ_FRB seconds",
+        "refId": "C"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 109,
+    "title": "Phi & Gold Standard Constants",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "phi",
+        "legendFormat": "φ",
+        "refId": "A"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 110,
+    "title": "Hyperian Scrape Surfaces (annotation)",
+    "type": "text",
+    "gridPos": {"h": 4, "w": 24, "x": 0, "y": 40},
+    "options": {
+      "mode": "markdown",
+      "content": "**Scrape targets (append-only ops)**\\n- `host:9090/metrics` — prometheus.metrics_server\\n- `host:8080/metrics` — Hyperian JSON server mirror\\n- `host:9095/metrics` — sovereign_workload EM-005\\n\\nPolicy: full digests · no secrets · panels 100–111 additive only."
+    }
+  },
+  {
+    "id": 111,
+    "title": "Entanglement (retained)",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "entanglement",
+        "legendFormat": "entanglement",
+        "refId": "A"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 44},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
   }
 ]

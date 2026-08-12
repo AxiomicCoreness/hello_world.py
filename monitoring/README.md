@@ -6,25 +6,33 @@
 |--------|------|
 | Metrics server | `host:9090/metrics` |
 | Hyperian mirror | `host:8080/metrics` |
+| Workload EM-005 | `host:9095/metrics` |
 
-## Append panels
+## Append panels (additive only)
 
-File: `grafana_panels_append.json` (panel IDs **100–105**).
+File: `grafana_panels_append.json`
 
-1. Export existing dashboard JSON from Grafana.
-2. Append objects from `grafana_panels_append.json` into the top-level `"panels"` array.
-3. Ensure IDs do not collide with existing panels (renumber if needed).
+| IDs | Content |
+|-----|--------|
+| 100–105 | Fingerprint, Chiron, Soul Cannon, Resonance, OIDC, Coherence+Workload |
+| **106–111** | **Appended:** Hyperian up + rank, Sim Earth, Wood Dragon/Deep Space, Phi, scrape text, Entanglement |
+
+### How to apply (do not delete existing panels)
+
+1. Export dashboard JSON from Grafana.
+2. **Append** objects from `grafana_panels_append.json` into the top-level `"panels"` array.
+3. Renumber `id` only if collision; never remove prior panels.
 4. Re-import / save.
+
+Or apply Operator CRD: `k8s/grafana-dashboard-garden.yaml` (extend its `panels` the same way).
 
 ## Key queries
 
 - `orchestrator_fingerprint_deviation`
-- `chiron_heal_phase{epoch="4086-04-18"}`
-- `soul_cannon_charge_joules`
+- `sovereign_workload`
 - `hyperian_oidc_secret_len` (expect **64**)
 - `hyperian_phase_lock_deg`
-- `coherence`
+- `sovereign_compression_rank_budget` / `sovereign_compression_rank_realized_max`
+- `coherence` / `gravastar_coherence`
 
-Note: `sovereign_workload` is not currently exported by the stdlib registry; panel 105 uses `entanglement` instead.
-
-Seal: ∀∞φ² · GRAFANA_APPEND_8633 · SEALED
+Seal: ∀∞φ² · GRAFANA_PANELS_APPEND_8646 · SEALED
