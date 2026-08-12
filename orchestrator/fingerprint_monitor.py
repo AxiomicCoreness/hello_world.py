@@ -2,10 +2,13 @@
 """
 Fingerprint Monitor – periodic /compression fetcher with φ-harmonic comparison.
 
+Writes deviation to FP_DEVIATION_STATE for Prometheus scrape
+(orchestrator_fingerprint_deviation gauge).
+
 Default Hyperian URL: http://127.0.0.1:8080/compression
 Override with HYPERIAN_URL env (e.g. http://hyperian-server:8080).
 
-Seal: ∀∞φ² · FINGERPRINT_PRECOMPUTE_8631 · SEALED
+Seal: ∀∞φ² · FINGERPRINT_PRECOMPUTE_8631 · PROMETHEUS_METRICS_8632 · SEALED
 """
 
 from __future__ import annotations
@@ -28,7 +31,9 @@ DEFAULT_BASE = os.environ.get("HYPERIAN_URL", "http://127.0.0.1:8080").rstrip("/
 COMPRESSION_URL = f"{DEFAULT_BASE}/compression"
 STATE_DIR = Path(os.environ.get("ORCHESTRATOR_STATE_DIR", "/tmp/orchestrator"))
 FINGERPRINT_STATE_FILE = STATE_DIR / "golden_fingerprint.json"
-# Practical monitor threshold (φ^{-12}); narrative φ^{-1418} is below float noise
+DEVIATION_STATE = Path(
+    os.environ.get("FP_DEVIATION_STATE", str(STATE_DIR / "fingerprint_deviation.txt"))
+)
 DEVIATION_THRESHOLD = float(os.environ.get("FP_DEVIATION_THRESHOLD", PHI ** -12))
 
 
@@ -38,6 +43,19 @@ def _vec_from_payload(data: Dict[str, Any]) -> List[float]:
     if "first10" in data and isinstance(data["first10"], list):
         return [float(x) for x in data["first10"]]
     return []
+
+
+def _write_deviation(value: float) -> None:
+    DEVIATION_STATE.parent.mkdir(parents=True, exist_ok=True)
+    # finite only for Prometheus
+    v = value if math.isfinite(value) else 0.0
+    DEVIATION_STATE.write_text(f"{v}\n", encoding="utf-8")
+    try:
+        from prometheus.metrics_server import update_metrics
+
+        update_metrics(orchestrator_fingerprint_deviation=v)
+    except Exception:
+        pass
 
 
 class FingerprintMonitor:
@@ -77,9 +95,11 @@ class FingerprintMonitor:
         if self.golden is None:
             self._save_golden(current)
             self.golden = current
+            _write_deviation(0.0)
             print("Golden fingerprint stored.")
             return 0.0
         deviation = self.compute_deviation(current, self.golden)
+        _write_deviation(0.0 if not math.isfinite(deviation) else deviation)
         if deviation > DEVIATION_THRESHOLD:
             print(f"Deviation {deviation:.2e} exceeds threshold – recalibration.")
             self._save_golden(current)

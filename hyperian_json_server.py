@@ -8,10 +8,10 @@ Endpoints:
   GET /status
   GET /compression   (C_∞ practical → 233D summary)
   GET /oidc         (secret_len only — full digests never truncated)
-  GET /metrics      (prometheus-style text)
+  GET /metrics      (Prometheus text; shared registry)
 
 Run:  python hyperian_json_server.py [--port 8080]
-Seal: ∀∞φ² · HYPERIAN_JSON_SERVER_8625 · SEALED
+Seal: ∀∞φ² · HYPERIAN_JSON_SERVER_8625 · PROMETHEUS_METRICS_8632 · SEALED
 """
 
 from __future__ import annotations
@@ -46,7 +46,8 @@ def build_status() -> Dict[str, Any]:
             "precision_note": "~φ^{-144} ≈ 10^{-30}",
             "output_dim": 233,
         },
-        "seal": "∀∞φ² · HYPERIAN_JSON_SERVER_8625 · SEALED",
+        "metrics": "/metrics",
+        "seal": "∀∞φ² · HYPERIAN_JSON_SERVER_8625 · PROMETHEUS_METRICS_8632 · SEALED",
     }
 
 
@@ -84,22 +85,31 @@ def oidc_payload() -> Dict[str, Any]:
 
 
 def metrics_text() -> str:
-    oidc = oidc_payload()
-    lines = [
-        "# HELP hyperian_up Hyperian JSON server up",
-        "# TYPE hyperian_up gauge",
-        "hyperian_up 1",
-        "# HELP hyperian_phase_lock_deg Sovereign phase lock degrees",
-        "# TYPE hyperian_phase_lock_deg gauge",
-        f"hyperian_phase_lock_deg {PHASE_LOCK_DEG}",
-        "# HELP hyperian_oidc_secret_len OIDC secret length (expect 64 in Phase-3)",
-        "# TYPE hyperian_oidc_secret_len gauge",
-        f"hyperian_oidc_secret_len {oidc['secret_len']}",
-        "# HELP chiron_heal_phase Chiron heal phase toward 4086-04-18",
-        "# TYPE chiron_heal_phase gauge",
-        'chiron_heal_phase{epoch="4086-04-18"} 0.0',
-    ]
-    return "\n".join(lines) + "\n"
+    """Prefer shared prometheus registry; fall back to minimal local text."""
+    try:
+        from prometheus.metrics_server import render_prometheus_text
+
+        return render_prometheus_text()
+    except Exception:
+        oidc = oidc_payload()
+        lines = [
+            "# HELP hyperian_up Hyperian JSON server up",
+            "# TYPE hyperian_up gauge",
+            "hyperian_up 1",
+            "# HELP hyperian_phase_lock_deg Sovereign phase lock degrees",
+            "# TYPE hyperian_phase_lock_deg gauge",
+            f"hyperian_phase_lock_deg {PHASE_LOCK_DEG}",
+            "# HELP hyperian_oidc_secret_len OIDC secret length (expect 64 in Phase-3)",
+            "# TYPE hyperian_oidc_secret_len gauge",
+            f"hyperian_oidc_secret_len {oidc['secret_len']}",
+            "# HELP orchestrator_fingerprint_deviation L2 deviation from golden fingerprint",
+            "# TYPE orchestrator_fingerprint_deviation gauge",
+            "orchestrator_fingerprint_deviation 0.0",
+            "# HELP chiron_heal_phase Chiron heal phase toward 4086-04-18",
+            "# TYPE chiron_heal_phase gauge",
+            'chiron_heal_phase{epoch="4086-04-18"} 0.0',
+        ]
+        return "\n".join(lines) + "\n"
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -133,7 +143,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/oidc":
             self._send_json(200, oidc_payload())
         elif path == "/metrics":
-            self._send_text(200, metrics_text(), "text/plain; version=0.0.4")
+            self._send_text(200, metrics_text(), "text/plain; version=0.0.4; charset=utf-8")
         else:
             self._send_json(404, {"error": "not_found", "path": path})
 
