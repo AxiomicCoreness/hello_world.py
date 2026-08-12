@@ -21,6 +21,7 @@ _REGISTRY: Dict[str, float] = {
     "dimensions_active": 12.0,
     "coherence": 0.999999999,
     "entanglement": 1.0,
+    "chiron_heal_phase": 0.0,
 }
 
 
@@ -36,3 +37,16 @@ def get_metrics() -> Dict[str, float]:
 
 def increment_oracle_query() -> None:
     _REGISTRY["oracle_query_count"] += 1.0
+
+
+def refresh_chiron_heal_phase() -> float:
+    """Update chiron_heal_phase gauge from celestial.chiron_heal."""
+    try:
+        import time
+        from celestial.chiron_heal import chiron_heal_phase
+
+        val = float(chiron_heal_phase(time.time()))
+        _REGISTRY["chiron_heal_phase"] = val
+        return val
+    except Exception:
+        return _REGISTRY.get("chiron_heal_phase", 0.0)
