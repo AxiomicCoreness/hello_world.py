@@ -9,7 +9,7 @@ No dependency on prometheus_client required for the text format.
 Run standalone:
   python -m prometheus.metrics_server --port 9090
 
-Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · SOVEREIGN_WORKLOAD_8635 · SEALED
+Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · RANK_METRICS_APPEND_8656 · SEALED
 """
 
 from __future__ import annotations
@@ -30,6 +30,8 @@ DEFAULT_PORT = int(os.environ.get("METRICS_PORT", "9090"))
 DEVIATION_STATE = Path(
     os.environ.get("FP_DEVIATION_STATE", "/tmp/orchestrator/fingerprint_deviation.txt")
 )
+RANK_BUDGET = 144
+RANK_REALIZED_MAX = 7
 
 # name -> (value, help, type, labels_dict_or_None)
 _REGISTRY: Dict[str, Tuple[float, str, str, Optional[Dict[str, str]]]] = {}
@@ -73,6 +75,22 @@ def _bootstrap() -> None:
     _reg("wood_dragon_pulse_days", 0.91, "Wood Dragon pulse period (days)")
     _reg("deep_space_sync_days", 16.35, "Deep-space synchronizer period (days)")
     _reg("phi", PHI, "Golden ratio constant")
+    # --- Rank append (φ-ladder budget vs realized SVD max on 7×13×7) ---
+    _reg(
+        "sovereign_compression_rank_budget",
+        float(RANK_BUDGET),
+        "φ-ladder compression rank budget (144)",
+    )
+    _reg(
+        "sovereign_compression_rank_realized_max",
+        float(RANK_REALIZED_MAX),
+        "SVD realized max rank on 7x13x7 flat layout",
+    )
+    _reg(
+        "sovereign_compression_rank_ratio",
+        float(RANK_REALIZED_MAX) / float(RANK_BUDGET),
+        "realized_max / budget (append diagnostic)",
+    )
 
 
 _bootstrap()
@@ -125,7 +143,6 @@ def refresh_oidc_secret_len() -> float:
 
 
 def refresh_fingerprint_deviation() -> float:
-    """Read deviation written by orchestrator/fingerprint_monitor.py."""
     try:
         text = DEVIATION_STATE.read_text(encoding="utf-8").strip()
         val = float(text.split()[0])
@@ -162,7 +179,6 @@ def refresh_sovereign_workload() -> float:
         update_metrics(sovereign_workload=w)
         return w
     except Exception:
-        # Lightweight fallback (no shared EMA state)
         t = time.time()
         amp = (1.0 / PHI) ** 3
         w = 0.5 * (math.sin(2.0 * math.pi * t / 6.0) + 1.0) * amp * (1.0 / PHI)
@@ -177,7 +193,13 @@ def refresh_all() -> None:
     refresh_fingerprint_deviation()
     refresh_soul_cannon()
     refresh_sovereign_workload()
-    update_metrics(hyperian_up=1.0, hyperian_phase_lock_deg=PHASE_LOCK_DEG)
+    update_metrics(
+        hyperian_up=1.0,
+        hyperian_phase_lock_deg=PHASE_LOCK_DEG,
+        sovereign_compression_rank_budget=float(RANK_BUDGET),
+        sovereign_compression_rank_realized_max=float(RANK_REALIZED_MAX),
+        sovereign_compression_rank_ratio=float(RANK_REALIZED_MAX) / float(RANK_BUDGET),
+    )
 
 
 def _format_labels(labels: Optional[Dict[str, str]]) -> str:

@@ -1,0 +1,26 @@
+[
+  {
+    "id": 112,
+    "title": "Compression Rank (budget vs realized)",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "sovereign_compression_rank_budget",
+        "legendFormat": "rank budget (144)",
+        "refId": "A"
+      },
+      {
+        "expr": "sovereign_compression_rank_realized_max",
+        "legendFormat": "rank realized max (7)",
+        "refId": "B"
+      },
+      {
+        "expr": "sovereign_compression_rank_ratio",
+        "legendFormat": "ratio realized/budget",
+        "refId": "C"
+      }
+    ],
+    "gridPos": { "h": 8, "w": 12, "x": 12, "y": 44 },
+    "fieldConfig": { "defaults": { "unit": "none" } }
+  }
+]
