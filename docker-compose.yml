@@ -1,4 +1,4 @@
-# docker-compose.yml – Sovereign Garden port map
+# docker-compose.yml – Sovereign Garden port map + symplectic_status
 # Usage: docker compose up --build
 version: "3.8"
 
@@ -23,7 +23,6 @@ services:
     volumes:
       - ./data:/app/data
 
-  # app_main + Merkle + Gravastar trigger (primary API)
   app-main:
     build: .
     image: fastapi-sovereign:620
@@ -35,7 +34,6 @@ services:
       - PORT=8001
     restart: unless-stopped
 
-  # Dedicated Gravastar trigger surface (new port)
   gravastar-trigger:
     build: .
     image: fastapi-sovereign:620
@@ -74,3 +72,23 @@ services:
     ports:
       - "9095:9095"
     restart: unless-stopped
+
+  # Merged: symplectic dual-output generator (oneshot; re-run via compose run)
+  symplectic-status:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-symplectic-status
+    working_dir: /app
+    command:
+      - sh
+      - -c
+      - |
+        pip install -q jsonschema &&
+        python symplectic_status.py &&
+        python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json &&
+        echo "ACK steps 1-9 complete" &&
+        head -n 4 symplectic_status.agent.jsonl
+    volumes:
+      - ./:/app
+    profiles:
+      - status
