@@ -1,0 +1,29 @@
+name: Workload EM-005 Smoke
+on:
+  push:
+    paths:
+      - "monitoring/sovereign_workload_exporter.py"
+      - "prometheus/metrics_server.py"
+      - ".github/workflows/workload-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compute sovereign_workload sample
+        run: |
+          python - <<'PY'
+          from monitoring.sovereign_workload_exporter import compute_workload, metrics_text
+          w = compute_workload()
+          assert 0.0 <= w <= 1.0, w
+          text = metrics_text(w)
+          assert "sovereign_workload " in text
+          assert 'sovereign_workload_em{protocol="005"}' in text
+          print(text)
+          print("OK", w)
+          PY
