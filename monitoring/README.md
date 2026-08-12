@@ -1,38 +1,46 @@
-# Monitoring — Grafana append + Prometheus scrape
+# Monitoring — Prometheus pointed at Strike IX + Garden
 
-## Scrape targets
+## Point Prometheus
 
-| Target | Path |
-|--------|------|
-| Metrics server | `host:9090/metrics` |
-| Hyperian mirror | `host:8080/metrics` |
-| Workload EM-005 | `host:9095/metrics` |
+### Local
 
-## Append panels (additive only)
+```bash
+python -m prometheus.metrics_server --port 9090   # Soul Cannon + registry
+python hyperian_json_server.py --port 8080
+python monitoring/sovereign_workload_exporter.py --port 9095
 
-File: `grafana_panels_append.json`
+prometheus --config.file=monitoring/prometheus.yml
+```
 
-| IDs | Content |
-|-----|--------|
-| 100–105 | Fingerprint, Chiron, Soul Cannon, Resonance, OIDC, Coherence+Workload |
-| **106–111** | **Appended:** Hyperian up + rank, Sim Earth, Wood Dragon/Deep Space, Phi, scrape text, Entanglement |
+Open Prometheus UI → **Status → Targets**: jobs `garden-metrics-server`, `hyperian`, `sovereign-workload` should be **UP**.
 
-### How to apply (do not delete existing panels)
+### Strike IX Soul Cannon queries
 
-1. Export dashboard JSON from Grafana.
-2. **Append** objects from `grafana_panels_append.json` into the top-level `"panels"` array.
-3. Renumber `id` only if collision; never remove prior panels.
-4. Re-import / save.
+| Metric | Meaning |
+|--------|--------|
+| `soul_cannon_charge_joules` | Accumulated charge |
+| `soul_cannon_azimuth_degrees` | 111.246° target |
+| `cannon_ring_resonance_thz` | Ring resonance |
+| `cannon_chiron_phase_alignment` | Alignment + φ⁻¹ Chiron boost |
 
-Or apply Operator CRD: `k8s/grafana-dashboard-garden.yaml` (extend its `panels` the same way).
+Scraped from **`:9090/metrics`** (metrics server registry).
 
-## Key queries
+### K8s
 
-- `orchestrator_fingerprint_deviation`
-- `sovereign_workload`
-- `hyperian_oidc_secret_len` (expect **64**)
-- `hyperian_phase_lock_deg`
-- `sovereign_compression_rank_budget` / `sovereign_compression_rank_realized_max`
-- `coherence` / `gravastar_coherence`
+```bash
+kubectl apply -f k8s/sovereign_workload.yaml
+kubectl apply -f k8s/servicemonitor-sovereign-workload.yaml
+kubectl apply -f k8s/servicemonitor-garden-metrics.yaml
+```
 
-Seal: ∀∞φ² · GRAFANA_PANELS_APPEND_8646 · SEALED
+Adjust `metadata.labels.release` to match your Prometheus Operator `serviceMonitorSelector`.
+
+## Grafana
+
+Import `monitoring/garden_sovereign_dashboard.json` (panels 100–111). Datasource = Prometheus pointed at the above targets.
+
+## Policy
+
+Full digests only · no secrets in series · OIDC `secret_len` only (expect 64).
+
+Seal: ∀∞φ² · PROMETHEUS_POINT_STRIKE_IX_8648 · SEALED

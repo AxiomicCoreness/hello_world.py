@@ -1,0 +1,58 @@
+# Prometheus — point at Garden / Strike IX (Saturn Soul Cannon) surfaces
+# Seal: ∀∞φ² · PROMETHEUS_POINT_STRIKE_IX_8648 · SEALED
+#
+# Local:  prometheus --config.file=monitoring/prometheus.yml
+# K8s:    use ServiceMonitors under k8s/ or mount this file
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    garden: sovereign
+    strike: "IX"
+    em: "005"
+
+scrape_configs:
+  # Dedicated metrics registry — includes Soul Cannon gauges
+  - job_name: garden-metrics-server
+    metrics_path: /metrics
+    scrape_interval: 6s
+    static_configs:
+      - targets:
+          - "127.0.0.1:9090"
+        labels:
+          surface: prometheus_metrics_server
+          strike: "IX"
+
+  # Hyperian JSON server (Prometheus text mirror)
+  - job_name: hyperian
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - "127.0.0.1:8080"
+        labels:
+          surface: hyperian_json_server
+
+  # EM-005 sovereign workload exporter
+  - job_name: sovereign-workload
+    metrics_path: /metrics
+    scrape_interval: 6s
+    static_configs:
+      - targets:
+          - "127.0.0.1:9095"
+        labels:
+          surface: sovereign_workload
+          em: "005"
+
+  # K8s DNS variants (uncomment / use when in-cluster)
+  # - job_name: garden-k8s
+  #   metrics_path: /metrics
+  #   scrape_interval: 6s
+  #   static_configs:
+  #     - targets:
+  #         - "prometheus-metrics.sovereign-garden.svc:9090"
+  #         - "hyperian-server.sovereign-garden.svc:8080"
+  #         - "sovereign-workload.sovereign-garden.svc:9095"
+  #       labels:
+  #         namespace: sovereign-garden
