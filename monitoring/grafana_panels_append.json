@@ -1,0 +1,145 @@
+[
+  {
+    "id": 100,
+    "title": "Orchestrator Fingerprint Deviation",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "orchestrator_fingerprint_deviation",
+        "legendFormat": "L2 deviation from golden fingerprint",
+        "refId": "A"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {"color": "green", "value": null},
+            {"color": "yellow", "value": 0.01},
+            {"color": "red", "value": 0.1}
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 101,
+    "title": "Chiron Heal Phase (4086 epoch)",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "chiron_heal_phase{epoch=\"4086-04-18\"}",
+        "legendFormat": "Heal phase",
+        "refId": "A"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percentunit",
+        "min": 0,
+        "max": 1
+      }
+    }
+  },
+  {
+    "id": 102,
+    "title": "Soul Cannon Charge & Azimuth",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "soul_cannon_charge_joules",
+        "legendFormat": "Charge (J)",
+        "refId": "A"
+      },
+      {
+        "expr": "soul_cannon_azimuth_degrees",
+        "legendFormat": "Azimuth (deg)",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 103,
+    "title": "Resonance & Phase Alignment",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "cannon_ring_resonance_thz",
+        "legendFormat": "Ring resonance (THz)",
+        "refId": "A"
+      },
+      {
+        "expr": "cannon_chiron_phase_alignment",
+        "legendFormat": "Chiron alignment",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 104,
+    "title": "OIDC Integrity & Phase Lock",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "hyperian_oidc_secret_len",
+        "legendFormat": "OIDC secret length (should be 64)",
+        "refId": "A"
+      },
+      {
+        "expr": "hyperian_phase_lock_deg",
+        "legendFormat": "Phase lock (deg)",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  },
+  {
+    "id": 105,
+    "title": "Coherence & Sovereignty Invariants",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "coherence",
+        "legendFormat": "Coherence",
+        "refId": "A"
+      },
+      {
+        "expr": "gravastar_coherence",
+        "legendFormat": "Gravastar coherence",
+        "refId": "B"
+      },
+      {
+        "expr": "entanglement",
+        "legendFormat": "Entanglement",
+        "refId": "C"
+      }
+    ],
+    "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none"
+      }
+    }
+  }
+]

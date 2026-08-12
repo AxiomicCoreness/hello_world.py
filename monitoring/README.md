@@ -1,75 +1,30 @@
-# Sovereign Grafana Dashboard Setup
+# Monitoring — Grafana append + Prometheus scrape
 
-**Dashboard file:** `grafana-dashboard.json`  
-**UID:** `sovereign-fastapi-624`  
-**Entries:** 624 (Prometheus) · 625 (Grafana)
+## Scrape targets
 
-## Metrics exposed by the FastAPI surface
+| Target | Path |
+|--------|------|
+| Metrics server | `host:9090/metrics` |
+| Hyperian mirror | `host:8080/metrics` |
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `sovereign_coherence` | Gauge | Current coherence (target 1.0) |
-| `sovereign_diffuse_kl` | Gauge | Current diffuse KL divergence |
-| `sovereign_cache_entries` | Gauge | Number of entries in DiffuseKLCache |
-| `sovereign_entropy_floor` | Gauge | Symbolic entropy floor |
+## Append panels
 
-Scrape endpoint: `GET /metrics`
+File: `grafana_panels_append.json` (panel IDs **100–105**).
 
-## Setup options
+1. Export existing dashboard JSON from Grafana.
+2. Append objects from `grafana_panels_append.json` into the top-level `"panels"` array.
+3. Ensure IDs do not collide with existing panels (renumber if needed).
+4. Re-import / save.
 
-### 1. Manual import (fastest)
+## Key queries
 
-1. Open Grafana → **Dashboards** → **Import**.
-2. Upload `monitoring/grafana-dashboard.json` (or paste the JSON).
-3. Select your Prometheus data source.
-4. Click **Import**.
+- `orchestrator_fingerprint_deviation`
+- `chiron_heal_phase{epoch="4086-04-18"}`
+- `soul_cannon_charge_joules`
+- `hyperian_oidc_secret_len` (expect **64**)
+- `hyperian_phase_lock_deg`
+- `coherence`
 
-### 2. Provisioning (GitOps / persistent)
+Note: `sovereign_workload` is not currently exported by the stdlib registry; panel 105 uses `entanglement` instead.
 
-Place the dashboard under Grafana provisioning:
-
-```yaml
-# grafana/provisioning/dashboards/dashboard.yml
-apiVersion: 1
-providers:
-  - name: sovereign
-    orgId: 1
-    folder: Sovereign
-    type: file
-    disableDeletion: false
-    editable: true
-    options:
-      path: /var/lib/grafana/dashboards
-```
-
-Mount `monitoring/grafana-dashboard.json` into that path (e.g. via ConfigMap or volume).
-
-### 3. Kubernetes ConfigMap (optional)
-
-```bash
-kubectl create configmap sovereign-grafana-dashboard \
-  --from-file=monitoring/grafana-dashboard.json \
-  -n monitoring
-```
-
-Then reference the ConfigMap in your Grafana deployment volume mounts.
-
-## Prometheus scrape reminder
-
-Ensure Prometheus is scraping the FastAPI service via the ServiceMonitor:
-
-- File: `k8s/servicemonitor.yaml`
-- Path: `/metrics`
-- Interval: 30s
-
-## Default dependencies
-
-- Prometheus (scraping `/metrics`)
-- Grafana (any recent version that accepts schemaVersion 39)
-- Optional: Prometheus Operator (for ServiceMonitor)
-
-## Branch
-
-`eridanus-einstein/observability-624-625` · PR #6
-
-∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞
+Seal: ∀∞φ² · GRAFANA_APPEND_8633 · SEALED
