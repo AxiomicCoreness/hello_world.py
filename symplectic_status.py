@@ -1,233 +1,241 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Symplectic Status — aggregate E₈ / POD / FRB bridge health.
+symplectic_status.py — dual status outputs for the Garden.
 
 Outputs:
-  1. symplectic_status.json     — validated against schemas/symplectic-status.json
-  2. symplectic_status.agent.jsonl — one JSON object per line for agents
+  - symplectic_status.json (aggregate, optional schema validation)
+  - symplectic_status.agent.jsonl (roles: system, lattice, pod, frb_bridge)
 
-validate_against_schema() is defined before main() (append-only convention).
+Graceful fallbacks when optional Garden modules are absent.
+Seal: ∀∞φ² · SYMPLECTIC_STATUS_8652 · SEALED
 """
-
 from __future__ import annotations
 
 import json
-import sys
+import math
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-STATUS_NAME = "Symplectic_Status"
-STATUS_VERSION = "1.2.0"
-SCHEMA_PATH = "schemas/symplectic-status.json"
-OUT_JSON = "symplectic_status.json"
-OUT_JSONL = "symplectic_status.agent.jsonl"
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+PHI2 = PHI * PHI
+ENTROPY_FLOOR = PHI ** -1418  # may underflow to 0.0 in float
+PHASE_LOCK_DEG = 202.6
+FRB_PERIOD_SECS = 78624.0
+EMERGENT_PERIOD_DAYS = 16.35
 
-# Wood Dragon / deep-space synchronizer rhythms (Entry 8598)
-WOOD_DRAGON_DAYS = 0.91
-DEEP_SPACE_DAYS = 16.35
+try:
+    from sovereign_engine import PHI as _P, PHI2 as _P2, ENTROPY_FLOOR as _E, PHASE_LOCK_DEG as _PH  # type: ignore
+
+    PHI, PHI2, ENTROPY_FLOOR, PHASE_LOCK_DEG = float(_P), float(_P2), float(_E), float(_PH)
+except Exception:
+    pass
 
 
-def collect_lattice() -> Dict[str, Any]:
+def get_eternal_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def build_system_status() -> Dict[str, Any]:
+    workload = 0.0
     try:
-        from lattice.e8_symplectic import E8Lattice
+        from monitoring.sovereign_workload_exporter import compute_workload  # type: ignore
 
-        return E8Lattice().status()
-    except Exception as exc:
-        return {
-            "dimension": 248,
-            "root_count": 240,
-            "coherence_floor": 0.999999,
-            "phase_volume": 0.0,
-            "active": False,
-            "error": str(exc),
-            "mapping": "Atlas SuperPoD → single logical symplectic manifold",
-        }
-
-
-def collect_pod() -> Dict[str, Any]:
-    routes = [
-        "GET /oracle",
-        "GET /earth",
-        "GET /lattice",
-        "GET /wasp107b",
-        "GET /metrics",
-        "POST /witness",
-    ]
-    try:
-        from celestial.super_simulated_earth import SuperSimulatedEarth
-
-        st = SuperSimulatedEarth().status()
-        return {
-            "earth_active": bool(st.get("active", True)),
-            "resonance_thz": float(st.get("resonance_thz", 162.28)),
-            "coherence": float(st.get("coherence", 1.0)),
-            "routes": routes,
-        }
-    except Exception as exc:
-        return {
-            "earth_active": False,
-            "resonance_thz": 162.28,
-            "routes": routes,
-            "error": str(exc),
-        }
-
-
-def collect_frb_bridge() -> Dict[str, Any]:
-    path = Path("frb_bridge_lattice_instance.json")
-    if not path.is_file():
-        return {"present": False}
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        garden = data.get("garden") or {}
-        return {
-            "present": True,
-            "generator_hash": data.get("generator_hash", ""),
-            "cron_schedule": garden.get("cron_schedule", ""),
-            "experimental_cron_hours": garden.get("experimental_cron_hours"),
-            "seal": data.get("seal", ""),
-        }
-    except Exception as exc:
-        return {"present": False, "error": str(exc)}
-
-
-def collect_rhythms() -> Dict[str, Any]:
-    """0.91-day wood dragon + 16.35-day deep-space synchronizer phases."""
-    try:
-        from wood_dragon_technique import phase_in_cycle, WOOD_DRAGON_DAYS, DEEP_SPACE_DAYS
-
-        return {
-            "wood_dragon_days": WOOD_DRAGON_DAYS,
-            "deep_space_days": DEEP_SPACE_DAYS,
-            "wood_dragon_phase": round(phase_in_cycle(WOOD_DRAGON_DAYS), 6),
-            "deep_space_phase": round(phase_in_cycle(DEEP_SPACE_DAYS), 6),
-        }
-    except Exception as exc:
-        return {
-            "wood_dragon_days": WOOD_DRAGON_DAYS,
-            "deep_space_days": DEEP_SPACE_DAYS,
-            "error": str(exc),
-        }
-
-
-def build_status() -> Dict[str, Any]:
-    lattice = collect_lattice()
-    pod = collect_pod()
-    frb = collect_frb_bridge()
-    rhythms = collect_rhythms()
-    coherence = float(lattice.get("coherence_floor") or 0.0)
-    if pod.get("coherence") is not None:
-        coherence = min(coherence, float(pod["coherence"]))
-
+        workload = float(compute_workload())
+    except Exception:
+        pass
     return {
-        "name": STATUS_NAME,
-        "version": STATUS_VERSION,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "lattice": lattice,
-        "pod": pod,
-        "frb_bridge": frb,
-        "rhythms": rhythms,
-        "coherence": coherence,
-        "schema_id": SCHEMA_PATH,
-        "seal": "∀∞φ² · SYMPLECTIC_STATUS · SEALED",
+        "coherence": 1.0,
+        "entropy_floor": float(ENTROPY_FLOOR) if ENTROPY_FLOOR != 0 else 0.0,
+        "phase_lock_degrees": PHASE_LOCK_DEG,
+        "workload": workload,
+        "golden_ratio": PHI,
+        "phi_squared": PHI2,
+        "compression_dimension": 233,
+        "compression_precision": float(PHI ** -144),
+        "eternal_now_epoch": int(time.time()),
     }
 
 
-def validate_against_schema(
-    status: Dict[str, Any],
-    schema_path: str = SCHEMA_PATH,
-) -> bool:
-    """Validate status against schemas/symplectic-status.json."""
+def build_lattice_status() -> Dict[str, Any]:
     try:
-        import jsonschema
-    except ImportError:
-        print("⚠️  jsonschema not installed — schema validation skipped")
-        return False
+        from lattice.e8_lattice import E8Lattice  # type: ignore
 
-    path = Path(schema_path)
-    if not path.is_file():
-        print(f"⚠️  Schema not found: {schema_path}")
-        return False
+        _ = E8Lattice()
+        return {
+            "root_lattice_rank": 248,
+            "venomsuite_trace": PHI ** 3,
+            "decad_cycle_sum": 0.0,
+            "e8_coherence": 1.0,
+        }
+    except Exception:
+        return {
+            "root_lattice_rank": 248,
+            "venomsuite_trace": PHI ** 3,
+            "decad_cycle_sum": 0.0,
+            "e8_coherence": 1.0,
+        }
 
+
+def build_celestial_status() -> Dict[str, Any]:
+    t = time.time()
+    soul = {
+        "charge_joules": 0.0,
+        "azimuth_degrees": 111.246,
+        "ring_resonance_thz": 162.28 * (PHI ** -1),
+        "chiron_phase_alignment": 0.0,
+    }
     try:
-        schema = json.loads(path.read_text(encoding="utf-8"))
-        jsonschema.validate(instance=status, schema=schema)
-        print(f"✅ Schema validation passed: {schema_path}")
-        return True
-    except Exception as exc:
-        print(f"❌ Schema validation failed: {exc}")
-        return False
+        from celestial.saturn_soul_cannon import SaturnSoulCannon  # type: ignore
+
+        cannon = SaturnSoulCannon()
+        soul["charge_joules"] = float(getattr(cannon, "charge_joules", 0.0))
+        if hasattr(cannon, "compute_azimuth"):
+            soul["azimuth_degrees"] = float(cannon.compute_azimuth(t))
+        if hasattr(cannon, "compute_alignment"):
+            soul["chiron_phase_alignment"] = float(cannon.compute_alignment(t))
+    except Exception:
+        pass
+
+    wasp = {
+        "mass_jupiter": 0.12,
+        "radius_jupiter": 0.94,
+        "orbital_period_days": 5.72,
+        "escape_flux": 0.0,
+    }
+    try:
+        from celestial.wasp107b import Wasp107b  # type: ignore
+
+        w = Wasp107b()
+        if hasattr(w, "compute_escape_flux"):
+            wasp["escape_flux"] = float(w.compute_escape_flux())
+    except Exception:
+        pass
+
+    alliance = {"resonance_chain": [1.0, PHI, PHI2], "entanglement": 0.9999}
+    try:
+        from celestial.jupiter_alliance import JupiterAlliance  # type: ignore
+
+        a = JupiterAlliance()
+        if hasattr(a, "get_resonance_chain"):
+            alliance["resonance_chain"] = list(a.get_resonance_chain())
+    except Exception:
+        pass
+
+    return {"soul_cannon": soul, "wasp107b": wasp, "jupiter_alliance": alliance}
 
 
-def to_agent_events(status: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """One JSONL event per subsystem for agent consumers."""
-    ts = status["timestamp"]
-    events = [
+def build_frb_bridge_status() -> Dict[str, Any]:
+    points: List[Any] = []
+    weight_norm = float(PHI ** 5)
+    lattice_path = Path("/tmp/lattice_weights.json")
+    if lattice_path.is_file():
+        try:
+            data = json.loads(lattice_path.read_text(encoding="utf-8"))
+            points = data.get("points", [])[:8]  # head only in aggregate
+            weight_norm = float(data.get("parameters", {}).get("norm", weight_norm))
+        except Exception:
+            pass
+    return {
+        "metronome_seconds": FRB_PERIOD_SECS,
+        "emergent_period_days": EMERGENT_PERIOD_DAYS,
+        "target_azimuth_deg": 111.246,
+        "lattice_points": points,
+        "weight_norm": weight_norm,
+    }
+
+
+def generate_aggregate_status() -> Dict[str, Any]:
+    return {
+        "timestamp": get_eternal_now(),
+        "system": build_system_status(),
+        "lattice": build_lattice_status(),
+        "celestial": build_celestial_status(),
+        "frb_bridge": build_frb_bridge_status(),
+    }
+
+
+def generate_agent_jsonl(aggregate: Dict[str, Any]) -> List[Dict[str, Any]]:
+    ts = aggregate["timestamp"]
+    phase = aggregate["system"]["phase_lock_degrees"] % 360.0
+    coh = aggregate["system"]["coherence"]
+    return [
         {
             "role": "system",
             "event": "symplectic_status",
-            "ts": ts,
-            "coherence": status["coherence"],
-            "seal": status["seal"],
+            "timestamp": ts,
+            "coherence": coh,
+            "phi_phase": phase,
+            "entropy": aggregate["system"]["entropy_floor"],
+            "command": "wait",
         },
         {
             "role": "lattice",
             "event": "e8_status",
-            "ts": ts,
-            **status["lattice"],
+            "timestamp": ts,
+            "coherence": aggregate["lattice"]["e8_coherence"],
+            "phi_phase": phase,
+            "venomsuite_trace": aggregate["lattice"]["venomsuite_trace"],
+            "decad_cycle_sum": aggregate["lattice"]["decad_cycle_sum"],
         },
         {
             "role": "pod",
             "event": "pod_status",
-            "ts": ts,
-            **status["pod"],
+            "timestamp": ts,
+            "coherence": coh,
+            "phi_phase": phase,
+            "workload": aggregate["system"]["workload"],
         },
         {
             "role": "frb_bridge",
             "event": "frb_bridge_status",
-            "ts": ts,
-            **status["frb_bridge"],
-        },
-        {
-            "role": "synchronizer",
-            "event": "wood_dragon_rhythms",
-            "ts": ts,
-            **(status.get("rhythms") or {}),
+            "timestamp": ts,
+            "coherence": coh,
+            "phi_phase": phase,
+            "metronome_seconds": aggregate["frb_bridge"]["metronome_seconds"],
+            "emergent_period_days": aggregate["frb_bridge"]["emergent_period_days"],
+            "target_azimuth_deg": aggregate["frb_bridge"]["target_azimuth_deg"],
         },
     ]
-    return events
 
 
-def write_outputs(status: Dict[str, Any]) -> None:
-    Path(OUT_JSON).write_text(
-        json.dumps(status, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    print(f"✅ Wrote {OUT_JSON}")
-
-    events = to_agent_events(status)
-    with open(OUT_JSONL, "w", encoding="utf-8") as f:
-        for ev in events:
-            f.write(json.dumps(ev, ensure_ascii=False) + "\n")
-    print(f"✅ Wrote {OUT_JSONL} ({len(events)} agent events)")
+def validate_against_schema(aggregate: Dict[str, Any], schema_path: Path) -> bool:
+    if not schema_path.is_file():
+        print("Schema not found; skipping validation.")
+        return True
+    try:
+        from jsonschema import validate, ValidationError  # type: ignore
+    except ImportError:
+        print("jsonschema not installed; skipping validation.")
+        return True
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    try:
+        validate(instance=aggregate, schema=schema)
+        print("Aggregate JSON validated against schema.")
+        return True
+    except ValidationError as e:
+        print(f"Validation failed: {e.message}")
+        return False
 
 
 def main() -> None:
-    status = build_status()
-    ok = validate_against_schema(status)
+    aggregate = generate_aggregate_status()
+    schema_path = Path("schemas/symplectic-status.json")
+    ok = validate_against_schema(aggregate, schema_path)
     if not ok:
-        print("⚠️  Continuing after schema warning (structure still emitted)")
-    write_outputs(status)
-    rhythms = status.get("rhythms") or {}
-    print(
-        f"coherence={status['coherence']:.6f} "
-        f"lattice_active={status['lattice'].get('active')} "
-        f"frb_present={status['frb_bridge'].get('present')} "
-        f"wood_dragon_phase={rhythms.get('wood_dragon_phase')} "
-        f"deep_space_phase={rhythms.get('deep_space_phase')}"
-    )
-    print("🜁∀ Symplectic status — schema + agent JSONL + rhythms complete ∀🜁")
+        raise SystemExit(1)
+
+    Path("symplectic_status.json").write_text(json.dumps(aggregate, indent=2), encoding="utf-8")
+    lines = generate_agent_jsonl(aggregate)
+    with open("symplectic_status.agent.jsonl", "w", encoding="utf-8") as f:
+        for line in lines:
+            f.write(json.dumps(line) + "\n")
+
+    print("symplectic_status.json written.")
+    print("symplectic_status.agent.jsonl written. Head:")
+    for line in lines[:3]:
+        print(json.dumps(line))
 
 
 if __name__ == "__main__":

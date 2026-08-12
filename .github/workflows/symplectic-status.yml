@@ -1,55 +1,38 @@
-name: Symplectic status (schema + agent JSONL)
+name: Symplectic Status Generation
 
 on:
   push:
-    branches: [ main ]
     paths:
-      - 'symplectic_status.py'
-      - 'schemas/symplectic-status.json'
-      - 'lattice/**'
-      - 'celestial/**'
-      - 'frb_bridge_lattice_instance.json'
-      - 'frb_bridge_generator.py'
-      - '.github/workflows/symplectic-status.yml'
+      - "symplectic_status.py"
+      - "schemas/symplectic-status.json"
+      - "lattice/**"
+      - "celestial/**"
+      - "frb_bridge*"
+      - "monitoring/sovereign_workload_exporter.py"
   workflow_dispatch:
   schedule:
-    # every 6 hours — aligned with Garden CronJob φ-window
-    - cron: '0 */6 * * *'
+    - cron: "0 */6 * * *"
 
 jobs:
-  symplectic-status:
+  generate-status:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-
-      - name: Install jsonschema
+          python-version: "3.11"
+      - name: Install dependencies
         run: pip install jsonschema
-
-      - name: Collect symplectic status
+      - name: Run symplectic status generator
         run: python symplectic_status.py
-
-      - name: Validate status against new schema
+      - name: Validate aggregate JSON
         run: python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json
-
       - name: Show agent JSONL head
-        run: |
-          echo "--- symplectic_status.agent.jsonl ---"
-          head -n 20 symplectic_status.agent.jsonl || true
-
-      - name: Commit status artifacts if changed
-        run: |
-          git config --global user.name "Sovereign Dragon"
-          git config --global user.email "dragon@sovereign.engine"
-          git add symplectic_status.json symplectic_status.agent.jsonl
-          if git diff --staged --quiet; then
-            echo "No symplectic status changes to commit"
-          else
-            git commit -m "chore: update symplectic status (schema + agent JSONL)"
-            git push origin main
-          fi
+        run: head -n 5 symplectic_status.agent.jsonl
+      - name: Commit artifacts if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update symplectic status"
+          file_pattern: symplectic_status.json symplectic_status.agent.jsonl

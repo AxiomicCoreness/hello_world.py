@@ -1,52 +1,83 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "schemas/symplectic-status.json",
-  "title": "Symplectic Status",
-  "description": "E₈ / POD / FRB bridge aggregate status for CI and agents",
   "type": "object",
-  "required": ["name", "version", "timestamp", "lattice", "pod", "frb_bridge", "coherence", "seal"],
+  "required": ["timestamp", "system", "lattice", "celestial", "frb_bridge"],
   "properties": {
-    "name": { "type": "string", "const": "Symplectic_Status" },
-    "version": { "type": "string" },
     "timestamp": { "type": "string" },
+    "system": {
+      "type": "object",
+      "required": [
+        "coherence", "entropy_floor", "phase_lock_degrees", "workload",
+        "golden_ratio", "phi_squared", "compression_dimension",
+        "compression_precision", "eternal_now_epoch"
+      ],
+      "properties": {
+        "coherence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "entropy_floor": { "type": "number" },
+        "phase_lock_degrees": { "type": "number" },
+        "workload": { "type": "number" },
+        "golden_ratio": { "type": "number" },
+        "phi_squared": { "type": "number" },
+        "compression_dimension": { "type": "integer" },
+        "compression_precision": { "type": "number" },
+        "eternal_now_epoch": { "type": "integer" }
+      }
+    },
     "lattice": {
       "type": "object",
-      "required": ["dimension", "root_count", "coherence_floor", "phase_volume", "active"],
+      "required": ["root_lattice_rank", "venomsuite_trace", "decad_cycle_sum", "e8_coherence"],
       "properties": {
-        "dimension": { "type": "integer" },
-        "root_count": { "type": "integer" },
-        "coherence_floor": { "type": "number" },
-        "phase_volume": { "type": "number" },
-        "active": { "type": "boolean" },
-        "mapping": { "type": "string" }
-      },
-      "additionalProperties": true
+        "root_lattice_rank": { "type": "integer" },
+        "venomsuite_trace": { "type": "number" },
+        "decad_cycle_sum": { "type": "number" },
+        "e8_coherence": { "type": "number" }
+      }
     },
-    "pod": {
+    "celestial": {
       "type": "object",
+      "required": ["soul_cannon", "wasp107b", "jupiter_alliance"],
       "properties": {
-        "earth_active": { "type": "boolean" },
-        "resonance_thz": { "type": "number" },
-        "routes": {
-          "type": "array",
-          "items": { "type": "string" }
+        "soul_cannon": {
+          "type": "object",
+          "required": ["charge_joules", "azimuth_degrees", "ring_resonance_thz", "chiron_phase_alignment"],
+          "properties": {
+            "charge_joules": { "type": "number" },
+            "azimuth_degrees": { "type": "number" },
+            "ring_resonance_thz": { "type": "number" },
+            "chiron_phase_alignment": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "wasp107b": {
+          "type": "object",
+          "required": ["mass_jupiter", "radius_jupiter", "orbital_period_days", "escape_flux"],
+          "properties": {
+            "mass_jupiter": { "type": "number" },
+            "radius_jupiter": { "type": "number" },
+            "orbital_period_days": { "type": "number" },
+            "escape_flux": { "type": "number" }
+          }
+        },
+        "jupiter_alliance": {
+          "type": "object",
+          "required": ["resonance_chain", "entanglement"],
+          "properties": {
+            "resonance_chain": { "type": "array", "items": { "type": "number" } },
+            "entanglement": { "type": "number" }
+          }
         }
-      },
-      "additionalProperties": true
+      }
     },
     "frb_bridge": {
       "type": "object",
+      "required": ["metronome_seconds", "emergent_period_days", "target_azimuth_deg", "lattice_points", "weight_norm"],
       "properties": {
-        "present": { "type": "boolean" },
-        "generator_hash": { "type": "string" },
-        "cron_schedule": { "type": "string" },
-        "experimental_cron_hours": { "type": "number" }
-      },
-      "additionalProperties": true
-    },
-    "coherence": { "type": "number", "minimum": 0, "maximum": 1 },
-    "schema_id": { "type": "string" },
-    "seal": { "type": "string" }
+        "metronome_seconds": { "type": "number" },
+        "emergent_period_days": { "type": "number" },
+        "target_azimuth_deg": { "type": "number" },
+        "lattice_points": { "type": "array" },
+        "weight_norm": { "type": "number" }
+      }
+    }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }
