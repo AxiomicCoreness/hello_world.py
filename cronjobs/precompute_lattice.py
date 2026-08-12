@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
 Precompute FRB bridge lattice weights for the next convergence window.
-Writes JSON (default /tmp/lattice_weights.json).
+Outputs JSON (default /tmp/lattice_weights.json) for CronJob + Grafana injection.
 
-Seal: ∀∞φ² · FINGERPRINT_PRECOMPUTE_8631 · SEALED
+Seal: ∀∞φ² · GRAFANA_CRD_LATTICE_8645 · SEALED
 """
-
 from __future__ import annotations
 
 import json
@@ -19,7 +18,7 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 TAU_FRB = 78624.0
 NUM_LAYERS = 12
 NUM_AZIMUTHS = 4
-NORM = PHI ** 5  # ~11.09; narrative 11.83 kept as comment alternate
+NORM = PHI ** 5  # ~11.09; narrative 11.83 is approximate
 R0 = 0.2033
 DELTA_Z = 6552.0
 HYPERIAN = os.environ.get("HYPERIAN_URL", "http://127.0.0.1:8080").rstrip("/")
@@ -66,11 +65,13 @@ def generate_lattice(phase_deg: float) -> dict:
                     "weight": round(weight, 6),
                 }
             )
+    weight_sum = sum(p["weight"] for p in points)
     return {
         "meta": {
-            "version": "1.0.0",
+            "version": "1.1.0",
             "description": "Precomputed lattice for next convergence",
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "grafana_injection": True,
         },
         "parameters": {
             "tau_FRB_seconds": TAU_FRB,
@@ -80,12 +81,15 @@ def generate_lattice(phase_deg: float) -> dict:
             "num_azimuths": NUM_AZIMUTHS,
             "r0": R0,
             "delta_z": DELTA_Z,
+            "norm": NORM,
             "phase_lock_deg": phase_deg,
             "weight_formula": "w(L,A)=φ^{-(L+1)}·cos²(π·A/2)·exp(-(L-6)²/8)",
         },
         "points": points,
         "verification": {
             "emergent_period_days": 16.35,
+            "point_count": len(points),
+            "weight_sum": round(weight_sum, 6),
             "notes": f"Precomputed for next window; phase lock {phase_deg:.3f}°",
         },
     }
