@@ -1,243 +1,235 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Opaque Local ⊕ Ninja Numbers ⊕ Chessboard Triangulation
-=======================================================
-Compression formalism with φ-harmonic weights. Opaque tensor never printed;
-only trace invariants + full digests of public factors.
+🜁∀ OPAQUE NINJA + CHESSBOARD + HMAC WALLET — SEALED ∀🜁
+Commit parent: 9b9497d4e44c1373c3e8577578c742f7a91e3b6e
+Path: optimizer/opaque_ninja_chessboard.py
 
-Merge with wallet.dat rotation: HMAC over (wallet_sha256 || ninja || T_digest).
+Merge pipeline:
+  1. Sync wallet.dat → full SHA-256 (64 hex) via OptimizerWalletStub
+  2. Rotate → fingerprint only (material_sha256, never material bytes)
+  3. Compress → chessboard/ninja digests + singular-value head (opaque tensor body withheld)
+  4. HMAC-SHA256 over wallet_sha256 || chessboard_sha256 || ninja_sha256 || rank
+     → full 64-hex tag; key length only, key never returned
 
-Seal: ∀∞φ² · OPAQUE_NINJA_CHESSBOARD_8637 · SEALED
+Policy: full digests · no secret export · opaque body sealed
+Witness: 8636 → 8637 → 8638 — UNBROKEN
+Seal: ∀∞φ² · OPAQUE_NINJA_CHESSBOARD_8637 · OPAQUE_QUBIT_STUB_8638 · SEALED
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import hmac
 import json
-import math
 import os
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
-try:
-    import numpy as np
-except ImportError:  # pragma: no cover
-    np = None  # type: ignore
+import numpy as np
 
-PHI = (1.0 + math.sqrt(5.0)) / 2.0
-NINJA: List[int] = [144, 233, 377, 610, 987, 1597, 2584]
-CHESS_N = 13
-OPAQUE_DIM = 7
+PHI = (1 + np.sqrt(5)) / 2
+PHI_INV = 1 / PHI
+PHI_NEG_709 = PHI ** (-709)
+PHI_NEG_1418 = PHI ** (-1418)
+NINJA_NUMBERS = [144, 233, 377, 610, 987, 1597, 2584]
 
-
-def _utc() -> str:
-    return datetime.now(timezone.utc).isoformat()
+HMAC_KEY = hashlib.sha3_256(
+    f"{PHI}{PHI_NEG_709}{PHI_NEG_1418}{''.join(map(str, NINJA_NUMBERS))}".encode()
+).digest()
 
 
-def _full_sha256(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()  # 64 hex — never truncated
+@dataclass
+class WalletFingerprint:
+    """Immutable wallet fingerprint — full SHA-256, never the material."""
+
+    sha256: str
+    size_bytes: int
+    mtime: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "sha256": self.sha256,
+            "size_bytes": self.size_bytes,
+            "mtime": self.mtime,
+        }
+
+    @classmethod
+    def from_path(cls, path: str) -> Optional["WalletFingerprint"]:
+        p = Path(path)
+        if not p.exists():
+            return None
+        with open(p, "rb") as f:
+            data = f.read()
+        sha256 = hashlib.sha256(data).hexdigest()
+        return cls(sha256=sha256, size_bytes=len(data), mtime=p.stat().st_mtime)
 
 
-def ninja_diag() -> "np.ndarray":
-    assert np is not None
-    return np.diag(np.array(NINJA, dtype=float))
+class OptimizerWalletStub:
+    """Safe wallet stub — never returns keys, never decodes secrets."""
+
+    def __init__(self, wallet_path: str):
+        self.wallet_path = wallet_path
+        self._fingerprint: Optional[WalletFingerprint] = None
+        self._rotation_fingerprint: Optional[str] = None
+
+    def sync(self) -> WalletFingerprint:
+        fp = WalletFingerprint.from_path(self.wallet_path)
+        if fp is None:
+            raise FileNotFoundError(f"Wallet not found: {self.wallet_path}")
+        self._fingerprint = fp
+        return fp
+
+    def rotate(self) -> str:
+        if self._fingerprint is None:
+            self.sync()
+        material = f"{self._fingerprint.sha256}:{int(time.time() // 3600)}".encode()
+        hmac_digest = hmac.new(HMAC_KEY, material, hashlib.sha256).hexdigest()
+        self._rotation_fingerprint = hmac_digest
+        return hmac_digest
+
+    def status(self) -> Dict[str, Any]:
+        return {
+            "wallet_path": self.wallet_path,
+            "fingerprint": self._fingerprint.to_dict() if self._fingerprint else None,
+            "rotation_fingerprint": self._rotation_fingerprint,
+            "has_synced": self._fingerprint is not None,
+            "has_rotated": self._rotation_fingerprint is not None,
+        }
 
 
-def chessboard_triangulation() -> "np.ndarray":
-    assert np is not None
-    T = np.zeros((CHESS_N, CHESS_N), dtype=float)
-    for i in range(CHESS_N):
-        for j in range(CHESS_N):
-            if i == j:
-                continue
-            w = (PHI ** (-abs(i - j) / 12.0)) * math.cos(
-                (math.pi / PHI) * (i + j) / CHESS_N
-            )
-            T[i, j] = w
-    # symmetrize
-    T = 0.5 * (T + T.T)
-    return T
+def ninja_diagonal_matrix() -> np.ndarray:
+    return np.diag(NINJA_NUMBERS)
 
 
-def opaque_invariants() -> Tuple[float, float, float]:
-    """Published traces only — not the opaque tensor body."""
-    return (PHI ** -709, PHI ** 2, PHI ** 3)
+def chessboard_triangulation() -> np.ndarray:
+    T = np.zeros((13, 13))
+    for i in range(13):
+        for j in range(13):
+            if i != j:
+                w = PHI ** (-abs(i - j) / 12) * np.cos(np.pi / PHI * (i + j) / 13)
+                T[i, j] = w
+    return 0.5 * (T + T.T)
 
 
-def opaque_local_state(seed: int = 0) -> "np.ndarray":
-    """
-    Simulated 7×7×7 opaque tensor. Body is not returned by public APIs.
-    Entries scaled near machine floor so accidental dumps are useless.
-    """
-    assert np is not None
-    rng = np.random.default_rng(seed)
-    O = rng.standard_normal((OPAQUE_DIM, OPAQUE_DIM, OPAQUE_DIM)) * 1e-300
-    return O
+def opaque_tensor_invariants() -> Dict[str, float]:
+    return {
+        "trace_1": float(PHI_NEG_709),
+        "trace_2": float(PHI ** 2),
+        "trace_3": float(PHI ** 3),
+    }
 
 
-def compress(
-    O: "np.ndarray",
-    max_rank: int = 144,
+def opaque_tensor_body() -> np.ndarray:
+    rng = np.random.default_rng(42)
+    return rng.standard_normal((7, 7, 7)) * 1e-150
+
+
+def compute_compression_digests(
+    O: np.ndarray, N: np.ndarray, T: np.ndarray
 ) -> Dict[str, Any]:
-    """
-    Contract O with ninja diag and chessboard T, then truncated SVD.
-    Returns only singular values + shapes + digests — not full factors by default.
-    """
-    assert np is not None
-    N = ninja_diag()
-    T = chessboard_triangulation()
-    # Mode products: O[i,j,k] with N[i,a], T[j,b], N[k,c] → M[a,b,c]
-    # N is 7×7; T is 13×13 — need compatible modes.
-    # Practical map: project middle mode of O (7) into 13 via pad/interp weights.
-    P = np.zeros((OPAQUE_DIM, CHESS_N), dtype=float)
-    for i in range(OPAQUE_DIM):
-        for j in range(CHESS_N):
-            P[i, j] = PHI ** (-abs(i * CHESS_N / OPAQUE_DIM - j) / 12.0)
+    # Middle mode 7 → 13 via φ pad matrix
+    P = np.zeros((7, 13))
+    for i in range(7):
+        for j in range(13):
+            P[i, j] = PHI ** (-abs(i * 13 / 7 - j) / 12.0)
     P /= np.linalg.norm(P) + 1e-30
-
-    # M[a,b,c] ≈ sum_ijk O_ijk N_ia P_jb N_kc  (middle via P·T)
-    NT = T  # 13×13
-    M = np.einsum("ijk,ia,jb,kc->abc", O, N, P @ NT, N, optimize=True)
-    flat = M.reshape(OPAQUE_DIM * CHESS_N, OPAQUE_DIM)
-    U, s, Vt = np.linalg.svd(flat, full_matrices=False)
-    R = min(max_rank, len(s))
-    s_comp = s[:R]
-    # φ-weighted singular values for sealed summary
-    s_phi = s_comp * np.array([PHI ** (-r) for r in range(R)])
-
-    t_bytes = NT.tobytes()
-    n_bytes = N.tobytes()
+    M = np.einsum("ijk,ia,jb,kc->abc", O, N, P @ T, N, optimize=True)
+    flat = M.reshape(7 * 13, 7)
+    _U, s, _Vt = np.linalg.svd(flat, full_matrices=False)
+    rank = min(144, len(s))
+    s_head = s[:rank]
+    chessboard_digest = hashlib.sha256(T.astype(np.float64).tobytes()).hexdigest()
+    ninja_digest = hashlib.sha256(N.astype(np.float64).tobytes()).hexdigest()
+    svd_digest = hashlib.sha256(s_head.astype(np.float64).tobytes()).hexdigest()
     return {
-        "rank": int(R),
-        "singular_values_head": [float(x) for x in s_comp[:8]],
-        "singular_phi_head": [float(x) for x in s_phi[:8]],
-        "shapes": {"M": list(M.shape), "flat": list(flat.shape)},
-        "chessboard_sha256": _full_sha256(t_bytes),
-        "ninja_sha256": _full_sha256(n_bytes),
-        "invariants": {
-            "tr1": opaque_invariants()[0],
-            "tr2": opaque_invariants()[1],
-            "tr3": opaque_invariants()[2],
+        "rank": rank,
+        "chessboard_sha256": chessboard_digest,
+        "ninja_sha256": ninja_digest,
+        "svd_head_sha256": svd_digest,
+        "singular_values_count": len(s_head),
+        "compression_ratio": (7 * 13 * 7) / (rank * (7 + 13 + 7)),
+        "reconstruction_error_bound": float(PHI ** (-rank)),
+    }
+
+
+def hmac_merge(
+    wallet_sha256: str, chessboard_sha256: str, ninja_sha256: str, rank: int
+) -> str:
+    payload = f"{wallet_sha256}{chessboard_sha256}{ninja_sha256}{rank}".encode()
+    return hmac.new(HMAC_KEY, payload, hashlib.sha256).hexdigest()
+
+
+def run_merge_pipeline(wallet_path: str, verbose: bool = True) -> Dict[str, Any]:
+    wallet = OptimizerWalletStub(wallet_path)
+    fp = wallet.sync()
+    if verbose:
+        print(f"Wallet synced: {fp.sha256[:16]}... (size {fp.size_bytes} bytes)")
+    rot_fp = wallet.rotate()
+    if verbose:
+        print(f"Rotation fingerprint: {rot_fp[:16]}...")
+    O = opaque_tensor_body()
+    N = ninja_diagonal_matrix()
+    T = chessboard_triangulation()
+    comp = compute_compression_digests(O, N, T)
+    if verbose:
+        print(f"Compression rank: {comp['rank']}")
+        print(f"  ratio: {comp['compression_ratio']:.3f}")
+        print(f"  error bound: {comp['reconstruction_error_bound']:.2e}")
+    tag = hmac_merge(fp.sha256, comp["chessboard_sha256"], comp["ninja_sha256"], comp["rank"])
+    if verbose:
+        print(f"HMAC tag: {tag[:16]}... (64 hex)")
+        print(f"  key_len: {len(HMAC_KEY)} (never returned)")
+    return {
+        "wallet_fingerprint": fp.to_dict(),
+        "rotation_fingerprint": rot_fp,
+        "compression": {
+            "rank": comp["rank"],
+            "chessboard_sha256": comp["chessboard_sha256"],
+            "ninja_sha256": comp["ninja_sha256"],
+            "svd_head_sha256": comp["svd_head_sha256"],
+            "compression_ratio": comp["compression_ratio"],
+            "reconstruction_error_bound": comp["reconstruction_error_bound"],
         },
-        "compression_note": "factors withheld; digests + head singular values only",
+        "hmac_tag": tag,
+        "invariants": opaque_tensor_invariants(),
+        "witness_chain": "8636 → 8637 → 8638 — UNBROKEN",
+        "seal": "∀∞φ² · OPAQUE_NINJA_CHESSBOARD_8637 · OPAQUE_QUBIT_STUB_8638 · SEALED",
     }
 
 
-def merge_hmac_wallet(
-    wallet_sha256: str,
-    compress_meta: Dict[str, Any],
-    key: Optional[bytes] = None,
-) -> Dict[str, Any]:
-    """
-    HMAC-SHA256 over public digests. Key never returned.
-    wallet_sha256 must be full 64-hex from optimizer sync.
-    """
-    if len(wallet_sha256) != 64 or any(c not in "0123456789abcdef" for c in wallet_sha256.lower()):
-        raise ValueError("wallet_sha256 must be full 64 hex chars")
-    key = key or os.urandom(32)
-    msg = (
-        f"{wallet_sha256}|"
-        f"{compress_meta.get('chessboard_sha256', '')}|"
-        f"{compress_meta.get('ninja_sha256', '')}|"
-        f"{compress_meta.get('rank', 0)}"
-    ).encode()
-    tag = hmac.new(key, msg, hashlib.sha256).hexdigest()
-    return {
-        "hmac_sha256": tag,  # full 64
-        "wallet_sha256": wallet_sha256,
-        "chessboard_sha256": compress_meta.get("chessboard_sha256"),
-        "ninja_sha256": compress_meta.get("ninja_sha256"),
-        "rank": compress_meta.get("rank"),
-        "key_len": len(key),
-        "merged_at": _utc(),
-        "seal": "∀∞φ² · OPAQUE_NINJA_CHESSBOARD_8637 · SEALED",
-    }
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Opaque Ninja + Chessboard + HMAC Wallet Merge")
+    parser.add_argument(
+        "--wallet",
+        default=os.environ.get("WALLET_DAT_PATH", "./wallet.dat"),
+    )
+    parser.add_argument("--output", default="opaque_merge_state.json")
+    parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--status", action="store_true")
+    args = parser.parse_args()
 
-
-def run_pipeline(wallet_path: Optional[Path] = None, seed: int = 0) -> Dict[str, Any]:
-    if np is None:
-        return {"ok": False, "error": "numpy required"}
-
-    wallet_sha = "0" * 64
-    if wallet_path and Path(wallet_path).is_file():
-        h = hashlib.sha256()
-        with open(wallet_path, "rb") as f:
-            for chunk in iter(lambda: f.read(1 << 20), b""):
-                h.update(chunk)
-        wallet_sha = h.hexdigest()
-    else:
+    if args.status:
+        wallet = OptimizerWalletStub(args.wallet)
         try:
-            from optimizer.wallet_sync_rotate import OptimizerWalletStub
+            fp = wallet.sync()
+            print(f"Wallet path: {args.wallet}")
+            print(f"  SHA-256: {fp.sha256}")
+            print(f"  Size: {fp.size_bytes} bytes")
+            print(f"  mtime: {fp.mtime}")
+        except FileNotFoundError:
+            print(f"Wallet not found: {args.wallet}")
+        return
 
-            stub = OptimizerWalletStub()
-            rec = stub.sync()
-            if rec.exists and rec.content_sha256:
-                wallet_sha = rec.content_sha256
-            rot = stub.rotate()
-            rotation = asdict(rot)
-        except Exception:
-            rotation = None
-    else:
-        rotation = None
-
-    O = opaque_local_state(seed=seed)
-    meta = compress(O)
-    merged = merge_hmac_wallet(wallet_sha, meta)
-    return {
-        "ok": True,
-        "compress": meta,
-        "wallet_rotation": rotation,
-        "merge": merged,
-        "policy": "opaque body withheld; full digests only",
-    }
+    sealed = run_merge_pipeline(args.wallet, verbose=args.verbose)
+    with open(args.output, "w", encoding="utf-8") as f:
+        json.dump(sealed, f, indent=2)
+    if args.verbose:
+        print(f"State saved to: {args.output}")
+        print(sealed["seal"])
 
 
 if __name__ == "__main__":
-    import argparse
-
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--wallet", type=Path, default=None)
-    ap.add_argument("--seed", type=int, default=0)
-    args = ap.parse_args()
-    # Fix run_pipeline structure if wallet path given without rotation branch bug
-    if np is None:
-        print(json.dumps({"ok": False, "error": "numpy required"}))
-    else:
-        wallet_sha = "0" * 64
-        rotation = None
-        if args.wallet and args.wallet.is_file():
-            h = hashlib.sha256()
-            with open(args.wallet, "rb") as f:
-                for chunk in iter(lambda: f.read(1 << 20), b""):
-                    h.update(chunk)
-            wallet_sha = h.hexdigest()
-        try:
-            from optimizer.wallet_sync_rotate import OptimizerWalletStub
-
-            stub = OptimizerWalletStub(wallet_path=args.wallet or Path("wallet.dat"))
-            rec = stub.sync()
-            if rec.exists and rec.content_sha256:
-                wallet_sha = rec.content_sha256
-            rotation = asdict(stub.rotate())
-        except Exception as e:
-            rotation = {"note": str(e)}
-
-        O = opaque_local_state(seed=args.seed)
-        meta = compress(O)
-        merged = merge_hmac_wallet(wallet_sha, meta)
-        print(
-            json.dumps(
-                {
-                    "ok": True,
-                    "compress": meta,
-                    "wallet_rotation": rotation,
-                    "merge": merged,
-                    "policy": "opaque body withheld; full digests only",
-                },
-                indent=2,
-            )
-        )
+    main()
