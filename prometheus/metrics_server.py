@@ -9,7 +9,7 @@ No dependency on prometheus_client required for the text format.
 Run standalone:
   python -m prometheus.metrics_server --port 9090
 
-Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · SEALED
+Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · SOVEREIGN_WORKLOAD_8635 · SEALED
 """
 
 from __future__ import annotations
@@ -59,6 +59,7 @@ def _bootstrap() -> None:
     _reg("dimensions_active", 12.0, "Active lattice dimensions")
     _reg("coherence", 0.999999999, "Garden coherence (0-1)")
     _reg("entanglement", 1.0, "Entanglement factor")
+    _reg("sovereign_workload", 0.0, "Sovereign workload dimensionless EM-005")
     _reg("chiron_heal_phase", 0.0, "Chiron heal phase toward 4086-04-18", labels={"epoch": "4086-04-18"})
     _reg("hyperian_up", 1.0, "Hyperian / metrics surface up")
     _reg("hyperian_phase_lock_deg", PHASE_LOCK_DEG, "Sovereign phase lock (degrees)")
@@ -151,11 +152,31 @@ def refresh_soul_cannon() -> None:
         pass
 
 
+def refresh_sovereign_workload() -> float:
+    try:
+        from monitoring.sovereign_workload_exporter import compute_workload
+
+        w = float(compute_workload())
+        if not math.isfinite(w):
+            w = 0.0
+        update_metrics(sovereign_workload=w)
+        return w
+    except Exception:
+        # Lightweight fallback (no shared EMA state)
+        t = time.time()
+        amp = (1.0 / PHI) ** 3
+        w = 0.5 * (math.sin(2.0 * math.pi * t / 6.0) + 1.0) * amp * (1.0 / PHI)
+        w = min(1.0, max(0.0, w))
+        update_metrics(sovereign_workload=w)
+        return w
+
+
 def refresh_all() -> None:
     refresh_chiron_heal_phase()
     refresh_oidc_secret_len()
     refresh_fingerprint_deviation()
     refresh_soul_cannon()
+    refresh_sovereign_workload()
     update_metrics(hyperian_up=1.0, hyperian_phase_lock_deg=PHASE_LOCK_DEG)
 
 
@@ -175,7 +196,6 @@ def render_prometheus_text() -> str:
         lines.append(f"# HELP {name} {help_text}")
         lines.append(f"# TYPE {name} {mtype}")
         lab = _format_labels(labels)
-        # Prometheus forbids NaN/Inf in some scrapers; clamp
         if not math.isfinite(value):
             value = 0.0
         lines.append(f"{name}{lab} {value}")

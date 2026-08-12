@@ -130,8 +130,8 @@
         "refId": "B"
       },
       {
-        "expr": "entanglement",
-        "legendFormat": "Entanglement",
+        "expr": "sovereign_workload",
+        "legendFormat": "Sovereign workload (EM-005)",
         "refId": "C"
       }
     ],
