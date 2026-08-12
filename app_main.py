@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-app_main:app — FastAPI surface with Merkle root over symplectic_status artifacts.
+app_main:app — FastAPI surface with Merkle + Gravastar trigger.
 
 Run:
   uvicorn app_main:app --host 0.0.0.0 --port 8001
+  # or dedicated trigger surface:
+  uvicorn app_main:app --host 0.0.0.0 --port 8012
 
-Seal: ∀∞φ² · APP_MAIN_MERKLE_8653 · SEALED
+Seal: ∀∞φ² · APP_MAIN_MERKLE_8653 · GRAVASTAR_TRIGGER_8654 · SEALED
 """
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -22,8 +24,8 @@ REPO_ROOT = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="Sovereign Garden API",
-    version="1.0.0",
-    description="POD routes + symplectic Merkle integrity",
+    version="1.1.0",
+    description="POD routes + symplectic Merkle + Gravastar trigger",
 )
 
 
@@ -41,7 +43,15 @@ def root() -> Dict[str, Any]:
     return {
         "service": "app_main",
         "status": "ok",
-        "routes": ["/", "/health", "/status", "/symplectic", "/merkle/symplectic"],
+        "routes": [
+            "/",
+            "/health",
+            "/status",
+            "/symplectic",
+            "/merkle/symplectic",
+            "/trigger/gravastar",
+            "/ports",
+        ],
     }
 
 
@@ -58,12 +68,46 @@ def status() -> Dict[str, Any]:
         phi, phase = float(PHI), float(PHASE_LOCK_DEG)
     except Exception:
         phi, phase = 1.618033988749895, 202.6
+    try:
+        from quantum.gravastar_trigger import STATE
+
+        g = STATE.to_dict()
+    except Exception:
+        g = {"active": False}
     return {
         "coherence": 1.0,
         "phase_lock_degrees": phase,
         "phi": phi,
+        "gravastar_active": g.get("active", False),
         "service": "app_main",
     }
+
+
+@app.get("/ports")
+def ports() -> Dict[str, Any]:
+    from quantum.gravastar_trigger import MAPPED_PORTS, TRIGGER_NAME
+
+    return {"trigger": TRIGGER_NAME, "mapped_ports": MAPPED_PORTS}
+
+
+@app.get("/trigger/gravastar")
+@app.post("/trigger/gravastar")
+def trigger_gravastar() -> Dict[str, Any]:
+    """Trigger_Gravastar_ClarkeYoursaTee — activate on all mapped ports."""
+    from quantum.gravastar_trigger import trigger_all
+
+    result = trigger_all()
+    # Best-effort notify local metrics registry
+    try:
+        from prometheus import metrics_server as ms  # type: ignore
+
+        if hasattr(ms, "update_metrics"):
+            ms.update_metrics(gravastar_coherence=1.0)
+        elif hasattr(ms, "_reg"):
+            pass
+    except Exception:
+        pass
+    return result
 
 
 @app.get("/symplectic")
@@ -89,10 +133,6 @@ def symplectic(refresh: bool = Query(False, description="Regenerate before read"
 def merkle_symplectic(
     include_leaves: bool = Query(True, description="Include per-file leaf digests"),
 ) -> MerkleResponse:
-    """
-    Merkle root over symplectic_status directory artifacts:
-      symplectic_status.py, .json, .agent.jsonl, schemas/symplectic-status.json
-    """
     tree = merkle_from_directory(REPO_ROOT)
     if not include_leaves:
         tree = {**tree, "leaves": []}
@@ -107,7 +147,6 @@ def merkle_symplectic(
 
 @app.post("/symplectic/refresh")
 def symplectic_refresh() -> Dict[str, Any]:
-    """Regenerate symplectic outputs then return Merkle root."""
     data = symplectic(refresh=True)
     tree = merkle_from_directory(REPO_ROOT)
     return {
@@ -119,6 +158,9 @@ def symplectic_refresh() -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
+    import os
+
     import uvicorn
 
-    uvicorn.run("app_main:app", host="0.0.0.0", port=8001, reload=False)
+    port = int(os.environ.get("PORT", os.environ.get("GRAVASTAR_PORT", "8012")))
+    uvicorn.run("app_main:app", host="0.0.0.0", port=port, reload=False)
