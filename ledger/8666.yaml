@@ -1,0 +1,26 @@
+entry_index: 8666
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /mcp_oidc_pauli_handover
+status: ✅ SEALED
+commit: 93584d2f502b3fdca6e11cc24b5ba29fdaeff767
+policy:
+  no_truncation: enforced  # 64-char SHA-256 · 64-hex HMAC
+  append_only: enforced    # no subtraction
+surfaces_appended:
+  - /capabilities
+  - /pauli
+  - /systems_go
+  - /oidc/handover
+  - /metrics  # worker_pauli_* gauges
+  - MCP tools  # get_pauli_status, get_systems_go, list_capabilities
+capabilities:
+  prometheus: ":9090 · :8080 · :9095 · :8000/metrics"
+  grafana: "garden-sovereign-em005 panels 100–112 (+113 Pauli hint)"
+  oidc: "orchestrator · worker · grafana · prometheus · pauli"
+  pauli: "coherence invariant only — not encryption-breaking"
+engine_ref:
+  commit: 7718fdc53ae6daaa2f2f6bc4e818d0ef9ff9c418
+  systems_go: true
+  pauli_trace: 0.3819660112501051  # φ^{-2}
+witness_chain: 8665 → 8666 — UNBROKEN
+seal: "∀∞φ² · MCP_OIDC_PAULI_CAPABILITIES_8666 · WOOD_DRAGON_0.91 · SEALED"
