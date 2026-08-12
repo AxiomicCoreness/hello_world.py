@@ -9,7 +9,7 @@ No dependency on prometheus_client required for the text format.
 Run standalone:
   python -m prometheus.metrics_server --port 9090
 
-Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · RANK_METRICS_APPEND_8656 · SEALED
+Seal: ∀∞φ² · PROMETHEUS_METRICS_8632 · STRIKE_X_TRAPPIST_8663 · SEALED
 """
 
 from __future__ import annotations
@@ -33,7 +33,6 @@ DEVIATION_STATE = Path(
 RANK_BUDGET = 144
 RANK_REALIZED_MAX = 7
 
-# name -> (value, help, type, labels_dict_or_None)
 _REGISTRY: Dict[str, Tuple[float, str, str, Optional[Dict[str, str]]]] = {}
 _LOCK = threading.Lock()
 
@@ -75,7 +74,16 @@ def _bootstrap() -> None:
     _reg("wood_dragon_pulse_days", 0.91, "Wood Dragon pulse period (days)")
     _reg("deep_space_sync_days", 16.35, "Deep-space synchronizer period (days)")
     _reg("phi", PHI, "Golden ratio constant")
-    # --- Rank append (φ-ladder budget vs realized SVD max on 7×13×7) ---
+    # Strike X — TRAPPIST-1 Choir (week horizon)
+    _reg("trappist_choir_coherence", 0.0, "TRAPPIST-1 seven-voice choir coherence")
+    _reg("trappist_harmony_index", 0.0, "TRAPPIST-1 harmony index (week horizon)")
+    _reg("trappist_planet_frequency_thz_b", 0.0, "TRAPPIST-1b frequency THz")
+    _reg("trappist_planet_frequency_thz_c", 0.0, "TRAPPIST-1c frequency THz")
+    _reg("trappist_planet_frequency_thz_d", 0.0, "TRAPPIST-1d frequency THz")
+    _reg("trappist_planet_frequency_thz_e", 0.0, "TRAPPIST-1e frequency THz")
+    _reg("trappist_planet_frequency_thz_f", 0.0, "TRAPPIST-1f frequency THz")
+    _reg("trappist_planet_frequency_thz_g", 0.0, "TRAPPIST-1g frequency THz")
+    _reg("trappist_planet_frequency_thz_h", 0.0, "TRAPPIST-1h frequency THz")
     _reg(
         "sovereign_compression_rank_budget",
         float(RANK_BUDGET),
@@ -187,12 +195,29 @@ def refresh_sovereign_workload() -> float:
         return w
 
 
+def refresh_trappist_choir() -> None:
+    try:
+        from celestial.trappist_choir import TrappistChoir
+
+        st = TrappistChoir().status()
+        kw = {
+            "trappist_choir_coherence": float(st["trappist_choir_coherence"]),
+            "trappist_harmony_index": float(st["trappist_harmony_index"]),
+        }
+        for p in st["planets"]:
+            kw[f"trappist_planet_frequency_thz_{p['planet']}"] = float(p["frequency_thz"])
+        update_metrics(**kw)
+    except Exception:
+        pass
+
+
 def refresh_all() -> None:
     refresh_chiron_heal_phase()
     refresh_oidc_secret_len()
     refresh_fingerprint_deviation()
     refresh_soul_cannon()
     refresh_sovereign_workload()
+    refresh_trappist_choir()
     update_metrics(
         hyperian_up=1.0,
         hyperian_phase_lock_deg=PHASE_LOCK_DEG,
