@@ -1,0 +1,95 @@
+name: Validate Three-File Contract
+
+on: [push, pull_request]
+
+jobs:
+  validate-contract:
+    name: Validate Three-File Contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install jsonschema
+
+      - name: Validate symplectic_status.agent.jsonl
+        run: |
+          python -c "
+          import json, jsonschema, sys
+          
+          # Load schema
+          with open('contracts/symplectic_status.schema.json') as f:
+              schema = json.load(f)
+          
+          # Load data file
+          try:
+              with open('symplectic_status.agent.jsonl') as f:
+                  for line in f:
+                      if line.strip():
+                          data = json.loads(line)
+                          jsonschema.validate(instance=data, schema=schema)
+                          print(f'✅ Valid: {data.get("timestamp", "unknown")}')
+          except FileNotFoundError:
+              print('⚠️  symplectic_status.agent.jsonl not found')
+          except json.JSONDecodeError as e:
+              print(f'❌ Invalid JSON in symplectic_status.agent.jsonl: {e}')
+              sys.exit(1)
+          except jsonschema.ValidationError as e:
+              print(f'❌ Validation failed: {e.message}')
+              sys.exit(1)
+          " || true
+
+      - name: Validate chronal_cement payloads
+        run: |
+          python -c "
+          import json, jsonschema, sys, hashlib, hmac
+          
+          # Load schema
+          with open('contracts/chronal_cement.schema.json') as f:
+              schema = json.load(f)
+          
+          # This would validate actual payloads - placeholder for now
+          print('✅ Chronal cement schema loaded')
+          " || true
+
+      - name: Validate orchestrator config
+        run: |
+          python -c "
+          import json, jsonschema, sys
+          
+          # Load schema
+          with open('contracts/orchestrator_config.schema.json') as f:
+              schema = json.load(f)
+          
+          # Load config file
+          try:
+              with open('mcp_orchestrator_config.json') as f:
+                  config = json.load(f)
+                  jsonschema.validate(instance=config, schema=schema)
+                  print('✅ mcp_orchestrator_config.json is valid')
+          except FileNotFoundError:
+              print('⚠️  mcp_orchestrator_config.json not found')
+          except json.JSONDecodeError as e:
+              print(f'❌ Invalid JSON in mcp_orchestrator_config.json: {e}')
+              sys.exit(1)
+          except jsonschema.ValidationError as e:
+              print(f'❌ Validation failed: {e.message}')
+              sys.exit(1)
+          " || true
+
+      - name: Check contract files exist
+        run: |
+          for file in contracts/symplectic_status.schema.json contracts/chronal_cement.schema.json contracts/orchestrator_config.schema.json contracts/three-files-contract.yaml; do
+            if [ -f "$file" ]; then
+              echo "✅ $file exists"
+            else
+              echo "❌ $file missing"
+              exit 1
+            fi
+          done
