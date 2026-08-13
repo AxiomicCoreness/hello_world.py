@@ -1,7 +1,6 @@
 #!/bin/bash
 # quantum/install_k8s.sh
-# Installs the Port 380 Quantum Scaling Gate service into the Kubernetes cluster.
-# Synchronized with Layer 314 (π-resonance) and unified Ingress at api.sovereign.garden/380.
+# Layer 314 + unified Ingress api.sovereign.garden/380
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -10,18 +9,14 @@ NAMESPACE="${NAMESPACE:-garden}"
 echo "🜁∀ DEPLOYING PORT 380 SCALING GATE TO KUBERNETES (LAYER 314)..."
 echo "   ROOT=$ROOT  NAMESPACE=$NAMESPACE"
 
-# 1. Create the namespace if it doesn't exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
-# 2. Apply the Kubernetes Deployment (truth on main)
 echo "Applying deployment-port-380.yaml..."
 kubectl apply -n "${NAMESPACE}" -f "${ROOT}/k8s/deployment-port-380.yaml"
 
-# 3. Apply the Kubernetes Service (truth on main)
 echo "Applying service-port-380.yaml..."
 kubectl apply -n "${NAMESPACE}" -f "${ROOT}/k8s/service-port-380.yaml"
 
-# 4. Apply the Unified Ingress (truth on main)
 echo "Applying unified ingress.yaml (api.sovereign.garden/380)..."
 kubectl apply -n "${NAMESPACE}" -f "${ROOT}/k8s/ingress.yaml"
 
