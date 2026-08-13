@@ -1,0 +1,13 @@
+entry_index: 8670
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /oidc_handover_workflow_reregister
+status: ✅ SEALED
+issue: |
+  API 422: Workflow does not have workflow_dispatch trigger
+  (stale index on OIDC-handover.yml)
+fix: |
+  Added .github/workflows/oidc-handover.yml with explicit
+  workflow_dispatch + input; lowercase path for Actions index.
+related: ledger/8669.yaml (dispatch attempt)
+witness_chain: 8669 → 8670 — UNBROKEN
+seal: "∀∞φ² · OIDC_WORKFLOW_REREGISTER_8670 · SEALED"

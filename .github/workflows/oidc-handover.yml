@@ -1,0 +1,88 @@
+name: OIDC Handover
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Dispatch reason"
+        required: false
+        default: "Wood Dragon handover"
+
+permissions:
+  contents: write
+
+jobs:
+  oidc-handover:
+    name: OIDC Handover — Wood Dragon Rhythms
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run OIDC handover script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/oidc-handover.log"
+          exec > >(tee -a "$LOG") 2>&1
+
+          echo "# OIDC HANDOVER — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          cd "$GITHUB_WORKSPACE"
+
+          if ! git remote get-url origin &>/dev/null; then
+            git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+          else
+            git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+          fi
+
+          if git show-ref --verify --quiet refs/heads/feat/oidc-handover; then
+            git checkout feat/oidc-handover
+          else
+            git checkout -b feat/oidc-handover
+          fi
+
+          git add -A
+
+          COMMIT_MSG="feat: OIDC handover serializer with Wood Dragon rhythms
+
+serializers/ package: HMAC-signed JSON + OIDC handover
+symplectic_status.py v1.2.0: 5-line agent JSONL output
+wood_dragon_technique.py: 0.91d / 16.35d phase calculations
+mcp_tools.py: 6 MCP-compatible tools
+.github/workflows/: OIDC-enabled workflows
+ledger/8598.yaml: Sealed with witness chain 8587→8598
+
+Rhythm Seal: ∀∞φ² · SYMPLECTIC_STATUS_8598 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SEALED"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "$COMMIT_MSG"
+          fi
+
+          if ! git push -u origin feat/oidc-handover 2>&1; then
+            echo "Push failed (branch protection or token permissions?)"
+            exit 1
+          fi
+
+          echo ""
+          git status --short || true
+          echo "Branch: $(git branch --show-current)"
+          echo "Latest Commit: $(git log -1 --oneline)"
+
+      - name: Upload handover log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oidc-handover-log
+          path: oidc-handover.log
+          retention-days: 365
