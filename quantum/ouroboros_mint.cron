@@ -1,0 +1,6 @@
+# Ouroboros heartbeat mint — every 0.91 days ≈ 21h 50.4m
+# Install: crontab quantum/ouroboros_mint.cron
+# Or systemd timer with OnUnitActiveSec=78624
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+0 */22 * * * cd /home/workdir/artifacts && PYTHONPATH=. python3 quantum/simd_batch_orchestrator.py --mint >> /tmp/ouroboros_mint.log 2>&1
