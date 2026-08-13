@@ -1,5 +1,3 @@
-# Port 380 gate Deployment — dependency for Ingress path /380
-# Selector app: port-380-gate matches k8s/service-port-380.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,7 +21,7 @@ spec:
         - name: gate
           image: python:3.11-slim
           workingDir: /app
-          command: ["python", "-m", "quantum.port_380_http"]
+          command: ["python", "/app/port_380_http.py"]
           ports:
             - name: gate
               containerPort: 380
@@ -32,8 +30,6 @@ spec:
               value: "0.0.0.0"
             - name: PORT380_PORT
               value: "380"
-            - name: PYTHONPATH
-              value: "/app"
           readinessProbe:
             httpGet:
               path: /health
@@ -54,10 +50,9 @@ spec:
               memory: "256Mi"
               cpu: "250m"
           volumeMounts:
-            - name: src
+            - name: gate-script
               mountPath: /app
       volumes:
-        - name: src
-          emptyDir: {}
-      # Production: replace emptyDir with image that CONTAINS the repo
-      # (axiomiccoreness/sovereign-engine or build from Dockerfile).
+        - name: gate-script
+          configMap:
+            name: port-380-http-script
