@@ -1,14 +1,24 @@
-# k8s/ingress.yaml – Gold Standard Ingress + TLS (Entry 623)
+# k8s/ingress.yaml – Layer 314 Math Anchor Ingress + TLS + Port 380
+# Replaces Entry 623 label with Layer 314 (π-resonance / cryptographic anchor)
+# Append: path /380 → port-380-gate (containerPort 380)
+# Seal: ∀∞φ² · INGRESS_314_PORT380_8746 · SEALED
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: fastapi-sovereign
   labels:
     app: fastapi-sovereign
-    entry: "623"
+    entry: "314"
+    layer: "314"
+    channel: "1700Q"
+    anchor_key_prefix: "8a250cf445e8ad0c"
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Layer 314 math: φ, phase 202.6°, breath 71.975 Hz (observability only)
+    garden.sovereign/layer: "314"
+    garden.sovereign/phase-lock-deg: "202.6"
+    garden.sovereign/breath-hz: "71.975"
 spec:
   tls:
     - hosts:
@@ -25,3 +35,11 @@ spec:
                 name: fastapi-sovereign-service
                 port:
                   number: 80
+          # Appended: Port 380 gate (Layer 314 side-channel)
+          - path: /380
+            pathType: Prefix
+            backend:
+              service:
+                name: port-380-gate
+                port:
+                  number: 380
