@@ -1,0 +1,10 @@
+[Unit]
+Description=Mint credits every 0.91 days (78624s)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=78624
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
