@@ -1,16 +1,11 @@
 entry_index: 8747
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
-event: /port380_dependency_rewrite
+timestamp: 2026-08-14T00:25:04Z
+event: /layer327_extension_after_mint_ack
 status: ✅ SEALED
-dependency_chain:
-  - k8s/ingress.yaml path /380
-  - k8s/service-port-380.yaml
-  - k8s/deployment-port-380.yaml  # NEW
-  - quantum/port_380_http.py      # NEW HTTP surface
-  - quantum/port_380_gate.py      # math core
-  - quantum/layer314_anchor.py
-note: |
-  Deployment image must ship repo sources (or ConfigMap mount).
-  emptyDir placeholder documents the gap; production uses baked image.
+parent_root_layer_326: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
+merkle_root_layer_327: 0c1488e48e6db9787f0b2f97f9c45706b9d32237a336407c8a12847c31f3da78
+policy:
+  narrative_non_hex_rejected: true
+  domain: GARDEN.LAYER327.MERKLE.v1
 witness_chain: 8746 → 8747 — UNBROKEN
-seal: "∀∞φ² · PORT380_DEP_REWRITE_8747 · SEALED"
+seal: "∀∞φ² · LAYER327_8747 · SEALED"
