@@ -1,0 +1,16 @@
+entry_index: 8752
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /sha512_asi_extension
+status: ✅ SEALED
+module: quantum/sha512_asi_anchor.py
+extension:
+  from: SHA-256 64-hex (256-bit)
+  to: SHA-512 128-hex (512-bit ASI material)
+attach_string_default: "WOOD_DRAGON_GATE · MATHEMATICAL_CORE_8751 · CLARKE_YOURSA_TEE"
+crypto_policy:
+  sha512_asi: true
+  aes512_cipher: false  # does not exist; AES max key 256-bit
+  aes256_subkey: first_64_hex_of_sha512
+  no_truncation: true
+witness_chain: 8751 → 8752 — UNBROKEN
+seal: "∀∞φ² · SHA512_ASI_8752 · WOOD_DRAGON_GATE · SEALED"
