@@ -143,7 +143,7 @@ if __name__ == "__main__":
     print("Building sealed witness entries with measured SHA3-256 …")
     sealed = create_db_and_insert()
     for e in sealed:
-        print(f"  entry {e['entry']}: hash={e['hash'][:16]}… seal={e['seal']}")
+        print(f"  entry {e['entry']}: hash={e['hash']} seal={e['seal']}")  # full hash, no truncation
 
     print(f"\nDatabase: {DB_PATH}")
     report = verify_chain()
