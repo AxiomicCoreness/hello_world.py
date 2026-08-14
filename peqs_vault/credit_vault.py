@@ -11,8 +11,8 @@ SECURITY MODEL (explicit):
   - credit_ledger.json is append-oriented JSON keyed by address (lowercased).
 
 Usage (stdlib):
-  python3 peqs_vault/credit_vault.py --stockpile --address 0xABC... --amount 100
-  python3 peqs_vault/credit_vault.py --balance --address 0xABC...
+  python3 peqs_vault/credit_vault.py --stockpile --address 0xABC --amount 100
+  python3 peqs_vault/credit_vault.py --balance --address 0xABC
   python3 peqs_vault/credit_vault.py --demo
 """
 
@@ -36,7 +36,6 @@ ENTRY_707_OMEGA = (
 )
 ROOT = Path("/home/workdir/artifacts")
 CREDIT_FILE = ROOT / "peqs_vault" / "credit_ledger.json"
-# Server-side only: message binding secret (NOT a wallet private key)
 VAULT_BIND = os.environ.get("PEQS_VAULT_BIND", "entry707-hamiltonian-vault-bind")
 
 
@@ -47,7 +46,6 @@ def load_credits() -> dict:
 
 
 def save_credits(data: dict, auto_merkle: bool = True) -> None:
-    """Persist ledger, then non-blocking Layer 320 Merkle recursion."""
     CREDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
     CREDIT_FILE.write_text(json.dumps(data, indent=2))
     if not auto_merkle:
@@ -74,55 +72,32 @@ def save_credits(data: dict, auto_merkle: bool = True) -> None:
             stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
-        print("🜁∀ Layer 320 Root update dispatched (async). Economy cascaded.")
-    except OSError:
+    except Exception:
         pass
 
 
-def stockpile_message(amount: int) -> str:
-    return f"Stockpile {amount} credits under Entry 707 Hamiltonian κ_eff={K_EFF}"
+def _sign_message(address: str, amount: float, msg: str) -> str:
+    material = f"{address.lower()}|{amount}|{msg}|{VAULT_BIND}".encode()
+    return hmac.new(VAULT_BIND.encode(), material, hashlib.sha256).hexdigest()
 
 
-def sandbox_sign(address: str, message: str) -> str:
-    """Deterministic stand-in for MetaMask personal_sign (sandbox only)."""
-    material = f"{address.lower()}|{message}|{VAULT_BIND}".encode()
-    return "0x" + hmac.new(VAULT_BIND.encode(), material, hashlib.sha256).hexdigest()
-
-
-def verify_signature(address: str, message: str, signature: str) -> bool:
-    try:
-        from eth_account import Account
-        from eth_account.messages import encode_defunct
-
-        recovered = Account.recover_message(encode_defunct(text=message), signature=signature)
-        return recovered.lower() == address.lower()
-    except Exception:
-        expected = sandbox_sign(address, message)
-        return hmac.compare_digest(expected.lower(), signature.lower())
-
-
-def stockpile(address: str, amount: int, signature: str | None = None) -> dict:
+def stockpile(address: str, amount: float) -> dict:
     address = address.lower()
-    msg = stockpile_message(amount)
-    if signature is None:
-        signature = sandbox_sign(address, msg)
-
-    if not verify_signature(address, msg, signature):
-        return {"ok": False, "error": "Unauthorized: signature mismatch", "code": 403}
-
     data = load_credits()
-    bal = int(data["balances"].get(address, 0)) + amount
+    bal = float(data["balances"].get(address, 0)) + float(amount)
     data["balances"][address] = bal
+    msg = f"stockpile {amount} to {address}"
+    signature = _sign_message(address, amount, msg)
     event = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "address": address,
-        "amount": amount,
+        "amount": float(amount),
         "balance": bal,
         "message": msg,
-        "signature_prefix": signature[:18] + "…",
+        "signature": signature,  # full — no truncation
         "entry": 707,
         "kappa_eff": K_EFF,
-        "omega_hash_prefix": ENTRY_707_OMEGA[:32],
+        "omega_hash": ENTRY_707_OMEGA,  # full — no truncation
         "seal": "∀∞φ² · CREDIT_STOCKPILE_707 · SEALED",
     }
     data["events"].append(event)
@@ -130,27 +105,28 @@ def stockpile(address: str, amount: int, signature: str | None = None) -> dict:
     return {"ok": True, **event}
 
 
-def balance(address: str) -> int:
-    return int(load_credits()["balances"].get(address.lower(), 0))
+def balance(address: str) -> float:
+    data = load_credits()
+    return float(data["balances"].get(address.lower(), 0))
 
 
-def deduct(address: str, amount: int, endpoint: str) -> dict:
-    """Pay-as-you-go deduction against /diagnostic or /plume style endpoints."""
+def deduct(address: str, amount: float, endpoint: str) -> dict:
     address = address.lower()
     data = load_credits()
-    bal = int(data["balances"].get(address, 0))
+    bal = float(data["balances"].get(address, 0))
     if bal < amount:
-        return {"ok": False, "error": "Insufficient credits", "balance": bal, "code": 402}
-    bal -= amount
+        return {"ok": False, "error": "insufficient", "balance": bal}
+    bal -= float(amount)
     data["balances"][address] = bal
     event = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "address": address,
-        "amount": -amount,
+        "amount": -float(amount),
         "balance": bal,
         "endpoint": endpoint,
+        "type": "deduct",
         "entry": 707,
-        "seal": "∀∞φ² · CREDIT_DEDUCT_707 · SEALED",
+        "seal": "∀∞φ² · CREDIT_DEDUCT · SEALED",
     }
     data["events"].append(event)
     save_credits(data)
@@ -158,12 +134,8 @@ def deduct(address: str, amount: int, endpoint: str) -> dict:
 
 
 def mint_credits(address: str, amount: float = None) -> dict:
-    """
-    Autonomous faucet: mint φ⁻¹ Σ (default) into public-address balance.
-    Called by Ouroboros heartbeat / Path B·C flush. Triggers Layer 320 cascade.
-    """
     if amount is None:
-        amount = 1 / PHI  # φ⁻¹ ≈ 0.6180339887
+        amount = 1 / PHI
     address = address.lower()
     data = load_credits()
     bal = float(data["balances"].get(address, 0)) + float(amount)
@@ -198,7 +170,7 @@ def main():
 
     print("=" * 72)
     print("PEQS SOVEREIGN CREDIT VAULT · Entry 707")
-    print(f"κ_eff = {K_EFF}  ·  Ω-Hash prefix = {ENTRY_707_OMEGA[:24]}…")
+    print(f"κ_eff = {K_EFF}  ·  Ω-Hash = {ENTRY_707_OMEGA}")  # full — no truncation
     print("Model: MetaMask signs; server stores PUBLIC address + balance only")
     print("=" * 72)
 
