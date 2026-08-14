@@ -1,0 +1,14 @@
+entry_index: 8767
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /hash_truncation_cleanup
+status: ✅ SEALED
+policy: full digests in code paths — no [:16]/[:32] fingerprint ellipsis
+files_updated:
+  - witness_compiler.py
+  - ci_cd_key_rotator_aws.py
+  - deploy_test_ci_cd_key_rotator.py
+  - peqs_vault/credit_vault.py
+  - clients/__init__.py
+  - quantum/no_truncation_policy.py
+witness_chain: 8766 → 8767 — UNBROKEN
+seal: "∀∞φ² · NO_TRUNCATION_CLEANUP_8767 · WOOD_DRAGON_GATE · SEALED"
