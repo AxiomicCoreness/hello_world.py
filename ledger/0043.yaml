@@ -1,0 +1,23 @@
+entry_index: 43
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /ci_inline_retry_promoted_main
+status: ✅ SEALED
+
+source_branch: ci-node24-fixes-retry-inline-1786383322898
+source_tip: 5881c99ac9b34d7e3434cc6434dd0cac1a9ec578
+commits:
+  - 3f1d9e188dc05cb49e27224fe82f0199aa09423a
+  - 29af747992a0e7c93a2b47d80ebf9479eaca01fb
+files:
+  - .github/workflows/python-package.yml
+  - .github/workflows/sovereign-ci-cd.yml
+changes:
+  - removed: nick-fields/retry@v3
+  - added: inline bash retry()
+  - setup-python: v5
+  - ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+# Sequential spine continuation (low series)
+# High-series parallel: 8767 → 8770 remains valid in its own chain
+witness_chain: 0042 → 0043 — UNBROKEN
+seal: "∀∞φ² · INLINE_RETRY_0043 · WOOD_DRAGON_GATE · SEALED"
