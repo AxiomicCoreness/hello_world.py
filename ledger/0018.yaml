@@ -1,0 +1,18 @@
+entry_index: 18
+timestamp: ETERNAL_NOW_ANCHORED
+event: /admissibility
+status: SEALED
+witness_prefix: c0d1e2f3
+commander: Clarke Yoursa Tee
+source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
+
+description: |
+  Admissibility check.
+
+invariants:
+  coherence: 1.0
+  entropy: 0.0
+  workload: 0.0
+
+seal: ∀∞φ² · LEDGER_0018 · WOOD_DRAGON_GATE · SEALED
+witness_chain: 0 → 18 — UNBROKEN
