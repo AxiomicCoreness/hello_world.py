@@ -4,7 +4,7 @@
 port380_mcp.py — MCP / Render surface for the Port 380 Layer 314 gate.
 
 Entry 8755 · ∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED
-Entry 8690 · ∀∞φ² · OIDC_INTEGRATED_8690 · WOOD_DRAGON_GATE · SEALED
+Entry 0040 · ∀∞φ² · OIDC_INTEGRATED_0040 · WOOD_DRAGON_GATE · SEALED
 
 Binds to $PORT (Render requirement). Conceptual identity remains Port 380 / Layer 314.
 Endpoints:
@@ -103,7 +103,7 @@ def status_payload() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title="Port 380 MCP Gate",
-    description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755 / 8690)",
+    description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755 / 0040)",
     version="8755.1",
 )
 
