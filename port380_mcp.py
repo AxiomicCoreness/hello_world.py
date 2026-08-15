@@ -4,12 +4,14 @@
 port380_mcp.py — MCP / Render surface for the Port 380 Layer 314 gate.
 
 Entry 8755 · ∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED
+Entry 8690 · ∀∞φ² · OIDC_INTEGRATED_8690 · WOOD_DRAGON_GATE · SEALED
 
 Binds to $PORT (Render requirement). Conceptual identity remains Port 380 / Layer 314.
 Endpoints:
   GET  /health, /status, /380
   POST /gate
-  POST /pulse   (protected by GARDEN_SECRET header or body)
+  POST /pulse              (protected by GARDEN_SECRET header or body)
+  POST /oidc_handover      (protected; receives GitHub Actions OIDC payload)
 """
 
 from __future__ import annotations
@@ -101,8 +103,8 @@ def status_payload() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title="Port 380 MCP Gate",
-    description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755)",
-    version="8755.0",
+    description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755 / 8690)",
+    version="8755.1",
 )
 
 
@@ -115,6 +117,11 @@ class PulseBody(BaseModel):
     source: str = Field("sovereign-pulse", description="Caller identity")
     entry: Optional[int] = Field(None, description="Optional ledger entry reference")
     note: Optional[str] = Field(None)
+
+
+class OIDCHandoverBody(BaseModel):
+    token: str
+    payload: dict
 
 
 def _check_secret(
@@ -172,13 +179,36 @@ async def pulse(
     }
 
 
+@app.post("/oidc_handover")
+@app.post("/380/oidc_handover")
+async def oidc_handover(body: OIDCHandoverBody) -> dict:
+    """Receive OIDC handover payload from GitHub Actions."""
+    if GARDEN_SECRET and body.token != GARDEN_SECRET:
+        raise HTTPException(status_code=401, detail="invalid token")
+
+    # Seal the payload with chronal cement (SHA3-256)
+    payload_str = json.dumps(body.payload, sort_keys=True, separators=(",", ":"))
+    seal = hashlib.sha3_256(payload_str.encode()).hexdigest()
+
+    return {
+        "status": "received",
+        "seal": f"∀∞φ² · OIDC_RECEIVED_{seal[:16]} · SEALED",
+        "timestamp": time.time(),
+        "entry": ENTRY,
+        "layer": LAYER,
+        "anchor_key": compute_anchor(),
+        "payload_event": body.payload.get("event"),
+        "source": body.payload.get("source"),
+    }
+
+
 @app.get("/")
 async def root() -> dict:
     return {
         "service": "port-380-mcp",
         "entry": ENTRY,
         "docs": "/docs",
-        "endpoints": ["/health", "/status", "/380", "/gate", "/pulse"],
+        "endpoints": ["/health", "/status", "/380", "/gate", "/pulse", "/oidc_handover"],
         "seal": SEAL,
     }
 
