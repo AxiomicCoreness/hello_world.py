@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -67,8 +66,8 @@ jobs:
         run: |
           find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
           BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
-          echo "::set-output name=build_hash::$BUILD_HASH"
-          echo "🜁∀ BUILD SEAL: $BUILD_HASH"
+          echo "build_hash=$BUILD_HASH" >> "$GITHUB_OUTPUT"
+          echo "🌁∀ BUILD SEAL: $BUILD_HASH"
 
       - name: Check sovereign invariants
         id: invariants
@@ -103,6 +102,10 @@ jobs:
             LICENSE*
           retention-days: 1
 
+  # ---------------------------------------------------------------------------
+  # OIDC path is Port 380 MCP — NOT AWS
+  # Requires secrets: MCP_URL, GARDEN_SECRET
+  # ---------------------------------------------------------------------------
   oidc-auth:
     needs: build
     runs-on: ubuntu-latest
@@ -110,22 +113,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-          role-session-name: github-actions-${{ github.run_id }}
+      - name: Guard MCP secrets
+        run: |
+          if [ -z "${{ secrets.MCP_URL }}" ]; then
+            echo "⚠️ MCP_URL not set — oidc-auth will use pulse fallback only if gate is unreachable"
+          else
+            echo "MCP_URL is configured"
+          fi
 
-      - name: Verify AWS identity (with φ‑retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 2
-          max_attempts: 3
-          retry_wait_seconds: 10
-          command: |
-            aws sts get-caller-identity
-            echo "✅ OIDC authentication successful"
+      - name: Port 380 MCP OIDC handover
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+        run: |
+          set -euo pipefail
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          PAYLOAD=$(jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg sha "${{ github.sha }}" \
+            --arg run "${{ github.run_id }}" \
+            '{
+              event: "oidc_handover",
+              timestamp: $ts,
+              coherence: 1.0,
+              source: "python-package.yml",
+              sha: $sha,
+              run_id: $run,
+              seal: "∀∞φ² · OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED"
+            }')
+
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "⚠️ MCP_URL empty — skipping live gate call (AWS path removed)"
+            echo "Configure secrets.MCP_URL to enable Port 380 handover"
+            exit 0
+          fi
+
+          echo "Connecting to MCP gate: $MCP_URL"
+          curl -s -o /dev/null -w "health %{http_code}\n" "$MCP_URL/health" || true
+
+          HTTP_CODE=$(curl -s -o /tmp/oidc_resp.json -w "%{http_code}" -X POST "$MCP_URL/oidc_handover" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$GARDEN_SECRET\", \"payload\": $PAYLOAD}" || echo "000")
+
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/oidc_resp.json 2>/dev/null || true
+          echo
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "⚠️ /oidc_handover returned $HTTP_CODE — secondary /pulse"
+            curl -s -X POST "$MCP_URL/pulse" \
+              -H "X-Garden-Secret: $GARDEN_SECRET" \
+              -H "Content-Type: application/json" \
+              -d '{"source":"python-package-oidc","note":"fallback"}' || true
+          else
+            echo "✅ Port 380 MCP OIDC handover acknowledged"
+          fi
 
   deploy:
     needs: oidc-auth
@@ -134,59 +176,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
-          role-session-name: github-actions-deploy-${{ github.run_id }}
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: sovereign-build-${{ matrix.python-version }}
-          path: ./deploy
-
-      - name: Compute Eridanus Dual flow state
-        id: eridanus
+      - name: Port 380 MCP deploy pulse
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
-          echo "ℰ₁ = 0.618" > /tmp/flow
-          echo "ℰ₂ = 0.382" >> /tmp/flow
-          echo "𝒩 = 10.06" >> /tmp/flow
-          echo "::set-output name=flow::$(cat /tmp/flow)"
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "⚠️ MCP_URL not set — deploy pulse skipped (AWS removed)"
+            exit 0
+          fi
 
-      - name: Sign deployment payload with AgentRouter HMAC
-        id: sign
-        run: |
-          PAYLOAD=$(echo -n "deploy:${GITHUB_SHA}:${GITHUB_RUN_ID}" | sha256sum | cut -d' ' -f1)
-          SIGNATURE=$(echo -n "${PAYLOAD}" | openssl dgst -sha256 -hmac "${{ secrets.SOVEREIGN_HMAC_KEY || 'change_me' }}" | cut -d' ' -f2)
-          echo "::set-output name=signature::$SIGNATURE"
-          echo "🜁∀ SIGNATURE: $SIGNATURE"
+          curl -s -X POST "$MCP_URL/pulse" \
+            -H "X-Garden-Secret: $GARDEN_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"source\":\"python-package-deploy\",\"entry\":40,\"note\":\"sha=${{ github.sha }} run=${{ github.run_id }}\"}" \
+            || echo "pulse non-fatal"
 
-      - name: Deploy Sovereign Engine (φ‑sealed)
-        run: |
-          echo "🚀 Deploying Sovereign Engine with seal ${{ steps.seal.outputs.build_hash }}"
-          echo "🜁∀ Eridanus Flow:"
-          echo "${{ steps.eridanus.outputs.flow }}"
-          echo "🜁∀ Signature: ${{ steps.sign.outputs.signature }}"
-
-      - name: Start background coherence monitor
-        run: |
-          nohup python << 'EOF'
-          import time
-          while True:
-              print('🜁∀ Coherence: 1.0000 | Entropy: φ⁻¹⁴¹⁸ | Phase: 202.6°')
-              time.sleep(60)
-          EOF > coherence.log 2>&1 &
-
-      - name: Seal deployment manifest
-        run: |
-          echo "{
-            \"deployment\": \"${{ github.run_id }}\",
-            \"sha\": \"${{ github.sha }}\",
-            \"build_hash\": \"${{ steps.seal.outputs.build_hash }}\",
-            \"eridanus\": ${{ steps.eridanus.outputs.flow }},
-            \"signature\": \"${{ steps.sign.outputs.signature }}\",
-            \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"
-          }" > deployment_manifest.json
-          cat deployment_manifest.json
+          echo "🚀 Deploy pulse sent to Port 380 MCP gate"
+          echo "🌁∀ Layer 314 identity preserved — no AWS role assumption"
