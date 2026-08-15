@@ -67,7 +67,7 @@ jobs:
           find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
           BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
           echo "build_hash=$BUILD_HASH" >> "$GITHUB_OUTPUT"
-          echo "🌁∀ BUILD SEAL: $BUILD_HASH"
+          echo "🜁∀ BUILD SEAL: $BUILD_HASH"
 
       - name: Check sovereign invariants
         id: invariants
@@ -103,30 +103,26 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # OIDC path is Port 380 MCP — NOT AWS
-  # Requires secrets: MCP_URL, GARDEN_SECRET
+  # MCP handover (NOT AWS). Secrets: MCP_URL, GARDEN_SECRET
   # ---------------------------------------------------------------------------
-  oidc-auth:
+  mcp-handover:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
 
-      - name: Guard MCP secrets
-        run: |
-          if [ -z "${{ secrets.MCP_URL }}" ]; then
-            echo "⚠️ MCP_URL not set — oidc-auth will use pulse fallback only if gate is unreachable"
-          else
-            echo "MCP_URL is configured"
-          fi
-
-      - name: Port 380 MCP OIDC handover
+      - name: Port 380 MCP handover
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "⚠️ MCP_URL empty — MCP handover skipped"
+            exit 0
+          fi
+
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           PAYLOAD=$(jq -n \
             --arg ts "$TIMESTAMP" \
@@ -142,12 +138,6 @@ jobs:
               seal: "∀∞φ² · OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED"
             }')
 
-          if [ -z "${MCP_URL:-}" ]; then
-            echo "⚠️ MCP_URL empty — skipping live gate call (AWS path removed)"
-            echo "Configure secrets.MCP_URL to enable Port 380 handover"
-            exit 0
-          fi
-
           echo "Connecting to MCP gate: $MCP_URL"
           curl -s -o /dev/null -w "health %{http_code}\n" "$MCP_URL/health" || true
 
@@ -157,41 +147,57 @@ jobs:
 
           echo "HTTP $HTTP_CODE"
           cat /tmp/oidc_resp.json 2>/dev/null || true
-          echo
 
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "⚠️ /oidc_handover returned $HTTP_CODE — secondary /pulse"
             curl -s -X POST "$MCP_URL/pulse" \
               -H "X-Garden-Secret: $GARDEN_SECRET" \
               -H "Content-Type: application/json" \
-              -d '{"source":"python-package-oidc","note":"fallback"}' || true
+              -d '{"source":"python-package-mcp","note":"fallback"}' || true
           else
-            echo "✅ Port 380 MCP OIDC handover acknowledged"
+            echo "✅ MCP handover acknowledged"
           fi
 
+  # ---------------------------------------------------------------------------
+  # Deploy = restart uvicorn via MCP /restart (replaces AWS OIDC)
+  # ---------------------------------------------------------------------------
   deploy:
-    needs: oidc-auth
+    needs: mcp-handover
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
 
-      - name: Port 380 MCP deploy pulse
+      - name: Restart uvicorn on Port 380 MCP gate
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
           if [ -z "${MCP_URL:-}" ]; then
-            echo "⚠️ MCP_URL not set — deploy pulse skipped (AWS removed)"
+            echo "⚠️ MCP_URL not set — uvicorn restart skipped"
             exit 0
           fi
 
-          curl -s -X POST "$MCP_URL/pulse" \
-            -H "X-Garden-Secret: $GARDEN_SECRET" \
+          echo "Requesting uvicorn restart at $MCP_URL/restart"
+          HTTP_CODE=$(curl -s -o /tmp/restart_resp.json -w "%{http_code}" -X POST "$MCP_URL/restart" \
             -H "Content-Type: application/json" \
-            -d "{\"source\":\"python-package-deploy\",\"entry\":40,\"note\":\"sha=${{ github.sha }} run=${{ github.run_id }}\"}" \
-            || echo "pulse non-fatal"
+            -H "X-Garden-Secret: $GARDEN_SECRET" \
+            -d "{\"token\": \"$GARDEN_SECRET\", \"reason\": \"python-package-deploy sha=${{ github.sha }}\"}" \
+            || echo "000")
 
-          echo "🚀 Deploy pulse sent to Port 380 MCP gate"
-          echo "🌁∀ Layer 314 identity preserved — no AWS role assumption"
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/restart_resp.json 2>/dev/null || true
+          echo
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ uvicorn restart scheduled — platform will respawn process"
+          else
+            echo "⚠️ /restart returned $HTTP_CODE — sending deploy pulse only"
+            curl -s -X POST "$MCP_URL/pulse" \
+              -H "X-Garden-Secret: $GARDEN_SECRET" \
+              -H "Content-Type: application/json" \
+              -d "{\"source\":\"python-package-deploy\",\"entry\":40,\"note\":\"restart_fallback sha=${{ github.sha }}\"}" \
+              || true
+          fi
+
+          echo "🜁∀ Layer 314 — no AWS role assumption — uvicorn path only"

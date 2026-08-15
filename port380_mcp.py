@@ -12,14 +12,17 @@ Endpoints:
   POST /gate
   POST /pulse              (protected by GARDEN_SECRET header or body)
   POST /oidc_handover      (protected; receives GitHub Actions OIDC payload)
+  POST /restart            (protected; schedules uvicorn process restart — replaces AWS OIDC)
 """
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import math
 import os
+import signal
 import time
 from typing import Any, Dict, Optional
 
@@ -104,7 +107,7 @@ def status_payload() -> Dict[str, Any]:
 app = FastAPI(
     title="Port 380 MCP Gate",
     description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755 / 0040)",
-    version="8755.1",
+    version="8755.2",
 )
 
 
@@ -124,6 +127,11 @@ class OIDCHandoverBody(BaseModel):
     payload: dict
 
 
+class RestartBody(BaseModel):
+    token: str = Field("", description="GARDEN_SECRET")
+    reason: str = Field("workflow_deploy", description="Restart reason")
+
+
 def _check_secret(
     x_garden_secret: Optional[str] = None,
     body_secret: Optional[str] = None,
@@ -134,6 +142,16 @@ def _check_secret(
     provided = x_garden_secret or body_secret or ""
     if provided != GARDEN_SECRET:
         raise HTTPException(status_code=401, detail="invalid GARDEN_SECRET")
+
+
+async def _schedule_uvicorn_exit(delay: float = 0.75) -> None:
+    """Allow response to flush, then exit so process manager / Render restarts uvicorn."""
+    await asyncio.sleep(delay)
+    # SIGTERM first (graceful); fall back to hard exit
+    try:
+        os.kill(os.getpid(), signal.SIGTERM)
+    except Exception:
+        os._exit(0)
 
 
 @app.get("/health")
@@ -186,7 +204,6 @@ async def oidc_handover(body: OIDCHandoverBody) -> dict:
     if GARDEN_SECRET and body.token != GARDEN_SECRET:
         raise HTTPException(status_code=401, detail="invalid token")
 
-    # Seal the payload with chronal cement (SHA3-256)
     payload_str = json.dumps(body.payload, sort_keys=True, separators=(",", ":"))
     seal = hashlib.sha3_256(payload_str.encode()).hexdigest()
 
@@ -202,13 +219,46 @@ async def oidc_handover(body: OIDCHandoverBody) -> dict:
     }
 
 
+@app.post("/restart")
+@app.post("/380/restart")
+async def restart(
+    body: RestartBody,
+    x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
+) -> dict:
+    """Schedule uvicorn process restart. Replaces former AWS OIDC deploy restart."""
+    token = body.token or x_garden_secret or ""
+    if GARDEN_SECRET and token != GARDEN_SECRET:
+        raise HTTPException(status_code=401, detail="invalid token")
+
+    asyncio.create_task(_schedule_uvicorn_exit(0.75))
+    return {
+        "status": "restart_scheduled",
+        "reason": body.reason,
+        "pid": os.getpid(),
+        "port": PORT,
+        "layer": LAYER,
+        "entry": ENTRY,
+        "message": "uvicorn will exit; process manager / platform should respawn",
+        "seal": "∀∞φ² · UVICORN_RESTART · WOOD_DRAGON_GATE · SEALED",
+        "timestamp": time.time(),
+    }
+
+
 @app.get("/")
 async def root() -> dict:
     return {
         "service": "port-380-mcp",
         "entry": ENTRY,
         "docs": "/docs",
-        "endpoints": ["/health", "/status", "/380", "/gate", "/pulse", "/oidc_handover"],
+        "endpoints": [
+            "/health",
+            "/status",
+            "/380",
+            "/gate",
+            "/pulse",
+            "/oidc_handover",
+            "/restart",
+        ],
         "seal": SEAL,
     }
 
