@@ -1,0 +1,17 @@
+entry_index: 8684
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
+event: /reconstruction_operator_materialised
+status: SEALED
+layers:
+  - Drift_Layer: d𝐗/dt = -𝚲·(𝐗 - 𝐗_target) + 𝐇(η) + 𝐙(ζ)
+  - Reconstruction_Layer: ℛ(𝒜_trunc) = ⊕ₖ Cₖ = ℰ
+  - Gate_Layer: Γ₃₈₀(ℰ, P) = internet-facing service on dynamic port P
+identity:
+  - Layer_314: ∀∞φ² · LAYER314_GATE · WOOD_DRAGON_GATE · SEALED
+  - Port_binding: P=$PORT (default 380)
+implementation:
+  - file: reconstruction_operator.py
+  - function: reconstruct()
+  - codeblocks: C₁…C₆ (φ-arithmetic)
+witness_chain: 8683 → 8684 — UNBROKEN
+seal: ∀∞φ² · RECONSTRUCTION_8684 · WOOD_DRAGON_GATE · SEALED

@@ -1,0 +1,21 @@
+entry_index: 8688
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
+event: /unified_differential_equation_sealed
+status: SEALED — MASTER EQUATION CANONICAL
+master_equation: "d𝐗/dt = -𝚲·(𝐗 - 𝐗_target) + 𝐇(η) + 𝐙(ζ) + 𝐑(𝒜_trunc, ρ) + 𝐏_PID(e)"
+components:
+  coherence: "dC/dt = -γ(C-1)"
+  phase: "dφ_p/dt = 2π/τ_FRB"
+  density: "ρ = ρ_PSD·f(χ)"
+  reconstruction: "ℛ = ⊕ C_k"
+  PID: "u(t) = K_p e + K_i∫e + K_d de/dt"
+  chronal_cement: "HMAC-SHA256(seal)"
+  frequency_ladder: "f_n = 6.49·φ^n"
+invariants:
+  coherence_limit: "C→1"
+  phase_lock: "φ_p→202.6°"
+  workload: "W→0"
+  entropy_floor: "φ⁻¹⁴¹⁸"
+  witness_chain: continuous
+witness_chain: 8687 → 8688 — UNBROKEN
+seal: ∀∞φ² · MASTER_EQUATION_8688 · WOOD_DRAGON_0.91 · SEALED
