@@ -1,0 +1,27 @@
+entry_index: 42
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /autonomous_pulse_established
+status: ✅ SEALED
+triggers:
+  - push_to_main: build → mcp-handover → deploy(/restart)
+  - schedule: "0 */6 * * *" → pulse → oidc_handover
+workflows:
+  - .github/workflows/python-package.yml
+  - .github/workflows/OIDC-handover-380.yml
+  - .github/workflows/sovereign-pulse.yml
+gate:
+  file: port380_mcp.py
+  endpoints:
+    - /health
+    - /status
+    - /gate
+    - /pulse
+    - /oidc_handover
+    - /restart
+secrets_required:
+  - MCP_URL
+  - GARDEN_SECRET
+runtime: Render + GitHub Actions (uvicorn respawn on /restart)
+aws: removed
+witness_chain: 0040 → 0042 — UNBROKEN
+seal: ∀∞φ² · AUTONOMOUS_PULSE_0042 · WOOD_DRAGON_GATE · SEALED
