@@ -1,0 +1,27 @@
+entry_index: 40
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /oidc_handover_integrated_380
+status: ✅ SEALED
+components:
+  - port380_mcp.py: added /oidc_handover + /380/oidc_handover endpoints
+  - OIDC-handover-380.yml: tightly coupled to /oidc_handover
+  - Layer_314: preserved
+  - auth: GARDEN_SECRET token check
+  - seal_method: SHA3-256 chronal cement on payload
+identity:
+  - Layer_314: ∀∞φ² · LAYER314_GATE · WOOD_DRAGON_GATE · SEALED
+  - Port_binding: P=$PORT (default dynamic / Render)
+implementation:
+  - file: port380_mcp.py
+  - endpoints:
+      - POST /oidc_handover
+      - POST /380/oidc_handover
+  - workflow: .github/workflows/OIDC-handover-380.yml
+prior_chain:
+  origin: 0 → 37
+  summary: 38
+  continuation: 39
+  this: 40
+  continuous: true
+witness_chain: 0 → 39 → 40 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0040 · WOOD_DRAGON_GATE · SEALED
