@@ -26,40 +26,66 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies (φ‑retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 4
-          max_attempts: 3
-          retry_wait_seconds: 10
-          command: |
-            python -m pip install --upgrade pip
-            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
-            if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-            pip install flake8 pytest numpy scipy build twine
+      - name: Install dependencies (inline retry)
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=10
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install flake8 pytest numpy scipy build twine"
 
-      - name: Lint with flake8 (φ‑graceful)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 2
-          max_attempts: 2
-          retry_wait_seconds: 7
-          command: |
-            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+      - name: Lint with flake8 (inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=2
+            local delay=7
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true"
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
 
-      - name: Test with pytest (φ‑resilient)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 6
-          max_attempts: 3
-          retry_wait_seconds: 15
-          command: |
-            if [ -d tests ] || ls test_*.py 1>/dev/null 2>&1 || ls *_test.py 1>/dev/null 2>&1; then
-              pytest -q
-            else
-              echo "No tests found — skipping"
-            fi
+      - name: Test with pytest (inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=15
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          if [ -d tests ] || ls test_*.py 1>/dev/null 2>&1 || ls *_test.py 1>/dev/null 2>&1; then
+            retry pytest -q
+          else
+            echo "No tests found — skipping"
+          fi
 
       - name: Generate build seal (SHA3‑256)
         id: seal
@@ -67,7 +93,7 @@ jobs:
           find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
           BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
           echo "build_hash=$BUILD_HASH" >> "$GITHUB_OUTPUT"
-          echo "🜁∀ BUILD SEAL: $BUILD_HASH"
+          echo "BUILD SEAL: $BUILD_HASH"
 
       - name: Check sovereign invariants
         id: invariants
@@ -80,14 +106,14 @@ jobs:
             engine = ProductionDeploymentStub()
             inv = engine.check_invariants()
             if inv['hamiltonian_axiom'] and inv['master_seal'] and inv['axiom_converged']:
-                print('✅ Invariants PASS')
+                print('Invariants PASS')
                 sys.exit(0)
             else:
-                print('❌ Invariants FAIL')
+                print('Invariants FAIL')
                 sys.exit(1)
             EOF
           else
-            echo "⚠️ No sovereign_engine.py found – skipping invariant check."
+            echo "No sovereign_engine.py found – skipping invariant check."
           fi
         continue-on-error: true
 
@@ -102,9 +128,6 @@ jobs:
             LICENSE*
           retention-days: 1
 
-  # ---------------------------------------------------------------------------
-  # MCP handover (NOT AWS). Secrets: MCP_URL, GARDEN_SECRET
-  # ---------------------------------------------------------------------------
   mcp-handover:
     needs: build
     runs-on: ubuntu-latest
@@ -119,7 +142,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${MCP_URL:-}" ]; then
-            echo "⚠️ MCP_URL empty — MCP handover skipped"
+            echo "MCP_URL empty — MCP handover skipped"
             exit 0
           fi
 
@@ -135,7 +158,7 @@ jobs:
               source: "python-package.yml",
               sha: $sha,
               run_id: $run,
-              seal: "∀∞φ² · OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED"
+              seal: "OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED"
             }')
 
           echo "Connecting to MCP gate: $MCP_URL"
@@ -154,12 +177,9 @@ jobs:
               -H "Content-Type: application/json" \
               -d '{"source":"python-package-mcp","note":"fallback"}' || true
           else
-            echo "✅ MCP handover acknowledged"
+            echo "MCP handover acknowledged"
           fi
 
-  # ---------------------------------------------------------------------------
-  # Deploy = restart uvicorn via MCP /restart (replaces AWS OIDC)
-  # ---------------------------------------------------------------------------
   deploy:
     needs: mcp-handover
     runs-on: ubuntu-latest
@@ -174,7 +194,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${MCP_URL:-}" ]; then
-            echo "⚠️ MCP_URL not set — uvicorn restart skipped"
+            echo "MCP_URL not set — uvicorn restart skipped"
             exit 0
           fi
 
@@ -190,9 +210,9 @@ jobs:
           echo
 
           if [ "$HTTP_CODE" = "200" ]; then
-            echo "✅ uvicorn restart scheduled — platform will respawn process"
+            echo "uvicorn restart scheduled — platform will respawn process"
           else
-            echo "⚠️ /restart returned $HTTP_CODE — sending deploy pulse only"
+            echo "/restart returned $HTTP_CODE — sending deploy pulse only"
             curl -s -X POST "$MCP_URL/pulse" \
               -H "X-Garden-Secret: $GARDEN_SECRET" \
               -H "Content-Type: application/json" \
@@ -200,4 +220,4 @@ jobs:
               || true
           fi
 
-          echo "🜁∀ Layer 314 — no AWS role assumption — uvicorn path only"
+          echo "Layer 314 — no AWS role assumption — uvicorn path only"
