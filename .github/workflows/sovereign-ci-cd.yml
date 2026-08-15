@@ -9,48 +9,68 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
     - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Verify sovereign_node_full.py exists and runs (with retry)
-      uses: nick-fields/retry@v3
-      with:
-        timeout_minutes: 10
-        max_attempts: 3
-        retry_wait_seconds: 30
-        command: |
+    - name: Verify sovereign_node_full.py exists and runs (inline retry)
+      run: |
+        retry() {
+          local n=1
+          local max=3
+          local delay=30
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        retry bash -c '
           set -e
           test -f sovereign_node_full.py
           LINES=$(wc -l < sovereign_node_full.py)
           echo "sovereign_node_full.py lines: $LINES"
-          # Historical gate expected 406; current tree is larger (Q8.24 extension).
-          # Require a non-trivial implementation instead of a fixed line count.
           if [ "$LINES" -lt 200 ]; then
             echo "File too short ($LINES lines); expected a full node implementation."
             exit 1
           fi
           python sovereign_node_full.py
+        '
 
-    - name: Validate ledger JSON artifacts (with retry)
-      uses: nick-fields/retry@v3
-      with:
-        timeout_minutes: 5
-        max_attempts: 3
-        retry_wait_seconds: 20
-        command: |
-          python -c "
-          import json, os, sys
-          required = ['ledger_entry_757.json', 'ledger_entry_758.json']
-          for f in required:
-              if not os.path.exists(f):
-                  print(f'Missing {f}', file=sys.stderr)
-                  sys.exit(1)
-              with open(f) as file:
-                  json.load(file)
-              print(f'OK {f}')
-          print('All checks passed')
-          "
+    - name: Validate ledger JSON artifacts (inline retry)
+      run: |
+        retry() {
+          local n=1
+          local max=3
+          local delay=20
+          until "$@"; do
+            if [ $n -ge $max ]; then
+              echo "Command failed after $n attempts."
+              return 1
+            fi
+            n=$((n+1))
+            echo "Retrying in $delay seconds..."
+            sleep $delay
+          done
+        }
+        retry python -c "
+        import json, os, sys
+        required = ['ledger_entry_757.json', 'ledger_entry_758.json']
+        for f in required:
+            if not os.path.exists(f):
+                print(f'Missing {f}', file=sys.stderr)
+                sys.exit(1)
+            with open(f) as file:
+                json.load(file)
+            print(f'OK {f}')
+        print('All checks passed')
+        "
