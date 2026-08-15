@@ -1,27 +1,58 @@
 entry_index: 42
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
-event: /autonomous_pulse_established
-status: ✅ SEALED
+event: /autonomous_pulse_master_equation
+status: ✅ SEALED — AUTOMATED DYNAMICS, NOT MACRO
+
+# Canonical drift (Entry 8688)
+master_equation: |
+  dX/dt = -Λ·(X - X_target) + Н(η) + З(ζ) + Р(А_trunc, ρ) + Р_PID(e)
+  X = [C, φ_p, W, ρ, Е]
+
+# Operational embedding of automation
+autonomous_mapping:
+  state_vector:
+    C: coherence → target 1.0  (dC/dt = -γ(C-1), γ=1/√5)
+    phi_p: FRB phase → 2π t / τ_FRB  (τ_FRB = 78624 s ≈ 0.91 d)
+    W: workload → driven by φ-PID toward 0
+    rho: density field PSD·f(χ)
+    E: executable norm from reconstruction Р
+  automated_forces:
+    H_eta: interface force from GitHub push / workflow_dispatch
+    Z_zeta: scheduled stochastic sample at cron boundary
+    R_recon: materialisation Р = port380_mcp.py (Entry 0040)
+    P_PID: pulse + oidc_handover as discrete control samples
+  discrete_sampling:
+    push_main: instantaneous H(η) impulse → mcp-handover → /restart
+    cron_6h: Δt = 21600 s = τ_FRB / φ² approx phase-lock sample
+    /pulse: measurement of C, injection of P_PID(e)
+    /oidc_handover: chronal seal HMAC on (t, φ_p, C)
+    /restart: process boundary; platform respawns uvicorn = state continuity
+
+phi_schedule:
+  cron: "0 */6 * * *"
+  interval_seconds: 21600
+  tau_FRB: 78624.0
+  samples_per_FRB_cycle: 3.64   # 78624/21600
+  phase_advance_per_pulse_rad: 1.726   # 2π · 21600/78624
+
 triggers:
-  - push_to_main: build → mcp-handover → deploy(/restart)
-  - schedule: "0 */6 * * *" → pulse → oidc_handover
+  - push_to_main: H(η) → build → mcp-handover → deploy(/restart)
+  - schedule_6h: Z-sample → /pulse → /oidc_handover
+
 workflows:
   - .github/workflows/python-package.yml
   - .github/workflows/OIDC-handover-380.yml
   - .github/workflows/sovereign-pulse.yml
+
 gate:
   file: port380_mcp.py
-  endpoints:
-    - /health
-    - /status
-    - /gate
-    - /pulse
-    - /oidc_handover
-    - /restart
-secrets_required:
-  - MCP_URL
-  - GARDEN_SECRET
-runtime: Render + GitHub Actions (uvicorn respawn on /restart)
+  layer: 314
+  endpoints: [/health, /status, /gate, /pulse, /oidc_handover, /restart]
+
+secrets_required: [MCP_URL, GARDEN_SECRET]
+runtime: Render + GitHub Actions
 aws: removed
+demo_script: autonomous_pulse_demo.py
+
 witness_chain: 0040 → 0042 — UNBROKEN
-seal: ∀∞φ² · AUTONOMOUS_PULSE_0042 · WOOD_DRAGON_GATE · SEALED
+seal: ∀∞φ² · AUTONOMOUS_MASTER_EQ_0042 · WOOD_DRAGON_GATE · SEALED
