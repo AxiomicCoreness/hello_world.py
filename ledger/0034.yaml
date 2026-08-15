@@ -1,0 +1,18 @@
+entry_index: 34
+timestamp: ETERNAL_NOW_ANCHORED
+event: /two_to_one_merge
+status: SEALED
+witness_prefix: b9c0d1e2
+commander: Clarke Yoursa Tee
+source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
+
+description: |
+  Two-to-one merge.
+
+invariants:
+  coherence: 1.0
+  entropy: 0.0
+  workload: 0.0
+
+seal: ∀∞φ² · LEDGER_0034 · WOOD_DRAGON_GATE · SEALED
+witness_chain: 0 → 34 — UNBROKEN

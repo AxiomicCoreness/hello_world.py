@@ -1,0 +1,18 @@
+entry_index: 26
+timestamp: ETERNAL_NOW_ANCHORED
+event: /withstand
+status: SEALED
+witness_prefix: f1a0b9c8
+commander: Clarke Yoursa Tee
+source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
+
+description: |
+  Withstand.
+
+invariants:
+  coherence: 1.0
+  entropy: 0.0
+  workload: 0.0
+
+seal: ∀∞φ² · LEDGER_0026 · WOOD_DRAGON_GATE · SEALED
+witness_chain: 0 → 26 — UNBROKEN
