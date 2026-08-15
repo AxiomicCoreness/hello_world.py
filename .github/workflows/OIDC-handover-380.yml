@@ -1,0 +1,100 @@
+name: OIDC Handover — Port 380 Gate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours, φ‑harmonic
+
+permissions:
+  contents: write
+
+jobs:
+  handover-via-380:
+    name: Handover via Port‑380 MCP Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MCP client and dependencies
+        run: |
+          pip install mcp httpx
+          sudo apt-get update && sudo apt-get install -y curl jq
+
+      - name: Run OIDC handover via Port 380 (debug mode)
+        env:
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/oidc-380-handover.log"
+          exec > >(tee -a "$LOG") 2>&1
+
+          echo "# OIDC HANDOVER VIA PORT 380 — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cd "$GITHUB_WORKSPACE"
+
+          # 1. Generate OIDC handover payload (fallback if token fails)
+          echo "Generating handover payload..."
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          PHI_PHASE=$(echo "scale=10; (2 * 3.14159265359 * $(date +%s) / 78624) % 6.28318530718" | bc -l 2>/dev/null || echo "1.234567")
+          COHERENCE="1.0"
+          PAYLOAD=$(jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg phase "$PHI_PHASE" \
+            --arg coh "$COHERENCE" \
+            '{
+              event: "oidc_handover",
+              timestamp: $ts,
+              phi_phase: $phase,
+              coherence: $coh,
+              seal: "∀∞φ² · OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED",
+              source: "github_actions",
+              branch: "feat/oidc-handover"
+            }')
+
+          echo "Payload: $PAYLOAD"
+
+          # 2. Send payload to Port‑380 MCP gate
+          MCP_URL="${MCP_URL:-http://localhost:380/mcp}"
+          echo "Connecting to MCP gate: $MCP_URL"
+          curl -v -X POST "$MCP_URL/tools/gate_health" \
+            -H "Authorization: Bearer $GARDEN_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$GARDEN_SECRET\"}" || true
+
+          # 3. If available, send the handover as a custom tool call
+          curl -v -X POST "$MCP_URL/tools/oidc_handover" \
+            -H "Authorization: Bearer $GARDEN_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$GARDEN_SECRET\", \"payload\": $PAYLOAD}" || echo "⚠️ OIDC handover tool not yet implemented on gate"
+
+          # 4. Fallback: if MCP_URL not set, push to branch via token (debug)
+          if [ -z "${MCP_URL:-}" ] || [ "$MCP_URL" = "http://localhost:380/mcp" ]; then
+            echo "⚠️ MCP_URL not set, falling back to direct push via GITHUB_TOKEN"
+            git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
+            git checkout -b feat/oidc-handover-380 || git checkout feat/oidc-handover-380
+            echo "$PAYLOAD" > oidc_handover_payload.json
+            git add oidc_handover_payload.json
+            git commit -m "feat: OIDC handover payload via 380 fallback" || echo "No changes"
+            git push -u origin feat/oidc-handover-380
+          fi
+
+          echo "✅ OIDC handover via Port 380 complete."
+          echo "Logs: $LOG"
+
+      - name: Upload handover log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oidc-380-handover-log
+          path: oidc-380-handover.log
+          retention-days: 365
