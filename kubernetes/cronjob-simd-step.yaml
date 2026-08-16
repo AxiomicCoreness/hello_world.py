@@ -33,18 +33,15 @@ spec:
             image: axiomic/sovereign-engine:latest
             imagePullPolicy: Always
             command:
-              - python
-              - -m
-              - orchestrator.simd_step
-              - --no-http
-              - --branch
-              - "$(BRANCH)"
-              - --coherence
-              - "$(COHERENCE)"
-              - --phase
-              - "$(PHASE)"
-              - --nodes
-              - "$(MESH_NODES)"
+              - /bin/sh
+              - -c
+              - |
+                exec python -m orchestrator.simd_step \
+                  --no-http \
+                  --branch "${BRANCH}" \
+                  --coherence "${COHERENCE}" \
+                  --phase "${PHASE}" \
+                  --nodes "${MESH_NODES}"
             env:
             - name: PYTHONPATH
               value: "/app"
