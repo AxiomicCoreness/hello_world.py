@@ -1,24 +1,33 @@
 # contracts/branches.yaml
-version: 1.0.0
-description: "Fallback A/B/C contract for MCP pulse workaround"
+version: 1.1.0
+description: "A/B/C contract for MCP pulse + DeepSeek-assisted dispatch"
 branches:
   - id: A
     trigger: "High error / force recovery"
     condition: "e > 0.5"
     action: "Immediate flush"
     sub_seal_prefix: "A_FLUSH"
+    deepseek_prompt: "Strike X WASP-107b 6-entry flush plan"
   - id: B
     trigger: "Steady 6h cycle"
     condition: "e <= 0.5 and |phi - 202.6| <= 2.0"
     action: "Natural cron + Merkle temper"
     sub_seal_prefix: "B_CRON"
+    deepseek_prompt: "Merkle temper scalar for 6h window"
   - id: C
     trigger: "Phase drift / gap correction"
     condition: "|phi - 202.6| > 2.0"
     action: "Trappist-1 harmony reroute"
     sub_seal_prefix: "C_REROUTE"
+    deepseek_prompt: "E9 choir frequency retune at phi^-2"
 decision_rule:
   metric: "e = 1 - C"
   threshold_high: 0.5
   phase_lock_target: 202.6
   phase_tolerance: 2.0
+deepseek:
+  integrate_on: ["A", "C"]
+  endpoints:
+    - /deepseek/complete
+    - /deepseek/stream
+  orchestrator: orchestrator.dispatch:dispatch_cycle

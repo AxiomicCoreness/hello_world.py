@@ -1,18 +1,19 @@
 """
-deepseek.api — async HTTP client + CI-compatible warning/ignore.
+deepseek.api — async HTTP client + streaming + CI warning/ignore.
 
 Env:
-  DEEPSEEK_API_KEY  optional; if set, complete() uses DeepSeek HTTP API
+  DEEPSEEK_API_KEY  optional; if set, complete/stream use DeepSeek HTTP API
   DEEPSEEK_BASE_URL optional; default https://api.deepseek.com
 """
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any, AsyncIterator, Deque, Dict, List, Optional
 
 try:
     import httpx
@@ -53,7 +54,7 @@ def clear_events() -> None:
 
 @dataclass
 class AsyncDeepSeekClient:
-    """Async chat client (httpx) with offline fallback."""
+    """Async chat client (httpx) with offline fallback + SSE streaming."""
 
     api_key: Optional[str] = field(default_factory=lambda: os.environ.get("DEEPSEEK_API_KEY"))
     base_url: str = field(
@@ -100,6 +101,7 @@ class AsyncDeepSeekClient:
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
+            "stream": False,
         }
         headers = {
             "Content-Type": "application/json",
@@ -119,21 +121,67 @@ class AsyncDeepSeekClient:
             return {"mode": "online", "text": text, "raw": data, "model": self.model}
         except Exception as e:
             warning(f"deepseek complete failed: {e}")
-            return {"mode": "error", "text": str(e), "model": self.model}
+            return {"mode": "error", "text": str(e), "model": self.model, "error": type(e).__name__}
+
+    async def stream(self, prompt: str, max_tokens: int = 256) -> AsyncIterator[str]:
+        """Yield token/text chunks (SSE-friendly). Offline: word-chunk the echo."""
+        if not self.api_key or httpx is None:
+            text = f"[offline deepseek] {prompt[:500]}"
+            _record("stream_offline", prompt[:120])
+            for word in text.split(" "):
+                yield word + " "
+                await asyncio.sleep(0.01)
+            return
+
+        url = f"{self.base_url.rstrip('/')}/v1/chat/completions"
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+            "Accept": "text/event-stream",
+        }
+        try:
+            client = await self._get_http()
+            async with client.stream("POST", url, json=payload, headers=headers) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line:
+                        continue
+                    if line.startswith("data: "):
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            data = json.loads(data_str)
+                            delta = (
+                                data.get("choices", [{}])[0]
+                                .get("delta", {})
+                                .get("content")
+                            )
+                            if delta:
+                                yield delta
+                        except json.JSONDecodeError:
+                            continue
+            _record("stream_online", prompt[:120])
+        except Exception as e:
+            warning(f"deepseek stream failed: {e}")
+            yield f"[error:{type(e).__name__}] {e}"
 
     def complete_sync(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
-        """Sync wrapper for scripts / non-async callers."""
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
             loop = None
         if loop and loop.is_running():
-            # Called from async context incorrectly; prefer await complete()
             raise RuntimeError("use await complete() inside async code")
         return asyncio.run(self.complete(prompt, max_tokens=max_tokens))
 
 
-# Back-compat alias
 DeepSeekClient = AsyncDeepSeekClient
 
 _default_client: Optional[AsyncDeepSeekClient] = None
