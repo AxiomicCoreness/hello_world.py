@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """
-hello_world.py — Sovereign Garden FastAPI surface with DeepSeek integration.
+hello_world.py — Sovereign Garden FastAPI surface with async DeepSeek client.
 
 Run:
   uvicorn hello_world:app --host 0.0.0.0 --port 8000
-
-CI:
-  python -c "from deepseek.api import warning, ignore; from hello_world import app; ignore('deepseek.api import always, routes:', len(app.routes))"
 """
 from __future__ import annotations
 
@@ -16,7 +13,6 @@ from typing import Any, Dict, Optional
 from fastapi import APIRouter, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-# ---- DeepSeek (functional module; always importable via local package) ----
 try:
     from deepseek.api import (
         get_client,
@@ -44,8 +40,8 @@ except ImportError:  # pragma: no cover
 
 app = FastAPI(
     title="Sovereign hello_world",
-    version="1.1.0",
-    description="DeepSeek-aware Garden surface (functional client + event log)",
+    version="1.2.0",
+    description="DeepSeek-aware Garden surface (async httpx client)",
 )
 
 deepseek_router = APIRouter(prefix="/deepseek", tags=["deepseek"])
@@ -57,7 +53,7 @@ class CompleteRequest(BaseModel):
 
 
 @deepseek_router.get("/")
-def deepseek_root() -> Dict[str, Any]:
+async def deepseek_root() -> Dict[str, Any]:
     client_status: Dict[str, Any] = {}
     if DEEPSEEK_AVAILABLE:
         try:
@@ -73,7 +69,7 @@ def deepseek_root() -> Dict[str, Any]:
 
 
 @deepseek_router.get("/status")
-def deepseek_status() -> Dict[str, Any]:
+async def deepseek_status() -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "deepseek_api": DEEPSEEK_AVAILABLE,
         "routes_mounted": True,
@@ -89,18 +85,18 @@ def deepseek_status() -> Dict[str, Any]:
 
 
 @deepseek_router.get("/events")
-def deepseek_events(limit: int = 50) -> Dict[str, Any]:
+async def deepseek_events(limit: int = 50) -> Dict[str, Any]:
     if not DEEPSEEK_AVAILABLE:
         raise HTTPException(status_code=503, detail="deepseek.api unavailable")
     return {"events": get_events(limit=limit)}
 
 
 @deepseek_router.post("/complete")
-def deepseek_complete(body: CompleteRequest) -> Dict[str, Any]:
+async def deepseek_complete(body: CompleteRequest) -> Dict[str, Any]:
     if not DEEPSEEK_AVAILABLE:
         raise HTTPException(status_code=503, detail="deepseek.api unavailable")
     client = get_client()
-    return client.complete(body.prompt, max_tokens=body.max_tokens)
+    return await client.complete(body.prompt, max_tokens=body.max_tokens)
 
 
 app.include_router(deepseek_router)
@@ -111,7 +107,7 @@ if DEEPSEEK_AVAILABLE:
 
 
 @app.get("/")
-def root() -> Dict[str, Any]:
+async def root() -> Dict[str, Any]:
     return {
         "service": "hello_world",
         "status": "ok",
@@ -129,7 +125,7 @@ def root() -> Dict[str, Any]:
 
 
 @app.get("/health")
-def health() -> Dict[str, Any]:
+async def health() -> Dict[str, Any]:
     deepseek_online: Optional[bool] = None
     if DEEPSEEK_AVAILABLE:
         try:

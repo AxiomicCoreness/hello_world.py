@@ -1,20 +1,23 @@
 """
-deepseek.api — functional local client + CI-compatible warning/ignore.
+deepseek.api — async HTTP client + CI-compatible warning/ignore.
 
 Env:
-  DEEPSEEK_API_KEY  optional; if set, complete() posts to DeepSeek HTTP API
+  DEEPSEEK_API_KEY  optional; if set, complete() uses DeepSeek HTTP API
   DEEPSEEK_BASE_URL optional; default https://api.deepseek.com
 """
 from __future__ import annotations
 
-import json
+import asyncio
 import os
 import time
-import urllib.error
-import urllib.request
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Any, Deque, Dict, List, Optional
+
+try:
+    import httpx
+except ImportError:  # pragma: no cover
+    httpx = None  # type: ignore
 
 _MAX_EVENTS = 256
 _events: Deque[Dict[str, Any]] = deque(maxlen=_MAX_EVENTS)
@@ -32,20 +35,16 @@ def _record(kind: str, msg: str, *args: Any) -> None:
 
 
 def warning(msg: str, *args: Any) -> None:
-    """Record a warning event (CI + runtime)."""
     _record("warning", msg, *args)
 
 
 def ignore(msg: str, *args: Any) -> None:
-    """Record an ignore/info event (used by CI route-count check)."""
     _record("ignore", msg, *args)
 
 
 def get_events(limit: int = 50) -> List[Dict[str, Any]]:
     items = list(_events)
-    if limit > 0:
-        return items[-limit:]
-    return items
+    return items[-limit:] if limit > 0 else items
 
 
 def clear_events() -> None:
@@ -53,54 +52,64 @@ def clear_events() -> None:
 
 
 @dataclass
-class DeepSeekClient:
-    """Minimal chat/complete client with offline fallback."""
+class AsyncDeepSeekClient:
+    """Async chat client (httpx) with offline fallback."""
 
     api_key: Optional[str] = field(default_factory=lambda: os.environ.get("DEEPSEEK_API_KEY"))
     base_url: str = field(
         default_factory=lambda: os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     )
     model: str = "deepseek-chat"
+    timeout: float = 60.0
+    _client: Any = field(default=None, repr=False)
 
     @property
     def online(self) -> bool:
-        return bool(self.api_key)
+        return bool(self.api_key) and httpx is not None
 
     def status(self) -> Dict[str, Any]:
         return {
             "online": self.online,
+            "httpx": httpx is not None,
             "base_url": self.base_url,
             "model": self.model,
             "events": len(_events),
         }
 
-    def complete(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
-        """Chat completion; falls back to local echo if no API key."""
-        if not self.api_key:
+    async def _get_http(self) -> Any:
+        if httpx is None:
+            raise RuntimeError("httpx not installed")
+        if self._client is None:
+            self._client = httpx.AsyncClient(timeout=self.timeout)
+        return self._client
+
+    async def aclose(self) -> None:
+        if self._client is not None:
+            await self._client.aclose()
+            self._client = None
+
+    async def complete(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
+        """Async chat completion; offline echo if no API key / no httpx."""
+        if not self.api_key or httpx is None:
             text = f"[offline deepseek] {prompt[:500]}"
             _record("complete_offline", prompt[:120])
             return {"mode": "offline", "text": text, "model": self.model}
 
         url = f"{self.base_url.rstrip('/')}/v1/chat/completions"
-        body = json.dumps(
-            {
-                "model": self.model,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": max_tokens,
-            }
-        ).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=body,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            },
-            method="POST",
-        )
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+        }
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
+            client = await self._get_http()
+            resp = await client.post(url, json=payload, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
             text = (
                 data.get("choices", [{}])[0]
                 .get("message", {})
@@ -108,10 +117,30 @@ class DeepSeekClient:
             )
             _record("complete_online", prompt[:120])
             return {"mode": "online", "text": text, "raw": data, "model": self.model}
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as e:
+        except Exception as e:
             warning(f"deepseek complete failed: {e}")
             return {"mode": "error", "text": str(e), "model": self.model}
 
+    def complete_sync(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
+        """Sync wrapper for scripts / non-async callers."""
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop and loop.is_running():
+            # Called from async context incorrectly; prefer await complete()
+            raise RuntimeError("use await complete() inside async code")
+        return asyncio.run(self.complete(prompt, max_tokens=max_tokens))
 
-def get_client() -> DeepSeekClient:
-    return DeepSeekClient()
+
+# Back-compat alias
+DeepSeekClient = AsyncDeepSeekClient
+
+_default_client: Optional[AsyncDeepSeekClient] = None
+
+
+def get_client() -> AsyncDeepSeekClient:
+    global _default_client
+    if _default_client is None:
+        _default_client = AsyncDeepSeekClient()
+    return _default_client
