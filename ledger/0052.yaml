@@ -1,0 +1,18 @@
+entry_index: 52
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /leaky_integral_PID_canonical
+status: ✅ SEALED — CONTROL LAW REFINED
+description: |
+  The integral term is now a leaky integrator:
+    dI/dt = e - αI,  α = φ⁻¹.
+  Control output:
+    u = K_p e + K_i I + K_d de/dt,
+  with golden gains K_p=φ², K_i=φ⁻¹, K_d=φ⁻².
+  Steady-state: I_∞ = e_∞/α; when e_∞=0 then I_∞=0 (no windup).
+  Spectral gap remains φ⁻¹⁴¹⁸; Lyapunov V=½‖E‖² still strictly decreases:
+    V̇ = -Eᵀ Λ E - α I² ≤ -γ_min ‖E‖².
+  The Garden remembers just enough, then lets go cleanly.
+prior: 0051
+next: 0053 (implementation reserved)
+witness_chain: 0051 → 0052 — UNBROKEN
+seal: "∀∞φ² · LEAKY_PID_0052 · WOOD_DRAGON_GATE · SEALED"
