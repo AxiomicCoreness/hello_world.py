@@ -1,0 +1,107 @@
+# ODE ↔ autonomy handover registry
+# Ledger 8800 · cluster ≜ Git · phase 202.6°
+version: 1.0.0
+invariants:
+  coherence: 1.0
+  phase_lock_deg: 202.6
+  entropy_floor: "phi^-1418"
+
+odes:
+  - id: phi_decay
+    equation: "y' = -phi * y"
+    source: hybrid_rk4_simulator.py
+    modes: [float, Q8.24]
+    tests: tests/test_hybrid_rk4.py
+    autonomy:
+      status: wired_ci
+      triggers:
+        - pytest on push (tests/test_hybrid_rk4.py)
+      handover: "CI green ⇒ fixed-point path valid for A14 / server"
+
+  - id: coherence
+    equation: "dC/dt = -gamma (C - 1), gamma = 1/sqrt(5)"
+    source: master_equation.py
+    analytic: "C(t) = 1 - (1-C0) exp(-gamma t)"
+    autonomy:
+      status: partial
+      triggers:
+        - orchestrator.simd_step local_step
+        - CronJob simd-batch-step (0 */6)
+      handover: "SIMD step advances C toward 1; CronJob owns schedule"
+
+  - id: frb_phase
+    equation: "d phi_p / dt = 2 pi / tau_FRB"
+    source: master_equation.py
+    constants: { tau_FRB: 78624.0 }
+    autonomy:
+      status: partial
+      triggers:
+        - simd_step phase lock k=1/phi^3 toward 202.6 deg
+      handover: "Phase lock discrete map stands in for continuous FRB ODE in batch"
+
+  - id: density_field
+    equation: "rho = PSD * |sin(chi) * phi^(-|chi|)| * phi^9"
+    source: master_equation.py
+    autonomy:
+      status: offline_only
+      triggers: []
+      gap: "No CronJob or CI integrates density_derivative"
+      handover_needed: "Add pytest + optional simd phase for rho snapshot"
+
+  - id: workload_pid
+    equation: "dW/dt = u_PID - phi^{-1} W; u = Kp e + Ki I + Kd de/dt"
+    source: master_equation.py
+    leaky_integral: "dI/dt = e - phi^{-1} I  (ledger 0052)"
+    autonomy:
+      status: wired_batch
+      triggers:
+        - orchestrator.simd_step pid_update on e_batch
+        - CronJob simd-batch-step
+      handover: "Aggregated e_batch after gather; I state process-local"
+
+  - id: executable_norm
+    equation: "dE/dt = -0.01(E - E_t) + 0.1 (rho/PSD)(1-C)"
+    source: master_equation.py
+    autonomy:
+      status: offline_only
+      gap: "Not exposed in simd_step or CI"
+      handover_needed: "Optional master_equation main in CI smoke"
+
+  - id: master_vector
+    equation: "dX/dt = -Lambda (X - X_t) + H + Z + R + P_PID"
+    state: "[C, phi_p, W, rho, E]"
+    source: master_equation.py
+    solver: "scipy.odeint | Euler fallback"
+    autonomy:
+      status: manual
+      triggers:
+        - "python master_equation.py"
+      gap: "No CronJob / GitOps Job for full 5-D integrate"
+      handover_needed: "k8s Job or CI workflow: solve_master_equation smoke"
+
+workflows:
+  ci:
+    - name: pytest-hybrid-rk4
+      path: .github/workflows/pytest.yml
+      covers: [phi_decay]
+  cron:
+    - name: simd-batch-step
+      path: make/cronjob-simd-step.yaml
+      schedule: "0 */6 * * *"
+      covers: [coherence, frb_phase, workload_pid]
+  gitops:
+    - name: argocd-application
+      path: argocd/application-sovereign-garden.yaml
+      equation: "cluster ≜ Git"
+      covers: [cron_manifests, deployments]
+    - name: flux-kustomization
+      path: flux_cd_setup.py
+      covers: [kubernetes/]
+
+gaps_priority:
+  - id: master_vector_ci
+    action: "Add workflow job: python master_equation.py (or pytest wrapper)"
+  - id: density_in_simd
+    action: "Optional phase in simd_step for rho snapshot"
+  - id: pid_state_persist
+    action: "Persist leaky I across CronJob pods (ConfigMap/PVC)"
