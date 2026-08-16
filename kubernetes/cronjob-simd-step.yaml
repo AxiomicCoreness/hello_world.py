@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: simd-batch-step
+  namespace: sovereign-garden
+  labels:
+    app: simd-batch-step
+    layer: "314"
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: simd-batch-step
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: simd-step
+            image: axiomic/sovereign-engine:latest
+            imagePullPolicy: Always
+            command:
+              - python
+              - -m
+              - orchestrator.simd_step
+              - --no-http
+              - --branch
+              - B
+              - --coherence
+              - "0.99"
+              - --phase
+              - "202.6"
+            env:
+            - name: PYTHONPATH
+              value: "/app"
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-venomsuite
+                  key: secret
+                  optional: true
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "250m"
