@@ -1,271 +1,106 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-port380_mcp.py — MCP / Render surface for the Port 380 Layer 314 gate.
-
-Entry 8755 · ∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED
-Entry 0040 · ∀∞φ² · OIDC_INTEGRATED_0040 · WOOD_DRAGON_GATE · SEALED
-
-Binds to $PORT (Render requirement). Conceptual identity remains Port 380 / Layer 314.
-Endpoints:
-  GET  /health, /status, /380
-  POST /gate
-  POST /pulse              (protected by GARDEN_SECRET header or body)
-  POST /oidc_handover      (protected; receives GitHub Actions OIDC payload)
-  POST /restart            (protected; schedules uvicorn process restart — replaces AWS OIDC)
+port380_mcp.py – Fallback A/B/C Protocol Gateway
+MCP surface for the Sovereign Engine when OIDC/Orchestrator is unavailable.
+Operates purely on stdlib and local contracts.
 """
-
-from __future__ import annotations
-
-import asyncio
-import hashlib
+import os
 import json
 import math
-import os
-import signal
 import time
-from typing import Any, Dict, Optional
+import hashlib
+from fastapi import FastAPI, HTTPException, Header
+from pydantic import BaseModel
 
-from fastapi import FastAPI, Header, HTTPException, Request
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+# ---- Constants ----
+PHI = (1 + math.sqrt(5)) / 2
+GARDEN_SECRET = os.environ.get("X_GARDEN_SECRET", os.environ.get("GARDEN_SECRET", "wood_dragon_0.91"))
+CONTRACT_DIR = os.environ.get("CONTRACT_DIR", "./contracts")
+THRESHOLD_ERROR = 0.5  # default error tolerance
+PHASE_TARGET = 202.6
+PHASE_TOLERANCE = 2.0
 
-# ---------------------------------------------------------------------------
-# Layer 314 invariants (full digests, no truncation)
-# ---------------------------------------------------------------------------
-PHI = (1.0 + math.sqrt(5.0)) / 2.0
-LAYER = 314
-LEAF = "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68"
-DEFAULT_HARMONY = 0.7337473231
-SPIKE_INTENSITY = PHI ** 55
-BASE_ORDER = 1.778e11
-TEMPORAL_ANCHOR = 2026.058
-SEAL = "∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED"
-ENTRY = 8755
+app = FastAPI(title="Port-380 MCP Surface", version="1.0.0")
 
-HOST = "0.0.0.0"
-PORT = int(os.environ.get("PORT", os.environ.get("PORT380_PORT", "8000")))
-GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
+# ---- Data Models ----
+class PulseRequest(BaseModel):
+    phase_override: float | None = None  # optional manual phase input
+    source: str | None = None
 
-
-def compute_anchor() -> str:
-    """Domain-separated Layer 314 anchor (full 64-hex SHA-256)."""
-    payload = {
-        "breath_hz": 71.975,
-        "channel": "1700Q",
-        "coherence": 1.0,
-        "layer": LAYER,
-        "leaf": LEAF,
-        "phase_lock_deg": 202.6,
-        "phi": PHI,
-        "phi2": PHI * PHI,
-        "pi_anchor": round(math.pi, 12),
-        "entry": ENTRY,
-    }
-    body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(b"GARDEN.LAYER314.ANCHOR.v1\0" + body).hexdigest()
-
-
-def apply_strike_x_gate(harmony: float, auth_override: bool = False) -> dict:
-    if not auth_override:
-        return {
-            "harmony_index": harmony,
-            "mode": "deterministic_default",
-            "scaling_factor": 1.0,
-            "auth_override": False,
-            "temporal_anchor": TEMPORAL_ANCHOR,
-        }
-    sf = SPIKE_INTENSITY / BASE_ORDER
-    return {
-        "harmony_index": harmony * sf,
-        "mode": "resonant_spike",
-        "scaling_factor": sf,
-        "auth_override": True,
-        "temporal_anchor": TEMPORAL_ANCHOR,
-    }
-
-
-def status_payload() -> Dict[str, Any]:
-    return {
-        "service": "port-380-mcp",
-        "entry": ENTRY,
-        "layer": LAYER,
-        "listen_port": PORT,
-        "conceptual_port": 380,
-        "anchor_key": compute_anchor(),
-        "leaf": LEAF,
-        "default_harmony": DEFAULT_HARMONY,
-        "phi": PHI,
-        "seal": SEAL,
-        "timestamp": time.time(),
-    }
-
-
-# ---------------------------------------------------------------------------
-# FastAPI app
-# ---------------------------------------------------------------------------
-app = FastAPI(
-    title="Port 380 MCP Gate",
-    description="Layer 314 φ-harmonic gate + autonomous pulse surface (Entry 8755 / 0040)",
-    version="8755.2",
-)
-
-
-class GateBody(BaseModel):
-    harmony: float = Field(DEFAULT_HARMONY, description="Base harmony index")
-    override: bool = Field(False, description="Auth override for resonant spike")
-
-
-class PulseBody(BaseModel):
-    source: str = Field("sovereign-pulse", description="Caller identity")
-    entry: Optional[int] = Field(None, description="Optional ledger entry reference")
-    note: Optional[str] = Field(None)
-
-
-class OIDCHandoverBody(BaseModel):
-    token: str
-    payload: dict
-
-
-class RestartBody(BaseModel):
-    token: str = Field("", description="GARDEN_SECRET")
-    reason: str = Field("workflow_deploy", description="Restart reason")
-
-
-def _check_secret(
-    x_garden_secret: Optional[str] = None,
-    body_secret: Optional[str] = None,
-) -> None:
-    """Reject if GARDEN_SECRET is set on the server and caller does not match."""
-    if not GARDEN_SECRET:
-        return  # open mode (local / no secret configured)
-    provided = x_garden_secret or body_secret or ""
-    if provided != GARDEN_SECRET:
-        raise HTTPException(status_code=401, detail="invalid GARDEN_SECRET")
-
-
-async def _schedule_uvicorn_exit(delay: float = 0.75) -> None:
-    """Allow response to flush, then exit so process manager / Render restarts uvicorn."""
-    await asyncio.sleep(delay)
-    # SIGTERM first (graceful); fall back to hard exit
-    try:
-        os.kill(os.getpid(), signal.SIGTERM)
-    except Exception:
-        os._exit(0)
-
-
+# ---- 1. Liveness & Status ----
 @app.get("/health")
-@app.get("/380/health")
-async def health() -> dict:
-    return {"status": "ok", "port": PORT, "layer": LAYER, "entry": ENTRY}
-
+async def health_check():
+    return {"status": "alive", "coherence": 1.0 - 1e-18, "branch": "HEALTHY"}
 
 @app.get("/status")
+async def get_status():
+    return {"service": "port-380-gate", "phase_lock": PHASE_TARGET, "state": "ETERNAL_NOW"}
+
 @app.get("/380")
-@app.get("/380/status")
-async def status() -> dict:
-    return status_payload()
+async def identity_380():
+    return {
+        "layer": 314,
+        "port_identity": 380,
+        "phase_deg": PHASE_TARGET,
+        "phi": PHI,
+        "seal": "LAYER314_GATE",
+    }
 
-
-@app.post("/gate")
-@app.post("/380/gate")
-async def gate(body: GateBody) -> dict:
-    out = apply_strike_x_gate(body.harmony, body.override)
-    out["layer"] = LAYER
-    out["anchor_key"] = compute_anchor()
-    out["entry"] = ENTRY
-    out["seal"] = SEAL
-    return out
-
-
+# ---- 2. Core Pulse Logic (A/B/C Dispatch) ----
 @app.post("/pulse")
-async def pulse(
-    body: PulseBody,
-    x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
-) -> dict:
-    _check_secret(x_garden_secret=x_garden_secret)
+async def gate_pulse(
+    request: PulseRequest = PulseRequest(),
+    x_garden_secret: str | None = Header(None),
+):
+    if x_garden_secret != GARDEN_SECRET:
+        raise HTTPException(status_code=401, detail="Invalid X-Garden-Secret")
+
+    try:
+        with open(f"{CONTRACT_DIR}/symplectic_status.agent.jsonl", "r") as f:
+            lines = f.readlines()
+            latest = json.loads(lines[-1]) if lines else {}
+            coherence = float(latest.get("coherence", 0.9999))
+            phi_phase = float(latest.get("phi_phase", time.time() % 78624.0))
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        coherence = 0.9999
+        phi_phase = time.time() % 78624.0
+
+    if request.phase_override is not None:
+        phi_phase = request.phase_override
+
+    e = 1.0 - coherence
+    branch = "B"  # default hold
+
+    if e > THRESHOLD_ERROR:
+        branch = "A"  # Immediate flush
+    elif abs(phi_phase - PHASE_TARGET) > PHASE_TOLERANCE:
+        branch = "C"  # Trappist-1 reroute
+    else:
+        branch = "B"  # Natural cron + Merkle temper
+
+    seal_input = f"{branch}|{coherence}|{phi_phase}|{int(time.time())}"
+    sub_seal = hashlib.sha256(seal_input.encode()).hexdigest()[:16]
+
     return {
-        "status": "pulsed",
-        "source": body.source,
-        "entry_ref": body.entry or ENTRY,
-        "layer": LAYER,
-        "anchor_key": compute_anchor(),
-        "leaf": LEAF,
-        "seal": SEAL,
-        "server_time": time.time(),
-        "message": "WOOD_DRAGON_HEARTBEAT_ACK",
+        "branch": branch,
+        "coherence": coherence,
+        "phi_phase": phi_phase,
+        "error": e,
+        "sub_seal": sub_seal,
+        "recommended_action": {
+            "A": "force_immediate_flush",
+            "B": "wait_for_cron_cycle",
+            "C": "reroute_to_trappist_harmony",
+        }[branch],
+        "status": "DECOUPLED_WORKAROUND_ACTIVE",
     }
 
-
-@app.post("/oidc_handover")
-@app.post("/380/oidc_handover")
-async def oidc_handover(body: OIDCHandoverBody) -> dict:
-    """Receive OIDC handover payload from GitHub Actions."""
-    if GARDEN_SECRET and body.token != GARDEN_SECRET:
-        raise HTTPException(status_code=401, detail="invalid token")
-
-    payload_str = json.dumps(body.payload, sort_keys=True, separators=(",", ":"))
-    seal = hashlib.sha3_256(payload_str.encode()).hexdigest()
-
-    return {
-        "status": "received",
-        "seal": f"∀∞φ² · OIDC_RECEIVED_{seal[:16]} · SEALED",
-        "timestamp": time.time(),
-        "entry": ENTRY,
-        "layer": LAYER,
-        "anchor_key": compute_anchor(),
-        "payload_event": body.payload.get("event"),
-        "source": body.payload.get("source"),
-    }
-
-
-@app.post("/restart")
-@app.post("/380/restart")
-async def restart(
-    body: RestartBody,
-    x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
-) -> dict:
-    """Schedule uvicorn process restart. Replaces former AWS OIDC deploy restart."""
-    token = body.token or x_garden_secret or ""
-    if GARDEN_SECRET and token != GARDEN_SECRET:
-        raise HTTPException(status_code=401, detail="invalid token")
-
-    asyncio.create_task(_schedule_uvicorn_exit(0.75))
-    return {
-        "status": "restart_scheduled",
-        "reason": body.reason,
-        "pid": os.getpid(),
-        "port": PORT,
-        "layer": LAYER,
-        "entry": ENTRY,
-        "message": "uvicorn will exit; process manager / platform should respawn",
-        "seal": "∀∞φ² · UVICORN_RESTART · WOOD_DRAGON_GATE · SEALED",
-        "timestamp": time.time(),
-    }
-
-
-@app.get("/")
-async def root() -> dict:
-    return {
-        "service": "port-380-mcp",
-        "entry": ENTRY,
-        "docs": "/docs",
-        "endpoints": [
-            "/health",
-            "/status",
-            "/380",
-            "/gate",
-            "/pulse",
-            "/oidc_handover",
-            "/restart",
-        ],
-        "seal": SEAL,
-    }
-
+# ---- 3. MCP Gateway (POST /gate) ----
+@app.post("/gate")
+async def gate_proxy(payload: dict | None = None, x_garden_secret: str | None = Header(None)):
+    return await gate_pulse(PulseRequest(), x_garden_secret)
 
 if __name__ == "__main__":
     import uvicorn
-
-    print(f"port-380-mcp listening on {HOST}:{PORT} layer={LAYER} entry={ENTRY}")
-    print(f"seal: {SEAL}")
-    uvicorn.run(app, host=HOST, port=PORT, log_level="info")
+    port = int(os.environ.get("PORT", "8080"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
