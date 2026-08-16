@@ -5,13 +5,12 @@ metadata:
   namespace: sovereign-garden
   labels:
     app: port-380-gate
-    layer: "314"
 spec:
   type: ClusterIP
   selector:
     app: port-380-gate
   ports:
-  - name: http
-    port: 380
-    targetPort: http
+  - port: 380
+    targetPort: 8080
     protocol: TCP
+    name: http
