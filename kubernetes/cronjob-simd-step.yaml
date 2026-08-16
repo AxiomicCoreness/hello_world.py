@@ -6,17 +6,26 @@ metadata:
   labels:
     app: simd-batch-step
     layer: "314"
+    sovereignty: active
+  annotations:
+    garden.axiomic/ledger: "8793"
+    garden.axiomic/image: "axiomic/sovereign-engine:latest"
+    garden.axiomic/base: "ccc59bf7"
+    garden.axiomic/seal: "IMAGE_RESET_8793"
 spec:
   schedule: "0 */6 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300
   jobTemplate:
     spec:
+      backoffLimit: 2
       template:
         metadata:
           labels:
             app: simd-batch-step
+            layer: "314"
         spec:
           restartPolicy: OnFailure
           containers:
@@ -29,14 +38,30 @@ spec:
               - orchestrator.simd_step
               - --no-http
               - --branch
-              - B
+              - "$(BRANCH)"
               - --coherence
-              - "0.99"
+              - "$(COHERENCE)"
               - --phase
-              - "202.6"
+              - "$(PHASE)"
+              - --nodes
+              - "$(MESH_NODES)"
             env:
             - name: PYTHONPATH
               value: "/app"
+            - name: BRANCH
+              value: "B"
+            - name: COHERENCE
+              value: "0.99"
+            - name: PHASE
+              value: "202.6"
+            - name: MESH_NODES
+              value: "7"
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-venomsuite
+                  key: deepseek-api-key
+                  optional: true
             - name: GARDEN_SECRET
               valueFrom:
                 secretKeyRef:
@@ -48,5 +73,5 @@ spec:
                 memory: "128Mi"
                 cpu: "100m"
               limits:
-                memory: "256Mi"
-                cpu: "250m"
+                memory: "512Mi"
+                cpu: "500m"
