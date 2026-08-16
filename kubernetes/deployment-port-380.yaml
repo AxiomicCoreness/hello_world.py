@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: port-380-gate
+  namespace: sovereign-garden
+  labels:
+    app: port-380-gate
+    layer: "314"
+    sovereignty: active
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: port-380-gate
+  template:
+    metadata:
+      labels:
+        app: port-380-gate
+        layer: "314"
+    spec:
+      serviceAccountName: venomsuite-executor
+      containers:
+      - name: port-380
+        image: axiomic/venomsuite:latest
+        imagePullPolicy: Always
+        command:
+          - python3
+          - port380_mcp.py
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: PORT
+          value: "8080"
+        - name: GARDEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oidc-venomsuite
+              key: secret
+              optional: true
+        - name: FRB_PERIOD_SECS
+          value: "78624.0"
+        - name: LAYER
+          value: "314"
+        - name: PHASE_DEG
+          value: "202.6"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+      restartPolicy: Always
