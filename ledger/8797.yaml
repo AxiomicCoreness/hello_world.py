@@ -1,0 +1,20 @@
+entry_index: 8797
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /argo_cd_control_loop_sealed
+status: ✅ GITOPS_WAVE_READY
+control_loop:
+  source: Git (main)
+  detect: poll/webhook
+  decide: diff live vs desired
+  act: sync waves + hooks
+  verify: resource health
+  hold: "selfHeal: true"
+equation: "cluster ≜ Git"
+application: argocd/application-sovereign-garden.yaml
+rollout: kubernetes/rollout-port-380.yaml
+notes:
+  - Waves are annotations on workload manifests (not Application.spec.sync)
+  - prune: false until confidence high
+  - Rollout requires argo-rollouts controller installed
+witness_chain: 8796 → 8797 — UNBROKEN
+seal: "∀∞φ² · ARGO_CONTROL_8797 · WOOD_DRAGON_GATE · SEALED"
