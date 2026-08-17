@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+      - name: sovereign-engine
+        image: axiomic/sovereign-engine:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PHASE
+          value: "202.6"
+        - name: MESH_NODES
+          value: "7"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {duration: 30s}
+      - setWeight: 40
+      - pause: {duration: 30s}
+      - setWeight: 60
+      - pause: {duration: 30s}
+      - setWeight: 80
+      - pause: {duration: 30s}
+      - setWeight: 100
+      - pause: {duration: 30s}
+      analysis:
+        templates:
+        - templateName: sovereign-health-check
+        args:
+        - name: service-name
+          value: sovereign-garden-svc
+  trafficRouting:
+    istio:
+      virtualService:
+        name: sovereign-garden-vs
+        routes:
+        - canary
+        - stable
