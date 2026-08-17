@@ -76,4 +76,4 @@ jobs:
               sleep $delay
             done
           }
-          retry bash -c "python -c \"from core.api import app; print(\"core.api import OK, routes:\", len(app.routes))\""
+          retry bash -c "python -c \"from core.api import app; print('core.api import OK, routes:', len(app.routes))\""
