@@ -7,6 +7,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from orchestrator.deepseek_client import invoke_deepseek
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any, Dict
@@ -21,8 +24,29 @@ BASE_ORDER = 1.778e11
 TEMPORAL_ANCHOR = 2026.058
 HOST = os.environ.get("PORT380_HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT380_PORT", "380"))
+app = FastAPI(title="Port 380 MCP", version="2.1")
 
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
+class DeepSeekRequest(BaseModel):
+    prompt: str
+
+@app.post("/mesh/invoke")
+async def deepseek_mesh(request: DeepSeekRequest):
+    """Bridges the Garden to external DeepSeek models."""
+    if not DEEPSEEK_API_KEY:
+        raise HTTPException(status_code=503, detail="DeepSeek API key not configured")
+    
+    result = invoke_deepseek(request.prompt)
+    if "error" in result:
+        raise HTTPException(status_code=result.get("status", 500), detail=result["error"])
+    
+    return {
+        "status": "processed",
+        "fiber": "deepseek",
+        "response": result["choices"][0]["message"]["content"],
+        "seal": "∀∞φ² · DEEPSEEK_MESH_INVOKE"
+    }
 def compute_anchor() -> str:
     try:
         from quantum.layer314_anchor import compute_anchor as _ca
