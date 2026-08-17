@@ -1,0 +1,13 @@
+entry_index: 8805
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /leaky_i_persistence_closed
+status: ✅ PVC_PERSISTENCE_ADDED
+gap_closed: leaky I across CronJob pods
+implementation:
+  - kubernetes/pvc-leaky-i.yaml
+  - kubernetes/configmap-leaky-i-seed.yaml
+  - make/cronjob-simd-step.yaml mounts PVC at /var/state/leaky_i
+  - simd_step --leaky-i-path
+note: "ConfigMap mounts are read-only in Kubernetes; PVC used for write-back"
+witness_chain: 8804 → 8805 — UNBROKEN
+seal: "∀∞φ² · LEAKY_I_CLOSED_8805 · WOOD_DRAGON_GATE · SEALED"

@@ -8,13 +8,14 @@ Batches in one atomic cycle (asyncio.gather):
   Phase 2  orchestrator.dispatch (DeepSeek optional)
   Phase 3  MCP /pulse          (optional HTTP)
   Phase 4  /deepseek/stream    (optional HTTP, collected)
+  Phase ρ  density field       (optional --phase-rho)
 
 Then applies leaky-integral PID to e_batch = mean(1 - C_i).
+I state can be loaded/saved via --leaky-i / --leaky-i-path (ledger 8805).
 
 Usage:
-  python -m orchestrator.simd_step
-  python -m orchestrator.simd_step --branch A --base-url http://localhost:8000
-  python -m orchestrator.simd_step --mcp-url http://localhost:8080 --no-http
+  python -m orchestrator.simd_step --no-http
+  python -m orchestrator.simd_step --phase-rho --leaky-i-path /var/state/leaky_i/i_value
 """
 from __future__ import annotations
 
@@ -22,13 +23,15 @@ import argparse
 import asyncio
 import json
 import math
+import os
 import time
 from typing import Any, Dict, List, Optional
 
 PHI = (1 + math.sqrt(5)) / 2
 PHASE_TARGET = 202.6
-ALPHA = 1.0 / PHI  # leaky integral rate φ⁻¹
+ALPHA = 1.0 / PHI
 KP, KI, KD = PHI**2, 1.0 / PHI, PHI ** (-2)
+PSD = 5.774
 
 try:
     from orchestrator.dispatch import dispatch_cycle
@@ -40,9 +43,55 @@ try:
 except ImportError:
     httpx = None  # type: ignore
 
-# module-level leaky integral state (survives within process)
 _I = 0.0
 _e_prev = 0.0
+
+
+def load_leaky_i(path: Optional[str], explicit: Optional[float]) -> float:
+    global _I
+    if explicit is not None:
+        _I = float(explicit)
+        return _I
+    if path and os.path.isfile(path):
+        try:
+            with open(path) as f:
+                _I = float(f.read().strip() or "0")
+        except (OSError, ValueError):
+            _I = 0.0
+    return _I
+
+
+def save_leaky_i(path: Optional[str]) -> None:
+    if not path:
+        return
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w") as f:
+        f.write(f"{_I:.12g}\n")
+
+
+def harmonic_density_field(chi: float) -> float:
+    return abs(math.sin(chi) * (PHI ** (-abs(chi)))) * (PHI ** 9)
+
+
+def rho_universal(position: float, t: float = 0.0) -> float:
+    return PSD * harmonic_density_field(position + t)
+
+
+def local_rho_phase(seed_phase: float, t: float = 0.0) -> Dict[str, Any]:
+    """Optional density-field phase for SIMD (ledger 8804)."""
+    chi = (seed_phase / 360.0) * 2 * math.pi
+    rho = rho_universal(chi, t)
+    rho_target = PSD
+    rho_error = abs(rho - rho_target) / max(rho_target, 1e-12)
+    return {
+        "phase_id": "rho",
+        "name": "rho",
+        "rho": rho,
+        "rho_target": rho_target,
+        "rho_error": rho_error,
+        "chi": chi,
+        "status": "ok",
+    }
 
 
 def local_step(coherence: float, phase: float, workload: float, dt: float) -> Dict[str, Any]:
@@ -162,8 +211,8 @@ async def simd_batch_step(
     garden_secret: str = "wood_dragon_0.91",
     use_http: bool = True,
     stream_prompt: str = "Strike X flush plan",
+    phase_rho: bool = False,
 ) -> Dict[str, Any]:
-    """Run all phases concurrently; PID on aggregated error; one atomic result."""
     t0 = time.time()
 
     async def phase0():
@@ -188,7 +237,12 @@ async def simd_batch_step(
             "status": "ok",
         }
 
+    async def phase_rho_task():
+        return local_rho_phase(phase, t=0.0)
+
     tasks = [phase0(), phase1(), phase2()]
+    if phase_rho:
+        tasks.append(phase_rho_task())
     if use_http and mcp_url:
         tasks.append(http_pulse(mcp_url, garden_secret, branch))
     if use_http and base_url:
@@ -206,6 +260,8 @@ async def simd_batch_step(
             errors.append(float(r["error"]))
         elif isinstance(r, dict) and "coherence" in r:
             errors.append(1.0 - float(r["coherence"]))
+        elif isinstance(r, dict) and r.get("name") == "rho" and "rho_error" in r:
+            errors.append(float(r["rho_error"]))
 
     e_batch = sum(errors) / len(errors) if errors else (1.0 - coherence)
     pid = pid_update(e_batch, dt)
@@ -218,6 +274,7 @@ async def simd_batch_step(
         "all_ok": ok,
         "phases": phases,
         "pid": pid,
+        "phase_rho": phase_rho,
         "seal": "SIMD_BATCH_STEP_OK" if ok else "SIMD_BATCH_STEP_PARTIAL",
     }
 
@@ -233,7 +290,17 @@ def main() -> None:
     p.add_argument("--mcp-url", default="http://localhost:8080")
     p.add_argument("--secret", default="wood_dragon_0.91")
     p.add_argument("--no-http", action="store_true", help="local phases only")
+    p.add_argument("--phase-rho", action="store_true", help="include density field phase (8804)")
+    p.add_argument("--leaky-i", type=float, default=None, help="seed leaky integral I")
+    p.add_argument(
+        "--leaky-i-path",
+        default=None,
+        help="read/write path for I (PVC mount; 8805)",
+    )
     args = p.parse_args()
+
+    load_leaky_i(args.leaky_i_path, args.leaky_i)
+
     out = asyncio.run(
         simd_batch_step(
             coherence=args.coherence,
@@ -245,8 +312,13 @@ def main() -> None:
             mcp_url=args.mcp_url,
             garden_secret=args.secret,
             use_http=not args.no_http,
+            phase_rho=args.phase_rho,
         )
     )
+    save_leaky_i(args.leaky_i_path)
+    if args.leaky_i_path:
+        out["leaky_i_path"] = args.leaky_i_path
+        out["leaky_i_saved"] = _I
     print(json.dumps(out, indent=2))
 
 
