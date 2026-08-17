@@ -1,0 +1,117 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    traffic-router: gatewayAPI
+    entry: "8812"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+        - name: sovereign-engine
+          image: axiomic/sovereign-engine:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PHASE
+              value: "202.6"
+            - name: MESH_NODES
+              value: "7"
+            - name: TRAFFIC_ROUTER
+              value: "gatewayAPI"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  strategy:
+    canary:
+      canaryService: sovereign-garden-canary
+      stableService: sovereign-garden-stable
+      trafficRouting:
+        # Declare every header-route name the steps will create/remove
+        managedRoutes:
+          - name: qa-canary
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoutes:
+              - name: sovereign-garden-route
+                useHeaderRoutes: true
+            namespace: sovereign-garden
+            # Optional overrides (defaults shown):
+            # inProgressLabelKey: rollouts.argoproj.io/gatewayapi-canary
+            # inProgressLabelValue: in-progress
+            # disableInProgressLabel: false
+      steps:
+        # Background weight schedule (non-header traffic only)
+        - setWeight: 20
+        # Pin clients with X-Canary: true → 100% canary for the rest of the rollout
+        - setHeaderRoute:
+            name: qa-canary
+            match:
+              - headerName: X-Canary
+                headerValue:
+                  exact: "true"
+        - pause: {duration: 30s}
+        - setWeight: 40
+        - pause: {duration: 30s}
+        - setWeight: 60
+        - pause: {duration: 30s}
+        - setWeight: 80
+        - pause: {duration: 30s}
+        - setWeight: 100
+        - pause: {duration: 30s}
+        # Clean up header rule (empty match → remove) so orphans do not accumulate
+        - setHeaderRoute:
+            name: qa-canary
+      analysis:
+        templates:
+          - templateName: sovereign-health-check
+        args:
+          - name: service-name
+            value: sovereign-garden-canary
+---
+# Usage notes (source-only; not executed from this environment)
+#
+# Controller prerequisite (once per cluster):
+#   ConfigMap argo-rollouts-config in namespace argo-rollouts must register
+#   plugin argoproj-labs/gatewayAPI (v0.13.0+ recommended).
+#
+# Companion manifests (Entry 8811):
+#   argocd/sovereign-garden-stable.yaml
+#   argocd/sovereign-garden-canary.yaml
+#   argocd/sovereign-garden-httproute.yaml
+#
+# Behaviour:
+#   • Requests with header X-Canary: true → always canary (from setHeaderRoute onward)
+#   • All other requests → proportional weights 20 → 40 → 60 → 80 → 100
+#   • Plugin stamps HTTPRoute with rollouts.argoproj.io/gatewayapi-canary=in-progress
+#     while the canary is active (Argo CD ignoreDifferences recommended)
+#
+# Apply (cluster with Gateway API + Rollouts plugin):
+#   kubectl apply -f argocd/sovereign-garden-stable.yaml
+#   kubectl apply -f argocd/sovereign-garden-canary.yaml
+#   kubectl apply -f argocd/sovereign-garden-httproute.yaml
+#   kubectl apply -f argocd/rollout-sovereign-garden-gateway-header.yaml
+#
+# Test pin:
+#   curl -H 'X-Canary: true'  https://garden.example/health
+#   curl                       https://garden.example/health

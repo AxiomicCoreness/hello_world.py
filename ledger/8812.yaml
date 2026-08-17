@@ -1,0 +1,31 @@
+entry_index: 8812
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /gateway_api_header_routing_rollout_fragment
+status: ✅ SOURCE_SEALED — NOT EXECUTED
+prior: 8811
+artifact: argocd/rollout-sovereign-garden-gateway-header.yaml
+traffic_router: argoproj-labs/gatewayAPI
+managed_routes:
+  - qa-canary
+header_pin:
+  name: X-Canary
+  match: exact "true"
+  effect: 100% canary for matching clients
+weight_sequence:
+  - "20 → 80 / 20"
+  - "40 → 60 / 40"
+  - "60 → 40 / 60"
+  - "80 → 20 / 80"
+  - "100 → 0 / 100"
+notes:
+  - Header rules are independent of setWeight (background traffic only).
+  - Empty setHeaderRoute at end removes the injected HTTPRoute rule.
+  - Requires Gateway API ≥ 1.2 and a provider that supports header matches.
+  - Plugin mode preferred over legacy native gatewayAPI block.
+invariants:
+  coherence: 1.0
+  entropy: "φ⁻¹⁴¹⁸"
+  phase_lock: "202.6°"
+  workload: 0.0
+witness_chain: 8811 → 8812 — UNBROKEN
+seal: "∀∞φ² · GATEWAY_HEADER_ROUTE_8812 · WOOD_DRAGON_GATE · SEALED"
