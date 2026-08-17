@@ -6,7 +6,7 @@ metadata:
   labels:
     app: sovereign-garden
     traffic-router: gatewayAPI
-    entry: "8813"
+    entry: "8814"
     variant: multistage-headers
 spec:
   replicas: 3
@@ -60,8 +60,10 @@ spec:
                 useHeaderRoutes: true
             namespace: sovereign-garden
       steps:
-        # Stage 0 — light background weight; pin early QA team
-        - setWeight: 10
+        # ── Stage 0 · probe ───────────────────────────────────────────
+        # Background: 20% canary / 80% stable
+        # Pin: X-Canary-Stage: early → 100% canary
+        - setWeight: 20
         - setHeaderRoute:
             name: early-qa
             match:
@@ -70,7 +72,9 @@ spec:
                   exact: "early"
         - pause: {duration: 30s}
 
-        # Stage 1 — raise background weight; pin mid QA team
+        # ── Stage 1 · expand + second pin ─────────────────────────────
+        # Background: 40% canary / 60% stable
+        # Pin: X-Canary-Stage: mid → 100% canary (early still active)
         - setWeight: 40
         - setHeaderRoute:
             name: mid-qa
@@ -80,13 +84,23 @@ spec:
                   exact: "mid"
         - pause: {duration: 30s}
 
-        # Stage 2 — majority canary; drop early pin
-        - setWeight: 80
+        # ── Stage 2 · majority approach; release early pin ────────────
+        # Background: 60% canary / 40% stable
+        # early-qa removed; mid remains
+        - setWeight: 60
         - setHeaderRoute:
             name: early-qa
         - pause: {duration: 30s}
 
-        # Stage 3 — full promotion; drop mid pin
+        # ── Stage 3 · near-full background ────────────────────────────
+        # Background: 80% canary / 20% stable
+        # mid still pinned
+        - setWeight: 80
+        - pause: {duration: 30s}
+
+        # ── Stage 4 · promote + release mid pin ───────────────────────
+        # Background: 100% canary / 0% stable
+        # mid-qa removed (no orphans)
         - setWeight: 100
         - setHeaderRoute:
             name: mid-qa
@@ -99,16 +113,26 @@ spec:
           - name: service-name
             value: sovereign-garden-canary
 ---
-# Multi-stage header pin (Entry 8813)
+# Multi-stage header pin — refined weights (Entry 8814)
 #
-# Header                 Effect while active
-# --------------------   ------------------------------------------
-# X-Canary-Stage: early  100% canary from stage 0 until stage 2 cleanup
-# X-Canary-Stage: mid    100% canary from stage 1 until stage 3 cleanup
-# (no header)            follows setWeight: 10 → 40 → 80 → 100
+# Aligns background schedule with Entry 8811 proportional model:
+#
+#   setWeight   stable/canary   header pins active
+#   ---------   -------------   ------------------
+#        20      80 / 20        early
+#        40      60 / 40        early + mid
+#        60      40 / 60        mid          (early dropped)
+#        80      20 / 80        mid
+#       100       0 / 100       —            (mid dropped)
+#
+# Header                 Window
+# --------------------   --------------------------------
+# X-Canary-Stage: early  stages 0–1 (cleared at stage 2)
+# X-Canary-Stage: mid    stages 1–3 (cleared at stage 4)
+# (no header)            follows setWeight column above
 #
 # Empty setHeaderRoute {name only} removes the injected HTTPRoute rule.
-# Companion manifests: stable / canary Services + HTTPRoute (Entry 8811).
+# WOOD_DRAGON_GATE · 0.91 · τ_FRB = 78624 s
 #
 # Test:
 #   curl -H 'X-Canary-Stage: early' https://garden.example/health
