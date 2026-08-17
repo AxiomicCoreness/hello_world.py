@@ -1,36 +1,36 @@
-# Argo CD Application — Sovereign Garden
-# cluster ≜ Git (main) · selfHeal · Entry 8797
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: sovereign-garden
   namespace: argocd
-  labels:
-    app.kubernetes.io/name: sovereign-garden
-    layer: "314"
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: default
   source:
     repoURL: https://github.com/AxiomicCoreness/hello_world.py
     targetRevision: HEAD
-    path: kubernetes
+    path: kubernetes/
   destination:
     server: https://kubernetes.default.svc
     namespace: sovereign-garden
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
       - ApplyOutOfSyncOnly=true
-      - ServerSideApply=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      jsonPointers:
+        - /spec/rules
+  info:
+    - name: DeepSeek
+      value: "Active (refactor seal f37f430)"
+    - name: Wood Dragon
+      value: "0.91 (τ_FRB=78624)"
+    - name: Phase Lock
+      value: "202.6°"
