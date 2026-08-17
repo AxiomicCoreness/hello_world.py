@@ -30,7 +30,34 @@ def test_rollout_exists(k8s_client):
         plural="rollouts",
         name="sovereign-garden",
     )
-    assert rollout.get("status", {}).get("currentPodHash") is not None or "spec" in rollout
+    # Core object must exist
+    assert "spec" in rollout
+    assert rollout["spec"].get("replicas") == 3
+
+    # Status field assertions (populated after controller reconciliation)
+    status = rollout.get("status", {})
+    assert isinstance(status, dict)
+
+    # Prefer concrete status fields when the controller has reconciled
+    if status:
+        # At least one of the canonical progressive-delivery status keys should be present
+        has_progress = any(
+            k in status
+            for k in ("currentPodHash", "phase", "currentStepIndex", "stableRS", "canary")
+        )
+        assert has_progress, (
+            f"Rollout status present but missing progressive-delivery keys: {list(status.keys())}"
+        )
+
+        # When phase is reported, it should be a known healthy/progressing value
+        if "phase" in status:
+            assert status["phase"] in {
+                "Healthy",
+                "Progressing",
+                "Paused",
+                "Degraded",
+                "Completed",
+            }, f"Unexpected phase: {status['phase']}"
 
 
 def test_analysis_template_exists(k8s_client):
@@ -41,4 +68,10 @@ def test_analysis_template_exists(k8s_client):
         plural="analysistemplates",
         name="sovereign-health-check",
     )
-    assert template["spec"]["metrics"][0]["name"] == "health-check"
+    assert "spec" in template
+    metrics = template["spec"].get("metrics", [])
+    assert len(metrics) >= 1
+    assert metrics[0]["name"] == "health-check"
+    # Optional status presence (AnalysisTemplate status is usually empty until used)
+    status = template.get("status", {})
+    assert isinstance(status, dict)
