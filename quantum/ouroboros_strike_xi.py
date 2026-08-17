@@ -23,6 +23,8 @@ import argparse
 import json
 import math
 import time
+import requests
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -40,7 +42,24 @@ def load_em006_dispatch(path: str = "/tmp/em006_simd001_dispatch.json") -> Optio
         return None
     return json.loads(p.read_text(encoding="utf-8"))
 
+def fetch_worker_harmony(worker_url="http://localhost:8000/strike_x/harmony"):
+    try:
+        resp = requests.get(worker_url)
+        if resp.status_code == 200:
+            data = resp.json()
+            return data["harmony_index"], data["coherence"]
+    except Exception:
+        pass
+    return None, None
 
+def path_c_update():
+    idx, c = fetch_worker_harmony()
+    if idx is not None:
+        # propagate to Choir / E₉ logic
+        print(f"Path C: harmony_index = {idx}, coherence = {c}")
+        # ... write to ledger, update Strike X ...
+    else:
+        print("⚠️  Worker not reachable; skipping")
 def bootstrap_from_simd(path: str = "/tmp/em006_simd001_dispatch.json") -> Dict[str, Any]:
     """Prefer live dispatch artifact; else run soak via em006_dispatch_loop."""
     cached = load_em006_dispatch(path)
