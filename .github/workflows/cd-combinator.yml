@@ -1,0 +1,26 @@
+name: CD Combinator (Argo Rollout)
+
+on:
+  workflow_run:
+    workflows: ["Master Equation Integration Test"]
+    types: [completed]
+
+jobs:
+  trigger-rollout:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger Argo Rollout sync
+        run: |
+          kubectl apply -f argocd/rollout-sovereign-garden-gateway-multistage.yaml
+          kubectl annotate rollout sovereign-garden \
+            argocd.argoproj.io/sync-options=Prune=true,ApplyOutOfSyncOnly=true \
+            argocd.argoproj.io/sync-wave=1
+      - name: Wait for canary completion
+        run: |
+          kubectl rollout status rollout sovereign-garden -n sovereign-garden
+      - name: Verify DeepSeek endpoint
+        run: |
+          curl -f -H "X-Canary: true" https://garden.example/mesh/invoke \
+            -d '{"prompt":"ping"}' || exit 1
