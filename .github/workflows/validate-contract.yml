@@ -22,11 +22,11 @@ jobs:
         run: |
           python -c "
           import json, jsonschema, sys
-          
+
           # Load schema
           with open('contracts/symplectic_status.schema.json') as f:
               schema = json.load(f)
-          
+
           # Load data file
           try:
               with open('symplectic_status.agent.jsonl') as f:
@@ -34,7 +34,7 @@ jobs:
                       if line.strip():
                           data = json.loads(line)
                           jsonschema.validate(instance=data, schema=schema)
-                          print(f'✅ Valid: {data.get("timestamp", "unknown")}')
+                          print(f'✅ Valid: {data.get(\"timestamp\", \"unknown\")}')
           except FileNotFoundError:
               print('⚠️  symplectic_status.agent.jsonl not found')
           except json.JSONDecodeError as e:
@@ -48,12 +48,12 @@ jobs:
       - name: Validate chronal_cement payloads
         run: |
           python -c "
-          import json, jsonschema, sys, hashlib, hmac
-          
+          import json, jsonschema, sys
+
           # Load schema
           with open('contracts/chronal_cement.schema.json') as f:
               schema = json.load(f)
-          
+
           # This would validate actual payloads - placeholder for now
           print('✅ Chronal cement schema loaded')
           " || true
@@ -62,11 +62,11 @@ jobs:
         run: |
           python -c "
           import json, jsonschema, sys
-          
+
           # Load schema
           with open('contracts/orchestrator_config.schema.json') as f:
               schema = json.load(f)
-          
+
           # Load config file
           try:
               with open('mcp_orchestrator_config.json') as f:
@@ -85,7 +85,11 @@ jobs:
 
       - name: Check contract files exist
         run: |
-          for file in contracts/symplectic_status.schema.json contracts/chronal_cement.schema.json contracts/orchestrator_config.schema.json contracts/three-files-contract.yaml; do
+          for file in \
+            contracts/symplectic_status.schema.json \
+            contracts/chronal_cement.schema.json \
+            contracts/orchestrator_config.schema.json \
+            contracts/three-files-contract.yaml; do
             if [ -f "$file" ]; then
               echo "✅ $file exists"
             else
