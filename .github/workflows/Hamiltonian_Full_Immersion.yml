@@ -31,7 +31,7 @@ jobs:
           role-duration-seconds: 900  # 15 minutes (φ⁻⁶ ≈ 15 min)
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5  # Updated to v5 (Node 24 support)
         with:
           python-version: '3.11'
 
@@ -70,8 +70,10 @@ jobs:
           with open('rotation_report_632.json', 'w') as f:
               json.dump(report, f, indent=2)
 
-          print(f'::set-output name=rotation_count::{report["rotation_count"]}')
-          print(f'::set-output name=current_fingerprint::{report["current_key_fingerprint"]}')
+          # Write outputs for GITHUB_OUTPUT (modern syntax)
+          with open(os.environ.get('GITHUB_OUTPUT'), 'a') as gh_out:
+              print(f'rotation_count={report["rotation_count"]}', file=gh_out)
+              print(f'current_fingerprint={report["current_key_fingerprint"]}', file=gh_out)
           EOF
 
       - name: Upload Rotation Report
@@ -99,7 +101,7 @@ jobs:
           role-duration-seconds: 900
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5  # Updated to v5 (Node 24 support)
         with:
           python-version: '3.11'
 
@@ -128,4 +130,3 @@ jobs:
           print(f'✅ Seal: {status["seal"]}')
           print(f'✅ Next rotation: {status["next_rotation"]}')
           EOF
-
