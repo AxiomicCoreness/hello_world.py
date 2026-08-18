@@ -1,17 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: e10-service
+  name: e10-hyperbolic-svc
   namespace: sovereign-garden
-  labels:
-    app: e10-hyperbolic
-    entry: "8849"
-    seal: "all-infty-phi-2 cdot E10_HYPERBOLIC_8849"
 spec:
   selector:
     app: e10-hyperbolic
   ports:
-  - name: http
-    port: 80
-    targetPort: 8001
-  type: LoadBalancer
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP
