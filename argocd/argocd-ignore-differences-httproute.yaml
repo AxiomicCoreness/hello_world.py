@@ -1,19 +1,9 @@
-# Argo CD Application fragment — ignore live weight / header rules
-# while Gateway API plugin owns the HTTPRoute during a canary.
-#
-# Merge the ignoreDifferences block into argocd/application-sovereign-garden.yaml
-# (or set the equivalent annotation / ConfigMap customization).
-#
-# Entry 8813 · WOOD_DRAGON_GATE · 0.91
-
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: sovereign-garden
   namespace: argocd
   annotations:
-    # Alternative to ignoreDifferences: resource customization key
-    # (see ConfigMap argocd-cm if using global jqPathExpressions)
     garden.axiomic/entry: "8813"
 spec:
   project: default
@@ -27,8 +17,6 @@ spec:
   ignoreDifferences:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      # While the plugin stamps the in-progress label, do not let Argo CD
-      # fight live backendRefs weights or injected header rules.
       jqPathExpressions:
         - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .spec.rules
         - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .metadata.labels
@@ -39,15 +27,3 @@ spec:
     syncOptions:
       - RespectIgnoreDifferences=true
       - CreateNamespace=true
----
-# Global Argo CD ConfigMap snippet (optional, cluster-wide):
-#
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: argocd-cm
-#   namespace: argocd
-# data:
-#   resource.customizations.ignoreDifferences.gateway.networking.k8s.io_HTTPRoute: |
-#     jqPathExpressions:
-#       - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .spec.rules
