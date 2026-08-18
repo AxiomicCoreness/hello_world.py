@@ -41,58 +41,16 @@ jobs:
               sleep $delay
             done
           }
-          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install pytest numpy fastapi uvicorn pydantic prometheus_client"
+          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install pytest numpy fastapi uvicorn pydantic prometheus_client sympy"
 
-      - name: Run pytest (with inline retry)
+      - name: Run pytest (no retry, fail cleanly)
         run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=20
-            until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry pytest -q
+          pytest -q
 
-      - name: Import check (hello_world + routes) (with inline retry)
+      - name: Import check (hello_world + routes)
         run: |
-          retry() {
-            local n=1
-            local max=2
-            local delay=15
-            until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry bash -c "python -c \"from hello_world import app; print('hello_world import OK, routes:', len(app.routes))\""
+          python -c "from hello_world import app; print('hello_world import OK, routes:', len(app.routes))"
 
-      - name: Run test_all.py (single-pass Garden verification) (with inline retry)
+      - name: Run test_all.py (single-pass Garden verification)
         run: |
-          retry() {
-            local n=1
-            local max=3
-            local delay=20
-            until "$@"; do
-              if [ $n -ge $max ]; then
-                echo "Command failed after $n attempts."
-                return 1
-              fi
-              n=$((n+1))
-              echo "Retrying in $delay seconds..."
-              sleep $delay
-            done
-          }
-          retry python test_all.py
+          python test_all.py
