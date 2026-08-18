@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
 
-      - name: Create quadrant directories (migration step)
+      - name: Create quadrant directories
         run: |
           mkdir -p quantum/deepseek_mesh
           mkdir -p quantum/radar_lindblad
