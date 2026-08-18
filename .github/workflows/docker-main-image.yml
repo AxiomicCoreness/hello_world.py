@@ -3,7 +3,93 @@ name: E10 Hyperbolic - K8s Cluster Pytest
 on:
   push:
     branches: [main]
+    paths:name: Docker image from main only
+
+# axiomic/sovereign-engine:latest is produced exclusively from main.
+# Feature-branch pushes do not retag :latest.
+# Entry 8818
+
+on:
+  push:
+    branches: [main]
     paths:
+      - "Dockerfile"
+      - "Dockerfile.*"
+      - "requirements*.txt"
+      - "orchestrator/**"
+      - "port380_mcp.py"
+      - "hello_world.py"
+      - "quantum/**"
+      - "deepseek/**"
+      - "scripts/docker_build_push_main.sh"
+      - ".github/workflows/docker-main-image.yml"
+  workflow_dispatch:
+    inputs:
+      no_cache:
+        description: "docker build --no-cache"
+        type: boolean
+        default: false
+      push:
+        description: "Push to registry (needs DOCKERHUB_* secrets)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: docker-main-latest
+  cancel-in-progress: true
+
+env:
+  IMAGE: axiomic/sovereign-engine:latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Explicit: only main (defense in depth vs workflow_dispatch from forks)
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Refuse non-main source
+        run: |
+          set -e
+          REF="$(git rev-parse --abbrev-ref HEAD)"
+          SHA="$(git rev-parse HEAD)"
+          echo "building from ref=$REF sha=$SHA"
+          if [ "$REF" != "main" ] && [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            # workflow_dispatch can still force main checkout above
+            git checkout main || git checkout -B main origin/main
+          fi
+          echo "source locked to main: $(git rev-parse HEAD)"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: github.event_name == 'push' || inputs.push == true
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Build (and push if credentials present)
+        env:
+          NO_CACHE: ${{ github.event.inputs.no_cache || 'false' }}
+          DO_PUSH: ${{ github.event.inputs.push || 'true' }}
+        run: |
+          set -e
+          ARGS=()
+          if [ "$NO_CACHE" = "true" ]; then ARGS+=(--no-cache); fi
+          docker build "${ARGS[@]}" -t "$IMAGE" .
+          if [ "$DO_PUSH" = "true" ] && [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            docker push "$IMAGE"
+            echo "pushed $IMAGE from main"
+          else
+            echo "build only — push skipped (no token or push=false)"
+          fi
       - quantum/**
       - k8s/**
       - tests/**
