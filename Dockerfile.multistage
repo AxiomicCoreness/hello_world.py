@@ -1,0 +1,44 @@
+# Multi-stage build for axiomic/sovereign-engine
+# Stage 1: builder (deps compile) · Stage 2: slim runtime
+# Prefer: docker build -f Dockerfile.multistage -t axiomic/sovereign-engine:latest .
+# Image source policy: main only (see scripts/docker_build_push_main.sh)
+
+# ── Stage 1: builder ─────────────────────────────────
+FROM python:3.11-slim AS builder
+WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt requirements-mcp.txt requirements-ci.txt ./
+RUN pip install --upgrade pip \
+ && pip install --prefix=/install --no-cache-dir -r requirements.txt \
+ && pip install --prefix=/install --no-cache-dir -r requirements-mcp.txt \
+ && pip install --prefix=/install --no-cache-dir "httpx>=0.27.0"
+
+# ── Stage 2: runtime ─────────────────────────────────
+FROM python:3.11-slim AS runtime
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /install /usr/local
+COPY hello_world.py port380_mcp.py sovereign_engine.py phi_pipeline.py mesh_modal.py app_main.py ./
+COPY deepseek/ ./deepseek/
+COPY orchestrator/ ./orchestrator/
+COPY contracts/ ./contracts/
+COPY scripts/ ./scripts/
+COPY quantum/ ./quantum/
+COPY cryptography/ ./cryptography/
+
+ENV PYTHONPATH=/app
+ENV PHI=1.618033988749895
+ENV LAYER=314
+ENV PORT=8000
+EXPOSE 8000 8001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+
+# Default: main engine; override for mesh modal:
+#   docker run ... axiomic/sovereign-engine:latest \
+#     python mesh_modal.py --background --host 0.0.0.0 --port 8001
+CMD ["sh", "-c", "uvicorn hello_world:app --host 0.0.0.0 --port ${PORT:-8000}"]
