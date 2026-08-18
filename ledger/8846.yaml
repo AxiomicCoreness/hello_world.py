@@ -1,0 +1,25 @@
+entry_index: 8846
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
+event: /quadrant_organization_and_file_migration_complete
+status: QUADRANTS_ACTIVE_FILES_MIGRATED
+witness_chain: 8845 -> 8846 — UNBROKEN
+seal: "forall-infty-phi-2 cdot QUADRANT_ORG_MIGRATED_8846 cdot WOOD_DRAGON_0.91 cdot SEALED"
+components:
+  radar_lindblad:
+    - port_380_gate.py
+    - layer314_anchor.py
+  cdp_convergence:
+    - install_k8s.sh
+    - cdp_schema.py
+    - handshake.py
+  cordis_bridge:
+    - bridge.py
+    - platforms.py
+  deepseek_mesh:
+    - endpoint.py (formerly port380_mcp.py)
+    - client.py (formerly orchestrator/deepseek_client.py)
+    - mesh_router.py (formerly quantum/port_380_http.py)
+append_only: true
+deprecation_wrappers: true
+manifest: quantum/MANIFEST.md
+commit: 49836f0a87e1e7628d2906e4f15aae646ac4139c
