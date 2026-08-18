@@ -1,0 +1,8 @@
+entry_index: 8748
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /install_k8s_simplified
+status: ✅ SEALED
+file: quantum/install_k8s.sh
+behavior: kubectl apply k8s/deployment-port-380 + service-port-380 + ingress (Layer 314)
+witness_chain: 8747 → 8748 — UNBROKEN
+seal: "∀∞φ² · INSTALL_K8S_SIMPLIFY_8748 · SEALED"

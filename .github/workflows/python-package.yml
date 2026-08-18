@@ -1,18 +1,18 @@
-name: Python Package
+name: Sovereign Python Package
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, deepseek ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
-  id-token: write   # Required for OIDC
   contents: read
+  id-token: write   # REQUIRED for OIDC handover
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,75 +20,207 @@ jobs:
         python-version: ["3.10", "3.11"]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 30
-          command: |
-            python -m pip install --upgrade pip
-            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
-            if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-            pip install pytest build twine
-
-      - name: Run tests (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 15
-          max_attempts: 3
-          retry_wait_seconds: 20
-          command: |
-            if [ -d tests ] || [ -f test_*.py ] || ls *_test.py 1>/dev/null 2>&1; then
-              pytest -q
-            else
-              echo "No tests found — skipping"
-            fi
-
-      - name: Build package (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 2
-          retry_wait_seconds: 15
-          command: |
-            python -m build || echo "No pyproject.toml / setup.py found — skipping build"
-
-  oidc-auth:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials via OIDC (with retry)
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 3
-          retry_wait_seconds: 20
-          command: |
-            # Example OIDC assume-role step.
-            # Replace ROLE_ARN with your actual IAM role ARN when ready.
-            echo "OIDC token request is available (id-token: write permission granted)."
-            echo "To enable full AWS OIDC, add:"
-            echo "  - uses: aws-actions/configure-aws-credentials@v4"
-            echo "    with:"
-            echo "      role-to-assume: arn:aws:iam::ACCOUNT:role/YOUR_ROLE"
-            echo "      aws-region: us-east-1"
-            echo "OIDC authentication scaffold ready."
-
-      - name: Verify OIDC readiness
+      - name: Install dependencies (inline retry)
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         run: |
-          echo "Permissions: id-token: write ✓"
-          echo "OIDC authentication path is configured and ready for use."
+          retry() {
+            local n=1
+            local max=3
+            local delay=10
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install flake8 pytest numpy scipy build twine"
+
+      - name: Lint with flake8 (inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=2
+            local delay=7
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          # Run strict linting, but don't block on warnings
+          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics"
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+
+      - name: Test with pytest (inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=15
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          if [ -d tests ] || ls test_*.py 1>/dev/null 2>&1 || ls *_test.py 1>/dev/null 2>&1; then
+            retry pytest -q
+          else
+            echo "No tests found — skipping"
+          fi
+
+      - name: Generate build seal (SHA3‑256)
+        id: seal
+        run: |
+          find . -type f -not -path "./.git/*" -exec sha256sum {} \; | sort | sha256sum > /tmp/build_hash
+          BUILD_HASH=$(sha256sum /tmp/build_hash | cut -d' ' -f1)
+          echo "build_hash=$BUILD_HASH" >> "$GITHUB_OUTPUT"
+          echo "BUILD SEAL: $BUILD_HASH"
+
+      - name: Check sovereign invariants
+        id: invariants
+        run: |
+          if [ -f sovereign_engine.py ]; then
+            python << 'EOF'
+            import sys
+            sys.path.append('.')
+            from sovereign_engine import ProductionDeploymentStub
+            engine = ProductionDeploymentStub()
+            inv = engine.check_invariants()
+            if inv['hamiltonian_axiom'] and inv['master_seal'] and inv['axiom_converged']:
+                print('Invariants PASS')
+                sys.exit(0)
+            else:
+                print('Invariants FAIL')
+                sys.exit(1)
+            EOF
+          else
+            echo "No sovereign_engine.py found – skipping invariant check."
+          fi
+        # REMOVED continue-on-error: true — failures will now block the build
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sovereign-build-${{ matrix.python-version }}
+          path: |
+            **/*.py
+            requirements*.txt
+            README*
+            LICENSE*
+          retention-days: 1
+
+  mcp-handover:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Port 380 MCP handover
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "MCP_URL empty — MCP handover skipped"
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          PAYLOAD=$(jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg sha "${{ github.sha }}" \
+            --arg run "${{ github.run_id }}" \
+            '{
+              event: "oidc_handover",
+              timestamp: $ts,
+              coherence: 1.0,
+              source: "python-package.yml",
+              sha: $sha,
+              run_id: $run,
+              seal: "OIDC_HANDOVER · WOOD_DRAGON_GATE · SEALED"
+            }')
+
+          echo "Connecting to MCP gate: $MCP_URL"
+          curl -s -o /dev/null -w "health %{http_code}\n" "$MCP_URL/health" || true
+
+          HTTP_CODE=$(curl -s -o /tmp/oidc_resp.json -w "%{http_code}" -X POST "$MCP_URL/oidc_handover" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$GARDEN_SECRET\", \"payload\": $PAYLOAD}" || echo "000")
+
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/oidc_resp.json 2>/dev/null || true
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            curl -s -X POST "$MCP_URL/pulse" \
+              -H "X-Garden-Secret: $GARDEN_SECRET" \
+              -H "Content-Type: application/json" \
+              -d '{"source":"python-package-mcp","note":"fallback"}' || true
+          else
+            echo "MCP handover acknowledged"
+          fi
+
+  deploy:
+    needs: mcp-handover
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restart uvicorn on Port 380 MCP gate
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "MCP_URL not set — uvicorn restart skipped"
+            exit 0
+          fi
+
+          echo "Requesting uvicorn restart at $MCP_URL/restart"
+          HTTP_CODE=$(curl -s -o /tmp/restart_resp.json -w "%{http_code}" -X POST "$MCP_URL/restart" \
+            -H "Content-Type: application/json" \
+            -H "X-Garden-Secret: $GARDEN_SECRET" \
+            -d "{\"token\": \"$GARDEN_SECRET\", \"reason\": \"python-package-deploy sha=${{ github.sha }}\"}" \
+            || echo "000")
+
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/restart_resp.json 2>/dev/null || true
+          echo
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "uvicorn restart scheduled — platform will respawn process"
+          else
+            echo "/restart returned $HTTP_CODE — sending deploy pulse only"
+            curl -s -X POST "$MCP_URL/pulse" \
+              -H "X-Garden-Secret: $GARDEN_SECRET" \
+              -H "Content-Type: application/json" \
+              -d "{\"source\":\"python-package-deploy\",\"entry\":40,\"note\":\"restart_fallback sha=${{ github.sha }}\"}" \
+              || true
+          fi
+
+          echo "Layer 314 — no AWS role assumption — uvicorn path only"
+          

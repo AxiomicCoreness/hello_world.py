@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  labels:
+    app: sovereign
+    component: grafana
+    estate: "25d"
+    entry: "8366"
+    seal: "GRAFANA_DATASOURCES_8366_SEALED"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://sovereign-engine-svc:8001
+      isDefault: true
+      editable: true

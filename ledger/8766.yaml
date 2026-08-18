@@ -1,0 +1,11 @@
+entry_index: 8766
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /bitnet_tokenizer_binary_format_sealed
+status: ✅ SEALED
+format: signed 64-bit big-endian (struct '>q')
+byte_size: 8
+range: full 64-bit signed (supports all Q8.24 values and beyond)
+q8_24_fit: true  # [-2³¹, 2³¹-1] ⊂ int64
+endianness: big
+witness_chain: 8765 → 8766 — UNBROKEN
+seal: "∀∞φ² · TOKENIZER_8BYTE_8766 · WOOD_DRAGON_GATE · SEALED"

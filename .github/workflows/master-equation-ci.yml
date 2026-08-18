@@ -1,0 +1,40 @@
+name: Master Equation Integration Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy
+
+      - name: Run master equation integration
+        run: |
+          python master_equation.py --output integration_log.json --t-end 50 --n-steps 500
+          test -f integration_log.json
+          python -c "import json; d=json.load(open('integration_log.json')); assert d['final']['C'] > 0.99; print('C=', d['final']['C'])"
+          echo "INTEGRATION_SEAL=$(sha256sum integration_log.json | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Upload integration log
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-integration-log
+          path: integration_log.json
+
+      - name: Seal note
+        run: echo "Entry 8803 — master equation CI path exercised (artifact seal=$INTEGRATION_SEAL)"

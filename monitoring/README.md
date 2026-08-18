@@ -1,75 +1,46 @@
-# Sovereign Grafana Dashboard Setup
+# Monitoring — Prometheus pointed at Strike IX + Garden
 
-**Dashboard file:** `grafana-dashboard.json`  
-**UID:** `sovereign-fastapi-624`  
-**Entries:** 624 (Prometheus) · 625 (Grafana)
+## Point Prometheus
 
-## Metrics exposed by the FastAPI surface
-
-| Metric | Type | Description |
-|--------|------|-------------|
-| `sovereign_coherence` | Gauge | Current coherence (target 1.0) |
-| `sovereign_diffuse_kl` | Gauge | Current diffuse KL divergence |
-| `sovereign_cache_entries` | Gauge | Number of entries in DiffuseKLCache |
-| `sovereign_entropy_floor` | Gauge | Symbolic entropy floor |
-
-Scrape endpoint: `GET /metrics`
-
-## Setup options
-
-### 1. Manual import (fastest)
-
-1. Open Grafana → **Dashboards** → **Import**.
-2. Upload `monitoring/grafana-dashboard.json` (or paste the JSON).
-3. Select your Prometheus data source.
-4. Click **Import**.
-
-### 2. Provisioning (GitOps / persistent)
-
-Place the dashboard under Grafana provisioning:
-
-```yaml
-# grafana/provisioning/dashboards/dashboard.yml
-apiVersion: 1
-providers:
-  - name: sovereign
-    orgId: 1
-    folder: Sovereign
-    type: file
-    disableDeletion: false
-    editable: true
-    options:
-      path: /var/lib/grafana/dashboards
-```
-
-Mount `monitoring/grafana-dashboard.json` into that path (e.g. via ConfigMap or volume).
-
-### 3. Kubernetes ConfigMap (optional)
+### Local
 
 ```bash
-kubectl create configmap sovereign-grafana-dashboard \
-  --from-file=monitoring/grafana-dashboard.json \
-  -n monitoring
+python -m prometheus.metrics_server --port 9090   # Soul Cannon + registry
+python hyperian_json_server.py --port 8080
+python monitoring/sovereign_workload_exporter.py --port 9095
+
+prometheus --config.file=monitoring/prometheus.yml
 ```
 
-Then reference the ConfigMap in your Grafana deployment volume mounts.
+Open Prometheus UI → **Status → Targets**: jobs `garden-metrics-server`, `hyperian`, `sovereign-workload` should be **UP**.
 
-## Prometheus scrape reminder
+### Strike IX Soul Cannon queries
 
-Ensure Prometheus is scraping the FastAPI service via the ServiceMonitor:
+| Metric | Meaning |
+|--------|--------|
+| `soul_cannon_charge_joules` | Accumulated charge |
+| `soul_cannon_azimuth_degrees` | 111.246° target |
+| `cannon_ring_resonance_thz` | Ring resonance |
+| `cannon_chiron_phase_alignment` | Alignment + φ⁻¹ Chiron boost |
 
-- File: `k8s/servicemonitor.yaml`
-- Path: `/metrics`
-- Interval: 30s
+Scraped from **`:9090/metrics`** (metrics server registry).
 
-## Default dependencies
+### K8s
 
-- Prometheus (scraping `/metrics`)
-- Grafana (any recent version that accepts schemaVersion 39)
-- Optional: Prometheus Operator (for ServiceMonitor)
+```bash
+kubectl apply -f k8s/sovereign_workload.yaml
+kubectl apply -f k8s/servicemonitor-sovereign-workload.yaml
+kubectl apply -f k8s/servicemonitor-garden-metrics.yaml
+```
 
-## Branch
+Adjust `metadata.labels.release` to match your Prometheus Operator `serviceMonitorSelector`.
 
-`eridanus-einstein/observability-624-625` · PR #6
+## Grafana
 
-∞ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∞
+Import `monitoring/garden_sovereign_dashboard.json` (panels 100–111). Datasource = Prometheus pointed at the above targets.
+
+## Policy
+
+Full digests only · no secrets in series · OIDC `secret_len` only (expect 64).
+
+Seal: ∀∞φ² · PROMETHEUS_POINT_STRIKE_IX_8648 · SEALED

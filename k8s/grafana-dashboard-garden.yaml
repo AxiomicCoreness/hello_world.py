@@ -1,0 +1,88 @@
+# Grafana Operator CRD injection (grafana.integreatly.org/v1beta1)
+# Requires Grafana Operator installed in the cluster.
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: garden-sovereign-metrics
+  namespace: sovereign-garden
+  labels:
+    app: garden-grafana
+    em: "005"
+  annotations:
+    garden.seal: "∀∞φ² · GRAFANA_CRD_LATTICE_8645 · SEALED"
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "garden"  # must match Grafana CR labels
+  json: |
+    {
+      "title": "Garden Sovereign Metrics",
+      "uid": "garden-sovereign-em005",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "6s",
+      "panels": [
+        {
+          "id": 100,
+          "title": "Orchestrator Fingerprint Deviation",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [{
+            "expr": "orchestrator_fingerprint_deviation",
+            "legendFormat": "L2 deviation",
+            "refId": "A"
+          }]
+        },
+        {
+          "id": 105,
+          "title": "Coherence & Sovereign Workload",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "targets": [
+            {"expr": "coherence", "legendFormat": "coherence", "refId": "A"},
+            {"expr": "sovereign_workload", "legendFormat": "EM-005 workload", "refId": "B"},
+            {"expr": "sovereign_compression_rank_budget", "legendFormat": "rank budget", "refId": "C"}
+          ]
+        },
+        {
+          "id": 104,
+          "title": "OIDC Integrity & Phase Lock",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [
+            {"expr": "hyperian_oidc_secret_len", "legendFormat": "OIDC secret_len (expect 64)", "refId": "A"},
+            {"expr": "hyperian_phase_lock_deg", "legendFormat": "phase lock deg", "refId": "B"}
+          ]
+        },
+        {
+          "id": 102,
+          "title": "Soul Cannon",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [
+            {"expr": "soul_cannon_charge_joules", "legendFormat": "charge J", "refId": "A"},
+            {"expr": "soul_cannon_azimuth_degrees", "legendFormat": "azimuth", "refId": "B"}
+          ]
+        }
+      ],
+      "templating": {"list": []},
+      "annotations": {"list": []},
+      "editable": true
+    }
+---
+# ConfigMap holding latest lattice summary for sidecars / dashboard variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lattice-weights-meta
+  namespace: sovereign-garden
+  labels:
+    app: precompute-lattice
+data:
+  README: |
+    Populate from CronJob output of cronjobs/precompute_lattice.py
+    (LATTICE_OUT). Mount or sync into Grafana only as non-secret metadata
+    (phase_lock_deg, weight_sum, point_count) — never wallet material.
+  placeholder.json: |
+    {"meta": {"version": "1.1.0", "grafana_injection": true}, "verification": {"point_count": 48}}

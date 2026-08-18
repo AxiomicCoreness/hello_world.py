@@ -1,4 +1,4 @@
-# docker-compose.yml – Sovereign FastAPI surface
+# docker-compose.yml – Sovereign Garden port map + symplectic_status
 # Usage: docker compose up --build
 version: "3.8"
 
@@ -22,3 +22,73 @@ services:
       start_period: 10s
     volumes:
       - ./data:/app/data
+
+  app-main:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-app-main
+    command: ["uvicorn", "app_main:app", "--host", "0.0.0.0", "--port", "8001"]
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    restart: unless-stopped
+
+  gravastar-trigger:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-gravastar
+    command: ["uvicorn", "app_main:app", "--host", "0.0.0.0", "--port", "8012"]
+    ports:
+      - "8012:8012"
+    environment:
+      - PORT=8012
+      - GRAVASTAR_PORT=8012
+    restart: unless-stopped
+
+  hyperian:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-hyperian
+    command: ["python", "hyperian_json_server.py", "--port", "8080"]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  metrics:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-metrics
+    command: ["python", "-m", "prometheus.metrics_server", "--port", "9090"]
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  workload:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-workload
+    command: ["python", "monitoring/sovereign_workload_exporter.py", "--port", "9095"]
+    ports:
+      - "9095:9095"
+    restart: unless-stopped
+
+  # Merged: symplectic dual-output generator (oneshot; re-run via compose run)
+  symplectic-status:
+    build: .
+    image: fastapi-sovereign:620
+    container_name: garden-symplectic-status
+    working_dir: /app
+    command:
+      - sh
+      - -c
+      - |
+        pip install -q jsonschema &&
+        python symplectic_status.py &&
+        python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json &&
+        echo "ACK steps 1-9 complete" &&
+        head -n 4 symplectic_status.agent.jsonl
+    volumes:
+      - ./:/app
+    profiles:
+      - status

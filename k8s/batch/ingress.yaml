@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sovereign-batch-ingress
+  labels:
+    app: sovereign
+    component: batch-processor
+    entry: "8362"
+    seal: "BATCH_INGRESS_8362_SEALED"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type,Authorization,X-Sovereign-Seal"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Sovereign-Batch "true";
+      proxy_set_header X-Batch-Seal "BATCH_PROCESSOR_8362_SEALED";
+      proxy_set_header X-Complexity-Drive "phi-harmonic";
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /batch(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: sovereign-batch-svc
+            port:
+              number: 8003

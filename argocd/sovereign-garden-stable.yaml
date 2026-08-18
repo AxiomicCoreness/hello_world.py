@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-stable
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: stable
+spec:
+  selector:
+    app: sovereign-garden
+    role: stable
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

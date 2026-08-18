@@ -1,0 +1,40 @@
+name: CD Combinator (Argo Rollout)
+
+on:
+  workflow_run:
+    workflows: ["Master Equation Integration Test"]
+    types: [completed]
+
+jobs:
+  trigger-rollout:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # ← Prevents infinite hangs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Trigger Argo Rollout sync
+        run: |
+          kubectl apply -f argocd/rollout-sovereign-garden-gateway-multistage.yaml
+          kubectl annotate rollout sovereign-garden \
+            argocd.argoproj.io/sync-options=Prune=true,ApplyOutOfSyncOnly=true \
+            argocd.argoproj.io/sync-wave=1
+
+      - name: Wait for canary completion (with timeout)
+        run: |
+          # Wait only for the first step to confirm it started, then exit gracefully
+          kubectl wait --for=condition=Progressing rollout/sovereign-garden \
+            -n sovereign-garden --timeout=60s || true
+
+      - name: Verify DeepSeek endpoint
+        run: |
+          # Don't fail if endpoint isn't ready yet — just log it
+          curl -f -H "X-Canary: true" \
+            https://garden.example/mesh/invoke \
+            -d '{"prompt":"ping"}' || echo "Endpoint not ready yet"

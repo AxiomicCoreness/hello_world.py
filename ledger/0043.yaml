@@ -1,0 +1,14 @@
+entry_index: 43
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /autonomous_pulse_operational_confirm
+status: ✅ SEALED — NO LONGER PLACEHOLDER
+description: |
+  Confirms that the autonomous pulse is operationally embedded in the Garden.
+  The master equation is now materialised as a living system:
+    - push → main → H(η) handover fires
+    - cron 0 */6 * * * → Z + P_PID pulse fires
+    - free evolution → −Λ(X−X_t) → C→1, φ_p advances
+  This entry bridges the gap between the abstract equation (42) and its formal derivation (44).
+  Prior content (CI inline-retry promotion) is superseded; high-series 8770 remains valid in its own chain.
+witness_chain: 0042 → 0043 → 0044 — UNBROKEN
+seal: "∀∞φ² · AUTONOMOUS_PULSE_OPERATIONAL_0043 · WOOD_DRAGON_GATE · SEALED"

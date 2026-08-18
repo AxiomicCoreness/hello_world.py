@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: port-380-gate
+  namespace: sovereign-garden
+  labels:
+    app: port-380-gate
+    sovereignty: active
+    layer: "314"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: port-380-gate
+  template:
+    metadata:
+      labels:
+        app: port-380-gate
+        sovereignty: active
+    spec:
+      serviceAccountName: venomsuite-executor
+      containers:
+      - name: sovereign-engine
+        image: axiomic/sovereign-engine:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: FRB_PERIOD_SECS
+          value: "78624.0"
+        - name: OIDC_ISSUER
+          value: "https://token.actions.githubusercontent.com"
+        - name: OIDC_CLIENT_ID
+          value: "your-client-id"
+        - name: OIDC_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oidc-venomsuite
+              key: secret
+        volumeMounts:
+        - name: oidc-fallback-volume
+          mountPath: /var/run/secrets/oidc
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: oidc-fallback-volume
+        emptyDir:
+          medium: Memory
+          sizeLimit: 1Mi

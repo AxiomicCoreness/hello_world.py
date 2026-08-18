@@ -1,0 +1,81 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: precompute-lattice
+  namespace: sovereign-garden
+  labels:
+    app: precompute-lattice
+spec:
+  # φ-window-ish: 45 minutes past every 6 hours
+  schedule: "45 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: precompute-lattice
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: precompute
+            image: python:3.11-slim
+            command:
+              - python
+              - /scripts/precompute_lattice.py
+            env:
+              - name: LATTICE_OUT
+                value: /data/lattice_weights.json
+              - name: HYPERIAN_URL
+                value: http://hyperian-server:8080
+            volumeMounts:
+              - name: scripts
+                mountPath: /scripts
+                readOnly: true
+              - name: data
+                mountPath: /data
+          volumes:
+            - name: scripts
+              configMap:
+                name: precompute-lattice-script
+            - name: data
+              emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: precompute-lattice-script
+  namespace: sovereign-garden
+data:
+  precompute_lattice.py: |
+    # Minimal inline runner — prefer mounting repo file in production images.
+    import json, math, os, time
+    from datetime import datetime, timezone
+    from pathlib import Path
+    PHI = (1 + math.sqrt(5)) / 2
+    TAU_FRB = 78624.0
+    NUM_LAYERS, NUM_AZIMUTHS = 12, 4
+    NORM, R0, DELTA_Z = PHI ** 5, 0.2033, 6552.0
+    OUT = Path(os.environ.get("LATTICE_OUT", "/tmp/lattice_weights.json"))
+    phase = 202.6
+    try:
+        import urllib.request
+        with urllib.request.urlopen(os.environ.get("HYPERIAN_URL", "http://127.0.0.1:8080") + "/status", timeout=2) as r:
+            import json as _j
+            d = _j.loads(r.read().decode())
+            phase = float(d.get("phase_lock_deg", d.get("phase_lock_degrees", 202.6)))
+    except Exception:
+        pass
+    points = []
+    for L in range(NUM_LAYERS):
+        for A in range(NUM_AZIMUTHS):
+            angle = A * math.pi / 2
+            radius = R0 * (PHI ** (L / 4.0))
+            w = NORM * (PHI ** -(L + 1)) * (math.cos(angle) ** 2) * math.exp(-((L - 6) ** 2) / 8.0)
+            points.append({"layer": L, "azimuth_index": A, "x": round(radius * math.cos(angle), 6), "y": round(radius * math.sin(angle), 6), "z": L * DELTA_Z, "weight": round(w, 6)})
+    doc = {"meta": {"version": "1.1.0", "timestamp": datetime.now(timezone.utc).isoformat(), "grafana_injection": True}, "parameters": {"phi": PHI, "tau_FRB_seconds": TAU_FRB, "phase_lock_deg": phase}, "points": points, "verification": {"point_count": len(points), "emergent_period_days": 16.35}}
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(doc, indent=2))
+    print("precomputed", OUT, "phase", phase)

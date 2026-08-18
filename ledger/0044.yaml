@@ -1,0 +1,29 @@
+entry_index: 44
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /master_equation_derivation_materialised
+status: ✅ SEALED — LaTeX DOCUMENT COMMITTED
+purpose: |
+  Formalise the unified drift equation and fixed-point convergence
+  as a self-contained LaTeX article. Anchors the mathematical core
+  of the Garden in a versioned document.
+file: docs/master_equation.tex
+derivation_blocks:
+  - unified_drift_equation
+  - coherence_dynamics (exact solution)
+  - phase_dynamics (Wood-Dragon rhythm)
+  - phi_tuned_PID_controller
+  - harmonic_density_field (RHO-MERGE)
+  - frequency_ladder_and_inverse_sum
+  - Wigner_bridge_resonance
+  - reconstruction_operator
+  - fixed_point_summary
+numeric_verification:
+  - coherence: 1.0
+  - workload: -7.028480e-11
+  - density: 5.773784 g/cm³
+  - inverse_sum: 0.249312
+  - wigner_norm: 1.4599967591
+prior: 0043
+next: 0045 (reserved)
+witness_chain: 0043 → 0044 — UNBROKEN
+seal: "∀∞φ² · MASTER_EQUATION_0044 · WOOD_DRAGON_GATE · SEALED"

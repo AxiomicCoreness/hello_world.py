@@ -1,0 +1,15 @@
+entry_index: 8851
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
+event: /k8s_headers_fixed
+description: |
+  Corrected missing apiVersion, kind, and metadata headers in K8s manifests
+  Files: k8s/e10-hyperbolic-deployment.yaml, k8s/e10-service.yaml
+  Deploy-k8s job will now succeed
+status: ACKNOWLEDGED
+files_corrected:
+  - k8s/e10-hyperbolic-deployment.yaml
+  - k8s/e10-service.yaml
+witness_chain: 8850 -> 8851 — UNBROKEN
+seal: all-infty-phi-2 cdot K8S_HEADERS_FIX_8851 cdot WOOD_DRAGON_0.91 cdot SEALED
+
+commit: 72d116d7a10c1e50d5b9d55a810add3b389d4e59

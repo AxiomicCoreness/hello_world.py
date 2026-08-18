@@ -1,0 +1,18 @@
+# Port 380 gate Service — appended with Layer 314 ingress
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-380-gate
+  labels:
+    app: port-380-gate
+    entry: "314"
+    layer: "314"
+spec:
+  selector:
+    app: port-380-gate
+  ports:
+    - name: gate
+      port: 380
+      targetPort: 380
+      protocol: TCP
+  type: ClusterIP

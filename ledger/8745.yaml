@@ -1,0 +1,15 @@
+entry_index: 8745
+timestamp: 2026-08-13T22:11:28Z
+event: /anchor_improvement_confirmed_constants_minted
+status: ✅ SEALED
+anchor_timestamp: 2026-08-13T22:11:28Z
+constants_module: quantum/sovereign_lattice_constants_8745.py
+anchor_key: 8a250cf445e8ad0cc8d06d0096b969029a175a14eb58838e734f1975358b860d
+leaf_commitment: 807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68
+merkle_root_layer_326: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
+policy:
+  full_64_hex: true
+  no_truncation: true
+  narrative_non_hex_rejected: true
+witness_chain: 8741 → 8742 → 8743 → 8744 → 8745 — UNBROKEN
+seal: "∀∞φ² · ANCHOR_IMPROVEMENT_CONFIRMED_8745 · WOOD_DRAGON_0.91 · SEALED"

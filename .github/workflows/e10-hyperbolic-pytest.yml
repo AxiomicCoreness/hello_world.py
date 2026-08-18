@@ -1,0 +1,72 @@
+name: E10 Hyperbolic - K8s Cluster Pytest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - quantum/**
+      - k8s/**
+      - tests/**
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
+      - name: Run migration script
+        run: python migrate_to_quadrants.py
+
+  test-e10-hyperbolic:
+    name: E10 Hyperbolic Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install test dependencies
+        run: pip install -e .[test]
+      - name: Run E10 tests
+        run: |
+          cd tests
+          pytest quantum/test_e10_hyperbolic.py -v
+          pytest quantum/test_breathing_manifold.py -v
+          pytest quantum/test_wood_dragon_gate.py -v
+
+  deploy-k8s:
+    name: Deploy to K8s Cluster
+    needs: test-e10-hyperbolic
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Deploy E10 service
+        run: |
+          kubectl apply -f k8s/e10-hyperbolic-deployment.yaml
+          kubectl apply -f k8s/e10-service.yaml
+
+  wood-dragon-validation:
+    name: Wood Dragon Gate 0.91 Validation
+    needs: deploy-k8s
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Validate Wood Dragon Gate
+        run: python quantum/wood_dragon_gate_091/validate.py

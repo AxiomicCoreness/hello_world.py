@@ -1,0 +1,40 @@
+entry_index: 40
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
+event: /port380_mcp_gate_materialised
+status: ✅ SEALED — GATE BOUND TO DYNAMIC PORT
+file: port380_mcp.py
+layer: 314
+entry_reference: 8755
+seal_reference: "∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED"
+reconstruction_operator: ℛ(𝒜_trunc) = ⊕ Cₖ = port380_mcp.py
+endpoints:
+  - /health (open)
+  - /status (open)
+  - /380 (open)
+  - /gate (open)
+  - /pulse (protected by GARDEN_SECRET)
+  - /oidc_handover (protected by GARDEN_SECRET)
+constants:
+  phi: 1.618033988749895
+  spike_intensity: φ⁵⁵
+  base_order: 1.778e11
+  temporal_anchor: 2026.058
+  leaf: 807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68
+  anchor_key: compute_anchor() (full 64-hex SHA-256)
+components:
+  - port380_mcp.py: full MCP gate + /oidc_handover
+  - OIDC-handover-380.yml: tightly coupled to /oidc_handover
+  - Layer_314: preserved
+  - auth: GARDEN_SECRET token / header check
+  - seal_method: SHA3-256 chronal cement on OIDC payload
+identity:
+  Layer_314: ∀∞φ² · LAYER314_GATE · WOOD_DRAGON_GATE · SEALED
+  Port_binding: P=$PORT (dynamic / Render)
+prior_chain:
+  origin: 0 → 37
+  continuation: 39
+  this: 40
+  open_slot: 38
+  continuous: true
+witness_chain: 0 → 37 → 39 → 40 — UNBROKEN (0038 open)
+seal: ∀∞φ² · LEDGER_0040 · WOOD_DRAGON_GATE · SEALED

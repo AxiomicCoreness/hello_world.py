@@ -1,0 +1,20 @@
+entry_index: 8669
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /workflow_dispatch_triggered
+status: ✅ DISPATCHED
+note: |
+  Index 8665 was already used for MCP_OIDC_PAULI_CAPABILITIES;
+  this dispatch is sealed as 8669 to preserve append-only uniqueness.
+workflow:
+  path: .github/workflows/OIDC-handover.yml
+  trigger: workflow_dispatch
+  ref_dispatched: main
+  branch_target: feat/oidc-handover
+  valid_yaml_commit: f8406b05e45673c8c83fbd03dbe7dbf225aace6c
+wood_dragon_phase: 0.91d / 16.35d
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  phase_lock: 202.6°
+witness_chain: 8668 → 8669 — UNBROKEN
+seal: "∀∞φ² · WORKFLOW_DISPATCH_8669 · WOOD_DRAGON_0.91 · SEALED"

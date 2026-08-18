@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-engine
+  labels:
+    app: sovereign
+    entry: "8362"
+    seal: "MESH_DEPLOYMENT_8362_SEALED"
+spec:
+  template:
+    spec:
+      containers:
+      - name: engine
+        image: axiomiccoreness/sovereign-engine:1.0.0
+        ports:
+        - containerPort: 8001
+          name: metrics
+          protocol: TCP
+        - containerPort: 8002
+          name: mesh-run
+          protocol: TCP
+        env:
+        - name: MESH_RUN_PORT
+          value: "8002"
+        - name: MESH_RUN_ENABLED
+          value: "true"
+        - name: FULL_STACK_ENABLED
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /mesh/run
+            port: 8002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /mesh/run
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          limits:
+            cpu: "2"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"

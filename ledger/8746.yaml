@@ -1,0 +1,14 @@
+entry_index: 8746
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13T22:15:00Z
+event: /anchor_minting_test
+status: ✅ VERIFIED_OK
+correction: |
+  Editorial Board draft hashed bare JSON with key leaf_commitment and no
+  domain tag → root 1f9d21b3… (mismatch). Canonical mint uses domain
+  GARDEN.LAYER326.MERKLE.v1 + key "leaf" → root 08c344fe… matches.
+computed_root: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
+expected_root: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
+match: true
+test_module: quantum/anchor_mint_test.py
+witness_chain: 8745 → 8746 — UNBROKEN
+seal: "∀∞φ² · ANCHOR_MINTING_TEST_8746 · WOOD_DRAGON_0.91 · SEALED"

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["worker_url", "oidc_issuer", "oidc_client_id", "thresholds"],
+  "properties": {
+    "worker_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Full URL to the worker's MCP tool endpoint"
+    },
+    "oidc_issuer": {
+      "type": "string",
+      "format": "uri",
+      "description": "OIDC token issuer URL"
+    },
+    "oidc_client_id": { "type": "string" },
+    "oidc_client_secret": { "type": "string", "writeOnly": true },
+    "thresholds": {
+      "type": "object",
+      "properties": {
+        "coherence_fire": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.8 },
+        "coherence_nudge": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.6 },
+        "error_tolerance": { "type": "number", "minimum": 0, "default": 0.5 }
+      },
+      "required": ["coherence_fire", "coherence_nudge", "error_tolerance"]
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,36 +1,43 @@
-# Dockerfile – Gold Standard Sovereign FastAPI (Entry 623)
-# Non-root, multi-stage, production-ready
-FROM python:3.11-slim AS builder
-
-WORKDIR /build
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
-
-FROM python:3.11-slim AS runtime
-
-# Create non-root user
-RUN addgroup --system --gid 1001 sovereign && \
-    adduser --system --uid 1001 --gid 1001 --home /home/sovereign sovereign
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy installed packages and application code
-COPY --from=builder /root/.local /home/sovereign/.local
-COPY core/ ./core/
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    jq \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Environment
-ENV PATH="/home/sovereign/.local/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
-    SOVEREIGN_MODE=production \
-    PORT=8000
+# Pre‑install Codespaces agent (permanent fix for corrupt tmp.zip)
+ARG CODESPACES_AGENT_URL="https://api.github.com/repos/AxiomicCoreness/hello_world.py/agent/download?platform=linux&workflow_run_id=32051671064"
+RUN curl -L -o /tmp/agent.zip "$CODESPACES_AGENT_URL" && \
+    unzip /tmp/agent.zip -d /usr/local/bin/ && \
+    chmod +x /usr/local/bin/install_codespaces_agent.sh && \
+    rm /tmp/agent.zip
 
-# Switch to non-root
-USER 1001
+# Core + MCP deps
+COPY requirements.txt requirements-mcp.txt requirements-ci.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-mcp.txt \
+    && pip install --no-cache-dir httpx>=0.27.0
+
+# Application surface
+COPY hello_world.py port380_mcp.py sovereign_engine.py ./
+COPY deepseek/ ./deepseek/
+COPY orchestrator/ ./orchestrator/
+COPY contracts/ ./contracts/
+COPY scripts/ ./scripts/
+
+ENV PYTHONPATH=/app
+ENV PHI=1.618033988749895
+ENV LAYER=314
+ENV PORT=8000
 
 EXPOSE 8000
 
-# Health check (uses Python stdlib so no extra curl dependency)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-CMD ["uvicorn", "core.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# uvicorn entry (override CMD for SIMD or port380)
+CMD ["sh", "-c", "uvicorn hello_world:app --host 0.0.0.0 --port ${PORT:-8000}"]

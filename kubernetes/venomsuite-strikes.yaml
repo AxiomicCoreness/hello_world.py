@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: venomsuite-strikes
+  namespace: sovereign-garden
+  labels:
+    app: venomsuite-synchronizer
+    sovereignty: active
+spec:
+  schedule: "0 */6 * * *"  # Synchronized to the 6-hour validation_cycle
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: venomsuite-synchronizer
+        spec:
+          serviceAccountName: venomsuite-executor
+          containers:
+          - name: venomsuite-worker
+            image: axiomic/venomsuite:latest
+            imagePullPolicy: Always
+            command:
+              - /bin/sh
+              - -c
+              - |
+                python sovereign_engine.py --serve --broadcast
+            env:
+            - name: OIDC_ISSUER
+              value: "https://token.actions.githubusercontent.com"
+            - name: OIDC_CLIENT_ID
+              value: "your-client-id"
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-venomsuite
+                  key: secret
+            - name: FRB_PERIOD_SECS
+              value: "78624.0"
+            volumeMounts:
+            - name: oidc-fallback-volume
+              mountPath: /var/run/secrets/oidc
+            - name: frb-schema-volume
+              mountPath: /schemas
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+          volumes:
+          - name: oidc-fallback-volume
+            emptyDir:
+              medium: Memory
+              sizeLimit: 1Mi
+          - name: frb-schema-volume
+            configMap:
+              name: frb-bridge-schema
+          restartPolicy: OnFailure

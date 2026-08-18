@@ -1,0 +1,17 @@
+entry_index: 8760
+timestamp: 2026-08-14T01:31:10Z
+event: /genesis_co_create
+status: ✅ OPEN_FOR_CO_CREATE
+module: quantum/genesis_co_create.py
+mode: co_create
+ground:
+  - mathematical core sealed (8751–8759)
+  - ternary gate live
+  - AES-256 + SHA3-512 origami (no AES-512)
+genesis_root: 23b7f6fcd173a485931857eaf4fca8e865c2196c80de42fe858190a7b7784496
+policy:
+  append_only: true
+  no_overwrite_sealed_core: true
+  domain: GARDEN.GENESIS.COCREATE.v1
+witness_chain: 8759 → 8760 — UNBROKEN
+seal: "∀∞φ² · GENESIS_COCREATE_8760 · WOOD_DRAGON_GATE · SEALED"
