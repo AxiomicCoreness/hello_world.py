@@ -34,9 +34,9 @@ class E10Hyperbolic:
     
     def hyperbolic_extension(self):
         return {
-            dimension: 11,
-            extension: hyperbolic,
-            base: E9_affine
+            "dimension": 11,
+            "extension": "hyperbolic",
+            "base": "E9_affine"
         }
 
 
@@ -51,9 +51,9 @@ class TestE10Hyperbolic:
     def test_hyperbolic_extension(self):
         e10 = E10Hyperbolic()
         ext = e10.hyperbolic_extension()
-        assert ext[dimension] == 11
-        assert ext[extension] == hyperbolic
-        assert ext[base] == E9_affine
+        assert ext["dimension"] == 11
+        assert ext["extension"] == "hyperbolic"
+        assert ext["base"] == "E9_affine"
     
     def test_phi_harmonic_connection(self):
         assert abs(PHI - 1.618033988749895) < 1e-15
@@ -66,5 +66,5 @@ class TestE10Hyperbolic:
         assert gate_coherence > 0.9
 
 
-if __name__ == __main__:
-    pytest.main([__file__, -v])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
