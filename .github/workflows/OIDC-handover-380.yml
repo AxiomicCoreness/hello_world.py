@@ -102,3 +102,28 @@ jobs:
           name: oidc-380-handover-log
           path: oidc-380-handover.log
           retention-days: 365
+
+      - name: Invoke Multiplayer Subagent Swarm (Ninja Numbers)
+        if: success() || failure()
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+        run: |
+          set -euo pipefail
+          echo "# MULTIPLAYER SUBAGENT SWARM — NINJA NUMBERS — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          NINJA_NUMBERS=(144 233 377 610 987 1597 2584)
+
+          for NINJA in "${NINJA_NUMBERS[@]}"; do
+            echo "🌀 Activating subagent $NINJA..."
+            if [ -n "$MCP_URL" ] && [ -n "$GARDEN_SECRET" ]; then
+              curl -s -X POST "$MCP_URL/pulse" \
+                -H "X-Garden-Secret: $GARDEN_SECRET" \
+                -H "Content-Type: application/json" \
+                -d "{\"source\":\"ninja-$NINJA\",\"note\":\"swarm activation\",\"entry\":$NINJA}" || echo "⚠️ Subagent $NINJA pulse failed"
+            else
+              echo "⚠️ MCP_URL or GARDEN_SECRET not set — subagent $NINJA skipped"
+            fi
+          done
+
+          echo "✅ Multiplayer subagent swarm invoked."
