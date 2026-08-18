@@ -37,6 +37,15 @@ spec:
           periodSeconds: 5
   strategy:
     canary:
+      canaryService: sovereign-garden-canary
+      stableService: sovereign-garden-stable
+      trafficRouting:
+        istio:
+          virtualService:
+            name: sovereign-garden-vs
+            routes:
+            - canary
+            - stable
       steps:
       - setWeight: 20
       - pause: {duration: 30s}
@@ -53,11 +62,4 @@ spec:
         - templateName: sovereign-health-check
         args:
         - name: service-name
-          value: sovereign-garden-svc
-  trafficRouting:
-    istio:
-      virtualService:
-        name: sovereign-garden-vs
-        routes:
-        - canary
-        - stable
+          value: sovereign-garden-canary
