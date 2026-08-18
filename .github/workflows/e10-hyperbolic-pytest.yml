@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write   # Required for OIDC K8s auth
+  id-token: write
   contents: read
 
 jobs:
@@ -26,15 +26,24 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
 
-      - name: Run migration script
-        run: python migrate_to_quadrants.py
+      - name: Create quadrant directories (migration step)
+        run: |
+          mkdir -p quantum/deepseek_mesh
+          mkdir -p quantum/radar_lindblad
+          mkdir -p quantum/cdp_convergence
+          mkdir -p quantum/cordis_bridge
+          touch quantum/deepseek_mesh/__init__.py
+          touch quantum/radar_lindblad/__init__.py
+          touch quantum/cdp_convergence/__init__.py
+          touch quantum/cordis_bridge/__init__.py
+          echo "✅ Quadrant directories created"
 
   test-e10-hyperbolic:
     name: E10 Hyperbolic Tests
@@ -47,10 +56,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
       - name: Install test dependencies
-        run: pip install -e .[test]
+        run: |
+          pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
 
       - name: Run E10 tests
         run: |
@@ -69,11 +79,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure K8s context (GKE/EKS)
-        # Example for EKS; replace with your cloud provider
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
@@ -92,8 +102,7 @@ jobs:
             curl -s -X POST "$MCP_URL/pulse" \
               -H "X-Garden-Secret: $GARDEN_SECRET" \
               -H "Content-Type: application/json" \
-              -d '{"source":"e10-hyperbolic-deploy","note":"deployment completed","entry":40}' || true
-            echo "MCP pulse sent"
+              -d '{"source":"e10-hyperbolic-deploy","note":"deployment completed","entry":40}'
           fi
 
   wood-dragon-validation:
@@ -107,7 +116,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -125,5 +134,5 @@ jobs:
             curl -s -X POST "$MCP_URL/pulse" \
               -H "X-Garden-Secret: $GARDEN_SECRET" \
               -H "Content-Type: application/json" \
-              -d '{"source":"wood-dragon-validation","note":"0.91 day rhythm verified"}' || true
+              -d '{"source":"wood-dragon-validation","note":"0.91 day rhythm verified"}'
           fi
