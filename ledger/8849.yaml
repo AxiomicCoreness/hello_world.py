@@ -1,0 +1,39 @@
+entry_index: 8849
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
+event: /e10_hyperbolic_workflow_executing
+description: Execute cloud workflow pytest of k8s cluster E10 (hyperbolic) - extend algebra beyond affine E9 with breathing manifold. Wood Dragon Gate 0.91 validation. Build from :latest.
+status: WORKFLOW_EXECUTING
+witness_chain: 8848 -> 8849 - UNBROKEN
+seal: all-infty-phi-2 cdot E10_HYPERBOLIC_EXECUTING_8849 cdot WOOD_DRAGON_0.91 cdot SEALED
+
+components:
+  workflow: .github/workflows/e10-hyperbolic-pytest.yml
+  tests:
+    - tests/quantum/test_e10_hyperbolic.py
+    - tests/quantum/test_breathing_manifold.py
+    - tests/quantum/test_wood_dragon_gate.py
+  k8s_manifests:
+    - k8s/e10-hyperbolic-deployment.yaml
+    - k8s/e10-service.yaml
+  docker:
+    image: axiomic/sovereign-engine:latest
+    policy: main-only (Entry 8818)
+    build: autonomous
+
+algebra:
+  base: E9_affine
+  extension: hyperbolic
+  dimension: 11
+  breathing_manifold: active
+
+wood_dragon_gate:
+  version: 0.91
+  coherence: 0.91
+  validation: pending
+
+migration:
+  script: migrate_to_quadrants.py
+  status: available
+  function: /migrate_to_quadrants()
+
+commit: f68046710b816df9d9e7f4d08abd0b0c193ff801
