@@ -3,7 +3,7 @@
   "name": "FRB_Bridge_Lattice",
   "version": "1.0.0",
   "generator_hash": "frb_bridge_generator_b418a3a5a7bfc5d30a49893a406b1506f598dbecb9a6ff4b55cc1cc735257cde",
-  "timestamp": "2026-08-11T15:55:33.921857+00:00",
+  "timestamp": "2026-08-18T20:41:52.657692+00:00",
   "frb": {
     "source": "FRB 20190520b",
     "repeat_interval_days": 3.2,
