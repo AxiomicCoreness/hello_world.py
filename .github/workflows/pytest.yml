@@ -1,10 +1,10 @@
-name: pytest
+name: Sovereign CI/CD
 
 on:
   push:
-    branches: ["**"]
+    branches: [ main, feat/* ]
   pull_request:
-    branches: ["**"]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -16,6 +16,7 @@ jobs:
         python-version: ["3.10", "3.11"]
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -60,7 +61,7 @@ jobs:
           }
           retry pytest -q
 
-      - name: Import check (api + prometheus) (with inline retry)
+      - name: Import check (hello_world + routes) (with inline retry)
         run: |
           retry() {
             local n=1
@@ -77,3 +78,21 @@ jobs:
             done
           }
           retry bash -c "python -c \"from hello_world import app; print('hello_world import OK, routes:', len(app.routes))\""
+
+      - name: Run test_all.py (single-pass Garden verification) (with inline retry)
+        run: |
+          retry() {
+            local n=1
+            local max=3
+            local delay=20
+            until "$@"; do
+              if [ $n -ge $max ]; then
+                echo "Command failed after $n attempts."
+                return 1
+              fi
+              n=$((n+1))
+              echo "Retrying in $delay seconds..."
+              sleep $delay
+            done
+          }
+          retry python test_all.py

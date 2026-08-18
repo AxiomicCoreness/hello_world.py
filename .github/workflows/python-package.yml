@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # REQUIRED for OIDC handover
 
 jobs:
   build:
@@ -62,7 +63,8 @@ jobs:
               sleep $delay
             done
           }
-          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true"
+          # Run strict linting, but don't block on warnings
+          retry bash -c "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics"
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
 
       - name: Test with pytest (inline retry)
@@ -115,7 +117,7 @@ jobs:
           else
             echo "No sovereign_engine.py found – skipping invariant check."
           fi
-        continue-on-error: true
+        # REMOVED continue-on-error: true — failures will now block the build
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
@@ -221,3 +223,4 @@ jobs:
           fi
 
           echo "Layer 314 — no AWS role assumption — uvicorn path only"
+          
