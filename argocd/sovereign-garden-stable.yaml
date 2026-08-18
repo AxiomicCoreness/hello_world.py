@@ -6,6 +6,7 @@ metadata:
   labels:
     app: sovereign-garden
     role: stable
+    fallback: enabled
 spec:
   selector:
     app: sovereign-garden
@@ -14,3 +15,9 @@ spec:
     - name: http
       port: 8000
       targetPort: 8000
+    - name: http-fallback-1
+      port: 8001
+      targetPort: 8001
+    - name: http-fallback-2
+      port: 8002
+      targetPort: 8002
