@@ -1,4 +1,5 @@
 name: Workload EM-005 Smoke
+
 on:
   push:
     paths:
@@ -17,13 +18,26 @@ jobs:
           python-version: "3.11"
       - name: Compute sovereign_workload sample
         run: |
-          python - <<'PY'
+          python <<'PY'
+          import sys
+          import os
+
+          # Ensure monitoring/ is in the path
+          sys.path.insert(0, os.getcwd())
+
+          # Import the module
           from monitoring.sovereign_workload_exporter import compute_workload, metrics_text
+
+          # Compute workload and validate bounds
           w = compute_workload()
-          assert 0.0 <= w <= 1.0, w
+          assert 0.0 <= w <= 1.0, f"Workload out of range: {w}"
+
+          # Generate and validate Prometheus text
           text = metrics_text(w)
-          assert "sovereign_workload " in text
-          assert 'sovereign_workload_em{protocol="005"}' in text
+          assert "sovereign_workload " in text, "Missing gauge line"
+          assert 'sovereign_workload_em{protocol="005"}' in text, "Missing EM-005 label"
+
+          # Output for debug
           print(text)
-          print("OK", w)
+          print(f"OK: workload = {w}")
           PY
