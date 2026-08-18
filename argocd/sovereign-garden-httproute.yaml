@@ -3,11 +3,21 @@ kind: HTTPRoute
 metadata:
   name: sovereign-garden-route
   namespace: sovereign-garden
+  labels:
+    rollouts.argoproj.io/gatewayapi-canary: "in-progress"
 spec:
   parentRefs:
     - name: sovereign-gateway
       namespace: sovereign-garden
   rules:
+    - matches:
+        - headers:
+            - name: X-Canary
+              value: "true"
+      backendRefs:
+        - name: sovereign-garden-canary
+          port: 8000
+          weight: 100
     - backendRefs:
         - name: sovereign-garden-stable
           port: 8000
