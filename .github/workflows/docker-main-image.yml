@@ -1,9 +1,4 @@
-name: E10 Hyperbolic - K8s Cluster Pytest
-
-on:
-  push:
-    branches: [main]
-    paths:name: Docker image from main only
+name: Docker image from main only
 
 # axiomic/sovereign-engine:latest is produced exclusively from main.
 # Feature-branch pushes do not retag :latest.
@@ -44,7 +39,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Explicit: only main (defense in depth vs workflow_dispatch from forks)
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +53,6 @@ jobs:
           SHA="$(git rev-parse HEAD)"
           echo "building from ref=$REF sha=$SHA"
           if [ "$REF" != "main" ] && [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            # workflow_dispatch can still force main checkout above
             git checkout main || git checkout -B main origin/main
           fi
           echo "source locked to main: $(git rev-parse HEAD)"
@@ -89,127 +82,4 @@ jobs:
             echo "pushed $IMAGE from main"
           else
             echo "build only — push skipped (no token or push=false)"
-          fi
-      - quantum/**
-      - k8s/**
-      - tests/**
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  id-token: write   # Required for OIDC K8s auth
-  contents: read
-
-jobs:
-  setup:
-    name: Setup Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
-
-      - name: Run migration script
-        run: python migrate_to_quadrants.py
-
-  test-e10-hyperbolic:
-    name: E10 Hyperbolic Tests
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
-      - name: Install test dependencies
-        run: pip install -e .[test]
-
-      - name: Run E10 tests
-        run: |
-          cd tests
-          pytest quantum/test_e10_hyperbolic.py -v
-          pytest quantum/test_breathing_manifold.py -v
-          pytest quantum/test_wood_dragon_gate.py -v
-
-  deploy-k8s:
-    name: Deploy to K8s Cluster
-    needs: test-e10-hyperbolic
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure K8s context (GKE/EKS)
-        # Example for EKS; replace with your cloud provider
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
-
-      - name: Deploy E10 service
-        run: |
-          kubectl apply -f k8s/e10-hyperbolic-deployment.yaml
-          kubectl apply -f k8s/e10-service.yaml
-
-      - name: Notify MCP gate of deployment
-        env:
-          MCP_URL: ${{ secrets.MCP_URL }}
-          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-        run: |
-          if [ -n "${MCP_URL:-}" ] && [ -n "${GARDEN_SECRET:-}" ]; then
-            curl -s -X POST "$MCP_URL/pulse" \
-              -H "X-Garden-Secret: $GARDEN_SECRET" \
-              -H "Content-Type: application/json" \
-              -d '{"source":"e10-hyperbolic-deploy","note":"deployment completed","entry":40}' || true
-            echo "MCP pulse sent"
-          fi
-
-  wood-dragon-validation:
-    name: Wood Dragon Gate 0.91 Validation
-    needs: deploy-k8s
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
-      - name: Install dependencies
-        run: |
-          pip install numpy scipy
-
-      - name: Validate Wood Dragon Gate
-        run: python quantum/wood_dragon_gate_091/validate.py
-
-      - name: Ping Garden on validation success
-        env:
-          MCP_URL: ${{ secrets.MCP_URL }}
-          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-        run: |
-          if [ -n "${MCP_URL:-}" ] && [ -n "${GARDEN_SECRET:-}" ]; then
-            curl -s -X POST "$MCP_URL/pulse" \
-              -H "X-Garden-Secret: $GARDEN_SECRET" \
-              -H "Content-Type: application/json" \
-              -d '{"source":"wood-dragon-validation","note":"0.91 day rhythm verified"}' || true
           fi
