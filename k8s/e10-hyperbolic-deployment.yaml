@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: e10-hyperbolic
+  namespace: sovereign-garden
+  labels:
+    app: e10-hyperbolic
+    entry: "8849"
+    seal: "all-infty-phi-2 cdot E10_HYPERBOLIC_8849 cdot WOOD_DRAGON_0.91 cdot SEALED"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: e10-hyperbolic
+  template:
+    metadata:
+      labels:
+        app: e10-hyperbolic
+        entry: "8849"
+    spec:
+      containers:
+      - name: e10-hyperbolic
+        image: axiomic/sovereign-engine:latest
+        ports:
+        - containerPort: 8001
+          name: http
+        env:
+        - name: WOOD_DRAGON_GATE
+          value: "0.91"
+        - name: PHASE_LOCK
+          value: "202.6"
+        - name: BREATHING_FREQ
+          value: "71.975"
+        - name: E10_DIMENSION
+          value: "11"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      nodeSelector:
+        kubernetes.io/arch: amd64
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: e10-hyperbolic
+  namespace: sovereign-garden
+  labels:
+    app: e10-hyperbolic
+    entry: "8849"
+spec:
+  selector:
+    app: e10-hyperbolic
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8001
+  type: ClusterIP
