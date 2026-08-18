@@ -1,0 +1,7 @@
+name: E10 Hyperbolic Test
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "E10 hyperbolic workflow active"
