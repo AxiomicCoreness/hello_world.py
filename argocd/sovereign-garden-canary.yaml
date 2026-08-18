@@ -14,9 +14,9 @@ spec:
     - name: http
       port: 8000
       targetPort: 8000
-    - name: deepseek-get
+    - name: http-fallback-1
       port: 8001
       targetPort: 8001
-    - name: deepseek-post
+    - name: http-fallback-2
       port: 8002
       targetPort: 8002
