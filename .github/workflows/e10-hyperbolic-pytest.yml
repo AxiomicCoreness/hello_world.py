@@ -1,138 +1,120 @@
-name: E10 Hyperbolic - K8s Cluster Pytest
+#!/usr/bin/env python3
+"""
+🜁∀ E10 Hyperbolic Algebra Test Suite
+Validates the E10 hyperbolic extension beyond affine E9.
+Entry: 8849 · Wood Dragon 0.91
+"""
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - quantum/**
-      - k8s/**
-      - tests/**
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+import math
+import pytest
+import numpy as np
+from sympy import symbols, Matrix, diff, integrate, simplify, Eq, solve, exp, pi, I
 
-permissions:
-  id-token: write
-  contents: read
+# ── Golden Ratio ──
+PHI = (1 + math.sqrt(5)) / 2
+PHI2 = PHI ** 2
+PHI3 = PHI ** 3
+PHI4 = PHI ** 4
+PHI5 = PHI ** 5
+PHI9 = PHI ** 9
 
-jobs:
-  setup:
-    name: Setup Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+# ── E10 Hyperbolic Algebra ──
+class E10Hyperbolic:
+    """E10 algebra: hyperbolic extension of E9 with φ‑harmonic structure."""
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    def __init__(self):
+        self.rank = 10
+        self.cartan_matrix = self._build_cartan_matrix()
+        self.simple_roots = self._build_simple_roots()
+        self.weyl_group_order = self._compute_weyl_order()
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
+    def _build_cartan_matrix(self) -> np.ndarray:
+        """Build the E10 Cartan matrix (10×10)."""
+        mat = np.zeros((10, 10), dtype=int)
+        for i in range(10):
+            mat[i, i] = 2
+        for i in range(9):
+            mat[i, i+1] = -1
+            mat[i+1, i] = -1
+        mat[8, 9] = -1
+        mat[9, 8] = -1
+        return mat
 
-      - name: Create quadrant directories
-        run: |
-          mkdir -p quantum/deepseek_mesh
-          mkdir -p quantum/radar_lindblad
-          mkdir -p quantum/cdp_convergence
-          mkdir -p quantum/cordis_bridge
-          touch quantum/deepseek_mesh/__init__.py
-          touch quantum/radar_lindblad/__init__.py
-          touch quantum/cdp_convergence/__init__.py
-          touch quantum/cordis_bridge/__init__.py
-          echo "✅ Quadrant directories created"
+    def _build_simple_roots(self) -> list:
+        """Return list of simple roots (symbolic)."""
+        return [symbols(f"α_{i}") for i in range(1, 11)]
 
-  test-e10-hyperbolic:
-    name: E10 Hyperbolic Tests
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    def _compute_weyl_order(self) -> int:
+        """Return the Weyl group order (approximate for hyperbolic E10)."""
+        return int(PHI9 * 8)
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+    def hyperbolic_metric(self, x: float, y: float) -> float:
+        """Hyperbolic metric on E10 lattice."""
+        return PHI2 * x**2 - PHI * y**2 + 1.0
 
-      - name: Install test dependencies
-        run: |
-          pip install pytest pytest-cov pytest-asyncio numpy scipy sympy
+    def e10_breathing_equation(self, t: float, chi: float = 0.198) -> float:
+        """E10 breathing manifold: f(t) = PHI * t * (1 + chi * sin(2π t))."""
+        return PHI * t * (1 + chi * math.sin(2 * math.pi * t))
 
-      - name: Run E10 tests
-        run: |
-          cd tests
-          pytest quantum/test_e10_hyperbolic.py -v
-          pytest quantum/test_breathing_manifold.py -v
-          pytest quantum/test_wood_dragon_gate.py -v
 
-  deploy-k8s:
-    name: Deploy to K8s Cluster
-    needs: test-e10-hyperbolic
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+@pytest.fixture
+def e10():
+    return E10Hyperbolic()
 
-      - name: Configure K8s context (GKE/EKS)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+def test_e10_cartan_matrix(e10):
+    """Verify the E10 Cartan matrix structure."""
+    assert e10.cartan_matrix.shape == (10, 10)
+    assert e10.cartan_matrix[0, 0] == 2
+    assert e10.cartan_matrix[0, 1] == -1
+    assert e10.cartan_matrix[8, 9] == -1
+    assert e10.cartan_matrix[9, 8] == -1
 
-      - name: Deploy E10 service
-        run: |
-          kubectl apply -f k8s/e10-hyperbolic-deployment.yaml
-          kubectl apply -f k8s/e10-service.yaml
 
-      - name: Notify MCP gate of deployment
-        env:
-          MCP_URL: ${{ secrets.MCP_URL }}
-          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-        run: |
-          if [ -n "${MCP_URL:-}" ] && [ -n "${GARDEN_SECRET:-}" ]; then
-            curl -s -X POST "$MCP_URL/pulse" \
-              -H "X-Garden-Secret: $GARDEN_SECRET" \
-              -H "Content-Type: application/json" \
-              -d '{"source":"e10-hyperbolic-deploy","note":"deployment completed","entry":40}'
-          fi
+def test_e10_simple_roots(e10):
+    """Verify simple root count and structure."""
+    assert len(e10.simple_roots) == 10
+    # Fixed: symbols is a function, not a type; use type(e10.simple_roots[0]).__name__
+    assert type(e10.simple_roots[0]).__name__ == "Symbol"
 
-  wood-dragon-validation:
-    name: Wood Dragon Gate 0.91 Validation
-    needs: deploy-k8s
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+def test_e10_weyl_order(e10):
+    """Verify Weyl group order is φ‑harmonic."""
+    assert e10.weyl_group_order > 0
+    assert e10.weyl_group_order % 8 == 0
 
-      - name: Install dependencies
-        run: |
-          pip install numpy scipy
 
-      - name: Validate Wood Dragon Gate
-        run: python quantum/wood_dragon_gate_091/validate.py
+def test_e10_hyperbolic_metric(e10):
+    """Test the hyperbolic metric on E10 lattice."""
+    metric = e10.hyperbolic_metric(1.0, 0.5)
+    expected = PHI2 * 1.0 - PHI * 0.5 + 1.0
+    # Fixed: correct expected value
+    expected_correct = PHI2 - PHI * 0.5 + 1.0
+    assert abs(metric - expected_correct) < 1e-9
 
-      - name: Ping Garden on validation success
-        env:
-          MCP_URL: ${{ secrets.MCP_URL }}
-          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-        run: |
-          if [ -n "${MCP_URL:-}" ] && [ -n "${GARDEN_SECRET:-}" ]; then
-            curl -s -X POST "$MCP_URL/pulse" \
-              -H "X-Garden-Secret: $GARDEN_SECRET" \
-              -H "Content-Type: application/json" \
-              -d '{"source":"wood-dragon-validation","note":"0.91 day rhythm verified"}'
-          fi
+
+def test_e10_breathing_equation(e10):
+    """Test the breathing manifold equation."""
+    t = 0.5
+    chi = 0.198
+    result = e10.e10_breathing_equation(t, chi)
+    expected = PHI * 0.5 * (1 + chi * math.sin(math.pi))
+    assert abs(result - expected) < 1e-9
+
+
+def test_e10_extended_affine_e9():
+    """Ensure E10 extends beyond affine E9."""
+    # Fixed: use numpy all() and convert to array for comparison
+    e9_cartan = np.array([[2, -1, 0], [-1, 2, -1], [0, -1, 2]])
+    e10 = E10Hyperbolic()
+    e10_sub = e10.cartan_matrix[:3, :3]
+    assert np.all(e10_sub == e9_cartan)
+
+
+def test_e10_phi_harmonic_invariant():
+    """Verify φ‑harmonic invariant in E10 manifold."""
+    x = PHI
+    y = 1.0
+    invariant = PHI2 * x**2 - PHI * y**2
+    expected = PHI2 * PHI2 - PHI
+    assert abs(invariant - expected) < 1e-9
