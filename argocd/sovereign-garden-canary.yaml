@@ -14,3 +14,9 @@ spec:
     - name: http
       port: 8000
       targetPort: 8000
+    - name: deepseek-get
+      port: 8001
+      targetPort: 8001
+    - name: deepseek-post
+      port: 8002
+      targetPort: 8002
