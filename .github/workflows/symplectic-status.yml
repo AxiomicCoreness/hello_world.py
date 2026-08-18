@@ -9,10 +9,10 @@ on:
       - "celestial/**"
       - "frb_bridge*"
       - "monitoring/sovereign_workload_exporter.py"
-      - "quantum/port_380_*.py"  # Added to trigger on Port 380 changes
+      - "quantum/port_380_*.py"
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"  # Matches the Ouroboros Path B flush cycle
+    - cron: "0 */6 * * *"
 
 jobs:
   generate-status:
