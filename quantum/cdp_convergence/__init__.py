@@ -1,4 +1,4 @@
-"""CDP Convergence quadrant — OAuth 2.0 gates websocket_ready."""
+"""CDP Convergence quadrant — OAuth 2.0 gates websocket_ready + VOID-QCH."""
 
 from .cdp_schema import CdpStatus, OAuth2TokenClaims
 from .handshake import (
@@ -7,6 +7,12 @@ from .handshake import (
     status_unauthenticated,
 )
 from . import oauth2
+from .void_qch import (
+    chemical_precision_feasibility,
+    validate_progression,
+    build_progression,
+    VoidQCHReport,
+)
 
 __all__ = [
     "CdpStatus",
@@ -15,4 +21,8 @@ __all__ = [
     "handshake_from_authorization",
     "status_unauthenticated",
     "oauth2",
+    "chemical_precision_feasibility",
+    "validate_progression",
+    "build_progression",
+    "VoidQCHReport",
 ]
