@@ -1,16 +1,31 @@
-# DeepSeek Client — Entry 8845
+# DeepSeek Client — Entry 8845 / harness lattice integration
 # Formerly: orchestrator/deepseek_client.py
 
 """
 DeepSeek API client for external model integration.
 Injects Garden invariants: coherence=1.0, phase=202.6, entropy=φ⁻¹⁴¹⁸
 """
+from __future__ import annotations
 
 import os
-import requests
+from typing import Any, Dict, Optional
+
+from .dsh_adapter import complete, offline_complete, probe
 
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", os.getenv("DSH_MODEL", "deepseek-chat"))
 
-# TODO: Copy implementation from original orchestrator/deepseek_client.py
+
+def chat(prompt: str, prefer: str = "auto", **kwargs: Any) -> Dict[str, Any]:
+    return complete(prompt, prefer=prefer, model=kwargs.get("model", DEEPSEEK_MODEL), **{
+        k: v for k, v in kwargs.items() if k != "model"
+    }).to_dict()
+
+
+def status() -> Dict[str, Any]:
+    return probe()
+
+
+def echo(prompt: str) -> Dict[str, Any]:
+    return offline_complete(prompt, model=DEEPSEEK_MODEL).to_dict()
