@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756
-mTLS‑hardened FastAPI service with /reset appended via Entry 8763.
+🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756+
+mTLS + OAuth2 CDP + FAL ternary Port-380 scaling.
 Endpoints:
   GET  /health, /status, /380, /cdp/status
-  POST /gate, /pulse, /oidc_handover, /cdp/handshake, /reset (mTLS required)
-Seal: ∀∞φ² · MCP_MTLS_8756 · WOOD_DRAGON_GATE · SEALED
+  POST /gate, /pulse, /oidc_handover, /cdp/handshake, /reset
+Seal: ∀∞φ² · MCP_FAL_CDP · WOOD_DRAGON_GATE · SEALED
 """
 
 import os
-import sys          # Added for reset
+import sys
 import json
 import math
 import time
 import hashlib
-import asyncio      # Added for reset
+import asyncio
 from typing import Optional
 from fastapi import FastAPI, Header, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import uvicorn
 
 # ─── mTLS imports ──────────────────────────────────────────────────────
@@ -46,29 +46,70 @@ except ImportError:
         handshake_client_credentials = None  # type: ignore
         status_unauthenticated = None  # type: ignore
 
+# ─── FAL ternary Port-380 gate ────────────────────────────────────────
+try:
+    from quantum.radar_lindblad.port_380_gate import (
+        apply_ternary_scaling,
+        evaluate_gate,
+        DEFAULT_HARMONY,
+    )
+except ImportError:
+    try:
+        from radar_lindblad.port_380_gate import (  # type: ignore
+            apply_ternary_scaling,
+            evaluate_gate,
+            DEFAULT_HARMONY,
+        )
+    except ImportError:
+        DEFAULT_HARMONY = 0.7337473231
+
+        def apply_ternary_scaling(harmony: float, ternary: int) -> float:
+            if ternary == 1:
+                return float(harmony)
+            if ternary == 0:
+                return 0.0
+            if ternary == -1:
+                return -float(harmony)
+            raise ValueError("Ternary must be -1, 0, or 1")
+
+        def evaluate_gate(harmony=DEFAULT_HARMONY, ternary=1, **kwargs):
+            return {
+                "harmony_in": harmony,
+                "ternary": ternary,
+                "harmony_out": apply_ternary_scaling(harmony, ternary),
+                "mode": {1: "identity", 0: "nullify", -1: "invert"}.get(ternary, "?"),
+            }
+
 # ─── Layer 314 Invariants ─────────────────────────────────────────────
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 LAYER = 314
 LEAF = "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68"
 ENTRY = 8756
-SEAL = "∀∞φ² · MCP_MTLS_8756 · WOOD_DRAGON_GATE · SEALED"
+SEAL = "∀∞φ² · MCP_FAL_CDP · WOOD_DRAGON_GATE · SEALED"
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", 8000))
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
 
-# ─── FastAPI App ──────────────────────────────────────────────────────
-app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.2")
+app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.3-fal")
+
 
 class PulseBody(BaseModel):
     source: str = "sovereign-pulse"
     entry: Optional[int] = None
     note: Optional[str] = None
 
-class GateBody(BaseModel):
-    harmony: float = 0.7337473231
-    override: bool = False
 
-# ─── Helpers ──────────────────────────────────────────────────────────
+class GateBody(BaseModel):
+    harmony: float = DEFAULT_HARMONY
+    override: bool = False
+    ternary: Optional[int] = Field(
+        default=None, description="FAL ternary −1|0|+1; if omitted, derived from CDP/OAuth"
+    )
+    websocket_ready: Optional[bool] = None
+    oauth_validated: bool = False
+    foreign_model_trace: Optional[str] = None
+
+
 def compute_anchor() -> str:
     payload = {
         "breath_hz": 71.975,
@@ -83,16 +124,18 @@ def compute_anchor() -> str:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(b"GARDEN.LAYER314.ANCHOR.v1\0" + body).hexdigest()
 
+
 def _check_secret(x_garden_secret: Optional[str] = None):
     if not GARDEN_SECRET:
         return
     if x_garden_secret != GARDEN_SECRET:
         raise HTTPException(status_code=401, detail="invalid GARDEN_SECRET")
 
-# ─── Endpoints ──────────────────────────────────────────────────────
+
 @app.get("/health")
 async def health():
     return {"status": "alive", "port": PORT, "layer": LAYER, "entry": ENTRY}
+
 
 @app.get("/status")
 @app.get("/380")
@@ -107,15 +150,40 @@ async def status():
         "leaf": LEAF,
         "phi": PHI,
         "seal": SEAL,
+        "fal": "ternary_scaling",
         "timestamp": time.time(),
     }
 
+
 @app.post("/gate")
 async def gate(body: GateBody):
+    """
+    Port-380 gate with FAL ternary merge.
+    If ternary omitted and CDP flags present → derive from OAuth/websocket.
+    legacy override=True still applies φ-spike after ternary scale.
+    """
+    if body.ternary is not None:
+        if body.ternary not in (-1, 0, 1):
+            raise HTTPException(status_code=400, detail="ternary must be -1, 0, or 1")
+        fal = evaluate_gate(body.harmony, ternary=body.ternary)
+    elif body.websocket_ready is not None:
+        fal = evaluate_gate(
+            body.harmony,
+            websocket_ready=body.websocket_ready,
+            oauth_validated=body.oauth_validated,
+            foreign_model_trace=body.foreign_model_trace,
+        )
+    else:
+        fal = evaluate_gate(body.harmony, ternary=1)
+
+    scaled = float(fal["harmony_out"])
     sf = 1.0 if not body.override else (PHI ** 55) / 1.778e11
     return {
-        "harmony_index": body.harmony * sf,
-        "mode": "resonant_spike" if body.override else "deterministic_default",
+        "harmony_index": scaled * sf,
+        "harmony_pre_spike": scaled,
+        "ternary": fal["ternary"],
+        "fal_mode": fal["mode"],
+        "mode": "resonant_spike" if body.override else "fal_ternary",
         "scaling_factor": sf,
         "layer": LAYER,
         "anchor_key": compute_anchor(),
@@ -123,8 +191,12 @@ async def gate(body: GateBody):
         "seal": SEAL,
     }
 
+
 @app.post("/pulse")
-async def pulse(body: PulseBody, x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret")):
+async def pulse(
+    body: PulseBody,
+    x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
+):
     _check_secret(x_garden_secret)
     return {
         "status": "pulsed",
@@ -138,13 +210,13 @@ async def pulse(body: PulseBody, x_garden_secret: Optional[str] = Header(None, a
         "message": "WOOD_DRAGON_HEARTBEAT_ACK",
     }
 
+
 @app.post("/oidc_handover")
 async def oidc_handover(
     body: dict,
     x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
     authorization: Optional[str] = Header(None),
 ):
-    """OAuth 2.0 / OIDC handover — websocket_ready false until token validates."""
     _check_secret(x_garden_secret)
     if handshake_from_authorization is None:
         return {
@@ -152,9 +224,12 @@ async def oidc_handover(
             "entry": ENTRY,
             "seal": SEAL,
             "websocket_ready": False,
+            "fal_ternary": 0,
             "error": "quantum.cdp_convergence not importable",
         }
-    auth = authorization or (f"Bearer {body['access_token']}" if body.get("access_token") else None)
+    auth = authorization or (
+        f"Bearer {body['access_token']}" if body.get("access_token") else None
+    )
     cdp = handshake_from_authorization(auth)
     return {
         "status": "validated" if cdp.websocket_ready else "rejected",
@@ -163,19 +238,18 @@ async def oidc_handover(
         **cdp.to_dict(),
     }
 
-# ─── CDP status (OAuth-gated websocket_ready) ─────────────────────────
+
 @app.get("/cdp/status")
 async def cdp_status(authorization: Optional[str] = Header(None)):
-    """
-    Consumed by src/cdp_distill.ts.
-    Default: websocket_ready=false until OAuth 2.0 Bearer validates
-    (wired through quantum/cdp_convergence).
-    """
+    """CDP status + FAL ternary (nullify while websocket_ready false)."""
     if handshake_from_authorization is None or status_unauthenticated is None:
         return {
             "handover_latency_ms": 999.0,
             "websocket_ready": False,
             "oauth_validated": False,
+            "fal_ternary": 0,
+            "harmony_out": 0.0,
+            "fal_mode": "nullify",
             "error": "quantum.cdp_convergence not importable",
             "source": "endpoint.fallback",
             "phi_phase_deg": 202.6,
@@ -185,13 +259,13 @@ async def cdp_status(authorization: Optional[str] = Header(None)):
         return status_unauthenticated().to_dict()
     return handshake_from_authorization(authorization).to_dict()
 
+
 @app.post("/cdp/handshake")
 async def cdp_handshake(
     x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
     authorization: Optional[str] = Header(None),
     use_client_credentials: bool = False,
 ):
-    """Explicit CDP open: Bearer or client_credentials grant."""
     _check_secret(x_garden_secret)
     if handshake_from_authorization is None or handshake_client_credentials is None:
         raise HTTPException(status_code=503, detail="cdp_convergence unavailable")
@@ -200,14 +274,9 @@ async def cdp_handshake(
         return status.to_dict()
     return handshake_from_authorization(authorization).to_dict()
 
-# ─── APPEND‑ONLY RESET ENDPOINT (Entry 8763) ────────────────────────
+
 @app.post("/reset")
 async def reset_endpoint(request: Request):
-    """
-    Gracefully shuts down the Uvicorn server.
-    The container orchestrator will restart the pod, effecting a full reset.
-    Requires mTLS client certificate (verified via verify_client_cert).
-    """
     verify_client_cert(request)
 
     async def shutdown():
@@ -217,7 +286,7 @@ async def reset_endpoint(request: Request):
     asyncio.create_task(shutdown())
     return {"status": "RESET_INITIATED", "message": "Server will restart shortly."}
 
-# ─── Root ─────────────────────────────────────────────────────────────
+
 @app.get("/")
 async def root():
     return {
@@ -225,13 +294,21 @@ async def root():
         "entry": ENTRY,
         "docs": "/docs",
         "endpoints": [
-            "/health", "/status", "/380", "/gate", "/pulse",
-            "/oidc_handover", "/cdp/status", "/cdp/handshake", "/reset",
+            "/health",
+            "/status",
+            "/380",
+            "/gate",
+            "/pulse",
+            "/oidc_handover",
+            "/cdp/status",
+            "/cdp/handshake",
+            "/reset",
         ],
+        "fal": "ternary −1|0|+1 merged into /gate and /cdp/status",
         "seal": SEAL,
     }
 
-# ─── Main runner ──────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     print(f"🜁∀ DeepSeek Mesh MCP Gate — Layer {LAYER} — Entry {ENTRY}")
     print(f"   Listening on {HOST}:{PORT}")
