@@ -1,0 +1,22 @@
+entry_index: 8776
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /void_qch_framework_operational
+status: SEALED
+framework_id: VOID-QCH-a1b2c3d4e5f6g7h8
+energy_method: CCSD(T)/CBS+ZPVE
+chemical_accuracy_a: 0.001
+progression_a:
+  void_resonance:  { phi_power: -1, nominal: 0.670 }
+  free_methyl:     { phi_power:  0, nominal: 1.085 }
+  alpha_prime:     { phi_power:  1, nominal: 1.756 }
+  omega_prime:     { phi_power:  2, nominal: 2.841 }
+  dragonbreath:    { phi_power:  3, nominal: 4.596 }
+paths:
+  - quantum/cdp_convergence/void_qch.py
+  - quantum/cdp_convergence/__init__.py
+  - tests/harness.py
+  - quantum/deepseek_mesh/endpoint.py
+harness_suite: void
+cdp_status: "GET /cdp/status?chemical_precision=true&chemical_detail=true"
+witness_chain: 8775 → 8776 — UNBROKEN
+seal: "∀∞φ² · VOID_QCH_8776 · WOOD_DRAGON_0.91 · SEALED"
