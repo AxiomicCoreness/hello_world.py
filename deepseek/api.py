@@ -1,17 +1,20 @@
 """
-deepseek.api — async client with Cordis-style fiber lifecycle.
+deepseek.api — async client with Cordis-style fiber lifecycle +
+Garden dsh_adapter bridge for harness lattice.
 
 FiberState mirrors cordiverse Cordis:
   PENDING → LOADING → ACTIVE
                    ↘ FAILED
   ACTIVE  → UNLOADING → DISPOSED | PENDING
 
-Offline (no API key / no httpx) is a first-class ACTIVE local mode,
-not an ad-hoc idle branch inside complete/stream.
+Offline (no API key / no httpx) is a first-class ACTIVE local mode.
+Module-level complete_sync routes through quantum.deepseek_mesh.dsh_adapter
+when available (official SDK | OpenAI-compatible | offline echo).
 
 Env:
   DEEPSEEK_API_KEY   optional
   DEEPSEEK_BASE_URL  default https://api.deepseek.com
+  DSH_MODEL / DEEPSEEK_MODEL
 """
 from __future__ import annotations
 
@@ -77,6 +80,24 @@ def clear_events() -> None:
     _events.clear()
 
 
+def complete_sync(prompt: str, max_tokens: int = 64, prefer: str = "auto") -> Dict[str, Any]:
+    """Harness / test_all entry — prefers dsh_adapter lattice."""
+    try:
+        from quantum.deepseek_mesh.dsh_adapter import complete
+
+        r = complete(prompt, prefer=prefer, max_tokens=max_tokens)
+        _record("complete_sync_adapter", r.mode)
+        return r.to_dict()
+    except Exception as e:
+        _record("complete_sync_fallback", str(e))
+        return {
+            "mode": "offline",
+            "text": f"[offline deepseek] {prompt[:500]}",
+            "model": os.environ.get("DEEPSEEK_MODEL", "deepseek-chat"),
+            "error": str(e),
+        }
+
+
 @dataclass
 class AsyncDeepSeekClient:
     """DeepSeek fiber: lifecycle + complete/stream."""
@@ -85,17 +106,19 @@ class AsyncDeepSeekClient:
     base_url: str = field(
         default_factory=lambda: os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     )
-    model: str = "deepseek-chat"
+    model: str = field(
+        default_factory=lambda: os.environ.get("DSH_MODEL")
+        or os.environ.get("DEEPSEEK_MODEL")
+        or "deepseek-chat"
+    )
     timeout: float = 60.0
 
     _client: Any = field(default=None, repr=False)
-    _uid: Optional[int] = field(default=0, repr=False)  # null ⇒ DISPOSED
+    _uid: Optional[int] = field(default=0, repr=False)
     _state: FiberState = field(default=FiberState.PENDING, repr=False)
     _error: Optional[BaseException] = field(default=None, repr=False)
     _inertia: Optional[asyncio.Task] = field(default=None, repr=False)
-    _mode: str = field(default="offline", repr=False)  # online | offline
-
-    # ---- lifecycle (Cordis-shaped) ----
+    _mode: str = field(default="offline", repr=False)
 
     @property
     def state(self) -> FiberState:
@@ -118,7 +141,6 @@ class AsyncDeepSeekClient:
             raise CordisError(CordisError.DISPOSED)
 
     async def await_ready(self) -> "AsyncDeepSeekClient":
-        """Wait for in-flight load/unload; rethrow FAILED."""
         while self._inertia is not None and not self._inertia.done():
             await self._inertia
         if self._error is not None and self.state == FiberState.FAILED:
@@ -126,7 +148,6 @@ class AsyncDeepSeekClient:
         return self
 
     async def reload(self) -> FiberState:
-        """PENDING/FAILED → LOADING → ACTIVE (online or offline)."""
         if self._uid is None:
             raise CordisError(CordisError.DISPOSED, "cannot reload disposed fiber")
         if self._inertia and not self._inertia.done():
@@ -143,7 +164,6 @@ class AsyncDeepSeekClient:
                         self._client = httpx.AsyncClient(timeout=self.timeout)
                     self._mode = "online"
                 else:
-                    # intentional offline ACTIVE — not an idle dead-end
                     self._mode = "offline"
                     if self._client is not None:
                         await self._client.aclose()
@@ -212,7 +232,6 @@ class AsyncDeepSeekClient:
         if self.state == FiberState.PENDING:
             await self.reload()
         if self.state == FiberState.FAILED:
-            # one automatic recover attempt
             await self.reload()
         if self.state != FiberState.ACTIVE:
             raise CordisError(
@@ -220,9 +239,17 @@ class AsyncDeepSeekClient:
                 f"deepseek fiber not ACTIVE (state={self.state.value})",
             )
 
-    # ---- I/O ----
-
     async def complete(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
+        # Prefer lattice adapter for unified offline/openai/dsh behaviour
+        try:
+            from quantum.deepseek_mesh.dsh_adapter import complete as lattice_complete
+
+            r = lattice_complete(prompt, prefer="auto", max_tokens=max_tokens, model=self.model)
+            _record("complete_lattice", r.mode)
+            return r.to_dict()
+        except Exception:
+            pass
+
         try:
             await self._ensure_active()
         except CordisError as e:
@@ -316,13 +343,7 @@ class AsyncDeepSeekClient:
             yield f"[error:{type(e).__name__}] {e}"
 
     def complete_sync(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-        if loop and loop.is_running():
-            raise RuntimeError("use await complete() inside async code")
-        return asyncio.run(self.complete(prompt, max_tokens=max_tokens))
+        return complete_sync(prompt, max_tokens=max_tokens)
 
 
 DeepSeekClient = AsyncDeepSeekClient
@@ -338,7 +359,6 @@ def get_client() -> AsyncDeepSeekClient:
 
 
 async def get_ready_client() -> AsyncDeepSeekClient:
-    """Factory: ensure fiber ACTIVE before use."""
     c = get_client()
     if c.state in (FiberState.PENDING, FiberState.FAILED):
         await c.reload()
