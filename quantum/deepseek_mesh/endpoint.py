@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756+
-mTLS + OAuth2 CDP + FAL ternary Port-380 scaling.
+mTLS + OAuth2 CDP + FAL ternary + optional VOID-QCH chemical precision.
 Endpoints:
   GET  /health, /status, /380, /cdp/status
   POST /gate, /pulse, /oidc_handover, /cdp/handshake, /reset
-Seal: ∀∞φ² · MCP_FAL_CDP · WOOD_DRAGON_GATE · SEALED
+Seal: ∀∞φ² · MCP_FAL_CDP_VOID · WOOD_DRAGON_GATE · SEALED
 """
 
 import os
@@ -17,7 +17,7 @@ import time
 import hashlib
 import asyncio
 from typing import Optional
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -45,6 +45,15 @@ except ImportError:
         handshake_from_authorization = None  # type: ignore
         handshake_client_credentials = None  # type: ignore
         status_unauthenticated = None  # type: ignore
+
+# ─── VOID-QCH chemical precision (optional /cdp/status field) ─────────
+try:
+    from quantum.cdp_convergence.void_qch import chemical_precision_feasibility
+except ImportError:
+    try:
+        from cdp_convergence.void_qch import chemical_precision_feasibility  # type: ignore
+    except ImportError:
+        chemical_precision_feasibility = None  # type: ignore
 
 # ─── FAL ternary Port-380 gate ────────────────────────────────────────
 try:
@@ -85,12 +94,12 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 LAYER = 314
 LEAF = "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68"
 ENTRY = 8756
-SEAL = "∀∞φ² · MCP_FAL_CDP · WOOD_DRAGON_GATE · SEALED"
+SEAL = "∀∞φ² · MCP_FAL_CDP_VOID · WOOD_DRAGON_GATE · SEALED"
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", 8000))
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
 
-app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.3-fal")
+app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.4-void")
 
 
 class PulseBody(BaseModel):
@@ -132,6 +141,21 @@ def _check_secret(x_garden_secret: Optional[str] = None):
         raise HTTPException(status_code=401, detail="invalid GARDEN_SECRET")
 
 
+def _attach_void_qch(payload: dict, include: bool, detail: bool = False) -> dict:
+    """Optionally attach chemical_precision feasibility from VOID-QCH."""
+    if not include:
+        return payload
+    if chemical_precision_feasibility is None:
+        payload["chemical_precision"] = {
+            "available": False,
+            "error": "quantum.cdp_convergence.void_qch not importable",
+        }
+        return payload
+    payload["chemical_precision"] = chemical_precision_feasibility(include_rungs=detail)
+    payload["chemical_precision"]["available"] = True
+    return payload
+
+
 @app.get("/health")
 async def health():
     return {"status": "alive", "port": PORT, "layer": LAYER, "entry": ENTRY}
@@ -157,11 +181,6 @@ async def status():
 
 @app.post("/gate")
 async def gate(body: GateBody):
-    """
-    Port-380 gate with FAL ternary merge.
-    If ternary omitted and CDP flags present → derive from OAuth/websocket.
-    legacy override=True still applies φ-spike after ternary scale.
-    """
     if body.ternary is not None:
         if body.ternary not in (-1, 0, 1):
             raise HTTPException(status_code=400, detail="ternary must be -1, 0, or 1")
@@ -240,10 +259,23 @@ async def oidc_handover(
 
 
 @app.get("/cdp/status")
-async def cdp_status(authorization: Optional[str] = Header(None)):
-    """CDP status + FAL ternary (nullify while websocket_ready false)."""
+async def cdp_status(
+    authorization: Optional[str] = Header(None),
+    chemical_precision: bool = Query(
+        False,
+        description="Attach VOID-QCH φ-harmonic chemical-accuracy feasibility block",
+    ),
+    chemical_detail: bool = Query(
+        False,
+        description="Include full rung table inside chemical_precision",
+    ),
+):
+    """
+    CDP status + FAL ternary.
+    Optional: ?chemical_precision=true → VOID-QCH feasibility (φⁿ×1.085 Å ±0.001).
+    """
     if handshake_from_authorization is None or status_unauthenticated is None:
-        return {
+        base = {
             "handover_latency_ms": 999.0,
             "websocket_ready": False,
             "oauth_validated": False,
@@ -255,9 +287,12 @@ async def cdp_status(authorization: Optional[str] = Header(None)):
             "phi_phase_deg": 202.6,
             "coherence": 1.0,
         }
+        return _attach_void_qch(base, chemical_precision, chemical_detail)
     if not authorization:
-        return status_unauthenticated().to_dict()
-    return handshake_from_authorization(authorization).to_dict()
+        base = status_unauthenticated().to_dict()
+    else:
+        base = handshake_from_authorization(authorization).to_dict()
+    return _attach_void_qch(base, chemical_precision, chemical_detail)
 
 
 @app.post("/cdp/handshake")
@@ -305,6 +340,7 @@ async def root():
             "/reset",
         ],
         "fal": "ternary −1|0|+1 merged into /gate and /cdp/status",
+        "void_qch": "GET /cdp/status?chemical_precision=true",
         "seal": SEAL,
     }
 
