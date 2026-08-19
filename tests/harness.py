@@ -6,7 +6,7 @@
 Orchestrates soft/hard checks for core modules without requiring a cluster.
 CLI: python -m tests.harness [--local] [--suite SUITE] [--json]
 
-Suites: core | pipeline | engine | symplectic | security | pytest | dsh | all
+Suites: core | pipeline | engine | symplectic | security | pytest | dsh | void | all
 """
 from __future__ import annotations
 
@@ -151,8 +151,58 @@ def check_endpoint_surface(report: HarnessReport) -> None:
         )
         has_verify = callable(getattr(ep, "verify_client_cert", None))
         _add(report, "deepseek_mesh.endpoint.mtls_hook", has_verify, "verify_client_cert", soft=True)
+        has_cdp = "/cdp/status" in routes
+        _add(report, "deepseek_mesh.endpoint.cdp_status", has_cdp, "/cdp/status", soft=True)
     except Exception as e:
         _add(report, "deepseek_mesh.endpoint", False, str(e), soft=True)
+
+
+def check_void_qch(report: HarnessReport) -> None:
+    """VOID-QCH φ-harmonic bond-length progression (±0.001 Å)."""
+    try:
+        from quantum.cdp_convergence.void_qch import (
+            BASELINE_ANGSTROM,
+            CHEMICAL_ACCURACY_A,
+            FRAMEWORK_ID,
+            PHI as VPHI,
+            chemical_precision_feasibility,
+            phi_scaled_length,
+            validate_progression,
+        )
+
+        assert abs(float(VPHI) - PHI) < 1e-12
+        # exact ladder vs φⁿ × 1.085
+        for n, name in [(-1, "void"), (0, "methyl"), (1, "alpha"), (2, "omega"), (3, "dragon")]:
+            exact = phi_scaled_length(n)
+            _add(
+                report,
+                f"void_qch.phi_power_{n}",
+                exact > 0,
+                f"{name}={exact:.6f} Å",
+                soft=False,
+            )
+        ok, prog = validate_progression()
+        failed = [r.name for r in prog.rungs if not r.within_chemical_accuracy]
+        _add(
+            report,
+            "void_qch.chemical_accuracy",
+            ok,
+            f"tol=±{CHEMICAL_ACCURACY_A} Å baseline={BASELINE_ANGSTROM} failed={failed or 'none'}",
+            soft=False,
+        )
+        feas = chemical_precision_feasibility(include_rungs=False)
+        _add(
+            report,
+            "void_qch.feasibility_payload",
+            feas.get("framework_id") == FRAMEWORK_ID and bool(feas.get("operational")) == ok,
+            f"id={feas.get('framework_id')} operational={feas.get('operational')}",
+            soft=False,
+        )
+        # free methyl is exact baseline
+        assert abs(phi_scaled_length(0) - BASELINE_ANGSTROM) < 1e-15
+        _add(report, "void_qch.baseline_identity", True, "φ⁰×1.085 == 1.085")
+    except Exception as e:
+        _add(report, "void_qch", False, str(e), soft=False)
 
 
 def check_sovereign_engine(report: HarnessReport) -> None:
@@ -247,6 +297,7 @@ def run_pytest_subset(report: HarnessReport, paths: Optional[List[str]] = None) 
 SUITE_MAP: Dict[str, List[Callable[[HarnessReport], None]]] = {
     "pipeline": [check_phi_pipeline],
     "dsh": [check_dsh_adapter, check_deepseek],
+    "void": [check_void_qch],
     "core": [
         check_phi_pipeline,
         check_mesh_modal,
@@ -254,6 +305,7 @@ SUITE_MAP: Dict[str, List[Callable[[HarnessReport], None]]] = {
         check_dsh_adapter,
         check_endpoint_surface,
         check_no_truncation_policy,
+        check_void_qch,
     ],
     "engine": [check_sovereign_engine],
     "symplectic": [check_symplectic, check_chronal_cement_schema],
@@ -269,6 +321,7 @@ SUITE_MAP: Dict[str, List[Callable[[HarnessReport], None]]] = {
         check_symplectic,
         check_chronal_cement_schema,
         check_no_truncation_policy,
+        check_void_qch,
         run_pytest_subset,
     ],
 }
@@ -298,7 +351,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument(
         "--suite",
         default="all",
-        help="core|pipeline|engine|symplectic|security|pytest|dsh|all",
+        help="core|pipeline|engine|symplectic|security|pytest|dsh|void|all",
     )
     parser.add_argument("--json", action="store_true", help="Print JSON report")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero on soft failures too")
