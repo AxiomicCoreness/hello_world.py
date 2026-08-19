@@ -60,8 +60,7 @@ export class SelfImprovementRelay {
   private lessons: Lesson[] = [];
   private readonly cfg: Required<
     Pick<RelayConfig, "offline" | "maxLessons" | "phaseLockDeg">
-  > &
-    RelayConfig;
+  > & RelayConfig;
 
   constructor(config: RelayConfig = {}) {
     this.cfg = {
@@ -69,7 +68,10 @@ export class SelfImprovementRelay {
       maxLessons: config.maxLessons ?? 144,
       phaseLockDeg: config.phaseLockDeg ?? DEFAULT_PHASE,
       mcpBaseUrl: config.mcpBaseUrl,
-      gardenSecret: config.gardenSecret ?? processEnv("X_GARDEN_SECRET") ?? processEnv("GARDEN_SECRET"),
+      gardenSecret:
+        config.gardenSecret ??
+        processEnv("X_GARDEN_SECRET") ??
+        processEnv("GARDEN_SECRET"),
     };
   }
 
@@ -236,7 +238,8 @@ async function main(): Promise<void> {
     grade: "soft",
     source: "scaffold",
     message: "self_improvement_relay present on main",
-    patchHint: "import { SelfImprovementRelay } from './self_improvement_relay.ts'",
+    patchHint:
+      "import { SelfImprovementRelay } from './self_improvement_relay.ts'",
   });
 
   const r2 = await relay.distill();
@@ -246,9 +249,9 @@ async function main(): Promise<void> {
 
 // Run main when executed directly (Node ESM / tsx)
 const isDirect =
-  typeof process !== "undefined" &
-  Array.isArray(process.argv) &
-  process.argv[1] &
+  typeof process !== "undefined" &&
+  Array.isArray(process.argv) &&
+  !!process.argv[1] &&
   String(process.argv[1]).includes("self_improvement_relay");
 
 if (isDirect) {
