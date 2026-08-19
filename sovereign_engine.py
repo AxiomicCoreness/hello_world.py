@@ -22,6 +22,7 @@ from decimal import Decimal, getcontext
 import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from collections import defaultdict, Counter
+import pickle  # ← added for emergent log persistence
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -385,6 +386,7 @@ class SovereignMarkovChain:
             path.append(next_token)
             current = tuple(path[-self.order:])
         return path
+
 class NinjaPrecision:
     PRECISIONS = {
         "observation": 144,
@@ -440,6 +442,9 @@ def apply_bayesian_prior(chain: SovereignMarkovChain, phi_power: float = 2.0) ->
     log_phi(f"Bayesian prior applied (phi^{phi_power})", "info")
     return chain
 
+# =============================================================================
+# OIDC/PAULI WIRE – INTEGRATED FROM ENTRY 8664
+# =============================================================================
 state: Dict[str, Any] = {
     "oidc_fallback_level": 0,
     "integrity": 1.0,
@@ -449,7 +454,6 @@ state: Dict[str, Any] = {
     "pauli_trace": PHI_NEG2,
     "systems_go": False,
 }
-
 
 def get_oidc_secret() -> str:
     """Phased fallback; Phase-3 full 64-char SHA-256 (no truncation)."""
@@ -479,12 +483,10 @@ def get_oidc_secret() -> str:
     state["integrity"] = 0.9999
     return ephemeral_key
 
-
 def get_pauli_hamiltonian_status() -> Dict[str, Any]:
     """Wire: quantum/pauli_phi_hamiltonian → engine."""
     try:
         from quantum.pauli_phi_hamiltonian import PauliPhiHamiltonian
-
         st = PauliPhiHamiltonian().status()
         state["pauli_trace"] = float(st["trace"])
         return st
@@ -495,7 +497,6 @@ def get_pauli_hamiltonian_status() -> Dict[str, Any]:
             "verified": False,
             "error": str(e),
         }
-
 
 def systems_go() -> Dict[str, Any]:
     """All engine systems check — coherence, OIDC, Pauli trace."""
@@ -521,6 +522,7 @@ def systems_go() -> Dict[str, Any]:
         "phi": PHI,
         "seal": "∀∞φ² · PAULI_HAMILTONIAN_WIRE_8664 · SEALED",
     }
+
 # ==================================================================
 # PREDICTIVE DAEMON – φ‑harmonic emergent memory
 # ==================================================================
@@ -564,6 +566,7 @@ os.makedirs(BASE_DIR, exist_ok=True)
 LOG_PATH = os.path.join(BASE_DIR, "emergent_log.pkl")
 
 print(f"🌐 [CLOUD BASE DIR]: {BASE_DIR}", file=sys.stderr)
+
 def load_log():
     if os.path.exists(LOG_PATH):
         try:
@@ -602,8 +605,10 @@ def predict_completions(context, max_sugg=3):
         else:
             suggestions = ['']
     return suggestions
+
 import http.server
 import socketserver
+
 class PredictorHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
@@ -645,20 +650,12 @@ def run_predictor_daemon(host='0.0.0.0', port=8000, max_attempts=10):
     import socketserver
     from http.server import HTTPServer, BaseHTTPRequestHandler
 
-def run_predictor_daemon(host='0.0.0.0', port=8000, max_attempts=10):
-    """
-    Start the φ‑harmonic predictor daemon with automatic port fallback.
-    Searches for an available port starting from `port` and stepping by φ².
-    """
-    import socketserver
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-
     class PredictorHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "φ‑harmonic predictor", "seal": SEAL}).encode())
+            self.wfile.write(json.dumps({"status": "φ‑harmonic predictor", "seal": SEAL_CORE}).encode())
 
     attempts = 0
     while attempts < max_attempts:
@@ -678,6 +675,7 @@ def run_predictor_daemon(host='0.0.0.0', port=8000, max_attempts=10):
                     raise
             else:
                 raise
+
 # ==================================================================
 # CORE INSERTION SYSTEM (L245)
 # ==================================================================
@@ -865,6 +863,7 @@ class OrismaVisualizationSuite:
         plt.savefig(output_path, dpi=300, facecolor='black')
         plt.close()
         return output_path
+
 # =============================================================================
 # AXIOM_I MATHEMATICAL SYNTHESIS
 # =============================================================================
@@ -1422,7 +1421,7 @@ class Foundations:
     parser = argparse.ArgumentParser(description="Sovereign Node Core Engine with Predictor Daemon")
     parser.add_argument('--render', action='store_true', help="Render Layer 00 visualization and exit instantly.")
     parser.add_argument('--port', type=int, default=8081, help="Local daemon execution port.")
-    args = parser.parse_args()  # FIX: correct method call
+    args = parser.parse_args()
 
     if args.render:
         viz = OrismaVisualizationSuite()
@@ -1436,10 +1435,13 @@ class Foundations:
     print(f"🔒 [MERKLE WITNESS]: Root authenticated: {core.get_merkle_status()['witnessed_root']}")
     print("🚀 Starting φ‑harmonic predictor daemon...")
     run_predictor_daemon(port=args.port)
+
+    # — OIDC/Pauli status report (integrated from Entry 8664)
     report = systems_go()
     flag = "ALL SYSTEMS GO" if report["systems_go"] else "HOLD"
     print(f"🜁∀ SOVEREIGN ENGINE — {flag}")
     for k, v in report.items():
         print(f"  {k}: {v}")
+
 if __name__ == "__main__":
     main_full()
