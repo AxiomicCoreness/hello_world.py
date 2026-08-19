@@ -6,25 +6,33 @@ import ssl
 import argparse
 from pathlib import Path
 from typing import Dict, Optional
-from fastapi import HTTPException  # only needed if imported as module
+from fastapi import HTTPException, Request
 
 # ──────────────────────────────────────────────────────────────────────
-# mTLS CONFIGURATION MODULE (embedded)
+# mTLS CONFIGURATION (embedded)
 # ──────────────────────────────────────────────────────────────────────
-# When this file is imported, the following constants and functions are available:
 
 SERVER_CERT = os.environ.get("SERVER_CERT", "/certs/server.crt")
 SERVER_KEY = os.environ.get("SERVER_KEY", "/certs/server.key")
 CA_CERT = os.environ.get("CA_CERT", "/certs/ca.crt")
 
 def get_ssl_context() -> ssl.SSLContext:
+    """Create an SSL context for mTLS server side."""
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    if not os.path.exists(SERVER_CERT) or not os.path.exists(SERVER_KEY):
+        # If certs are missing, return None or raise; we choose to raise
+        raise FileNotFoundError("Server certificate or key not found. Set SERVER_CERT and SERVER_KEY env vars.")
     ssl_context.load_cert_chain(SERVER_CERT, SERVER_KEY)
-    ssl_context.load_verify_locations(CA_CERT)
+    if os.path.exists(CA_CERT):
+        ssl_context.load_verify_locations(CA_CERT)
+    else:
+        # Optionally, load default system CA bundle
+        ssl_context.load_default_certs()
     ssl_context.verify_mode = ssl.CERT_REQUIRED
     return ssl_context
 
-def verify_client_cert(request):
+def verify_client_cert(request: Request) -> dict:
+    """Extract client certificate from request; raise 403 if absent."""
     client_cert = getattr(request.client, "cert", None)
     if not client_cert:
         raise HTTPException(status_code=403, detail="mTLS client certificate required")
@@ -78,7 +86,7 @@ def extract_and_output(output_format: str = "module") -> None:
     content = port380_path.read_text(encoding="utf-8")
 
     if output_format == "module":
-        # Instead of generating a new module, we just print the embedded version
+        # Simply print the importable functions from this file itself
         print("# 🜁∀ Embedded mTLS module — Entry 8759")
         print("# (To use, import this file directly)")
         print("#")
