@@ -6,7 +6,7 @@
 Orchestrates soft/hard checks for core modules without requiring a cluster.
 CLI: python -m tests.harness [--local] [--suite SUITE] [--json]
 
-Suites: core | pipeline | engine | symplectic | security | pytest | all
+Suites: core | pipeline | engine | symplectic | security | pytest | dsh | all
 """
 from __future__ import annotations
 
@@ -105,8 +105,32 @@ def check_deepseek(report: HarnessReport) -> None:
     try:
         mod = importlib.import_module("deepseek.api")
         _add(report, "deepseek.api.import", True, f"attrs={len(dir(mod))}", soft=True)
+        if hasattr(mod, "complete_sync"):
+            out = mod.complete_sync("harness probe", max_tokens=16, prefer="offline")
+            ok = isinstance(out, dict) and "mode" in out
+            _add(report, "deepseek.api.complete_sync", ok, str(out.get("mode")), soft=True)
     except Exception as e:
         _add(report, "deepseek.api.import", False, str(e), soft=True)
+
+
+def check_dsh_adapter(report: HarnessReport) -> None:
+    try:
+        from quantum.deepseek_mesh.dsh_adapter import complete, offline_complete, probe
+
+        p = probe()
+        _add(
+            report,
+            "dsh_adapter.probe",
+            isinstance(p, dict) and "modes" in p,
+            f"dsh_sdk={p.get('dsh_sdk')} key={p.get('api_key_set')}",
+            soft=False,
+        )
+        off = offline_complete("lattice check")
+        _add(report, "dsh_adapter.offline", off.mode == "offline", off.text[:80], soft=False)
+        auto = complete("lattice auto", prefer="offline")
+        _add(report, "dsh_adapter.complete_offline", auto.mode == "offline", auto.mode, soft=False)
+    except Exception as e:
+        _add(report, "dsh_adapter", False, str(e), soft=False)
 
 
 def check_endpoint_surface(report: HarnessReport) -> None:
@@ -125,7 +149,6 @@ def check_endpoint_surface(report: HarnessReport) -> None:
             f"missing={sorted(missing) if missing else []}; entry={getattr(ep, 'ENTRY', None)}",
             soft=False,
         )
-        # App-level cert check present (socket mTLS is env-dependent)
         has_verify = callable(getattr(ep, "verify_client_cert", None))
         _add(report, "deepseek_mesh.endpoint.mtls_hook", has_verify, "verify_client_cert", soft=True)
     except Exception as e:
@@ -223,10 +246,12 @@ def run_pytest_subset(report: HarnessReport, paths: Optional[List[str]] = None) 
 
 SUITE_MAP: Dict[str, List[Callable[[HarnessReport], None]]] = {
     "pipeline": [check_phi_pipeline],
+    "dsh": [check_dsh_adapter, check_deepseek],
     "core": [
         check_phi_pipeline,
         check_mesh_modal,
         check_deepseek,
+        check_dsh_adapter,
         check_endpoint_surface,
         check_no_truncation_policy,
     ],
@@ -238,6 +263,7 @@ SUITE_MAP: Dict[str, List[Callable[[HarnessReport], None]]] = {
         check_phi_pipeline,
         check_mesh_modal,
         check_deepseek,
+        check_dsh_adapter,
         check_endpoint_surface,
         check_sovereign_engine,
         check_symplectic,
@@ -269,7 +295,11 @@ def run_harness(suite: str = "all") -> HarnessReport:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Sovereign Garden unified verification harness")
     parser.add_argument("--local", action="store_true", help="Alias for suite=core (offline-friendly)")
-    parser.add_argument("--suite", default="all", help="core|pipeline|engine|symplectic|security|pytest|all")
+    parser.add_argument(
+        "--suite",
+        default="all",
+        help="core|pipeline|engine|symplectic|security|pytest|dsh|all",
+    )
     parser.add_argument("--json", action="store_true", help="Print JSON report")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero on soft failures too")
     args = parser.parse_args(argv)
