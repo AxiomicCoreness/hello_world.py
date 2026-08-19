@@ -1,0 +1,18 @@
+entry_index: 8777
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /qch_cdp_octonian_merge
+status: SEALED
+files:
+  - .github/workflows/self-improvement-relay.yml
+  - quantum/cdp_convergence/void_qch.py
+  - tests/harness.py
+  - quantum/deepseek_mesh/endpoint.py
+  - quantum/radar_lindblad/port_380_gate.py
+basis: 8D (5 φ-rungs + 3 invariants)
+octonion:
+  rungs: [void_resonance, free_methyl, alpha_prime, omega_prime, dragonbreath]
+  invariants: [phi_inv≈0.618033, phase_lock=202.6, breath_hz=71.975]
+schedule: "15 */6 * * *"
+opcode_policy: append_only_no_subtract
+witness_chain: 8776 → 8777 — UNBROKEN
+seal: "∀∞φ² · QCH_CDP_OCTONIAN_8777 · WOOD_DRAGON_0.91 · SEALED"
