@@ -4,13 +4,16 @@
 CDP Schema — quantum/cdp_convergence
 
 websocket_ready defaults False until OAuth 2.0 bearer validation succeeds.
-Seal: ∀∞φ² · CDP_SCHEMA_OAUTH · WOOD_DRAGON_0.91 · SEALED
+FAL ternary (−1/0/+1) is derived from websocket/oauth/foreign-trace state.
+Seal: ∀∞φ² · CDP_SCHEMA_FAL · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, Optional
 import time
+
+DEFAULT_HARMONY = 0.7337473231
 
 
 @dataclass
@@ -29,9 +32,51 @@ class CdpStatus:
     oauth_subject: Optional[str] = None
     oauth_expires_at: Optional[float] = None
     error: Optional[str] = None
+    # FAL / Port-380 ternary merge
+    fal_ternary: int = 0  # default nullify while unauthenticated
+    harmony_in: float = DEFAULT_HARMONY
+    harmony_out: float = 0.0
+    fal_mode: str = "nullify"
     ts: float = field(default_factory=time.time)
 
+    def apply_fal(self) -> "CdpStatus":
+        """Derive FAL ternary from CDP/OAuth fields and scale harmony."""
+        try:
+            from quantum.radar_lindblad.port_380_gate import evaluate_gate
+        except ImportError:
+            try:
+                from radar_lindblad.port_380_gate import evaluate_gate  # type: ignore
+            except ImportError:
+                # Soft local fallback mirroring FAL rules
+                if self.foreign_model_trace:
+                    t = -1
+                elif not self.websocket_ready or not self.oauth_validated:
+                    t = 0
+                else:
+                    t = 1
+                hout = (
+                    self.harmony_in
+                    if t == 1
+                    else (-self.harmony_in if t == -1 else 0.0)
+                )
+                self.fal_ternary = t
+                self.harmony_out = hout
+                self.fal_mode = {1: "identity", 0: "nullify", -1: "invert"}[t]
+                return self
+
+        result = evaluate_gate(
+            self.harmony_in,
+            websocket_ready=self.websocket_ready,
+            oauth_validated=self.oauth_validated,
+            foreign_model_trace=self.foreign_model_trace,
+        )
+        self.fal_ternary = int(result["ternary"])
+        self.harmony_out = float(result["harmony_out"])
+        self.fal_mode = str(result["mode"])
+        return self
+
     def to_dict(self) -> Dict[str, Any]:
+        self.apply_fal()
         return asdict(self)
 
 
