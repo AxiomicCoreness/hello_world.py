@@ -1,0 +1,22 @@
+entry_index: 8771
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /dsh_lattice_integrated
+status: SEALED
+files:
+  - quantum/deepseek_mesh/dsh_adapter.py
+  - quantum/deepseek_mesh/client.py
+  - quantum/deepseek_mesh/__init__.py
+  - deepseek/api.py
+  - tests/harness.py
+modes:
+  - offline
+  - openai
+  - dsh
+harness_suite: dsh
+commits:
+  - 517b588e  # dsh_adapter
+  - e6eddcbb  # client
+  - d336b7c8  # deepseek.api bridge
+  - 2258e781  # harness suite dsh
+witness_chain: 8770 → 8771 — UNBROKEN
+seal: "∀∞φ² · DSH_LATTICE_8771 · WOOD_DRAGON_0.91 · SEALED"
