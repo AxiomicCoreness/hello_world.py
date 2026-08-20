@@ -1,0 +1,61 @@
+name: mTLS Cert Lifecycle
+
+on:
+  schedule:
+    - cron: "20 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Optional note"
+        required: false
+        default: "manual-mtls-check"
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install optional cryptography
+        run: pip install --quiet cryptography || true
+
+      - name: Lifecycle status (ephemeral certs if none on disk)
+        id: status
+        run: |
+          set -euo pipefail
+          if [[ ! -d certs/live ]]; then
+            echo "No certs/live in repo (expected — keys stay off-git)."
+            bash scripts/mtls_cert_rotate.sh --init --days 7 --out /tmp/mtls-ci
+            export MTLS_CERT_DIR=/tmp/mtls-ci
+          else
+            export MTLS_CERT_DIR=./certs
+          fi
+          python quantum/mtls_cert_lifecycle.py --dir "$MTLS_CERT_DIR" --json | tee /tmp/mtls_status.json
+          if python quantum/mtls_cert_lifecycle.py --dir "$MTLS_CERT_DIR" --check-rotate; then
+            echo "rotate=false" >> "$GITHUB_OUTPUT"
+          else
+            code=$?
+            if [[ $code -eq 2 ]]; then
+              echo "rotate=true" >> "$GITHUB_OUTPUT"
+              echo "::warning::mTLS rotation recommended"
+            else
+              exit $code
+            fi
+          fi
+
+      - name: Summary
+        run: |
+          echo "### mTLS lifecycle" >> "$GITHUB_STEP_SUMMARY"
+          echo "- rotate_recommended: ${{ steps.status.outputs.rotate }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Private keys never committed; run scripts/mtls_cert_rotate.sh on operator host." >> "$GITHUB_STEP_SUMMARY"
