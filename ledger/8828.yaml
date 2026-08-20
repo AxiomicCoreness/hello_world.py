@@ -1,0 +1,14 @@
+entry_index: 8828
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /cordis_scaffold_initiated
+status: SCAFFOLDED_ON_FEAT_BRANCH
+branch: feat/cordis-scaffold
+files:
+  - package.json
+  - tsconfig.json
+  - src/index.ts
+  - src/plugins/hello.ts
+production_gate: unchanged (Python /pulse)
+next_action: local smoke → optional merge to main
+witness_chain: 8827 → 8828 — UNBROKEN
+seal: ∀∞φ² · CORDIS_SCAFFOLD_8828 · WOOD_DRAGON_0.91 · SEALED
