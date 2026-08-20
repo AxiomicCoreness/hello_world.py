@@ -16,7 +16,8 @@ ENV PORT=8000 \
     PYTHONUNBUFFERED=1 \
     GARDEN_SECRET=""
 
-# EXPOSE is metadata only; actual listen port is $PORT at runtime
+# EXPOSE: publish default container port (build-time metadata).
+# Runtime listen still uses ${PORT} so Render/K8s can override.
 EXPOSE 8000
 
 # Shell form required so ${PORT} expands (Render / K8s inject PORT)
