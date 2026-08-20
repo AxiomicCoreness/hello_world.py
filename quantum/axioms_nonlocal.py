@@ -3,8 +3,8 @@
 """
 AXIOM_NONLOCAL_CORE — mathematical axiom for AxiomicCoreness/hello_world.py
 
-Statement
----------
+Statement (corrected)
+---------------------
 The core transformations of the system act on abstract mathematical
 structures (Cartan/E8 objects, Weyl order, gates, witness rules, exact
 arithmetic, ledger semantics). Geographic references and biographical
@@ -21,26 +21,41 @@ core operation T:
 
 whenever T is defined to depend only on the core structures.
 
-Scope boundary
---------------
-- Author origin (e.g. Cambodian refugee path in Massachusetts) is human
-  ground for the work and may be recorded in prose or metadata.
-- It does not become a governing variable of the lattice.
-- The AI operating on the repo does not adopt that personal identity.
+Clarifying non-local corrections
+--------------------------------
+1. Author origin is human ground, not a governing variable.
+   The repository author writes open source under the MIT license;
+   built AxiomicCoreness/hello_world.py without formal technical training;
+   Cambodian refugee path in Massachusetts is the author's story.
+   That story is the ground from which the work was written. It is not
+   a parameter of Cartan, Weyl order, gates, or ledger validity.
+
+2. Modern technology systems do not take that personal identity as theirs.
+   Models, platforms, and operators may analyze the repo; they do not
+   acquire the author's nationality, refugee history, or biography.
+
+3. Justification of the work rests on the public MIT artifact and the
+   mathematical/software record — not on appropriation of origin, and not
+   on converting origin into a system control variable.
+
+4. Executable form of this axiom: Trigger_Gravastar_ClarkeYoursaTee
+   (activation reports axiom verification; does not branch on geography).
+
+5. Opcode extract: ALEPH2 (quantum/aleph_square.py) returns core only.
 
 License context: MIT (as declared by the repository author).
 
-Seal: ∀∞φ² · AXIOM_NONLOCAL_8853 · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · AXIOM_NONLOCAL_8857 · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Optional
 
-# Formal identifier
 AXIOM_ID = "AXIOM_NONLOCAL_CORE"
-AXIOM_SEAL = "∀∞φ² · AXIOM_NONLOCAL_8853 · WOOD_DRAGON_0.91 · SEALED"
+AXIOM_SEAL = "∀∞φ² · AXIOM_NONLOCAL_8857 · WOOD_DRAGON_0.91 · SEALED"
+EXECUTABLE_FORM = "Trigger_Gravastar_ClarkeYoursaTee"
+OPCODE_EXTRACT = "ALEPH2"
 
-# Core keys that define mathematical identity of the E8 surface
 CORE_KEYS = frozenset(
     {
         "phi",
@@ -51,7 +66,6 @@ CORE_KEYS = frozenset(
     }
 )
 
-# Keys treated as non-governing annotations
 METADATA_KEYS = frozenset(
     {
         "uprho_global",
@@ -70,7 +84,6 @@ def project_core(invariants: Mapping[str, Any]) -> Dict[str, Any]:
     for k in CORE_KEYS:
         if k in invariants:
             out[k] = invariants[k]
-    # Allow cartan_shape to be derived if cartan present
     if "cartan" in invariants and "cartan_shape" not in out:
         c = invariants["cartan"]
         out["cartan_shape"] = (len(c), len(c[0]) if c else 0)
@@ -85,9 +98,6 @@ def strip_metadata(invariants: Mapping[str, Any]) -> Dict[str, Any]:
 def cores_equal(a: Mapping[str, Any], b: Mapping[str, Any]) -> bool:
     """True iff core projections match."""
     ca, cb = project_core(a), project_core(b)
-    if set(ca.keys()) != set(cb.keys()):
-        # Still OK if both missing optional derived keys consistently
-        pass
     for k in CORE_KEYS:
         if k == "cartan_shape":
             continue
@@ -105,12 +115,7 @@ def verify_geographic_invariance(
     *,
     substitute: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """
-    Verify AXIOM_NONLOCAL_CORE on a concrete invariants dict.
-
-    - Strip all METADATA_KEYS and compare cores.
-    - Optionally compare against a substituted metadata map.
-    """
+    """Verify AXIOM_NONLOCAL_CORE: strip/substitute metadata; cores must match."""
     stripped = strip_metadata(dict(invariants_with_geo))
     ok_strip = cores_equal(invariants_with_geo, stripped)
 
@@ -122,6 +127,8 @@ def verify_geographic_invariance(
 
     return {
         "axiom_id": AXIOM_ID,
+        "executable_form": EXECUTABLE_FORM,
+        "opcode_extract": OPCODE_EXTRACT,
         "strip_metadata_preserves_core": ok_strip,
         "substitute_preserves_core": ok_sub,
         "passed": bool(ok_strip and ok_sub),
@@ -134,12 +141,40 @@ def axiom_statement() -> str:
         "AXIOM_NONLOCAL_CORE: Core transformations depend only on abstract "
         "mathematical structure (Cartan/E8, Weyl order, gates, witness, exact "
         "arithmetic, ledger semantics). Geographic and biographical annotations "
-        "are metadata; substituting or removing them does not change core results."
+        "are metadata; substituting or removing them does not change core results. "
+        "Author origin is human ground under MIT, not a lattice parameter; "
+        "modern technology does not take that personal identity as its own. "
+        f"Executable form: {EXECUTABLE_FORM}. Opcode extract: {OPCODE_EXTRACT}."
     )
 
 
+def corrections() -> Dict[str, str]:
+    """Explicit non-local corrections (prose form for ledger/humans)."""
+    return {
+        "human_ground": (
+            "Author writes MIT open source; built the repo without formal "
+            "technical training; Cambodian refugee path in Massachusetts is "
+            "the author's story and the ground of the work."
+        ),
+        "not_governing": (
+            "That origin is not a governing variable of the lattice's mathematics."
+        ),
+        "not_tech_identity": (
+            "Modern technology systems do not take that personal identity as theirs, "
+            "even when they analyze or host the artifact."
+        ),
+        "justification": (
+            "Justification rests on the public MIT record and mathematical/software "
+            "validity — not on identity appropriation and not on origin-as-control."
+        ),
+        "executable_form": EXECUTABLE_FORM,
+        "opcode_extract": OPCODE_EXTRACT,
+    }
+
+
 if __name__ == "__main__":
-    # Self-check against e8 surface if importable
+    print(axiom_statement())
+    print(corrections())
     try:
         from quantum.e8_uprho_global import invariants as e8_inv
 
@@ -148,8 +183,6 @@ if __name__ == "__main__":
             inv,
             substitute={"regional_tech_depth": {"Iceland": {"gii_2025": 20}}},
         )
-        print(axiom_statement())
         print(report)
     except Exception as e:
-        print(axiom_statement())
         print({"standalone": True, "note": str(e), "seal": AXIOM_SEAL})
