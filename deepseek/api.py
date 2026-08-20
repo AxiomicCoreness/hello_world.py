@@ -9,7 +9,7 @@ FiberState mirrors cordiverse Cordis:
 
 Offline (no API key / no httpx) is a first-class ACTIVE local mode.
 Module-level complete_sync routes through quantum.deepseek_mesh.dsh_adapter
-when available (official SDK | OpenAI-compatible | offline echo).
+when available (DeepSeek HTTP | official SDK | offline echo).
 
 Env:
   DEEPSEEK_API_KEY   optional
@@ -81,7 +81,7 @@ def clear_events() -> None:
 
 
 def complete_sync(prompt: str, max_tokens: int = 64, prefer: str = "auto") -> Dict[str, Any]:
-    """Harness / test_all entry — prefers dsh_adapter lattice."""
+    """Harness / test_all entry — prefers dsh_adapter lattice (DeepSeek-only)."""
     try:
         from quantum.deepseek_mesh.dsh_adapter import complete
 
@@ -240,7 +240,7 @@ class AsyncDeepSeekClient:
             )
 
     async def complete(self, prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
-        # Prefer lattice adapter for unified offline/openai/dsh behaviour
+        # Lattice adapter: offline | deepseek | dsh only
         try:
             from quantum.deepseek_mesh.dsh_adapter import complete as lattice_complete
 
@@ -278,7 +278,7 @@ class AsyncDeepSeekClient:
             data = resp.json()
             text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             _record("complete_online", prompt[:120])
-            return {"mode": "online", "text": text, "raw": data, "model": self.model, "fiber": FiberState.ACTIVE.value}
+            return {"mode": "deepseek", "text": text, "raw": data, "model": self.model, "fiber": FiberState.ACTIVE.value}
         except Exception as e:
             self._error = e
             self._state = FiberState.FAILED

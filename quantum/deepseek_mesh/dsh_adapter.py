@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 🜁∀ quantum/deepseek_mesh/dsh_adapter.py
-Soft bridge: official DeepSeek Harness SDK ↔ Garden offline echo.
+DeepSeek-only lattice adapter (rebuilt — no external product modes).
 
 Modes
-  offline  — no key / no SDK; deterministic φ-tagged echo
-  openai   — OpenAI-compatible HTTPS to DEEPSEEK_BASE_URL
-  dsh      — deepseek_harness.DeepSeekHarness JSON-RPC runtime (optional)
+  offline   — no key; deterministic φ-tagged echo
+  deepseek  — HTTPS chat.completions → DEEPSEEK_BASE_URL (api.deepseek.com)
+  dsh       — deepseek_harness.DeepSeekHarness JSON-RPC (optional SDK)
 
 Env
   DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DSH_MODEL, DEEPSEEK_MODEL
+
+Seal: ∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
@@ -39,8 +41,7 @@ class AdapterResult:
     meta: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        d = asdict(self)
-        return d
+        return asdict(self)
 
 
 def _garden_invariants() -> Dict[str, Any]:
@@ -49,7 +50,7 @@ def _garden_invariants() -> Dict[str, Any]:
         "phase_lock_deg": PHASE_LOCK_DEG,
         "entropy_floor": float(ENTROPY_FLOOR) if ENTROPY_FLOOR != 0 else 0.0,
         "phi": PHI,
-        "seal": "∀∞φ² · DSH_ADAPTER · WOOD_DRAGON_0.91 · SEALED",
+        "seal": "∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED",
     }
 
 
@@ -70,7 +71,7 @@ def offline_complete(prompt: str, model: str = DEFAULT_MODEL) -> AdapterResult:
     )
 
 
-def openai_compatible_complete(
+def deepseek_http_complete(
     prompt: str,
     *,
     api_key: Optional[str] = None,
@@ -79,7 +80,7 @@ def openai_compatible_complete(
     max_tokens: int = 256,
     timeout: float = 60.0,
 ) -> AdapterResult:
-    """HTTPS chat.completions against DeepSeek (or any OpenAI-compatible proxy)."""
+    """HTTPS chat.completions against DeepSeek official API only."""
     key = api_key or os.environ.get("DEEPSEEK_API_KEY") or ""
     base = (base_url or DEFAULT_BASE).rstrip("/")
     if not key:
@@ -89,7 +90,6 @@ def openai_compatible_complete(
     try:
         import urllib.request
 
-        url = f"{base}/v1/chat/completions" if not base.endswith("/v1") else f"{base}/chat/completions"
         if base.endswith("/v1") or "/v1/" in base:
             url = f"{base.rstrip('/')}/chat/completions"
         else:
@@ -114,7 +114,7 @@ def openai_compatible_complete(
             data = json.loads(resp.read().decode("utf-8"))
         text = data["choices"][0]["message"]["content"]
         return AdapterResult(
-            mode="openai",
+            mode="deepseek",
             text=text,
             model=model,
             latency_ms=(time.time() - t0) * 1000.0,
@@ -144,7 +144,7 @@ def dsh_complete(
     cordis: Optional[str] = None,
     max_tokens: Optional[int] = None,
 ) -> AdapterResult:
-    """Run one turn via official deepseek_harness.DeepSeekHarness if installed."""
+    """One turn via official deepseek_harness.DeepSeekHarness if installed."""
     t0 = time.time()
     try:
         from deepseek_harness import DeepSeekHarness
@@ -179,23 +179,43 @@ def dsh_complete(
 
 def complete(prompt: str, prefer: str = "auto", **kwargs: Any) -> AdapterResult:
     """
-    prefer: auto | offline | openai | dsh
-      auto → dsh if SDK+key, else openai if key, else offline
+    prefer: auto | offline | deepseek | dsh
+      auto → dsh if SDK+key, else deepseek if key, else offline
     """
     prefer = (prefer or "auto").lower()
+    # Reject legacy external mode names
+    if prefer in ("openai", "chatgpt", "anthropic", "claude", "grok"):
+        prefer = "deepseek"
+
     key = os.environ.get("DEEPSEEK_API_KEY") or ""
+    model = kwargs.get("model", DEFAULT_MODEL)
+
     if prefer == "offline":
-        return offline_complete(prompt, model=kwargs.get("model", DEFAULT_MODEL))
+        return offline_complete(prompt, model=model)
     if prefer == "dsh":
-        return dsh_complete(prompt, **{k: v for k, v in kwargs.items() if k in ("model", "cwd", "session_root", "cordis", "max_tokens")})
-    if prefer == "openai":
-        return openai_compatible_complete(prompt, **{k: v for k, v in kwargs.items() if k in ("api_key", "base_url", "model", "max_tokens", "timeout")})
+        return dsh_complete(
+            prompt,
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k in ("model", "cwd", "session_root", "cordis", "max_tokens")
+            },
+        )
+    if prefer == "deepseek":
+        return deepseek_http_complete(
+            prompt,
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k in ("api_key", "base_url", "model", "max_tokens", "timeout")
+            },
+        )
     # auto
     if dsh_sdk_available() and key:
-        return dsh_complete(prompt, model=kwargs.get("model", DEFAULT_MODEL))
+        return dsh_complete(prompt, model=model)
     if key:
-        return openai_compatible_complete(prompt, model=kwargs.get("model", DEFAULT_MODEL))
-    return offline_complete(prompt, model=kwargs.get("model", DEFAULT_MODEL))
+        return deepseek_http_complete(prompt, model=model)
+    return offline_complete(prompt, model=model)
 
 
 def probe() -> Dict[str, Any]:
@@ -206,5 +226,5 @@ def probe() -> Dict[str, Any]:
         "base_url": DEFAULT_BASE,
         "model": DEFAULT_MODEL,
         "invariants": _garden_invariants(),
-        "modes": ["offline", "openai", "dsh"],
+        "modes": ["offline", "deepseek", "dsh"],
     }
