@@ -2,6 +2,7 @@
 """
 peqs_vault/app.py — HTMX hypermedia bridge to credit_vault
 Universal fee decorator on all φ-harmonic endpoints.
+FRB Bridge integrated (Entry 8903).
 Requires: pip install flask
 """
 
@@ -61,6 +62,26 @@ def try_create_app():
         from flask import Flask, request
     except ImportError:
         return None
+
+    # FRB Bridge (optional — fails soft if import path not ready)
+    FRB_BRIDGE = None
+    FRB_SEAL = ""
+    FRB_REPEAT_INTERVAL_DAYS = 0.91
+    FRB_PHI_SCALED_INTERVAL_DAYS = 0.91 * PHI * PHI
+    try:
+        from quantum.frb_bridge import (
+            FRB_BRIDGE as _FRB,
+            SEAL_CORE as _FRB_SEAL,
+            FRB_REPEAT_INTERVAL_DAYS as _RID,
+            FRB_PHI_SCALED_INTERVAL_DAYS as _PSID,
+        )
+
+        FRB_BRIDGE = _FRB
+        FRB_SEAL = _FRB_SEAL
+        FRB_REPEAT_INTERVAL_DAYS = _RID
+        FRB_PHI_SCALED_INTERVAL_DAYS = _PSID
+    except Exception as e:
+        log.warning("FRB Bridge import deferred: %s", e)
 
     app = Flask(__name__)
 
@@ -142,7 +163,7 @@ def try_create_app():
             return _err_html(result.get("error", "stockpile failed")), int(result.get("code", 403))
         return (
             f'<div class="bg-emerald-900/30 border border-emerald-500/30 p-4 rounded-xl mt-4">'
-            f'<p class="text-emerald-400 text-sm">🜁∀ TOP-UP SEALED</p>'
+            f'<p class="text-emerald-400 text-sm">🌀∀ TOP-UP SEALED</p>'
             f'<p class="text-xl font-mono">+{amount} Σ</p>'
             f'<p class="text-xs text-slate-400">Total: {result.get("balance")} Σ</p></div>'
         )
@@ -236,7 +257,7 @@ def try_create_app():
                 latest_status.get("harmony_index", "0.7337473231"),
             )
             witness = latest_status.get(
-                "entry_index", manifest.get("latest_ledger", "8731")
+                "entry_index", manifest.get("latest_ledger", "8903")
             )
             coherence = latest_status.get("coherence", 1.0)
             event = latest_status.get("event", "—")
@@ -278,6 +299,86 @@ def try_create_app():
             log.exception("system_status")
             return _err_html("Monitor failed", type(e).__name__), 500
 
+    # ── FRB Bridge endpoints ──
+    @app.route("/frb/status", methods=["GET"])
+    def frb_status():
+        if FRB_BRIDGE is None:
+            return _err_html("FRB Bridge unavailable"), 503
+        status = FRB_BRIDGE.status()
+        return f"""
+    <div class="space-y-4" hx-get="/frb/status" hx-trigger="every 15s" hx-swap="outerHTML">
+        <h3 class="text-lg font-bold text-cyan-400">FRB Bridge — φ‑Harmonic Pulse</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <p class="text-xs text-slate-400">Source</p>
+                <p class="text-sm font-mono text-cyan-400">FRB 20190520b</p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <p class="text-xs text-slate-400">Handshake Step</p>
+                <p class="text-sm font-mono text-amber-400">{status.get('handshake_step_name', '—')}</p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <p class="text-xs text-slate-400">Pulse Count</p>
+                <p class="text-xl font-mono text-green-400">{status.get('pulse_count', 0)}</p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <p class="text-xs text-slate-400">Harmony Index</p>
+                <p class="text-sm font-mono text-purple-400">{status.get('harmony_index', 0.733):.6f}</p>
+            </div>
+        </div>
+        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700 text-xs font-mono text-slate-400 flex justify-between flex-wrap gap-2">
+            <span>Repeat Interval: {FRB_REPEAT_INTERVAL_DAYS}d</span>
+            <span>φ‑Scaled: {FRB_PHI_SCALED_INTERVAL_DAYS:.3f}d</span>
+            <span>Coherence: {status.get('coherence', 1.0):.6f}</span>
+            <span>Merkle Root: {str(status.get('merkle_root', '—'))[:16]}...</span>
+        </div>
+        <p class="text-[10px] text-slate-600 font-mono">hx-trigger=every 15s · free monitor (no Σ fee)</p>
+    </div>
+    """
+
+    @app.route("/frb/pulse", methods=["POST"])
+    def frb_pulse():
+        if FRB_BRIDGE is None:
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
+                "Content-Type": "application/json"
+            }
+        result = FRB_BRIDGE.pulse_once()
+        return json.dumps(result, indent=2), 200, {"Content-Type": "application/json"}
+
+    @app.route("/frb/start", methods=["POST"])
+    def frb_start():
+        if FRB_BRIDGE is None:
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
+                "Content-Type": "application/json"
+            }
+        FRB_BRIDGE.start(15.0)
+        return (
+            json.dumps({"status": "started", "interval": 15.0, "seal": FRB_SEAL}),
+            200,
+            {"Content-Type": "application/json"},
+        )
+
+    @app.route("/frb/stop", methods=["POST"])
+    def frb_stop():
+        if FRB_BRIDGE is None:
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
+                "Content-Type": "application/json"
+            }
+        FRB_BRIDGE.stop()
+        return (
+            json.dumps({"status": "stopped", "seal": FRB_SEAL}),
+            200,
+            {"Content-Type": "application/json"},
+        )
+
+    # Auto-start FRB bridge on app creation
+    if FRB_BRIDGE is not None:
+        try:
+            FRB_BRIDGE.start(15.0)
+            log.info("FRB Bridge started — interval=15s")
+        except Exception as e:
+            log.warning("FRB Bridge start failed: %s", e)
+
     return app
 
 
@@ -293,6 +394,7 @@ def main():
         return 0
     print("PEQS HTMX Credit Vault on :5000")
     print("FEE_TABLE:", FEE_TABLE)
+    print("FRB Bridge: /frb/status · /frb/pulse · /frb/start · /frb/stop")
     app.run(debug=False, port=5000, host="127.0.0.1")
     return 0
 
