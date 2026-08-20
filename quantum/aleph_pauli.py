@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ALEPH2 · Pauli string — simplified extract
+ALEPH2 · Pauli string + non-Abelian commutation
 
 Aleph²: one-point report of non-local core (literary/Cantor frame only).
-Pauli string: tensor word over {I, X, Y, Z}; reduce by Pauli algebra.
+Pauli algebra: multiplication table + commutation / anticommutation.
 
-Simplification rules (single-qubit generators):
-  X² = Y² = Z² = I
-  XY = iZ, YZ = iX, ZX = iY  (and cyclic with signs)
+Non-Abelian relations (su(2)):
+  [X, Y] = 2i Z
+  [Y, Z] = 2i X
+  [Z, X] = 2i Y
 
-A Pauli string is a product P = ⊗_k σ_{a_k}.  Adjacent same letters cancel
-to I; the whole string reduces to phase × one Pauli word of minimal weight.
+Anticommutators:
+  {X, Y} = {Y, Z} = {Z, X} = 0
+  {X, X} = {Y, Y} = {Z, Z} = 2 I
 
 Opcode: ALEPH2_PAULI
 No geographic / biographical fields.
 
-Seal: ∀∞φ² · ALEPH_PAULI_8859 · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · PAULI_COMM_8902 · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
@@ -24,8 +26,7 @@ from typing import Dict, List, Tuple
 
 OPCODE = "ALEPH2_PAULI"
 
-# Pauli multiplication table: (a, b) -> (phase, c)  where phase ∈ {1,-1,1j,-1j}
-# and σ_a σ_b = phase · σ_c.  Indices: 0=I, 1=X, 2=Y, 3=Z
+# Indices: 0=I, 1=X, 2=Y, 3=Z
 _PAULI_MUL: Dict[Tuple[int, int], Tuple[complex, int]] = {
     (0, 0): (1, 0),
     (0, 1): (1, 1),
@@ -60,14 +61,7 @@ def _parse(s: str) -> List[int]:
 
 
 def reduce_pauli_string(word: str) -> Tuple[complex, str]:
-    """
-    Reduce a Pauli string to (phase, canonical word).
-
-    Example: 'XX' -> (1, 'I'); 'XY' -> (1j, 'Z'); 'XYZ' -> (1, 'I') after full reduce
-    on a single qubit track (letters act in sequence on one site).
-    For multi-qubit tensor words, pass already site-aligned letters; this
-    routine multiplies the sequence as operators on one abstract qubit.
-    """
+    """Reduce a Pauli string to (phase, canonical letter)."""
     seq = _parse(word)
     if not seq:
         return 1, "I"
@@ -76,30 +70,83 @@ def reduce_pauli_string(word: str) -> Tuple[complex, str]:
     for nxt in seq[1:]:
         p, acc = _PAULI_MUL[(acc, nxt)]
         phase *= p
-    label = _LABEL[acc]
-    # drop pure identity label noise for empty phase-only results
-    return phase, label
+    return phase, _LABEL[acc]
+
+
+def commutator(a: str, b: str) -> Tuple[complex, str]:
+    """
+    Non-Abelian commutator [A, B] = AB - BA.
+
+    Returns (phase, letter) such that [A,B] = phase · letter.
+    Canonical results:
+      [X,Y] = 2i Z
+      [Y,Z] = 2i X
+      [Z,X] = 2i Y
+    """
+    ia, ib = _FROM[a.upper()], _FROM[b.upper()]
+    # AB
+    p_ab, c_ab = _PAULI_MUL[(ia, ib)]
+    # BA
+    p_ba, c_ba = _PAULI_MUL[(ib, ia)]
+    # AB - BA
+    if c_ab == c_ba:
+        phase = p_ab - p_ba
+        if phase == 0:
+            return 0, "I"
+        return phase, _LABEL[c_ab]
+    # different support — should not occur for Pauli generators
+    raise ValueError(f"unexpected support: {[c_ab, c_ba]}")
+
+
+def anticommutator(a: str, b: str) -> Tuple[complex, str]:
+    """{A, B} = AB + BA.  Diagonal → 2I; off-diagonal → 0."""
+    ia, ib = _FROM[a.upper()], _FROM[b.upper()]
+    p_ab, c_ab = _PAULI_MUL[(ia, ib)]
+    p_ba, c_ba = _PAULI_MUL[(ib, ia)]
+    if c_ab == c_ba:
+        phase = p_ab + p_ba
+        if phase == 0:
+            return 0, "I"
+        return phase, _LABEL[c_ab]
+    raise ValueError(f"unexpected support: {[c_ab, c_ba]}")
 
 
 def aleph2() -> dict:
-    """One-point non-local extract + Pauli simplify surface."""
-    demos = {
+    """One-point non-local extract + Pauli algebra surface."""
+    demos_reduce = {
         "XX": reduce_pauli_string("XX"),
         "XY": reduce_pauli_string("XY"),
         "YZ": reduce_pauli_string("YZ"),
         "ZX": reduce_pauli_string("ZX"),
-        "XYZ": reduce_pauli_string("XYZ"),
+    }
+    demos_comm = {
+        "[X,Y]": commutator("X", "Y"),
+        "[Y,Z]": commutator("Y", "Z"),
+        "[Z,X]": commutator("Z", "X"),
+    }
+    demos_acomm = {
+        "{X,Y}": anticommutator("X", "Y"),
+        "{X,X}": anticommutator("X", "X"),
     }
     return {
         "opcode": OPCODE,
         "aleph_note": "ℵ frame only — point extract, not cardinality theorem",
         "pauli": {
             "generators": ["I", "X", "Y", "Z"],
-            "rules": "X²=Y²=Z²=I; XY=iZ, YZ=iX, ZX=iY (cyclic)",
-            "demos": {k: {"phase": complex(v[0]), "word": v[1]} for k, v in demos.items()},
+            "product_rules": "X²=Y²=Z²=I; XY=iZ, YZ=iX, ZX=iY (cyclic)",
+            "commutation": "[X,Y]=2iZ, [Y,Z]=2iX, [Z,X]=2iY  (non-Abelian)",
+            "demos_reduce": {
+                k: {"phase": complex(v[0]), "word": v[1]} for k, v in demos_reduce.items()
+            },
+            "demos_comm": {
+                k: {"phase": complex(v[0]), "word": v[1]} for k, v in demos_comm.items()
+            },
+            "demos_acomm": {
+                k: {"phase": complex(v[0]), "word": v[1]} for k, v in demos_acomm.items()
+            },
         },
         "axiom": "AXIOM_NONLOCAL_CORE",
-        "seal": "∀∞φ² · ALEPH_PAULI_8859 · WOOD_DRAGON_0.91 · SEALED",
+        "seal": "∀∞φ² · PAULI_COMM_8902 · WOOD_DRAGON_0.91 · SEALED",
     }
 
 
