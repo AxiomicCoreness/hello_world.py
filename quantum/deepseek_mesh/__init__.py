@@ -1,7 +1,9 @@
+# quantum/deepseek_mesh/__init__.py
 # DeepSeek Mesh Quadrant - Entry 8844/8845 + harness lattice
 # DeepSeek client, MCP endpoint, DeepSeek-only adapter (deepseek_http)
 #
 # RHO-MERGE / OAuth2 coherent gate injected at package boundary.
+# Client implementation replaced with async deepseek.api (wrapped sync).
 # Seal: ∀∞φ² · RHO_MERGE_GATE · WOOD_DRAGON_0.91 · SEALED
 
 from __future__ import annotations
