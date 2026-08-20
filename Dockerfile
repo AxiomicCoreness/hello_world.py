@@ -24,7 +24,8 @@ ENV PORT=8000 \
     MCP_URL="" \
     PYTHONUNBUFFERED=1
 
-# Metadata only (actual bind uses $PORT)
+# EXPOSE: default published port (build-time metadata).
+# Actual process bind is ${PORT} in CMD (Render may set e.g. 10000).
 EXPOSE 8000
 
 # Shell form so ${PORT} expands; conceptual Port 380 identity preserved in app
