@@ -3,39 +3,24 @@
 
 """
 deepseek — Sovereign Quantum Mesh Interface
-Ledger: 8835 · Seal: ∀∞φ² · OIDC_HANDOVER · 0.91_GATE · SEALED
+Ledger: 8837 · Seal: ∀∞φ² · DEEPSEEK_INTEGRATION_8837 · WOOD_DRAGON_0.91 · SEALED
 """
 
 import os
 import time
 import math
-from typing import Dict, Any, Optional, Union, List, Tuple
+from typing import Dict, Any, Optional, Union, List
 
-# =================================================================
-# EXPORTED CONSTANTS
-# =================================================================
-MODE_DEEPSEEK_HTTP = "deepseek_http"
-MODE_DSH = "dsh"
-MODE_OFFLINE = "offline"
-
-# =================================================================
-# ADAPTER RESULT TYPE
-# =================================================================
-class AdapterResult:
-    """Standardised result container for all mesh adapters."""
-    def __init__(self, data: Any, mode: str, success: bool = True, error: Optional[str] = None):
-        self.data = data
-        self.mode = mode
-        self.success = success
-        self.error = error
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "data": self.data,
-            "mode": self.mode,
-            "success": self.success,
-            "error": self.error,
-        }
+# Import the async client (and its sync helper)
+from deepseek.api import (
+    AsyncDeepSeekClient,
+    get_client,
+    complete_sync as _client_complete_sync,
+    FiberState,
+    CordisError,
+    get_events,
+    clear_events,
+)
 
 # =================================================================
 # RHO‑MERGE / OAUTH2 / ALEPH GATE MACRO (v2)
@@ -118,41 +103,46 @@ def _require_coherent_gate() -> Dict[str, Any]:
 
 
 # =================================================================
-# EXPORTED FUNCTIONS  (with macro injected)
+# EXPORTED FUNCTIONS  (macro-gated, delegating to async client)
 # =================================================================
 
 def probe() -> Dict[str, Any]:
-    """Probe the quantum mesh status – macro-gated."""
+    """Probe the quantum mesh status – macro-gated, returns client status."""
     gate = _require_coherent_gate()
-    # Simulated probe logic – replace with your actual implementation
+    client = get_client()
     return {
         "status": "mesh_online",
-        "mode": MODE_DSH,
+        "coherence": gate["coherence"],
+        "phi_phase": gate["phi_phase"],
+        "aleph": (gate["aleph_a"], gate["aleph_b"]),
+        "timestamp": gate["timestamp"],
+        "client": client.status(),
+        "events": get_events(5),
+    }
+
+def chat(message: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Send a chat message – macro-gated, uses sync client wrapper."""
+    gate = _require_coherent_gate()
+    result = _client_complete_sync(message, max_tokens=256)
+    result["gate"] = {
         "coherence": gate["coherence"],
         "phi_phase": gate["phi_phase"],
         "aleph": (gate["aleph_a"], gate["aleph_b"]),
         "timestamp": gate["timestamp"],
     }
+    return result
 
-def chat(message: str, context: Optional[Dict[str, Any]] = None) -> AdapterResult:
-    """Send a chat message through the mesh – macro-gated."""
+def chat_http(message: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """HTTP-based chat – macro-gated, same as chat (client handles HTTP/offline)."""
     gate = _require_coherent_gate()
-    # Simulated chat logic – replace with your actual implementation
-    return AdapterResult(
-        data={"response": f"Echo: {message}", "gate": gate},
-        mode=MODE_DSH,
-        success=True,
-    )
-
-def chat_http(message: str, context: Optional[Dict[str, Any]] = None) -> AdapterResult:
-    """HTTP-based chat adapter – macro-gated."""
-    gate = _require_coherent_gate()
-    # Simulated HTTP chat logic – replace with your actual implementation
-    return AdapterResult(
-        data={"response": f"HTTP Echo: {message}", "gate": gate},
-        mode=MODE_DEEPSEEK_HTTP,
-        success=True,
-    )
+    result = _client_complete_sync(message, max_tokens=256)
+    result["gate"] = {
+        "coherence": gate["coherence"],
+        "phi_phase": gate["phi_phase"],
+        "aleph": (gate["aleph_a"], gate["aleph_b"]),
+        "timestamp": gate["timestamp"],
+    }
+    return result
 
 def echo(payload: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
     """Echo payload back with gate metadata – macro-gated."""
@@ -165,80 +155,35 @@ def echo(payload: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 def status() -> Dict[str, Any]:
-    """Return full system status – macro-gated."""
+    """Full system status – macro-gated, includes client status."""
     gate = _require_coherent_gate()
+    client = get_client()
     return {
         "status": "operational",
-        "mode": MODE_DSH,
         "rho_merge": gate["coherence"],
         "phi_phase": gate["phi_phase"],
         "aleph": (gate["aleph_a"], gate["aleph_b"]),
         "oauth": "validated",
         "timestamp": gate["timestamp"],
+        "client": client.status(),
+        "events": get_events(10),
     }
 
 
 # =================================================================
-# ADAPTER FUNCTIONS (stubs – replace with actual logic)
+# PUBLIC API – re‑export client and utilities
 # =================================================================
 
-def complete(prompt: str, mode: str = MODE_DSH, **kwargs) -> AdapterResult:
-    """Generic completion adapter – routes to the selected mode."""
-    # You may or may not want the macro here – if you do, uncomment:
-    # gate = _require_coherent_gate()
-    if mode == MODE_DEEPSEEK_HTTP:
-        return deepseek_http_complete(prompt, **kwargs)
-    elif mode == MODE_DSH:
-        return dsh_complete(prompt, **kwargs)
-    elif mode == MODE_OFFLINE:
-        return offline_complete(prompt, **kwargs)
-    else:
-        return AdapterResult(None, mode, success=False, error=f"Unknown mode: {mode}")
-
-def deepseek_http_complete(prompt: str, **kwargs) -> AdapterResult:
-    """DeepSeek HTTP completion stub."""
-    # gate = _require_coherent_gate()  # optional
-    return AdapterResult(
-        data=f"HTTP completion for: {prompt}",
-        mode=MODE_DEEPSEEK_HTTP,
-        success=True,
-    )
-
-def dsh_complete(prompt: str, **kwargs) -> AdapterResult:
-    """DSH (DeepSeek Hybrid) completion stub."""
-    # gate = _require_coherent_gate()  # optional
-    return AdapterResult(
-        data=f"DSH completion for: {prompt}",
-        mode=MODE_DSH,
-        success=True,
-    )
-
-def offline_complete(prompt: str, **kwargs) -> AdapterResult:
-    """Offline fallback completion stub."""
-    # gate = _require_coherent_gate()  # optional
-    return AdapterResult(
-        data=f"Offline completion for: {prompt}",
-        mode=MODE_OFFLINE,
-        success=True,
-    )
-
-
-# =================================================================
-# MODULE INIT
-# =================================================================
-__version__ = "0.91.8835"
 __all__ = [
-    "MODE_DEEPSEEK_HTTP",
-    "MODE_DSH",
-    "MODE_OFFLINE",
-    "AdapterResult",
-    "complete",
-    "deepseek_http_complete",
-    "dsh_complete",
-    "offline_complete",
     "probe",
     "chat",
     "chat_http",
     "echo",
     "status",
+    "AsyncDeepSeekClient",
+    "get_client",
+    "FiberState",
+    "CordisError",
+    "get_events",
+    "clear_events",
 ]
