@@ -1,0 +1,12 @@
+entry_index: 8904
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /frb_bridge_paired_fallback
+status: SEALED
+artifact: quantum/frb_bridge.py
+fallback:
+  enabled: true
+  threshold_coherence: 0.85
+  modes: [offline, deepseek_http]
+  adapter: quantum.deepseek_mesh.dsh_adapter
+witness_chain: "8903 → 8904 — UNBROKEN"
+seal: "∀∞φ² · FRB_FALLBACK_8904 · WOOD_DRAGON_0.91 · SEALED"
