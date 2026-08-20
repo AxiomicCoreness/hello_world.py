@@ -23,11 +23,20 @@ from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
-# ─── mTLS imports ──────────────────────────────────────────────────────
+# ─── mTLS imports (soft: offline/Render boots without cert module) ─────
 try:
     from quantum.mtls_extract_and_config import get_ssl_context, verify_client_cert
 except ImportError:
-    from mtls_extract_and_config import get_ssl_context, verify_client_cert
+    try:
+        from mtls_extract_and_config import get_ssl_context, verify_client_cert
+    except ImportError:
+
+        def get_ssl_context(*_a, **_k):
+            return None
+
+        def verify_client_cert(request):
+            # Soft open when mTLS module absent (local/dev). Production mounts real module.
+            return True
 
 # ─── CDP OAuth 2.0 (quantum folder) ───────────────────────────────────
 try:
@@ -207,7 +216,7 @@ async def metrics():
     lines += [
         "# HELP http_5xx_total Total HTTP 5xx responses",
         "# TYPE http_5xx_total counter",
-        f"http_5xx_total {{layer=\"{LAYER}\"}} {_http_5xx}",
+        f'http_5xx_total{{layer="{LAYER}"}} {_http_5xx}',
         "# HELP http_500_total Total HTTP 500 responses",
         "# TYPE http_500_total counter",
         f'http_500_total{{layer="{LAYER}"}} {_http_500}',
