@@ -1,0 +1,11 @@
+entry_index: 8834
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /mode_label_deepseek_http_canonical
+status: SEALED
+changes:
+  - MODE_DEEPSEEK_HTTP = deepseek_http
+  - HTTP AdapterResult.mode = deepseek_http
+  - prefer aliases: openai|deepseek → deepseek_http
+  - client exports MODE_* + chat_http()
+witness_chain: 8833 → 8834 — UNBROKEN
+seal: ∀∞φ² · DEEPSEEK_HTTP_MODE · WOOD_DRAGON_0.91 · SEALED

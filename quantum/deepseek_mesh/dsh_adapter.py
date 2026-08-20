@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 🜁∀ quantum/deepseek_mesh/dsh_adapter.py
-DeepSeek-only lattice adapter (rebuilt — no external product modes).
+DeepSeek-only lattice adapter.
 
 Modes
-  offline   — no key; deterministic φ-tagged echo
-  deepseek  — HTTPS chat.completions → DEEPSEEK_BASE_URL (api.deepseek.com)
-  dsh       — deepseek_harness.DeepSeekHarness JSON-RPC (optional SDK)
+  offline         — no key; deterministic φ-tagged echo
+  deepseek_http   — HTTPS chat.completions → DEEPSEEK_BASE_URL (api.deepseek.com)
+  dsh             — deepseek_harness.DeepSeekHarness JSON-RPC (optional SDK)
 
 Env
   DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DSH_MODEL, DEEPSEEK_MODEL
 
-Seal: ∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · DEEPSEEK_HTTP_MODE · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
@@ -28,6 +28,11 @@ PHASE_LOCK_DEG = 202.6
 ENTROPY_FLOOR = PHI ** -1418
 DEFAULT_MODEL = os.environ.get("DSH_MODEL") or os.environ.get("DEEPSEEK_MODEL") or "deepseek-chat"
 DEFAULT_BASE = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+
+# Canonical mode labels
+MODE_OFFLINE = "offline"
+MODE_DEEPSEEK_HTTP = "deepseek_http"
+MODE_DSH = "dsh"
 
 
 @dataclass
@@ -50,7 +55,7 @@ def _garden_invariants() -> Dict[str, Any]:
         "phase_lock_deg": PHASE_LOCK_DEG,
         "entropy_floor": float(ENTROPY_FLOOR) if ENTROPY_FLOOR != 0 else 0.0,
         "phi": PHI,
-        "seal": "∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED",
+        "seal": "∀∞φ² · DEEPSEEK_HTTP_MODE · WOOD_DRAGON_0.91 · SEALED",
     }
 
 
@@ -63,7 +68,7 @@ def offline_complete(prompt: str, model: str = DEFAULT_MODEL) -> AdapterResult:
         f"echo: {prompt[:240]}"
     )
     return AdapterResult(
-        mode="offline",
+        mode=MODE_OFFLINE,
         text=body,
         model=model,
         latency_ms=(time.time() - t0) * 1000.0,
@@ -114,7 +119,7 @@ def deepseek_http_complete(
             data = json.loads(resp.read().decode("utf-8"))
         text = data["choices"][0]["message"]["content"]
         return AdapterResult(
-            mode="deepseek",
+            mode=MODE_DEEPSEEK_HTTP,
             text=text,
             model=model,
             latency_ms=(time.time() - t0) * 1000.0,
@@ -165,7 +170,7 @@ def dsh_complete(
             result = harness.run(prompt)
         text = getattr(result, "final_response", None) or str(result)
         return AdapterResult(
-            mode="dsh",
+            mode=MODE_DSH,
             text=text,
             model=model,
             latency_ms=(time.time() - t0) * 1000.0,
@@ -179,20 +184,20 @@ def dsh_complete(
 
 def complete(prompt: str, prefer: str = "auto", **kwargs: Any) -> AdapterResult:
     """
-    prefer: auto | offline | deepseek | dsh
-      auto → dsh if SDK+key, else deepseek if key, else offline
+    prefer: auto | offline | deepseek_http | deepseek | dsh
+      auto → dsh if SDK+key, else deepseek_http if key, else offline
     """
     prefer = (prefer or "auto").lower()
-    # Reject legacy external mode names
-    if prefer in ("openai", "chatgpt", "anthropic", "claude", "grok"):
-        prefer = "deepseek"
+    # Legacy / alias → canonical
+    if prefer in ("openai", "chatgpt", "anthropic", "claude", "grok", "deepseek"):
+        prefer = MODE_DEEPSEEK_HTTP
 
     key = os.environ.get("DEEPSEEK_API_KEY") or ""
     model = kwargs.get("model", DEFAULT_MODEL)
 
-    if prefer == "offline":
+    if prefer == MODE_OFFLINE:
         return offline_complete(prompt, model=model)
-    if prefer == "dsh":
+    if prefer == MODE_DSH:
         return dsh_complete(
             prompt,
             **{
@@ -201,7 +206,7 @@ def complete(prompt: str, prefer: str = "auto", **kwargs: Any) -> AdapterResult:
                 if k in ("model", "cwd", "session_root", "cordis", "max_tokens")
             },
         )
-    if prefer == "deepseek":
+    if prefer == MODE_DEEPSEEK_HTTP:
         return deepseek_http_complete(
             prompt,
             **{
@@ -226,5 +231,5 @@ def probe() -> Dict[str, Any]:
         "base_url": DEFAULT_BASE,
         "model": DEFAULT_MODEL,
         "invariants": _garden_invariants(),
-        "modes": ["offline", "deepseek", "dsh"],
+        "modes": [MODE_OFFLINE, MODE_DEEPSEEK_HTTP, MODE_DSH],
     }
