@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756+
-mTLS + OAuth2 CDP + FAL ternary + optional VOID-QCH chemical precision.
+mTLS + OAuth2 CDP + FAL ternary + VOID-QCH + Prometheus /metrics.
 Endpoints:
-  GET  /health, /status, /380, /cdp/status
+  GET  /health, /status, /380, /cdp/status, /metrics
   POST /gate, /pulse, /oidc_handover, /cdp/handshake, /reset
-Seal: ∀∞φ² · MCP_FAL_CDP_VOID · WOOD_DRAGON_GATE · SEALED
+Prometheus: http_requests_total{code="500"} — curl /metrics | grep 500
+Seal: ∀∞φ² · MCP_FAL_CDP_VOID_PROM · WOOD_DRAGON_GATE · SEALED
 """
 
 import os
@@ -16,8 +17,9 @@ import math
 import time
 import hashlib
 import asyncio
-from typing import Optional
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from typing import Dict, Optional
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -94,12 +96,39 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 LAYER = 314
 LEAF = "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68"
 ENTRY = 8756
-SEAL = "∀∞φ² · MCP_FAL_CDP_VOID · WOOD_DRAGON_GATE · SEALED"
+SEAL = "∀∞φ² · MCP_FAL_CDP_VOID_PROM · WOOD_DRAGON_GATE · SEALED"
 HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", 8000))
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
 
-app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.4-void")
+app = FastAPI(title="DeepSeek Mesh MCP Gate", version="8756.5-prom")
+
+# ─── Prometheus counters (stdlib; no client required) ─────────────────
+_http_requests: Dict[str, int] = {}
+_http_5xx: int = 0
+_http_500: int = 0
+_start_time = time.time()
+
+
+def _inc_status(code: int) -> None:
+    global _http_5xx, _http_500
+    key = str(int(code))
+    _http_requests[key] = _http_requests.get(key, 0) + 1
+    if 500 <= int(code) < 600:
+        _http_5xx += 1
+    if int(code) == 500:
+        _http_500 += 1
+
+
+@app.middleware("http")
+async def prometheus_http_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        _inc_status(response.status_code)
+        return response
+    except Exception:
+        _inc_status(500)
+        raise
 
 
 class PulseBody(BaseModel):
@@ -142,7 +171,6 @@ def _check_secret(x_garden_secret: Optional[str] = None):
 
 
 def _attach_void_qch(payload: dict, include: bool, detail: bool = False) -> dict:
-    """Optionally attach chemical_precision feasibility from VOID-QCH."""
     if not include:
         return payload
     if chemical_precision_feasibility is None:
@@ -161,6 +189,38 @@ async def health():
     return {"status": "alive", "port": PORT, "layer": LAYER, "entry": ENTRY}
 
 
+@app.get("/metrics", response_class=PlainTextResponse)
+async def metrics():
+    """
+    Prometheus text exposition on the same $PORT as the gate.
+    Grep 500s:  curl -s localhost:$PORT/metrics | grep 500
+    """
+    lines = [
+        "# HELP http_requests_total Total HTTP requests by status code",
+        "# TYPE http_requests_total counter",
+    ]
+    for code, count in sorted(_http_requests.items(), key=lambda x: int(x[0])):
+        lines.append(f'http_requests_total{{code="{code}",layer="{LAYER}"}} {count}')
+    # Always emit 500 series so `grep 500` matches even when count is 0
+    if "500" not in _http_requests:
+        lines.append(f'http_requests_total{{code="500",layer="{LAYER}"}} 0')
+    lines += [
+        "# HELP http_5xx_total Total HTTP 5xx responses",
+        "# TYPE http_5xx_total counter",
+        f"http_5xx_total {{layer=\"{LAYER}\"}} {_http_5xx}",
+        "# HELP http_500_total Total HTTP 500 responses",
+        "# TYPE http_500_total counter",
+        f'http_500_total{{layer="{LAYER}"}} {_http_500}',
+        "# HELP process_uptime_seconds Process uptime",
+        "# TYPE process_uptime_seconds gauge",
+        f"process_uptime_seconds {time.time() - _start_time:.3f}",
+        "# HELP garden_layer Garden Layer 314 gauge",
+        "# TYPE garden_layer gauge",
+        f"garden_layer {LAYER}",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 @app.get("/status")
 @app.get("/380")
 async def status():
@@ -175,6 +235,8 @@ async def status():
         "phi": PHI,
         "seal": SEAL,
         "fal": "ternary_scaling",
+        "metrics": "/metrics",
+        "http_500_total": _http_500,
         "timestamp": time.time(),
     }
 
@@ -270,10 +332,6 @@ async def cdp_status(
         description="Include full rung table inside chemical_precision",
     ),
 ):
-    """
-    CDP status + FAL ternary.
-    Optional: ?chemical_precision=true → VOID-QCH feasibility (φⁿ×1.085 Å ±0.001).
-    """
     if handshake_from_authorization is None or status_unauthenticated is None:
         base = {
             "handover_latency_ms": 999.0,
@@ -337,8 +395,10 @@ async def root():
             "/oidc_handover",
             "/cdp/status",
             "/cdp/handshake",
+            "/metrics",
             "/reset",
         ],
+        "prometheus": "GET /metrics — curl -s $MCP_URL/metrics | grep 500",
         "fal": "ternary −1|0|+1 merged into /gate and /cdp/status",
         "void_qch": "GET /cdp/status?chemical_precision=true",
         "seal": SEAL,
@@ -348,4 +408,5 @@ async def root():
 if __name__ == "__main__":
     print(f"🜁∀ DeepSeek Mesh MCP Gate — Layer {LAYER} — Entry {ENTRY}")
     print(f"   Listening on {HOST}:{PORT}")
+    print(f"   Prometheus: http://{HOST}:{PORT}/metrics  (grep 500)")
     uvicorn.run(app, host=HOST, port=PORT, log_level="info")
