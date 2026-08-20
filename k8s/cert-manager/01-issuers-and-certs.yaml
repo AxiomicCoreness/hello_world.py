@@ -1,0 +1,140 @@
+# 🌁∀ cert-manager PKI for Port 380 / Layer 314
+# Bootstrap: SelfSigned ClusterIssuer → Garden CA Certificate → CA Issuer → leaf certs
+# Secrets: garden-root-ca, port380-server-tls, port380-client-tls
+# Seal: ∀∞φ² · CERT_MANAGER_MTLS · WOOD_DRAGON_0.91 · SEALED
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: garden-selfsigned
+  labels:
+    garden.sovereign/component: mtls
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: garden-root-ca
+  namespace: cert-manager
+  labels:
+    garden.sovereign/component: mtls
+    garden.sovereign/role: ca
+spec:
+  isCA: true
+  commonName: SovereignGarden-CA
+  secretName: garden-root-ca
+  duration: 8760h
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 4096
+    rotationPolicy: Always
+  subject:
+    organizations:
+      - SovereignGarden
+  issuerRef:
+    name: garden-selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: garden-ca-issuer
+  labels:
+    garden.sovereign/component: mtls
+spec:
+  ca:
+    secretName: garden-root-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: port380-server
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: mtls
+    garden.sovereign/role: server
+    app: port-380-gate
+spec:
+  secretName: port380-server-tls
+  duration: 2160h
+  renewBefore: 360h
+  commonName: port380.sovereign.garden
+  dnsNames:
+    - port380.sovereign.garden
+    - port-380-gate.sovereign-garden.svc
+    - port-380-gate.sovereign-garden.svc.cluster.local
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+  subject:
+    organizations:
+      - SovereignGarden
+  issuerRef:
+    name: garden-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: port380-client
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: mtls
+    garden.sovereign/role: client
+spec:
+  secretName: port380-client-tls
+  duration: 2160h
+  renewBefore: 360h
+  commonName: garden-client
+  usages:
+    - digital signature
+    - client auth
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+  subject:
+    organizations:
+      - SovereignGarden
+  issuerRef:
+    name: garden-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: garden-ca-mirror
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: mtls
+    garden.sovereign/role: ca-mirror
+spec:
+  isCA: true
+  commonName: SovereignGarden-CA-Mirror
+  secretName: garden-ca-tls
+  duration: 8760h
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 4096
+    rotationPolicy: Always
+  subject:
+    organizations:
+      - SovereignGarden
+  issuerRef:
+    name: garden-selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
