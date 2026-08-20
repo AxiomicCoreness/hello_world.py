@@ -1,31 +1,19 @@
-# Dockerfile.port380-mcp — Port 380 MCP Gate (Entry 8755)
-# Render free Docker web service · binds to $PORT
-# Seal: ∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED
-
+# Entry 8755 — Port 380 MCP gate for Render / free Docker web service
+# Conceptual Port 380 / Layer 314 identity; bind address uses $PORT only.
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Minimal system deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY requirements-mcp.txt .
 RUN pip install --no-cache-dir -r requirements-mcp.txt
 
-COPY port380_mcp.py .
+# Prefer quadrant endpoint; fall back path via deprecation wrapper at root
+COPY quantum/deepseek_mesh/endpoint.py ./port380_mcp.py
+COPY quantum/ ./quantum/
 
-# Layer 314 / φ identity (runtime override still possible via env)
-ENV PHI=1.618033988749895
-ENV LAYER=314
-ENV ENTRY=8755
+ENV PORT=8000
+ENV PYTHONUNBUFFERED=1
 
-# Render injects $PORT; do not hard-code 380 as listen port
+# Shell form so $PORT expands at runtime (Render injects PORT)
 EXPOSE 8000
-
-# Healthcheck for Render / orchestration
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
-
-CMD ["python", "port380_mcp.py"]
+CMD uvicorn port380_mcp:app --host 0.0.0.0 --port ${PORT:-8000}
