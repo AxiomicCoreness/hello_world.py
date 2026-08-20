@@ -1,0 +1,15 @@
+entry_index: 8832
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /github_actions_ci_secrets_implemented
+status: SEALED
+files:
+  - contracts/ci-secrets.yaml
+  - docs/github-actions-secrets.md
+  - .github/workflows/deepseek-ci-secrets.yml
+  - .github/workflows/pytest.yml
+policy:
+  offline_ci_must_pass: true
+  never_echo_secret_values: true
+  secrets_set_via: "GitHub UI or gh secret set (not git)"
+witness_chain: 8831 → 8832 — UNBROKEN
+seal: ∀∞φ² · CI_SECRETS_8832 · WOOD_DRAGON_0.91 · SEALED
