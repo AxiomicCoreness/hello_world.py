@@ -41,34 +41,17 @@ def _require_coherent_gate() -> Dict[str, Any]:
     2. Coherence = 1.0 (RHO-MERGE harmonic sync)
     3. Phi_phase must be calculable (not NaN)
     """
-    # 1. OAuth / WebSocket Gate
+    # 1. OAuth / WebSocket Gate via canonical get_websocket_status
     try:
-        from quantum.cdp_convergence.handshake import status_unauthenticated
-        # Prefer live handshake surface if available
-        try:
-            from quantum.cdp_convergence.handshake import handshake_client_credentials
-            st, _ = handshake_client_credentials(scope="cdp.handshake")
-            ws_ready = bool(getattr(st, "websocket_ready", False))
-            session_id = getattr(st, "session_id", None)
-        except Exception:
-            # Fall back to explicit unauthenticated status
-            st = status_unauthenticated()
-            ws_ready = bool(getattr(st, "websocket_ready", False))
-            session_id = getattr(st, "session_id", None)
+        from quantum.cdp_convergence.handshake import get_websocket_status
 
-        if not ws_ready:
-            if not os.getenv("OAUTH_OFFLINE"):
-                raise RuntimeError(
-                    f"CRITICAL: websocket_ready=false. OAuth 2.0 handshake required. "
-                    f"Session: {session_id or 'none'}"
-                )
-            # Offline override path
-            if not os.getenv("GARDEN_SECRET"):
-                raise RuntimeError(
-                    "CRITICAL: OAUTH_OFFLINE=1 requires GARDEN_SECRET in env."
-                )
+        ws_status = get_websocket_status()
+        if not ws_status.get("websocket_ready", False):
+            raise RuntimeError(
+                f"CRITICAL: websocket_ready=false. OAuth 2.0 handshake required. "
+                f"Session: {ws_status.get('session_id', 'none')}"
+            )
     except ImportError:
-        # Handshake module not loaded — require offline override
         if not os.getenv("OAUTH_OFFLINE"):
             raise RuntimeError(
                 "CRITICAL: OAuth module missing and OAUTH_OFFLINE not set."
@@ -145,7 +128,6 @@ def echo(prompt: str) -> Dict[str, Any]:
     return result
 
 
-# Re-export complete (also gated for consistency)
 def complete(prompt: str, prefer: str = "auto", **kwargs: Any) -> AdapterResult:
     _require_coherent_gate()
     return _complete(prompt, prefer=prefer, **kwargs)
@@ -155,22 +137,18 @@ __all__ = [
     "client",
     "endpoint",
     "dsh_adapter",
-    # mode labels
     "MODE_OFFLINE",
     "MODE_DEEPSEEK_HTTP",
     "MODE_DSH",
-    # adapter surface
     "AdapterResult",
     "complete",
     "deepseek_http_complete",
     "dsh_complete",
     "offline_complete",
     "probe",
-    # thin client (now gated)
     "chat",
     "chat_http",
     "echo",
     "status",
-    # gate (export for tests / introspection)
     "_require_coherent_gate",
 ]
