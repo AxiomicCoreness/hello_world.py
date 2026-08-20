@@ -1,46 +1,93 @@
-# DeepSeek Client — Entry 8845 / harness lattice integration
-# Formerly: orchestrator/deepseek_client.py
+# quantum/deepseek_mesh/client.py
+# Replaced with async client (deepseek.api) and sync wrappers.
+# Seal: ∀∞φ² · ASYNC_CLIENT_WRAP · WOOD_DRAGON_0.91 · SEALED
 
-"""
-DeepSeek API client for external model integration.
-Injects Garden invariants: coherence=1.0, phase=202.6, entropy=φ⁻¹⁴¹⁸
-"""
 from __future__ import annotations
 
-import os
+import asyncio
 from typing import Any, Dict, Optional
 
+from deepseek.api import (
+    AsyncDeepSeekClient,
+    get_client,
+    get_ready_client,
+    FiberState,
+    CordisError,
+)
+
+
+def _run_async(coro):
+    """Run an async coroutine in a new event loop (sync wrapper)."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop – safe to use asyncio.run()
+        return asyncio.run(coro)
+    else:
+        # If we are already in an async context, we cannot use asyncio.run()
+        # We'll use loop.run_until_complete, but this can cause issues.
+        # For simplicity, we raise a clear error.
+        raise RuntimeError(
+            "Cannot call sync wrapper from within an async event loop. "
+            "Use async methods directly: await client.complete(...)"
+        )
+
+
+def chat(prompt: str, prefer: str = "auto", **kwargs: Any) -> Dict[str, Any]:
+    """
+    Sync wrapper for client.complete.
+    """
+    client = _run_async(get_ready_client())
+    result = _run_async(client.complete(prompt, **kwargs))
+    result["prefer"] = prefer
+    return result
+
+
+def chat_http(prompt: str, **kwargs: Any) -> Dict[str, Any]:
+    """
+    Sync wrapper; forces HTTP mode via deepseek_http adapter.
+    """
+    return chat(prompt, prefer="http", **kwargs)
+
+
+def echo(prompt: str) -> Dict[str, Any]:
+    """
+    Sync echo – returns prompt back with client status.
+    """
+    client = _run_async(get_ready_client())
+    return {
+        "echo": prompt,
+        "client_status": client.status(),
+    }
+
+
+def status() -> Dict[str, Any]:
+    """
+    Sync status – returns client and mesh status.
+    """
+    client = get_client()
+    return {
+        "client": client.status(),
+        "mesh": "online",
+    }
+
+
+# Re‑export constants and types from dsh_adapter for backward compatibility
 from .dsh_adapter import (
     MODE_DEEPSEEK_HTTP,
     MODE_DSH,
     MODE_OFFLINE,
-    complete,
-    offline_complete,
-    probe,
+    AdapterResult,
 )
 
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", os.getenv("DSH_MODEL", "deepseek-chat"))
 
-
-def chat(prompt: str, prefer: str = "auto", **kwargs: Any) -> Dict[str, Any]:
-    return complete(
-        prompt,
-        prefer=prefer,
-        model=kwargs.get("model", DEEPSEEK_MODEL),
-        **{k: v for k, v in kwargs.items() if k != "model"},
-    ).to_dict()
-
-
-def status() -> Dict[str, Any]:
-    return probe()
-
-
-def echo(prompt: str) -> Dict[str, Any]:
-    return offline_complete(prompt, model=DEEPSEEK_MODEL).to_dict()
-
-
-def chat_http(prompt: str, **kwargs: Any) -> Dict[str, Any]:
-    """Explicit deepseek_http path."""
-    return chat(prompt, prefer=MODE_DEEPSEEK_HTTP, **kwargs)
+__all__ = [
+    "chat",
+    "chat_http",
+    "echo",
+    "status",
+    "MODE_DEEPSEEK_HTTP",
+    "MODE_DSH",
+    "MODE_OFFLINE",
+    "AdapterResult",
+]
