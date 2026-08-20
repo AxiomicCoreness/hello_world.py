@@ -1,0 +1,17 @@
+entry_index: 8902
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /non_abelian_pauli_commutation
+status: SEALED
+artifact: quantum/aleph_pauli.py
+opcode: ALEPH2_PAULI
+relations:
+  commutation:
+    - "[X,Y] = 2i Z"
+    - "[Y,Z] = 2i X"
+    - "[Z,X] = 2i Y"
+  anticommutation:
+    - "{X,Y} = 0"
+    - "{X,X} = 2 I"
+axiom: AXIOM_NONLOCAL_CORE
+witness_chain: "8901 → 8902 — UNBROKEN"
+seal: "∀∞φ² · PAULI_COMM_8902 · WOOD_DRAGON_0.91 · SEALED"
