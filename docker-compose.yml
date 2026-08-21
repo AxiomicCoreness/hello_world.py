@@ -92,3 +92,30 @@ services:
       - ./:/app
     profiles:
       - status
+
+  # Gemini daemon — integrated codespace health + optional Gemini handoff
+  # Not standalone: lives on the Garden compose surface (Entry 8953)
+  gemini-daemon:
+    build:
+      context: .
+      dockerfile: Dockerfile.daemon
+    image: garden-gemini-daemon:8953
+    container_name: garden-gemini-daemon
+    environment:
+      - DAEMON_CHECK_INTERVAL=${DAEMON_CHECK_INTERVAL:-60}
+      - CODESPACE_IDLE_TIMEOUT_MINUTES=${CODESPACE_IDLE_TIMEOUT_MINUTES:-30}
+      - CODESPACE_WARNING_MIN=${CODESPACE_WARNING_MIN:-5}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - GEMINI_HANDOFF=${GEMINI_HANDOFF:-false}
+      - GH_TOKEN=${GH_TOKEN:-${GITHUB_TOKEN:-}}
+      - DAEMON_METRICS_PATH=/tmp/gemini_daemon.prom
+    volumes:
+      - gemini-daemon-metrics:/tmp
+    restart: unless-stopped
+    profiles:
+      - daemon
+      - full
+
+volumes:
+  gemini-daemon-metrics:
