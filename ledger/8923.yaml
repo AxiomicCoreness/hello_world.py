@@ -1,0 +1,18 @@
+entry_index: 8923
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /singularity_stream_ci_mapped
+status: SEALED
+artifacts:
+  - quantum/quantum_singularity_engine.py
+  - .github/workflows/singularity-stream-ci.yml
+stream:
+  format: NDJSON
+  flag: --stream
+  unbuffered: true
+  sample_every: 50
+ci:
+  workflow: singularity-stream-ci.yml
+  triggers: [push, pull_request, workflow_dispatch]
+  steps_default: 500
+witness_chain: "8922 → 8923 — UNBROKEN"
+seal: "∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED"
