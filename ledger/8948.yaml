@@ -1,0 +1,21 @@
+entry_index: 8948
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /sovereign_autonomic_control_loop_parent
+status: SEALED
+description: "Unify security, control, and deployment into a self-healing SACL loop."
+subtasks:
+  - 8939  # plugins
+  - 8942  # key expiry
+  - 8943  # e2e key check
+  - 8944  # OIDC cloud
+  - 8945  # JWKS cache (already on main)
+  - 8946  # active PID
+  - 8947  # cd-combinator heredoc
+remaining:
+  - 8949: Wire OIDC into CDP oauth2 / handover
+  - 8950: JWKS cache integration polish (module exists 8945)
+  - 8951: Harness OIDC/PID soft checks
+  - 8952: self-improvement-relay → e2e-key-check
+note: "batch_oidc_tokenizer is not modified (prior directive)."
+witness_chain: "8947 → 8948 — UNBROKEN"
+seal: "∀∞φ² · SACL_8948 · WOOD_DRAGON_0.91 · SEALED"
