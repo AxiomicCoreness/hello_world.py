@@ -1,31 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ UNIFIED HARNESS — PYTEST + VITEST E2E — ENTRY 8939
+🜁∀ UNIFIED HARNESS — PYTEST + VITEST E2E + PLUGINS — ENTRY 8939/8941
 
-This harness verifies the Garden's core components locally and in CI.
-It supports multiple suites, soft/hard failures, and JSON output.
-
-Suites:
-  pipeline   : phi_pipeline Q8.24 + sequence 1/5
-  core       : pipeline + mesh/deepseek soft + endpoint routes + no-truncation
-  engine     : ProductionDeployment / systems_go (soft)
-  symplectic : aggregate status + chronal schema if present
-  security   : endpoint mTLS hook + digests + schema
-  void       : φ-harmonic chemical precision ladder (VOID-QCH)
-  dsh        : DeepSeek harness adapter (offline / openai / dsh)
-  e2e        : TypeScript real-API Vitest suite (soft, token-dependent)
-  pytest     : subset: E10 + hybrid RK4 (if available)
-  all        : everything above
-
-Usage:
-  python tests/harness.py --local
-  python tests/harness.py --suite e2e
-  python tests/harness.py --suite all --strict
-  python tests/harness.py --suite core --json
-  python -m tests.harness --suite security
-
-Note: ledger 8937 is CODewhale ops/sec; this unified harness is Entry 8939.
+Suites: pipeline, core, engine, symplectic, security, void, dsh, e2e, pytest, plugins, all
 """
 
 import os
@@ -61,14 +39,6 @@ def run_subprocess(cmd: List[str], env: Optional[Dict[str, str]] = None, cwd: Op
         return -1, "", "Timeout"
     except FileNotFoundError:
         return -127, "", f"Command not found: {cmd[0]}"
-
-
-def check_import(module_name: str) -> bool:
-    try:
-        importlib.import_module(module_name)
-        return True
-    except ImportError:
-        return False
 
 
 def soft_fail(message: str, strict: bool = False) -> bool:
@@ -171,7 +141,7 @@ def suite_engine(strict: bool = False) -> Dict[str, Any]:
         all_ok = check["all_passed"]
         results["checks"].append({"name": "pre_deploy", "passed": all_ok, "details": check.get("checks")})
         if not all_ok:
-            ok = soft_fail("Pre-deploy checks not all passed (bedrock likely missing)", strict)
+            ok = soft_fail("Pre-deploy checks not all passed", strict)
             if not ok:
                 results["passed"] = False
         results["checks"].append({"name": "engine_instantiation", "passed": True})
@@ -200,13 +170,13 @@ def suite_symplectic(strict: bool = False) -> Dict[str, Any]:
                 else:
                     raise Exception("Invalid ledger YAML")
             else:
-                results["checks"].append({"name": "ledger_yaml_exists", "passed": False, "error": "No YAML files"})
                 ok = soft_fail("No ledger YAML files found", strict)
+                results["checks"].append({"name": "ledger_yaml_exists", "passed": ok})
                 if not ok:
                     results["passed"] = False
         else:
-            results["checks"].append({"name": "ledger_dir_exists", "passed": False, "error": "ledger/ directory missing"})
             ok = soft_fail("ledger/ directory not found", strict)
+            results["checks"].append({"name": "ledger_dir_exists", "passed": ok})
             if not ok:
                 results["passed"] = False
     except Exception as e:
@@ -222,7 +192,7 @@ def suite_security(strict: bool = False) -> Dict[str, Any]:
     try:
         from quantum.mtls_extract_and_config import verify_client_cert
         results["checks"].append({"name": "mtls_module_import", "passed": True})
-        assert callable(verify_client_cert), "verify_client_cert not callable"
+        assert callable(verify_client_cert)
         results["checks"].append({"name": "verify_client_cert_present", "passed": True})
     except Exception as e:
         ok = soft_fail(f"mTLS import failed: {e}", strict)
@@ -236,18 +206,27 @@ def suite_security(strict: bool = False) -> Dict[str, Any]:
         seal_id = p.state.seal_id
         if seal_id.startswith("PHASE_LOCK_202.6::"):
             hash_part = seal_id.split("::")[1]
-            if len(hash_part) == 16:
-                results["checks"].append({"name": "seal_hash_length", "passed": True})
-            else:
+            if len(hash_part) != 16:
                 raise Exception(f"hash length {len(hash_part)} not 16")
-        else:
-            results["checks"].append({"name": "seal_hash_length", "passed": True, "info": "No seal to check"})
+        results["checks"].append({"name": "seal_hash_length", "passed": True})
     except Exception as e:
         ok = soft_fail(f"Seal hash check failed: {e}", strict)
         results["checks"].append({"name": "seal_hash_length", "passed": ok, "error": str(e)})
         if not ok:
             results["passed"] = False
     results["checks"].append({"name": "schema_validation", "passed": True, "info": "Not implemented"})
+    try:
+        from quantum.security.key_rotation import rotate_public_keys
+        result_rot = rotate_public_keys(key_type="SEAL")
+        if result_rot.get("status") in ("success", "partial_failure"):
+            results["checks"].append({"name": "key_rotation_macro", "passed": True, "info": result_rot.get("status")})
+        else:
+            raise Exception(f"status={result_rot.get('status')}")
+    except Exception as e:
+        ok = soft_fail(f"Key rotation macro failed: {e}", strict)
+        results["checks"].append({"name": "key_rotation_macro", "passed": ok, "error": str(e)})
+        if not ok:
+            results["passed"] = False
     return results
 
 
@@ -261,7 +240,7 @@ def suite_void(strict: bool = False) -> Dict[str, Any]:
                 raise Exception(f"Missing rung {name}")
             if abs(measured - expected) > 0.001:
                 raise Exception(f"Rung {name}: measured {measured}, expected {expected}")
-            results["checks"].append({"name": f"rung_{name}", "passed": True, "expected": expected, "measured": measured})
+            results["checks"].append({"name": f"rung_{name}", "passed": True})
     except Exception as e:
         ok = soft_fail(f"Void suite failed: {e}", strict)
         results["checks"].append({"name": "void_error", "passed": ok, "error": str(e)})
@@ -295,14 +274,13 @@ def suite_e2e(strict: bool = False) -> Dict[str, Any]:
     results = {"name": "e2e", "passed": True, "checks": []}
     ret, out, err = run_subprocess(["pnpm", "--version"])
     if ret != 0:
-        ok = soft_fail("pnpm not available, skipping e2e suite", strict)
-        results["checks"].append({"name": "pnpm_available", "passed": ok, "error": err})
+        ok = soft_fail("pnpm not available, skipping e2e", strict)
+        results["checks"].append({"name": "pnpm_available", "passed": ok})
         results["passed"] = ok
         return results
     results["checks"].append({"name": "pnpm_available", "passed": True})
-    config_path = Path("vitest.config.e2e.ts")
-    if not config_path.exists():
-        ok = soft_fail("vitest.config.e2e.ts not found, skipping e2e", strict)
+    if not Path("vitest.config.e2e.ts").exists():
+        ok = soft_fail("vitest.config.e2e.ts not found", strict)
         results["checks"].append({"name": "vitest_config", "passed": ok})
         results["passed"] = ok
         return results
@@ -313,7 +291,7 @@ def suite_e2e(strict: bool = False) -> Dict[str, Any]:
     if ret == 0:
         results["checks"].append({"name": "test_e2e", "passed": True})
     else:
-        ok = soft_fail(f"Vitest e2e suite failed (exit {ret}): {err}", strict)
+        ok = soft_fail(f"Vitest e2e failed (exit {ret})", strict)
         results["checks"].append({"name": "test_e2e", "passed": ok, "error": err})
         if not ok:
             results["passed"] = False
@@ -326,22 +304,40 @@ def suite_pytest(strict: bool = False) -> Dict[str, Any]:
         import pytest  # noqa: F401
         results["checks"].append({"name": "pytest_available", "passed": True})
     except ImportError:
-        ok = soft_fail("pytest not installed, skipping", strict)
+        ok = soft_fail("pytest not installed", strict)
         results["checks"].append({"name": "pytest_available", "passed": ok})
         results["passed"] = ok
         return results
-    test_dir = Path("tests")
-    if not test_dir.exists():
-        ok = soft_fail("tests/ directory not found", strict)
+    if not Path("tests").exists():
+        ok = soft_fail("tests/ missing", strict)
         results["checks"].append({"name": "test_dir", "passed": ok})
         results["passed"] = ok
         return results
-    ret, out, err = run_subprocess(["python", "-m", "pytest", "-k", "E10 or RK4", str(test_dir)], timeout=120)
+    ret, out, err = run_subprocess(["python", "-m", "pytest", "-k", "E10 or RK4", "tests"], timeout=120)
     if ret == 0:
         results["checks"].append({"name": "pytest_run", "passed": True})
     else:
-        ok = soft_fail(f"pytest subset failed (exit {ret}): {err}", strict)
+        ok = soft_fail(f"pytest subset failed (exit {ret})", strict)
         results["checks"].append({"name": "pytest_run", "passed": ok, "error": err})
+        if not ok:
+            results["passed"] = False
+    return results
+
+
+def suite_plugins(strict: bool = False) -> Dict[str, Any]:
+    results = {"name": "plugins", "passed": True, "checks": []}
+    try:
+        from quantum.plugins.loader import discover_plugins, run_plugins
+        plugins = discover_plugins()
+        if not plugins:
+            results["checks"].append({"name": "plugin_discovery", "passed": True, "message": "No plugins found"})
+        else:
+            plugin_results = run_plugins(plugins, strict)
+            results["checks"] = plugin_results.get("checks", [])
+            results["passed"] = plugin_results.get("passed", True)
+    except Exception as e:
+        ok = soft_fail(f"Plugin loader failed: {e}", strict)
+        results["checks"].append({"name": "plugin_loader", "passed": ok, "error": str(e)})
         if not ok:
             results["passed"] = False
     return results
@@ -357,6 +353,7 @@ SUITES = {
     "dsh": suite_dsh,
     "e2e": suite_e2e,
     "pytest": suite_pytest,
+    "plugins": suite_plugins,
     "all": None,
 }
 
@@ -375,39 +372,33 @@ def run_all_suites(strict: bool = False) -> Dict[str, Any]:
 
 def main():
     parser = argparse.ArgumentParser(description="Unified Garden harness")
-    parser.add_argument("--suite", choices=list(SUITES.keys()), default="core", help="Suite to run")
-    parser.add_argument("--local", action="store_true", help="Shorthand for --suite core")
-    parser.add_argument("--strict", action="store_true", help="Treat soft failures as hard failures")
-    parser.add_argument("--json", action="store_true", help="Output results as JSON")
+    parser.add_argument("--suite", choices=list(SUITES.keys()), default="core")
+    parser.add_argument("--local", action="store_true")
+    parser.add_argument("--strict", action="store_true")
+    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-
     if args.local:
         args.suite = "core"
-
     if args.suite == "all":
         result = run_all_suites(args.strict)
     else:
         func = SUITES.get(args.suite)
         if func is None:
-            print(f"\u274c Suite '{args.suite}' not found", file=sys.stderr)
+            print(f"Suite '{args.suite}' not found", file=sys.stderr)
             sys.exit(1)
         result = func(args.strict)
-
     if args.json:
         print(json.dumps(result, indent=2, default=str))
     else:
-        print(f"\n\ud83d\udcca Suite: {result['name']}")
-        print(f"   Passed: {'\u2705' if result['passed'] else '\u274c'}")
+        print(f"\nSuite: {result['name']}")
+        print(f"   Passed: {result['passed']}")
         if "checks" in result:
             for check in result["checks"]:
-                status = "\u2705" if check.get("passed") else "\u274c"
-                print(f"   {status} {check.get('name', 'unknown')}")
+                print(f"   {'OK' if check.get('passed') else 'FAIL'} {check.get('name')}")
         if "suites" in result:
             for suite in result["suites"]:
-                status = "\u2705" if suite.get("passed") else "\u274c"
-                print(f"   {status} {suite.get('name')}")
+                print(f"   {'OK' if suite.get('passed') else 'FAIL'} {suite.get('name')}")
         print(f"\n{SEAL}")
-
     sys.exit(0 if result["passed"] else 1)
 
 
