@@ -1,0 +1,15 @@
+entry_index: 8941
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /plugin_system_deployed
+status: SEALED_AND_VERIFIED
+files:
+  - quantum/plugins/__init__.py
+  - quantum/plugins/base.py
+  - quantum/plugins/loader.py
+  - quantum/plugins/mcp.py
+  - quantum/plugins/mtls.py
+  - quantum/plugins/void_qch.py
+  - quantum/plugins/pnpm.py
+  - tests/harness.py
+witness_chain: "8940 → 8941 — UNBROKEN"
+seal: "∀∞φ² · PLUGIN_SYSTEM_8941 · WOOD_DRAGON_0.91 · SEALED"
