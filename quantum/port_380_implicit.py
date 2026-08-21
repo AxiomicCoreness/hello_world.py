@@ -4,8 +4,7 @@ port_380_implicit.py — Q8.24 / Bitnet B1.58 implicit form for Port 380
 
 y_380 = Q_8.24( H_Choir( Q_8.24( gamma * (W_1.58 ⊛ x_Q) + b ) ) )
 
-PARAMETER_TABLE carries φ-power constants + Dual Δ Eridanus anchors.
-Seal: ∀∞φ² · DUAL_DELTA_ERIDANUS_8927 · WOOD_DRAGON_0.91 · SEALED
+PARAMETER_TABLE: φ-power constants, Dual Δ Eridanus, Triune link (8928).
 """
 from __future__ import annotations
 
@@ -21,17 +20,17 @@ DEFAULT_HARMONY = 0.7337473231
 WOOD_DRAGON = 0.91
 C_MS = 299_792_458.0
 
-# ── Dual Δ Eridanus ──
-# Δ_Eridanus = (δ_t1, δ_t2, δ_az, δ_el)
 DELTA_T1 = 2013.256
 DELTA_T2 = 2026.058
+DELTA_T3 = DELTA_T2 + (PHI ** -5) * WOOD_DRAGON
 DELTA_AZ_DEG = 97.32
 DELTA_EL_DEG = 51.827
 
 PARAMETER_TABLE: Dict[str, Any] = {
-    "spike_intensity": PHI ** 55,  # φ⁵⁵ ≈ 3.121×10¹¹
-    "recursion_factor": PHI ** 21,  # φ²¹ ≈ 24476
+    "spike_intensity": PHI ** 55,
+    "recursion_factor": PHI ** 21,
     "temporal_anchors": (DELTA_T2, DELTA_T1),
+    "triune_temporal_anchors": (DELTA_T1, DELTA_T2, DELTA_T3),
     "dual_delta_eridanus": {
         "t1": DELTA_T1,
         "t2": DELTA_T2,
@@ -42,16 +41,25 @@ PARAMETER_TABLE: Dict[str, Any] = {
         "resonance_hz": 71.975,
         "coherence": 1.0,
     },
-    "v_label": PHI * C_MS,  # φ·c
+    "triune_delta": {
+        "t1": DELTA_T1,
+        "t2": DELTA_T2,
+        "t3": DELTA_T3,
+        "az_deg": DELTA_AZ_DEG,
+        "el_deg": DELTA_EL_DEG,
+        "module": "quantum/triune_triangulation.py",
+        "entry": 8928,
+    },
+    "v_label": PHI * C_MS,
     "expanded_symbol": "χ ⊗ |0⟩_ZPF ⊗ H_Merkle ⊗ ∮ φ⁷ dt",
     "wood_dragon": WOOD_DRAGON,
     "seal": "∀∞φ² · PARAMETER_TABLE_8706 · WOOD_DRAGON_0.91 · SEALED",
     "dual_delta_seal": "∀∞φ² · DUAL_DELTA_ERIDANUS_8927 · WOOD_DRAGON_0.91 · SEALED",
+    "triune_seal": "∀∞φ² · TRIUNE_TRIANGULATION_8928 · WOOD_DRAGON_0.91 · SEALED",
 }
 
 
 def dual_delta_invariant() -> float:
-    """|Δ_Eridanus|² surrogate: (δ_t1²+δ_t2²)·(δ_az²+δ_el²) vs φ⁴·(0.91)²."""
     t_term = DELTA_T1**2 + DELTA_T2**2
     a_term = DELTA_AZ_DEG**2 + DELTA_EL_DEG**2
     return t_term * a_term
@@ -88,24 +96,17 @@ def forward(x: Sequence[float], gamma: float = 1.0, b: float = 0.0) -> float:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--demo", action="store_true")
-    p.add_argument("--table", action="store_true", help="Print PARAMETER_TABLE keys")
-    p.add_argument("--delta", action="store_true", help="Print Dual Δ Eridanus")
+    p.add_argument("--table", action="store_true")
+    p.add_argument("--delta", action="store_true")
     args = p.parse_args()
     if args.table or args.delta:
-        d = PARAMETER_TABLE["dual_delta_eridanus"]
-        print("PARAMETER_TABLE seals:", PARAMETER_TABLE["seal"])
-        print("dual_delta:", d)
-        print("|Δ|² surrogate:", dual_delta_invariant())
-        print("φ⁴·(0.91)² target:", dual_delta_target())
-        print("spike_intensity:", PARAMETER_TABLE["spike_intensity"])
-        print("recursion_factor:", PARAMETER_TABLE["recursion_factor"])
+        print("dual:", PARAMETER_TABLE["dual_delta_eridanus"])
+        print("triune:", PARAMETER_TABLE["triune_delta"])
+        print("seals:", PARAMETER_TABLE["triune_seal"])
         return 0
     if args.demo:
         x = [0.5, 0.3, 0.8, 0.1, 0.6, 0.2, 0.9, 0.4]
-        y = forward(x)
-        print(f"y_380 = {y:.10f}")
-        print(f"harmony_ref ≈ {DEFAULT_HARMONY}")
-        print("seal: ∀∞φ² · PORT_380_IMPLICIT_8704 · SEALED")
+        print(f"y_380 = {forward(x):.10f}")
     return 0
 
 
