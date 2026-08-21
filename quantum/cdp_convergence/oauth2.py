@@ -10,6 +10,7 @@ Supports:
 
 Rule: websocket_ready remains False until a valid token is established.
 Seal: ∀∞φ² · CDP_OAUTH2 · WOOD_DRAGON_0.91 · SEALED
+SACL wire: validate_bearer_garden (Entry 8949) — garden offline HMAC + JWKS JWT
 """
 from __future__ import annotations
 
@@ -45,7 +46,7 @@ def client_secret() -> str:
 
 
 def offline_mode() -> bool:
-    v = _env("OAUTH_OFFLINE", _env("CDP_OAUTH_OFFLINE", "0")).lower()
+    v = _env("OAUTH_OFFLINE", _env("CDP_OAUTH_OFFLINE", _env("OIDC_OFFLINE", "0"))).lower()
     return v in {"1", "true", "yes", "on"}
 
 
@@ -96,8 +97,10 @@ def fetch_client_credentials(
         url,
         data=body,
         method="POST",
-        headers={"Content-Type": "application/x-www-form-urlencoded",
-                 "Accept": "application/json"},
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        },
     )
     try:
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:
@@ -105,7 +108,7 @@ def fetch_client_credentials(
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:240]
         return None, f"token endpoint HTTP {e.code}: {detail}"
-    except Exception as e:  # noqa: BLE001 — surface any network/parse fault
+    except Exception as e:
         return None, f"token endpoint error: {e}"
 
     access = str(payload.get("access_token") or "")
@@ -151,7 +154,6 @@ def validate_bearer(
                 subject="garden-offline",
                 scope="cdp.handshake offline",
             ), None
-        # still allow any bearer in offline if OAUTH_OFFLINE_PERMISSIVE=1
         if _env("OAUTH_OFFLINE_PERMISSIVE", "0") in {"1", "true"}:
             return OAuth2TokenClaims(
                 access_token=token,
@@ -164,7 +166,6 @@ def validate_bearer(
     if introspect:
         return _introspect(token, introspect)
 
-    # Structural accept: non-empty bearer present (no remote introspect configured)
     return OAuth2TokenClaims(
         access_token=token,
         issuer=_env("OIDC_ISSUER") or "configured",
@@ -189,7 +190,7 @@ def _introspect(
     try:
         with urllib.request.urlopen(req, timeout=timeout_s) as resp:
             payload = json.loads(resp.read().decode() or "{}")
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return None, f"introspect error: {e}"
 
     if not payload.get("active"):
@@ -203,3 +204,82 @@ def _introspect(
         issuer=str(payload.get("iss") or _env("OIDC_ISSUER")),
         subject=str(payload.get("sub") or ""),
     ), None
+
+
+# ── SACL / Entry 8949: Garden OIDC cloud bearer ────────────────────────────
+
+def validate_bearer_garden(
+    authorization_header: Optional[str],
+) -> Tuple[Optional[OAuth2TokenClaims], Optional[str]]:
+    """
+    Extended bearer gate for /oidc_handover and CDP handshake:
+
+      1) validate_bearer (off_* + live / introspect)
+      2) quantum.security.oidc_cloud offline HMAC tokens
+      3) JWT verified via JWKS cache when OIDC_ISSUER is set
+
+    batch_oidc_tokenizer is intentionally not modified.
+    """
+    claims, err = validate_bearer(authorization_header)
+    if claims is not None:
+        return claims, None
+
+    if not authorization_header:
+        return None, err or "missing Authorization header"
+    hdr = authorization_header.strip()
+    if not hdr.lower().startswith("bearer "):
+        return None, err or "Authorization must be Bearer scheme"
+    token = hdr[7:].strip()
+    if not token:
+        return None, "empty bearer token"
+
+    try:
+        from quantum.security.oidc_cloud import verify_offline_token
+
+        oc = verify_offline_token(token)
+        return (
+            OAuth2TokenClaims(
+                access_token=token,
+                token_type="Bearer",
+                expires_in=max(0, oc.exp - int(time.time())),
+                scope="cdp.handshake garden.offline",
+                issuer=oc.iss,
+                subject=oc.sub,
+            ),
+            None,
+        )
+    except Exception:
+        pass
+
+    issuer = _env("OIDC_ISSUER")
+    if issuer and token.count(".") == 2:
+        try:
+            from quantum.security.jwks_cache import get_jwks_cache
+            from quantum.security.oidc_cloud import verify_jwt, decode_jwt_unverified
+
+            header = decode_jwt_unverified(token)["header"]
+            kid = header.get("kid")
+            entry = get_jwks_cache().get(issuer, kid=kid)
+            oc = verify_jwt(
+                token,
+                issuer=issuer,
+                audience=_env("OIDC_AUDIENCE") or None,
+                jwks=entry.jwks,
+            )
+            if not oc.verified and not offline_mode():
+                return None, "JWT signature not verified"
+            return (
+                OAuth2TokenClaims(
+                    access_token=token,
+                    token_type="Bearer",
+                    expires_in=max(0, oc.exp - int(time.time())),
+                    scope="cdp.handshake oidc.jwt",
+                    issuer=oc.iss,
+                    subject=oc.sub,
+                ),
+                None,
+            )
+        except Exception as e:
+            return None, f"JWT/JWKS validation failed: {e}"
+
+    return None, err or "bearer validation failed"
