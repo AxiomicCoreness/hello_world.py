@@ -1,0 +1,86 @@
+name: OIDC Cloud Providers
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Cloud provider to federate'
+        type: choice
+        options:
+          - offline
+          - github
+          - aws
+          - gcp
+          - azure
+        default: offline
+  workflow_call:
+    inputs:
+      provider:
+        type: string
+        default: offline
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  federate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install cryptography (JWT verify)
+        run: pip install cryptography
+
+      - name: OIDC status
+        run: python -m quantum.security.oidc_cloud status --json
+
+      - name: Federate (offline always safe)
+        if: ${{ inputs.provider == 'offline' || inputs.provider == '' }}
+        env:
+          OIDC_OFFLINE: '1'
+        run: python -m quantum.security.oidc_cloud federate --provider offline --json
+
+      - name: Federate GitHub OIDC
+        if: ${{ inputs.provider == 'github' }}
+        run: python -m quantum.security.oidc_cloud federate --provider github --json
+
+      - name: Federate AWS
+        if: ${{ inputs.provider == 'aws' }}
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          if [ -z "${AWS_ROLE_ARN:-}" ]; then
+            echo "::error::AWS_ROLE_ARN secret not set"
+            exit 1
+          fi
+          python -m quantum.security.oidc_cloud federate --provider aws --json
+
+      - name: Federate GCP
+        if: ${{ inputs.provider == 'gcp' }}
+        env:
+          GCP_WORKLOAD_PROVIDER: ${{ secrets.GCP_WORKLOAD_PROVIDER }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "${GCP_WORKLOAD_PROVIDER:-}" ]; then
+            echo "::error::GCP_WORKLOAD_PROVIDER secret not set"
+            exit 1
+          fi
+          python -m quantum.security.oidc_cloud federate --provider gcp --json
+
+      - name: Federate Azure
+        if: ${{ inputs.provider == 'azure' }}
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          if [ -z "${AZURE_TENANT_ID:-}" ] || [ -z "${AZURE_CLIENT_ID:-}" ]; then
+            echo "::error::AZURE_TENANT_ID / AZURE_CLIENT_ID secrets not set"
+            exit 1
+          fi
+          python -m quantum.security.oidc_cloud federate --provider azure --json
