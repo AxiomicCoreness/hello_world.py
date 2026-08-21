@@ -36,21 +36,23 @@ import urllib.request
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+# ─── Constants ────────────────────────────────────────────────────────
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 ENTRY = 8944
-SEAL = "\u2200\u221e\u03c6\u00b2 \u00b7 OIDC_CLOUD_8944 \u00b7 WOOD_DRAGON_0.91 \u00b7 SEALED"
+SEAL = "∀∞φ² · OIDC_CLOUD_8944 · WOOD_DRAGON_0.91 · SEALED"
 LOG = logging.getLogger("oidc_cloud")
 
+# ─── Cryptography ─────────────────────────────────────────────────────
 try:
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import padding, ec, rsa
     from cryptography.hazmat.backends import default_backend
-
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
+    LOG.warning("cryptography not installed; JWT verification disabled")
 
 
 class CloudProvider(str, Enum):
@@ -133,7 +135,7 @@ class FederatedCredential:
             "token_type": self.token_type,
             "expires_in": self.expires_in,
             "expires_at": self.expires_at,
-            "access_token_prefix": (self.access_token[:12] + "\u2026") if self.access_token else "",
+            "access_token_prefix": (self.access_token[:12] + "…") if self.access_token else "",
             "access_token_len": len(self.access_token or ""),
             "claims": self.claims.to_dict() if self.claims else None,
             "meta": self.meta,
@@ -316,6 +318,9 @@ def mint_offline_token(
 
 
 def verify_offline_token(token: str) -> OIDCClaims:
+    """
+    Verify an offline token minted by mint_offline_token().
+    """
     secret = resolve_offline_secret()
     try:
         body, sig = token.rsplit(".", 1)
@@ -565,6 +570,7 @@ class OIDCCloudClient:
                 kwargs.get("subject", "garden-agent"),
                 claims=kwargs.get("claims"),
                 ttl_s=kwargs.get("ttl_s", 3600),
+                audience=kwargs.get("audience", "garden"),
             )
             self._cache[CloudProvider.OFFLINE.value] = cred
             return cred
@@ -649,6 +655,7 @@ class OIDCCloudClient:
         return fetch_jwks(discover_jwks_uri(iss))
 
 
+# ─── CLI ──────────────────────────────────────────────────────────────
 def main(argv: Optional[List[str]] = None) -> int:
     import argparse
 
@@ -695,7 +702,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.json:
         print(json.dumps(out, indent=2, default=str))
     else:
-        print(f"\ud83d\udf01\u2200 OIDC CLOUD \u2014 Entry {ENTRY}")
+        print(f"🜁∀ OIDC CLOUD — Entry {ENTRY}")
         print("=" * 50)
         print(json.dumps(out, indent=2, default=str))
         print(SEAL)
