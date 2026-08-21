@@ -3,6 +3,8 @@ kind: AnalysisTemplate
 metadata:
   name: sovereign-health-check
   namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   args:
   - name: service-name
