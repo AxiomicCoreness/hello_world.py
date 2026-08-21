@@ -50,39 +50,38 @@ jobs:
 
       - name: Apply Rollout manifest
         run: |
-          # Check if manifest exists
           if [ -f "argocd/rollout-sovereign-garden-gateway-multistage.yaml" ]; then
             kubectl apply -f argocd/rollout-sovereign-garden-gateway-multistage.yaml
           else
             echo "⚠️ Rollout manifest not found — creating minimal manifest"
-            cat <<EOF | kubectl apply -f -
-            apiVersion: argoproj.io/v1alpha1
-            kind: Rollout
-            metadata:
-              name: sovereign-garden
-              namespace: sovereign-garden
-            spec:
-              replicas: 1
-              strategy:
-                canary:
-                  steps:
-                  - setWeight: 20
-                  - pause: {duration: 30s}
-                  - setWeight: 100
-              selector:
-                matchLabels:
+            kubectl apply -f - <<'EOF'
+          apiVersion: argoproj.io/v1alpha1
+          kind: Rollout
+          metadata:
+            name: sovereign-garden
+            namespace: sovereign-garden
+          spec:
+            replicas: 1
+            strategy:
+              canary:
+                steps:
+                - setWeight: 20
+                - pause: {duration: 30s}
+                - setWeight: 100
+            selector:
+              matchLabels:
+                app: sovereign-garden
+            template:
+              metadata:
+                labels:
                   app: sovereign-garden
-              template:
-                metadata:
-                  labels:
-                    app: sovereign-garden
-                spec:
-                  containers:
-                  - name: sovereign-garden
-                    image: axiomic/sovereign-engine:latest
-                    ports:
-                    - containerPort: 8000
-            EOF
+              spec:
+                containers:
+                - name: sovereign-garden
+                  image: axiomic/sovereign-engine:latest
+                  ports:
+                  - containerPort: 8000
+          EOF
           fi
 
       - name: Annotate and sync Rollout
