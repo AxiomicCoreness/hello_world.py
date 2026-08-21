@@ -88,7 +88,11 @@ def handshake_from_authorization(
     Validate Bearer token; only then set websocket_ready=True.
     """
     t0 = handover_started if handover_started is not None else time.perf_counter()
-    claims, err = oauth2.validate_bearer(authorization)
+    try:
+        _vb = oauth2.validate_bearer_garden
+    except AttributeError:
+        _vb = oauth2.validate_bearer
+    claims, err = _vb(authorization)
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
     if err or claims is None or not claims.valid:
