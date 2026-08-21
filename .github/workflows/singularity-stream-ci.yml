@@ -1,0 +1,92 @@
+name: Singularity Stream CI
+
+# Maps quantum/quantum_singularity_engine.py into CI with functional streaming.
+# PYTHONUNBUFFERED + NDJSON lines so GitHub Actions live logs show progress.
+# Seal: ∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "quantum/quantum_singularity_engine.py"
+      - ".github/workflows/singularity-stream-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "quantum/quantum_singularity_engine.py"
+      - ".github/workflows/singularity-stream-ci.yml"
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: "Evolution steps (CI default 500)"
+        required: false
+        default: "500"
+
+permissions:
+  contents: read
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy
+
+      - name: Status probe (idle)
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -euo pipefail
+          python quantum/quantum_singularity_engine.py --status | tee singularity_status.json
+          grep -q 'QUANTUM_SINGULARITY\|idle\|seal' singularity_status.json
+
+      - name: Stream evolution (NDJSON)
+        env:
+          PYTHONUNBUFFERED: "1"
+          STEPS: ${{ github.event.inputs.steps || '500' }}
+        run: |
+          set -euo pipefail
+          # Live stream to Actions log + capture NDJSON for artifact
+          python -u quantum/quantum_singularity_engine.py --stream --steps "$STEPS" \
+            | tee singularity-stream.jsonl
+
+          # Require at least one stream line and a final seal line
+          test -s singularity-stream.jsonl
+          tail -n 5 singularity-stream.jsonl
+          grep -q '"event": "complete"\|"event":"complete"\|SINGULARITY\|seal' singularity-stream.jsonl \
+            || grep -q 'complete\|seal' singularity-stream.jsonl
+
+          # Seal hash of stream log
+          echo "STREAM_SEAL=$(sha256sum singularity-stream.jsonl | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          echo "Stream seal: $STREAM_SEAL"
+
+      - name: Upload stream artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: singularity-stream-log
+          path: |
+            singularity-stream.jsonl
+            singularity_status.json
+          retention-days: 14
+
+      - name: Seal entry note
+        if: success()
+        run: |
+          echo "Entry 8923 sealed: singularity streaming functional in CI."
+          echo "STREAM_SEAL=${STREAM_SEAL:-pending}"
+          echo "∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED"
