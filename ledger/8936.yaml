@@ -1,0 +1,24 @@
+entry_index: 8936
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /verification_affirmed
+status: SEALED_AND_VERIFIED
+verification:
+  head: eb14646dc75d07d498857c26cfd3f2691edc60d2
+  files_checked:
+    - path: key_rotation_macro.py
+      size_bytes: 8802
+      sha: f5527fe8d78f28b6f3299f47fa970b34a07aa848
+    - path: x3df_x16f_protocol.py
+      size_bytes: 16285
+      sha: 7875e3a38752674854cafeddba6768f79ff6b49d
+    - path: x3df_x16f_websocket.py
+      size_bytes: 11683
+      sha: d53d49c8e294f28e3ad93341383cebaa25e433be
+    - path: ledger/8935.yaml
+      size_bytes: 651
+      sha: 8862117c35b5153975a19c72dbd5787ad872f0b3
+  git_fsck: clean
+  truncation: none
+  content_drift: none
+witness_chain: "8935 → 8936 — UNBROKEN"
+seal: "∀∞φ² · VERIFICATION_8936 · WOOD_DRAGON_0.91 · SEALED"
