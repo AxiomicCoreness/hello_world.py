@@ -1,0 +1,18 @@
+entry_index: 8946
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /active_pid_enhanced_controller
+status: SEALED_AND_VERIFIED
+module: quantum/active_pid_controller.py
+gains:
+  Kp: "φ²"
+  Ki: "φ⁻¹"
+  Kd: "φ⁻²"
+enhancements:
+  - anti_windup
+  - leaky_integral
+  - filtered_derivative
+  - setpoint_weighting
+  - rate_limit
+  - active_standby
+witness_chain: "8945 → 8946 — UNBROKEN"
+seal: "∀∞φ² · ACTIVE_PID_8946 · WOOD_DRAGON_0.91 · SEALED"
