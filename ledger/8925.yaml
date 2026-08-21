@@ -1,0 +1,16 @@
+entry_index: 8925
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /deepseek_ndjson_stream_implemented
+status: SEALED
+artifacts:
+  - quantum/deepseek_mesh/dsh_adapter.py
+  - tests/test_deepseek_ndjson.py
+  - .github/workflows/deepseek-ndjson-ci.yml
+stream:
+  format: NDJSON
+  events: [start, delta, complete]
+  offline: true
+  http_sse: true
+  cli: "python -m quantum.deepseek_mesh.dsh_adapter --stream --prefer offline"
+witness_chain: "8924 → 8925 — UNBROKEN"
+seal: "∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED"
