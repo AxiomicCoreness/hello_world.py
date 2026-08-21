@@ -1,0 +1,19 @@
+entry_index: 8924
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /argo_ci_pipeline_added
+status: SEALED
+artifacts:
+  - .github/workflows/argo-ci.yml
+  - tests/test_argo_manifests.py
+ci:
+  workflow: argo-ci.yml
+  hard_validate:
+    - yaml_parse_all
+    - selfHeal
+    - HTTPRoute_ignoreDifferences
+    - canary_weights_20_40_60_80_100
+    - kubectl_client_dry_run
+  pure_tests: tests/test_argo_manifests.py
+  live_cluster: optional_skip
+witness_chain: "8923 → 8924 — UNBROKEN"
+seal: "∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED"
