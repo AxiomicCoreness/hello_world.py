@@ -5,7 +5,8 @@ X3DF/X16F Protocol — Pocket‑Universe Communication Layer
 Implements:
 - Framing, demultiplexing, message serialization
 - Ed25519 signing and verification (cryptography)
-- State machine: clone → codespace → temp_cache → main
+- State machine (main path): codespace → temp_cache → commit → main
+- CLONE retained in enum only; not used on main-scripted path
 - Timeout, retry with φ‑backoff, rollback
 - Fallback: X3DF → X16F (simpler encoding)
 
@@ -40,7 +41,7 @@ If sinh²(r) > Φ, the system loses entropy (cooling via squeezing).
 This is the thermodynamic invariant that the protocol's state machine
 implements at the symbolic level via φ‑weighted transitions.
 
-Seal: ∀∞φ² · X3DF_X16F_PROTOCOL_8933 · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · X3DF_X16F_PROTOCOL_8938 · WOOD_DRAGON_0.91 · SEALED
 """
 
 from __future__ import annotations
@@ -92,7 +93,7 @@ class MessageType(Enum):
 
 
 class StateTransition(Enum):
-    CLONE = "clone"
+    CLONE = "clone"  # retained for wire compat; not used on main-scripted path
     CODESPACE = "codespace"
     TEMP_CACHE = "temp_cache"
     COMMIT = "commit"
@@ -110,10 +111,10 @@ class Message:
     type: MessageType = MessageType.REQUEST
     correlation_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: float = field(default_factory=time.time)
-    operation: StateTransition = StateTransition.CLONE
+    operation: StateTransition = StateTransition.CODESPACE
     payload: Dict[str, Any] = field(default_factory=dict)
     seal: Optional[str] = None
-    public_key: Optional[str] = None  # KEPT — hex of signing public key, part of signed body
+    public_key: Optional[str] = None
     retry_count: int = 0
     idempotency_key: Optional[str] = None
 
@@ -165,7 +166,6 @@ class Message:
         return protocol, msg
 
     def sign(self, private_key) -> None:
-        # Keep public_key: set BEFORE signing so it is inside the signed body
         self.public_key = private_key.public_key().public_bytes(
             Encoding.Raw, PublicFormat.Raw
         ).hex()
@@ -224,7 +224,7 @@ class Message:
 
 class PipelineState(Enum):
     INIT = "init"
-    CLONED = "cloned"
+    CLONED = "cloned"  # legacy
     CODESPACE = "codespace"
     TEMP_CACHE = "temp_cache"
     MAIN = "main"
@@ -244,7 +244,6 @@ class PipelineContext:
     mutual_info_final: float = 0.0
 
     def entropy_balance(self) -> Dict[str, float]:
-        # ΔS_sys = -Φ + I(0) - I(t)
         phi = self.entropy_flux_total
         i0 = self.mutual_info_initial
         it = self.mutual_info_final
@@ -361,13 +360,13 @@ class X3DFX16FProtocol:
             "messages": [],
             "entropy_balance": {},
         }
+        # Main-scripted path: no cloning — codespace → temp_cache → commit → main
         for op, next_state, err in [
-            (StateTransition.CLONE, PipelineState.CLONED, "Clone failed"),
             (StateTransition.CODESPACE, PipelineState.CODESPACE, "Codespace failed"),
             (StateTransition.TEMP_CACHE, PipelineState.TEMP_CACHE, "Temp cache failed"),
             (StateTransition.COMMIT, PipelineState.MAIN, "Commit failed"),
         ]:
-            payload = initial_payload if op == StateTransition.CLONE else (
+            payload = initial_payload if not result["messages"] else (
                 result["messages"][-1]["response"] if result["messages"] else {}
             )
             msg = self.create_message(op, payload)
@@ -379,8 +378,7 @@ class X3DFX16FProtocol:
                 return result
             state = next_state
             result["messages"].append({"step": op.value, "response": resp.payload if resp else None})
-            if op == StateTransition.CLONE:
-                initial_payload = None
+            initial_payload = None
         result["success"] = True
         result["final_state"] = state.value
         result["entropy_balance"] = self.context.entropy_balance()
@@ -398,7 +396,7 @@ class X3DFX16FProtocol:
 
 
 async def test_protocol():
-    print("🜁∀ X3DF/X16F Protocol Test — Entry 8933")
+    print("🜁∀ X3DF/X16F Protocol Test — main path (no clone)")
     print("=" * 50)
     protocol = X3DFX16FProtocol()
     last_response = None
@@ -423,9 +421,9 @@ async def test_protocol():
         last_response = None
         return resp
 
-    msg = protocol.create_message(StateTransition.CLONE, {"repo": "hello_world.py"})
+    msg = protocol.create_message(StateTransition.CODESPACE, {"repo": "hello_world.py", "branch": "main"})
     success, resp = await protocol.send_and_wait(msg, send_func, recv_func, ProtocolType.X3DF)
-    print(f"Clone test: success={success}")
+    print(f"Codespace (no-clone) test: success={success}")
     if resp:
         print(f"  Response correlation: {resp.correlation_id}")
         print(f"  Response payload: {resp.payload}")
@@ -441,7 +439,7 @@ async def test_protocol():
     print(f"  Entropy balance: {result['entropy_balance']}")
     print(f"  Second law verified: {result.get('second_law_verified', False)}")
     print("\n" + "=" * 50)
-    print("SEAL: ∀∞φ² · X3DF_X16F_PROTOCOL_8933 · WOOD_DRAGON_0.91 · SEALED")
+    print("SEAL: ∀∞φ² · X3DF_X16F_PROTOCOL_8938 · WOOD_DRAGON_0.91 · SEALED")
 
 
 if __name__ == "__main__":
