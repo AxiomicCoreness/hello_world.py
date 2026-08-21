@@ -1,0 +1,82 @@
+name: DeepSeek NDJSON Stream CI
+
+# Offline NDJSON stream — no API key required for green.
+# Seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "quantum/deepseek_mesh/dsh_adapter.py"
+      - "tests/test_deepseek_ndjson.py"
+      - ".github/workflows/deepseek-ndjson-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "quantum/deepseek_mesh/**"
+      - "tests/test_deepseek_ndjson.py"
+      - ".github/workflows/deepseek-ndjson-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Probe
+        env:
+          PYTHONPATH: "."
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python -m quantum.deepseek_mesh.dsh_adapter --probe | tee deepseek_probe.json
+          grep -q NDJSON deepseek_probe.json
+
+      - name: Offline NDJSON stream
+        env:
+          PYTHONPATH: "."
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -euo pipefail
+          python -u -m quantum.deepseek_mesh.dsh_adapter \
+            --stream --prefer offline --prompt "ci ping" \
+            | tee deepseek-stream.jsonl
+          test -s deepseek-stream.jsonl
+          grep -q '"event": "start"' deepseek-stream.jsonl
+          grep -q '"event": "complete"' deepseek-stream.jsonl
+          STREAM_SEAL="$(sha256sum deepseek-stream.jsonl | cut -d' ' -f1)"
+          echo "STREAM_SEAL=${STREAM_SEAL}" >> "$GITHUB_ENV"
+          echo "Stream seal: ${STREAM_SEAL}"
+
+      - name: Unit tests
+        env:
+          PYTHONPATH: "."
+        run: pytest tests/test_deepseek_ndjson.py -q --tb=short
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-ndjson-log
+          path: |
+            deepseek-stream.jsonl
+            deepseek_probe.json
+          retention-days: 14
+
+      - name: Seal note
+        if: success()
+        run: |
+          echo "Entry 8925 sealed: DeepSeek NDJSON stream."
+          echo "STREAM_SEAL=${STREAM_SEAL:-pending}"
+          echo "∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED"
