@@ -16,7 +16,6 @@ on:
     secrets:
       DEEPSEEK_API_KEY:
         required: true
-      # Optionally propagate other secrets if needed
       GARDEN_SECRET:
         required: false
 
@@ -41,8 +40,10 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # ─── Enforce API key ──────────────────────────────────────────────
+      # ─── Enforce API key ──────────────────────────────────────
       - name: Validate DEEPSEEK_API_KEY
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           set -euo pipefail
           if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
