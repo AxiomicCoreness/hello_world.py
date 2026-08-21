@@ -1,0 +1,18 @@
+entry_index: 8951
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /harness_soft_checks_oidc_pid
+status: SEALED_AND_VERIFIED
+module: quantum/security/soft_harness.py
+features:
+  - ed25519_signatures
+  - state_machine_clone_to_main
+  - idempotency_store
+  - ack_retry_phi_backoff
+checks:
+  - oidc_offline_token
+  - websocket_ready
+  - pid_health
+  - key_expiry
+parent: SACL_8948
+witness_chain: "8950 → 8951 — UNBROKEN"
+seal: "∀∞φ² · SOFT_HARNESS_8951 · WOOD_DRAGON_0.91 · SEALED"
