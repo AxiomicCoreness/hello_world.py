@@ -51,11 +51,12 @@ class TestBreathingManifold:
         f7 = 188.434
         f8 = 304.892
         starfire = 311.018
-        assert f7 < starfire < f8
-        # starfire sits just above the f7–f8 pocket upper edge; pocket is narrower
+        # Starfire sits just above the f7–f8 pocket (above f8)
+        assert f7 < f8
+        assert starfire > f8
         pocket_width = f8 - f7
         assert pocket_width > 0
-        assert abs(starfire - f8) < pocket_width
+        assert (starfire - f8) < pocket_width
 
 
 if __name__ == "__main__":
