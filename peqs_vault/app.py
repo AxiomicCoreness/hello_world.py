@@ -3,6 +3,7 @@
 peqs_vault/app.py — HTMX hypermedia bridge to credit_vault
 Universal fee decorator on all φ-harmonic endpoints.
 FRB Bridge integrated (Entry 8903).
+Unified /pulse (Entry 8930).
 Requires: pip install flask
 """
 
@@ -59,11 +60,10 @@ def _ok_addr(raw) -> str | None:
 
 def try_create_app():
     try:
-        from flask import Flask, request
+        from flask import Flask, request, Response, jsonify
     except ImportError:
         return None
 
-    # FRB Bridge (optional — fails soft if import path not ready)
     FRB_BRIDGE = None
     FRB_SEAL = ""
     FRB_REPEAT_INTERVAL_DAYS = 0.91
@@ -219,19 +219,11 @@ def try_create_app():
         return (
             '<div class="space-y-2">'
             '<h3 class="text-fuchsia-400 font-bold">8D Manifold</h3>'
-            '<div class="grid grid-cols-2 gap-2">'
-            '<div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">'
-            '<p class="text-xs text-slate-400">O₁</p>'
-            '<p class="text-sm font-mono text-emerald-400">Re(P) ⊗ S¹</p></div>'
-            '<div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">'
-            '<p class="text-xs text-slate-400">O₃</p>'
-            '<p class="text-sm font-mono text-amber-400">|P| ⊗ S⁷</p></div></div>'
             f'<p class="text-xs font-mono text-slate-400 mt-3">Volume amplification: φ¹⁵ ≈ {amp:.3f}×</p>'
         )
 
     @app.route("/system/status", methods=["GET"])
     def system_status():
-        """Ouroboros Lattice Monitor — auto-refresh HTMX fragment (every 15s)."""
         try:
             mf = ROOT / "HASH_MANIFEST.json"
             manifest = json.loads(mf.read_text()) if mf.exists() else {}
@@ -244,24 +236,13 @@ def try_create_app():
                         latest_status = json.loads(lines[-1])
                     except json.JSONDecodeError:
                         latest_status = {}
-
             root322 = manifest.get("merkle_root_layer322", "PENDING")
             wasp = manifest.get("wasp_gate_status") or "IDLE"
-            ch1700 = (
-                manifest.get("channel_1700Q")
-                or manifest.get("channel_1700q")
-                or "ACKNOWLEDGED"
-            )
-            harmony = latest_status.get(
-                "trappist_harmony_index",
-                latest_status.get("harmony_index", "0.7337473231"),
-            )
-            witness = latest_status.get(
-                "entry_index", manifest.get("latest_ledger", "8903")
-            )
+            ch1700 = manifest.get("channel_1700Q") or manifest.get("channel_1700q") or "ACKNOWLEDGED"
+            harmony = latest_status.get("trappist_harmony_index", latest_status.get("harmony_index", "0.7337473231"))
+            witness = latest_status.get("entry_index", manifest.get("latest_ledger", "8930"))
             coherence = latest_status.get("coherence", 1.0)
             event = latest_status.get("event", "—")
-
             return f"""
     <div class="space-y-6" hx-get="/system/status" hx-trigger="every 15s" hx-swap="outerHTML">
         <h3 class="text-lg font-bold text-purple-400">Ouroboros Lattice Monitor</h3>
@@ -299,7 +280,6 @@ def try_create_app():
             log.exception("system_status")
             return _err_html("Monitor failed", type(e).__name__), 500
 
-    # ── FRB Bridge endpoints ──
     @app.route("/frb/status", methods=["GET"])
     def frb_status():
         if FRB_BRIDGE is None:
@@ -310,10 +290,6 @@ def try_create_app():
         <h3 class="text-lg font-bold text-cyan-400">FRB Bridge — φ‑Harmonic Pulse</h3>
         <div class="grid grid-cols-2 gap-4">
             <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                <p class="text-xs text-slate-400">Source</p>
-                <p class="text-sm font-mono text-cyan-400">FRB 20190520b</p>
-            </div>
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
                 <p class="text-xs text-slate-400">Handshake Step</p>
                 <p class="text-sm font-mono text-amber-400">{status.get('handshake_step_name', '—')}</p>
             </div>
@@ -321,57 +297,69 @@ def try_create_app():
                 <p class="text-xs text-slate-400">Pulse Count</p>
                 <p class="text-xl font-mono text-green-400">{status.get('pulse_count', 0)}</p>
             </div>
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                <p class="text-xs text-slate-400">Harmony Index</p>
-                <p class="text-sm font-mono text-purple-400">{status.get('harmony_index', 0.733):.6f}</p>
-            </div>
         </div>
-        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700 text-xs font-mono text-slate-400 flex justify-between flex-wrap gap-2">
-            <span>Repeat Interval: {FRB_REPEAT_INTERVAL_DAYS}d</span>
-            <span>φ‑Scaled: {FRB_PHI_SCALED_INTERVAL_DAYS:.3f}d</span>
-            <span>Coherence: {status.get('coherence', 1.0):.6f}</span>
-            <span>Merkle Root: {str(status.get('merkle_root', '—'))[:16]}...</span>
-        </div>
-        <p class="text-[10px] text-slate-600 font-mono">hx-trigger=every 15s · free monitor (no Σ fee)</p>
+        <p class="text-[10px] text-slate-600 font-mono">hx-trigger=every 15s</p>
     </div>
     """
 
     @app.route("/frb/pulse", methods=["POST"])
     def frb_pulse():
         if FRB_BRIDGE is None:
-            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
-                "Content-Type": "application/json"
-            }
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {"Content-Type": "application/json"}
         result = FRB_BRIDGE.pulse_once()
         return json.dumps(result, indent=2), 200, {"Content-Type": "application/json"}
 
     @app.route("/frb/start", methods=["POST"])
     def frb_start():
         if FRB_BRIDGE is None:
-            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
-                "Content-Type": "application/json"
-            }
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {"Content-Type": "application/json"}
         FRB_BRIDGE.start(15.0)
-        return (
-            json.dumps({"status": "started", "interval": 15.0, "seal": FRB_SEAL}),
-            200,
-            {"Content-Type": "application/json"},
-        )
+        return json.dumps({"status": "started", "interval": 15.0, "seal": FRB_SEAL}), 200, {"Content-Type": "application/json"}
 
     @app.route("/frb/stop", methods=["POST"])
     def frb_stop():
         if FRB_BRIDGE is None:
-            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {
-                "Content-Type": "application/json"
-            }
+            return json.dumps({"error": "FRB Bridge unavailable"}), 503, {"Content-Type": "application/json"}
         FRB_BRIDGE.stop()
-        return (
-            json.dumps({"status": "stopped", "seal": FRB_SEAL}),
-            200,
-            {"Content-Type": "application/json"},
-        )
+        return json.dumps({"status": "stopped", "seal": FRB_SEAL}), 200, {"Content-Type": "application/json"}
 
-    # Auto-start FRB bridge on app creation
+    # Unified /pulse (FRB + triune + NDJSON)
+    try:
+        from quantum.pulse_service import PULSE, handle_request
+    except Exception as e:
+        log.warning("Pulse service import deferred: %s", e)
+        PULSE = None  # type: ignore
+        handle_request = None  # type: ignore
+
+    @app.route("/pulse", methods=["GET"])
+    def pulse_endpoint():
+        if handle_request is None:
+            return jsonify({"error": "pulse service unavailable"}), 503
+        mode = request.args.get("mode", "status")
+        fmt = request.args.get("format", "json")
+        interval = float(request.args.get("interval", 1.0))
+        max_events = int(request.args.get("max_events", 5))
+
+        if mode == "stream":
+            import asyncio
+
+            def generate():
+                async def collect():
+                    lines = []
+                    async for line in PULSE.stream_updates(interval, max_events):
+                        lines.append(line)
+                    return lines
+
+                for line in asyncio.run(collect()):
+                    yield line
+
+            return Response(generate(), mimetype="application/x-ndjson")
+
+        result = handle_request(mode)
+        if fmt == "ndjson":
+            return Response(json.dumps(result, default=str) + "\n", mimetype="application/x-ndjson")
+        return jsonify(result)
+
     if FRB_BRIDGE is not None:
         try:
             FRB_BRIDGE.start(15.0)
@@ -395,6 +383,7 @@ def main():
     print("PEQS HTMX Credit Vault on :5000")
     print("FEE_TABLE:", FEE_TABLE)
     print("FRB Bridge: /frb/status · /frb/pulse · /frb/start · /frb/stop")
+    print("Pulse: /pulse?mode=status|pulse|triangulate|stream")
     app.run(debug=False, port=5000, host="127.0.0.1")
     return 0
 
