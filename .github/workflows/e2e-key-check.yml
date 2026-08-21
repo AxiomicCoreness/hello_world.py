@@ -61,3 +61,9 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DSH_E2E_MAX_WORKERS: ${{ inputs.e2e_max_workers || 4 }}
+
+  oidc-offline:
+    needs: e2e
+    uses: ./.github/workflows/oidc-cloud-providers.yml
+    with:
+      provider: offline
