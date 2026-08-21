@@ -5,6 +5,8 @@ metadata:
   namespace: sovereign-garden
   labels:
     rollouts.argoproj.io/gatewayapi-canary: "in-progress"
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   parentRefs:
     - name: sovereign-gateway
@@ -22,6 +24,3 @@ spec:
         - name: sovereign-garden-stable
           port: 8000
           weight: 100
-        - name: sovereign-garden-canary
-          port: 8000
-          weight: 0
