@@ -1,6 +1,8 @@
 """Pure unit tests for argocd/ manifests — no cluster, no kubernetes client.
 
 Runs in Argo CI and Sovereign CI/CD. Hard-fails on schema/contract drift.
+Includes combinator sync-wave precedence: Services(0) → Analysis(1) →
+Rollout(2) → HTTPRoute(3).
 """
 from __future__ import annotations
 
@@ -12,6 +14,7 @@ import yaml
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ARGO = ROOT / "argocd"
+WAVE_ANN = "argocd.argoproj.io/sync-wave"
 
 
 def _load(name: str):
@@ -20,6 +23,12 @@ def _load(name: str):
     docs = [d for d in yaml.safe_load_all(path.read_text()) if d is not None]
     assert docs, f"empty yaml: {path}"
     return docs[0] if len(docs) == 1 else docs
+
+
+def _wave(doc) -> int:
+    anns = (doc.get("metadata") or {}).get("annotations") or {}
+    assert WAVE_ANN in anns, f"missing {WAVE_ANN} on {doc.get('kind')}/{doc.get('metadata', {}).get('name')}"
+    return int(anns[WAVE_ANN])
 
 
 def test_argocd_dir_exists():
@@ -36,6 +45,7 @@ def test_application_self_heal_and_destination():
     assert automated.get("prune") is True
     kinds = {d.get("kind") for d in app["spec"].get("ignoreDifferences", [])}
     assert "HTTPRoute" in kinds
+    assert _wave(app) == 0
 
 
 def test_rollout_canary_weights():
@@ -86,3 +96,21 @@ def test_multistage_weights_if_present():
     text = p.read_text()
     weights = [int(x) for x in re.findall(r"setWeight:\s*(\d+)", text)]
     assert weights == [20, 40, 60, 80, 100]
+
+
+def test_sync_wave_precedence_combinator():
+    """Services → AnalysisTemplate → Rollout → HTTPRoute."""
+    w_stable = _wave(_load("sovereign-garden-stable.yaml"))
+    w_canary = _wave(_load("sovereign-garden-canary.yaml"))
+    w_analysis = _wave(_load("analysis-health.yaml"))
+    w_rollout = _wave(_load("rollout-sovereign-garden.yaml"))
+    w_route = _wave(_load("sovereign-garden-httproute.yaml"))
+
+    assert w_stable == 0
+    assert w_canary == 0
+    assert w_analysis == 1
+    assert w_rollout == 2
+    assert w_route == 3
+
+    assert w_stable <= w_analysis < w_rollout < w_route
+    assert w_canary <= w_analysis < w_rollout < w_route
