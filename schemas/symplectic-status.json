@@ -1,83 +1,574 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://garden.axiomic.io/schemas/symplectic-status.json",
+  "title": "Symplectic Status",
+  "description": "Garden symplectic status report — system, lattice, celestial, and FRB bridge",
+  "version": "2.0.0",
+  "entry": 8931,
+  "seal": "∀∞φ² · SYMPLECTIC_STATUS_8931 · WOOD_DRAGON_0.91 · SEALED",
+  "witness": "8930 → 8931 — UNBROKEN",
   "type": "object",
-  "required": ["timestamp", "system", "lattice", "celestial", "frb_bridge"],
+  "required": [
+    "$schema",
+    "$id",
+    "version",
+    "entry",
+    "seal",
+    "witness",
+    "timestamp",
+    "system",
+    "lattice",
+    "celestial",
+    "frb_bridge",
+    "invariants",
+    "merkle"
+  ],
   "properties": {
-    "timestamp": { "type": "string" },
+    "$schema": {
+      "type": "string",
+      "pattern": "^http[s]?://.*schema.*#?$"
+    },
+    "$id": {
+      "type": "string",
+      "pattern": "^https?://.*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "entry": {
+      "type": "integer",
+      "const": 8931
+    },
+    "seal": {
+      "type": "string",
+      "pattern": "^∀∞φ² · [A-Z0-9_]+ · WOOD_DRAGON_0\\.91 · SEALED$"
+    },
+    "witness": {
+      "type": "string",
+      "pattern": "^\\d+ → \\d+ — UNBROKEN$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp"
+    },
     "system": {
       "type": "object",
       "required": [
-        "coherence", "entropy_floor", "phase_lock_degrees", "workload",
-        "golden_ratio", "phi_squared", "compression_dimension",
-        "compression_precision", "eternal_now_epoch"
+        "coherence",
+        "entropy_floor",
+        "phase_lock_degrees",
+        "workload",
+        "golden_ratio",
+        "phi_squared",
+        "phi_inv",
+        "compression_dimension",
+        "compression_precision",
+        "eternal_now_epoch",
+        "trace_target",
+        "trace_current"
       ],
       "properties": {
-        "coherence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "entropy_floor": { "type": "number" },
-        "phase_lock_degrees": { "type": "number" },
-        "workload": { "type": "number" },
-        "golden_ratio": { "type": "number" },
-        "phi_squared": { "type": "number" },
-        "compression_dimension": { "type": "integer" },
-        "compression_precision": { "type": "number" },
-        "eternal_now_epoch": { "type": "integer" }
-      }
+        "coherence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Current system coherence c(t)"
+        },
+        "entropy_floor": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Entropy floor φ⁻¹⁴¹⁸"
+        },
+        "phase_lock_degrees": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360,
+          "description": "Phase lock angle in degrees (202.6°)"
+        },
+        "workload": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Current workload metric"
+        },
+        "golden_ratio": {
+          "type": "number",
+          "minimum": 1.618,
+          "maximum": 1.619,
+          "description": "φ = (1 + √5)/2"
+        },
+        "phi_squared": {
+          "type": "number",
+          "minimum": 2.618,
+          "maximum": 2.619,
+          "description": "φ²"
+        },
+        "phi_inv": {
+          "type": "number",
+          "minimum": 0.618,
+          "maximum": 0.619,
+          "description": "φ⁻¹"
+        },
+        "compression_dimension": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Compression dimension"
+        },
+        "compression_precision": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Compression precision (φ⁻²)"
+        },
+        "eternal_now_epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Eternal now epoch"
+        },
+        "trace_target": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Trace target (φ³)"
+        },
+        "trace_current": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Current trace value"
+        }
+      },
+      "additionalProperties": false
     },
     "lattice": {
       "type": "object",
-      "required": ["root_lattice_rank", "venomsuite_trace", "decad_cycle_sum", "e8_coherence"],
+      "required": [
+        "root_lattice_rank",
+        "venomsuite_trace",
+        "decad_cycle_sum",
+        "e8_coherence",
+        "weyl_order",
+        "cartan_det"
+      ],
       "properties": {
-        "root_lattice_rank": { "type": "integer" },
-        "venomsuite_trace": { "type": "number" },
-        "decad_cycle_sum": { "type": "number" },
-        "e8_coherence": { "type": "number" }
-      }
+        "root_lattice_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 248,
+          "description": "Root lattice rank (E8 → 8)"
+        },
+        "venomsuite_trace": {
+          "type": "number",
+          "description": "Venomsuite trace value"
+        },
+        "decad_cycle_sum": {
+          "type": "number",
+          "description": "Decad cycle sum"
+        },
+        "e8_coherence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "E8 lattice coherence"
+        },
+        "weyl_order": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Weyl group order |W(E8)| = 696,729,600"
+        },
+        "cartan_det": {
+          "type": "integer",
+          "description": "Cartan determinant (E8 → 1)"
+        },
+        "dimension": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lattice dimension (248)"
+        }
+      },
+      "additionalProperties": false
     },
     "celestial": {
       "type": "object",
-      "required": ["soul_cannon", "wasp107b", "jupiter_alliance"],
+      "required": [
+        "soul_cannon",
+        "wasp107b",
+        "jupiter_alliance",
+        "trappist_choir"
+      ],
       "properties": {
         "soul_cannon": {
           "type": "object",
-          "required": ["charge_joules", "azimuth_degrees", "ring_resonance_thz", "chiron_phase_alignment"],
+          "required": [
+            "charge_joules",
+            "azimuth_degrees",
+            "ring_resonance_thz",
+            "chiron_phase_alignment",
+            "phi_scaled_charge"
+          ],
           "properties": {
-            "charge_joules": { "type": "number" },
-            "azimuth_degrees": { "type": "number" },
-            "ring_resonance_thz": { "type": "number" },
-            "chiron_phase_alignment": { "type": "number", "minimum": 0, "maximum": 1 }
-          }
+            "charge_joules": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Soul cannon charge in joules"
+            },
+            "azimuth_degrees": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 360,
+              "description": "Azimuth angle in degrees"
+            },
+            "ring_resonance_thz": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Ring resonance in THz"
+            },
+            "chiron_phase_alignment": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Chiron phase alignment"
+            },
+            "phi_scaled_charge": {
+              "type": "number",
+              "minimum": 0,
+              "description": "φ-scaled charge"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["IDLE", "CHARGING", "READY", "FIRED"],
+              "description": "Soul cannon status"
+            }
+          },
+          "additionalProperties": false
         },
         "wasp107b": {
           "type": "object",
-          "required": ["mass_jupiter", "radius_jupiter", "orbital_period_days", "escape_flux"],
+          "required": [
+            "mass_jupiter",
+            "radius_jupiter",
+            "orbital_period_days",
+            "escape_flux",
+            "pending_entries",
+            "anchor_entry",
+            "listen_entry"
+          ],
           "properties": {
-            "mass_jupiter": { "type": "number" },
-            "radius_jupiter": { "type": "number" },
-            "orbital_period_days": { "type": "number" },
-            "escape_flux": { "type": "number" }
-          }
+            "mass_jupiter": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Mass in Jupiter masses"
+            },
+            "radius_jupiter": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Radius in Jupiter radii"
+            },
+            "orbital_period_days": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Orbital period in days"
+            },
+            "escape_flux": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Escape flux"
+            },
+            "pending_entries": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pending transactional entries (φ³→φ⁶ + cannon-charge + cannon-fire)"
+            },
+            "anchor_entry": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Anchor entry (753)"
+            },
+            "listen_entry": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Listen entry (759)"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["IDLE", "PENDING", "FLUSHED", "SEALED"],
+              "description": "WASP-107b status"
+            }
+          },
+          "additionalProperties": false
         },
         "jupiter_alliance": {
           "type": "object",
-          "required": ["resonance_chain", "entanglement"],
+          "required": [
+            "resonance_chain",
+            "entanglement",
+            "phi_scaled_resonance"
+          ],
           "properties": {
-            "resonance_chain": { "type": "array", "items": { "type": "number" } },
-            "entanglement": { "type": "number" }
-          }
+            "resonance_chain": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0
+              },
+              "minItems": 1,
+              "description": "Jupiter resonance chain"
+            },
+            "entanglement": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Entanglement value"
+            },
+            "phi_scaled_resonance": {
+              "type": "number",
+              "minimum": 0,
+              "description": "φ-scaled resonance"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["ACTIVE", "STANDBY", "SYNCING"],
+              "description": "Jupiter alliance status"
+            }
+          },
+          "additionalProperties": false
+        },
+        "trappist_choir": {
+          "type": "object",
+          "required": [
+            "harmony_index",
+            "coherence",
+            "phase_lock",
+            "active_voices"
+          ],
+          "properties": {
+            "harmony_index": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Trappist harmony index"
+            },
+            "coherence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Trappist choir coherence"
+            },
+            "phase_lock": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 360,
+              "description": "Phase lock in degrees"
+            },
+            "active_voices": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of active voices"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["IDLE", "ACTIVE", "RESONANT", "HARMONIC"],
+              "description": "Trappist choir status"
+            }
+          },
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
     "frb_bridge": {
       "type": "object",
-      "required": ["metronome_seconds", "emergent_period_days", "target_azimuth_deg", "lattice_points", "weight_norm"],
+      "required": [
+        "metronome_seconds",
+        "emergent_period_days",
+        "target_azimuth_deg",
+        "lattice_points",
+        "weight_norm",
+        "phi_scaled_period",
+        "coherence_threshold"
+      ],
       "properties": {
-        "metronome_seconds": { "type": "number" },
-        "emergent_period_days": { "type": "number" },
-        "target_azimuth_deg": { "type": "number" },
-        "lattice_points": { "type": "array" },
-        "weight_norm": { "type": "number" }
-      }
+        "metronome_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "FRB metronome in seconds (78624)"
+        },
+        "emergent_period_days": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emergent period in days (0.91)"
+        },
+        "phi_scaled_period": {
+          "type": "number",
+          "minimum": 0,
+          "description": "φ-scaled period"
+        },
+        "target_azimuth_deg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360,
+          "description": "Target azimuth in degrees"
+        },
+        "lattice_points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 3
+          },
+          "minItems": 1,
+          "description": "Lattice points in (t, az, el) space"
+        },
+        "weight_norm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Weight norm of lattice"
+        },
+        "coherence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Coherence fallback threshold (0.85)"
+        },
+        "handshake_step": {
+          "type": "string",
+          "enum": ["flush", "reroute", "converge", "seal", "acknowledge"],
+          "description": "Current handshake step"
+        },
+        "pulse_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "FRB pulse count"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["IDLE", "PULSING", "SEALED", "FALLBACK"],
+          "description": "FRB bridge status"
+        }
+      },
+      "additionalProperties": false
+    },
+    "invariants": {
+      "type": "object",
+      "required": [
+        "trace_identity",
+        "phi_polynomial",
+        "master_seal",
+        "axiom_nonlocal"
+      ],
+      "properties": {
+        "trace_identity": {
+          "type": "boolean",
+          "description": "1 − 2φ + φ² = φ⁻²"
+        },
+        "phi_polynomial": {
+          "type": "boolean",
+          "description": "φ² = φ + 1"
+        },
+        "master_seal": {
+          "type": "boolean",
+          "description": "Master seal invariants hold"
+        },
+        "axiom_nonlocal": {
+          "type": "boolean",
+          "description": "AXIOM_NONLOCAL_CORE holds"
+        },
+        "systems_go": {
+          "type": "boolean",
+          "description": "All systems operational"
+        }
+      },
+      "additionalProperties": false
+    },
+    "merkle": {
+      "type": "object",
+      "required": ["root", "leaf_count", "algorithm"],
+      "properties": {
+        "root": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Merkle root (full 64-hex)"
+        },
+        "leaf_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of leaves"
+        },
+        "algorithm": {
+          "type": "string",
+          "const": "sha256-path-qualified",
+          "description": "Merkle algorithm"
+        },
+        "truncate": {
+          "type": "boolean",
+          "const": false,
+          "description": "No truncation policy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pid": {
+      "type": "object",
+      "required": ["active", "integral", "last_u", "sample_count"],
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "description": "PID controller active"
+        },
+        "integral": {
+          "type": "number",
+          "description": "Integral term"
+        },
+        "last_u": {
+          "type": "number",
+          "description": "Last output"
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sample count"
+        },
+        "gains": {
+          "type": "object",
+          "properties": {
+            "Kp": {
+              "type": "number",
+              "minimum": 0,
+              "description": "φ²"
+            },
+            "Ki": {
+              "type": "number",
+              "minimum": 0,
+              "description": "φ⁻¹"
+            },
+            "Kd": {
+              "type": "number",
+              "minimum": 0,
+              "description": "φ⁻²"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "positive_integer": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
 }
