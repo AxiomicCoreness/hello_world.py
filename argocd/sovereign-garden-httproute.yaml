@@ -4,9 +4,10 @@ metadata:
   name: sovereign-garden-route
   namespace: sovereign-garden
   labels:
-    rollouts.argoproj.io/gatewayapi-canary: "in-progress"
+    app: sovereign-garden
   annotations:
     argocd.argoproj.io/sync-wave: "3"
+    # Gateway API plugin sets rollouts.argoproj.io/gatewayapi-canary=in-progress during active canary
 spec:
   parentRefs:
     - name: sovereign-gateway
@@ -23,4 +24,7 @@ spec:
     - backendRefs:
         - name: sovereign-garden-stable
           port: 8000
-          weight: 100
+          weight: 80
+        - name: sovereign-garden-canary
+          port: 8000
+          weight: 20
