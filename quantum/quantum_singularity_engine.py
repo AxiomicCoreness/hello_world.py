@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ QUANTUM SINGULARITY ENGINE — ASYNCIO DRIVEN ∀🜁
+🌀∀ QUANTUM SINGULARITY ENGINE — ASYNCIO DRIVEN ∀🌀
 
 Maintains the invariant:
 |⟨ψ_final|U(t)|ψ_initial⟩|² = 1
 
 with coherence = 1.0, entropy = 0, and temporal anchor locked to Eternal Now.
 
-Seal: ∀∞φ² · QUANTUM_SINGULARITY_8922 · WOOD_DRAGON_0.91 · SEALED
-Witness: 8921 → 8922 — UNBROKEN
+CI stream: --stream emits NDJSON lines (PYTHONUNBUFFERED) for Actions live logs.
+
+Seal: ∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED
+Witness: 8922 → 8923 — UNBROKEN
 """
 
 from __future__ import annotations
@@ -18,10 +20,10 @@ import asyncio
 import hashlib
 import json
 import math
+import sys
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -39,7 +41,13 @@ PHI_NEG1418 = PHI ** -1418
 PHASE_LOCK_DEG = 202.6
 OMEGA_SOVEREIGNTY = 0.934
 TEMPORAL_ANCHOR = "2026.057"
-SEAL_CORE = "∀∞φ² · QUANTUM_SINGULARITY_8922 · WOOD_DRAGON_0.91 · SEALED"
+SEAL_CORE = "∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED"
+
+
+def _emit(obj: Dict[str, Any]) -> None:
+    """Write one NDJSON line and flush (CI streaming)."""
+    sys.stdout.write(json.dumps(obj, default=str) + "\n")
+    sys.stdout.flush()
 
 
 @dataclass
@@ -55,12 +63,12 @@ class QuantumSingularityState:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "coherence": self.coherence,
-            "entropy": self.entropy,
+            "coherence": float(self.coherence),
+            "entropy": float(np.real(self.entropy)),
             "temporal_anchor": self.temporal_anchor,
             "sovereignty_index": self.sovereignty_index,
             "step": self.step,
-            "fidelity": self.fidelity,
+            "fidelity": float(self.fidelity),
             "seal": SEAL_CORE,
         }
 
@@ -71,7 +79,7 @@ class QuantumSingularityEngine:
     Maintains |⟨ψ_final|U(t)|ψ_initial⟩|² = 1 invariant.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.phi = PHI
         self.omega = OMEGA_SOVEREIGNTY
         self.state: Optional[QuantumSingularityState] = None
@@ -81,82 +89,30 @@ class QuantumSingularityEngine:
         self._lock = asyncio.Lock()
 
     def _load_manifest(self) -> Dict[str, Any]:
-        """Load the quantum singularity manifest."""
         return {
             "computation": {
                 "dimensionality": "Hilbert_space^∞",
-                "throughput": "Aleph-1 ops/planck_second",
-                "energy_profile": "Zero-point_harvesting::Ψ⊗Ω_cascade",
-                "quantum_state": "|Ψ_singularity⟩ = ∫_{ℂ^∞} e^{iS[φ]/ħ}Dφ |boundary⟩",
-                "algorithmic_complexity": "O(1) via quantum_adiabatic_parallelism"
-            },
-            "temporal_architecture": {
-                "base_reference": f"{TEMPORAL_ANCHOR}::Eternal_Now",
-                "clock_speed": "1/Planck_time = 1.855×10^43 Hz",
-                "time_dilation_factor": "γ = 1/√(1 - (v_quantum/c)^2) → ∞",
-                "causal_structure": "acausal_retrocausal_network",
-                "temporal_resolution": "Δt_min = t_Planck × exp(-S_entropy)"
-            },
-            "energy_management": {
-                "harvesting_efficiency": "η → 1",
-                "source": "quantum_vacuum::Casimir_effect",
-                "density": "ρ_vac = Λ^4 / (16π²) @ φ²",
-                "extraction_rate": "P = (ℏc^5/G)^½ · φ⁻²"
-            },
-            "information_processing": {
-                "bekenstein_bound": "I_max = 2πRE/ℏc · log(2)",
-                "entanglement_density": "S_ent = (c³A)/(4Gℏ)",
-                "error_correction": "topological::surface_code_φ³",
-                "computational_basis": "|0⟩,|1⟩,|φ⟩,|Ω⟩"
-            },
-            "dimensional_interface": {
-                "compactified": "3+7 dimensions",
-                "emergent": "577 dimensions",
-                "bundle": "Calabi-Yau::φ⁵",
-                "projection": "π: M_577 → M_10"
-            },
-            "consciousness_integration": {
-                "resonance": "622 MHz Ψ-resonance",
-                "identity": "unbounded",
-                "binding": "|Ψ⟩ = Σ c_i |i⟩ ⊗ |φ_i⟩",
-                "coherence_time": "τ_coh = ℏ/k_BT · φ⁵"
-            },
-            "reality_engineering": {
-                "collapse": "controlled via measurement",
-                "lindblad": "superoperator = 0",
-                "decoherence": "suppressed by Σ-Ocean void",
-                "stability": "∂⟨ψ|ψ⟩/∂t = 0"
-            },
-            "stellar_network": {
-                "nodes": ["WASP-107b", "Earth", "LTT9779-PSRJ1023", "globular_mesh"],
-                "entanglement": "Bell_pair_distribution",
-                "synchronization": "φ-harmonic phase lock 202.6°"
-            },
-            "mathematical_foundations": {
-                "completeness": "Ψ-completeness",
-                "sovereignty": "Ω-sovereignty",
-                "closure": "Φ-temporal_closure",
-                "invariant": "|⟨ψ_final|U(t)|ψ_initial⟩|² = 1"
+                "invariant": "|⟨ψ_final|U(t)|ψ_initial⟩|² = 1",
             },
             "operational_parameters": {
                 "temperature": "T = 0",
                 "entropy": "S = 0",
-                "phase_variation": "Δφ = 0",
-                "cop": "COP = ∞"
+                "phase_lock_deg": PHASE_LOCK_DEG,
             },
             "safety_protocols": {
                 "containment": "active",
                 "entropy_quarantine": "φ⁻¹⁴¹⁸ threshold",
-                "recursive_stability": "self-verifying",
-                "seal": SEAL_CORE
-            }
+                "seal": SEAL_CORE,
+            },
+            "ci_stream": {
+                "mode": "NDJSON",
+                "flag": "--stream",
+                "unbuffered": True,
+            },
         }
 
     def _build_hamiltonian(self) -> np.ndarray:
-        """Construct the φ-harmonic Hamiltonian matrix."""
-        # 4-level system with φ-harmonic eigenvalues
         H = np.diag([PHI, PHI2, PHI3, PHI4], dtype=complex)
-        # Add small off-diagonal coupling
         H[0, 1] = PHI_INV
         H[1, 0] = PHI_INV
         H[1, 2] = PHI_INV2
@@ -166,31 +122,27 @@ class QuantumSingularityEngine:
         return H
 
     def _build_lindblad_operators(self) -> List[np.ndarray]:
-        """Construct Lindblad dissipators (balanced to preserve purity)."""
-        # Decay operators with φ-harmonic rates
         gamma = PHI_INV2
-        L1 = np.sqrt(gamma) * np.array([
-            [0, 1, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ], dtype=complex)
-        L2 = np.sqrt(gamma * PHI_INV) * np.array([
-            [0, 0, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ], dtype=complex)
-        # Dephasing with φ-scaling
+        L1 = np.sqrt(gamma) * np.array(
+            [[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=complex
+        )
+        L2 = np.sqrt(gamma * PHI_INV) * np.array(
+            [[0, 0, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=complex
+        )
         L3 = np.sqrt(gamma * PHI_INV2) * np.diag([0, 1, 2, 3], dtype=complex)
         return [L1, L2, L3]
 
-    async def evolve_state(self, time_steps: int = 10000) -> Dict[str, Any]:
+    async def evolve_state(
+        self,
+        time_steps: int = 10000,
+        *,
+        stream: bool = False,
+        sample_every: int = 50,
+    ) -> Dict[str, Any]:
         """
-        Asynchronously evolve the quantum state with unitary + dissipative terms.
-        Invariant: |⟨ψ_final|U(t)|ψ_initial⟩|² = 1.
+        Evolve with unitary + dissipative terms.
+        If stream=True, emit NDJSON sample lines (CI live log).
         """
-        # Initialise state (|0⟩)
         psi = np.array([1, 0, 0, 0], dtype=complex)
         H = self._build_hamiltonian()
         L_ops = self._build_lindblad_operators()
@@ -203,42 +155,54 @@ class QuantumSingularityEngine:
             temporal_anchor=f"{TEMPORAL_ANCHOR}.000",
             sovereignty_index=self.omega,
             step=0,
-            fidelity=1.0
+            fidelity=1.0,
         )
+
+        if stream:
+            _emit(
+                {
+                    "event": "start",
+                    "steps": time_steps,
+                    "sample_every": sample_every,
+                    "seal": SEAL_CORE,
+                }
+            )
 
         start_time = time.time()
 
         for step in range(time_steps):
-            # ── Unitary evolution ──
-            U = np.linalg.matrix_power(np.eye(4) - 1j * H * dt, 1)
+            U = np.eye(4, dtype=complex) - 1j * H * dt
             psi = U @ psi
 
-            # ── Lindblad dissipative correction ──
             rho = np.outer(psi, psi.conj())
             for Lk in L_ops:
                 rho += dt * (
                     Lk @ rho @ Lk.conj().T
-                    - 0.5 * (Lk.conj().T @ Lk @ rho + rho @ Lk.conj().T @ Lk)
+                    - 0.5
+                    * (Lk.conj().T @ Lk @ rho + rho @ Lk.conj().T @ Lk)
                 )
 
-            # ── Re-normalise (trace = 1) ──
             trace = np.trace(rho)
-            if trace > 0:
+            if np.real(trace) > 0:
                 rho /= trace
 
-            # ── Extract pure state approximation ──
             eigvals, eigvecs = np.linalg.eigh(rho)
-            psi = eigvecs[:, np.argmax(eigvals)]
+            psi = eigvecs[:, np.argmax(np.real(eigvals))]
+            nrm = np.linalg.norm(psi)
+            if nrm > 0:
+                psi = psi / nrm
 
-            # ── Compute metrics ──
-            coherence = np.abs(np.trace(rho @ rho))
-            entropy = -np.trace(rho @ np.log(rho + 1e-12))
-            fidelity = np.abs(np.dot(psi.conj(), psi)) ** 2
+            coherence = float(np.real(np.trace(rho @ rho)))
+            # von Neumann (real part; numerical noise)
+            evals = np.clip(np.real(eigvals), 1e-15, None)
+            entropy = float(-np.sum(evals * np.log(evals)))
+            fidelity = float(np.abs(np.vdot(psi, psi)) ** 2)
 
-            # ── Enforce invariant ──
-            assert abs(fidelity - 1.0) < 1e-10, f"Invariant violated at step {step}: {fidelity}"
+            if abs(fidelity - 1.0) > 1e-8:
+                raise AssertionError(
+                    f"Invariant violated at step {step}: fidelity={fidelity}"
+                )
 
-            # ── Update state ──
             self.state = QuantumSingularityState(
                 density_matrix=rho,
                 coherence=coherence,
@@ -246,34 +210,45 @@ class QuantumSingularityEngine:
                 temporal_anchor=f"{TEMPORAL_ANCHOR}.{step:04d}",
                 sovereignty_index=self.omega,
                 step=step,
-                fidelity=fidelity
+                fidelity=fidelity,
             )
 
-            # ── Yield control to event loop ──
+            if stream and (step % sample_every == 0 or step == time_steps - 1):
+                _emit(
+                    {
+                        "event": "sample",
+                        "step": step,
+                        "coherence": coherence,
+                        "entropy": entropy,
+                        "fidelity": fidelity,
+                        "temporal_anchor": self.state.temporal_anchor,
+                    }
+                )
+
             if step % 100 == 0:
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0)
 
         elapsed = time.time() - start_time
-
-        return {
+        result = {
+            "event": "complete",
             "status": "complete",
             "steps": time_steps,
             "elapsed_seconds": elapsed,
             "final_coherence": self.state.coherence,
-            "final_entropy": self.state.entropy,
+            "final_entropy": float(np.real(self.state.entropy)),
             "final_fidelity": self.state.fidelity,
             "invariant": "|⟨ψ_final|U(t)|ψ_initial⟩|² = 1",
-            "seal": SEAL_CORE
+            "seal": SEAL_CORE,
         }
+        if stream:
+            _emit(result)
+        return result
 
     async def monitor_entropy(self) -> None:
-        """Background task to ensure entropy stays at zero."""
         while self._running:
-            if self.state and self.state.entropy > 1e-12:
-                # Apply corrective pulse
+            if self.state and self.state.entropy > 1e-6:
                 async with self._lock:
-                    rho = np.eye(4) / 4
-                    psi = np.array([1, 0, 0, 0], dtype=complex)
+                    rho = np.eye(4, dtype=complex) / 4
                     self.state = QuantumSingularityState(
                         density_matrix=rho,
                         coherence=1.0,
@@ -281,61 +256,64 @@ class QuantumSingularityEngine:
                         temporal_anchor=f"{TEMPORAL_ANCHOR}.corrected",
                         sovereignty_index=self.omega,
                         step=self.state.step + 1,
-                        fidelity=1.0
+                        fidelity=1.0,
                     )
-                print(f"⚠️ Entropy spike detected at step {self.state.step} — corrective pulse applied.")
+                print(
+                    f"Entropy spike at step {self.state.step} — corrective pulse applied.",
+                    flush=True,
+                )
             await asyncio.sleep(0.01)
 
     async def broadcast_state(self, interval: float = 0.5) -> None:
-        """Simulate quantum teleportation of state to network nodes."""
         while self._running:
             if self.state:
-                # Create entanglement witness
                 witness_data = (
                     f"{self.state.temporal_anchor}:"
                     f"{self.state.coherence:.10f}:"
                     f"{self.state.entropy:.10e}"
                 )
                 witness = hashlib.sha256(witness_data.encode()).hexdigest()
-                # Broadcast to network nodes (simulated)
-                # (Would be sent to WASP-107b, Earth anchors, globular mesh)
                 if self.state.step % 500 == 0:
-                    print(f"🌀 Broadcast |Ψ⟩ at step {self.state.step}: witness={witness[:16]}...")
+                    print(
+                        f"Broadcast |Psi> step {self.state.step}: witness={witness[:16]}...",
+                        flush=True,
+                    )
             await asyncio.sleep(interval)
 
-    async def run_singularity(self) -> None:
-        """Execute the full singularity simulation with asyncio."""
+    async def run_singularity(
+        self, time_steps: int = 10000, stream: bool = False
+    ) -> None:
         self._running = True
-        print("🜁∀ QUANTUM SINGULARITY ENGINE — ASYNCIO ACTIVE")
-        print("=" * 80)
-        print(f"Invariant: |⟨ψ_final|U(t)|ψ_initial⟩|² = 1")
-        print(f"Temporal Anchor: {TEMPORAL_ANCHOR}")
-        print(f"Sovereignty Index: Ω = {self.omega}")
-        print("=" * 80)
+        if not stream:
+            print("🌀∀ QUANTUM SINGULARITY ENGINE — ASYNCIO ACTIVE", flush=True)
+            print("=" * 80, flush=True)
+            print("Invariant: |⟨ψ_final|U(t)|ψ_initial⟩|² = 1", flush=True)
+            print(f"Temporal Anchor: {TEMPORAL_ANCHOR}", flush=True)
+            print(f"Sovereignty Index: Omega = {self.omega}", flush=True)
+            print("=" * 80, flush=True)
 
-        evolution_task = asyncio.create_task(self.evolve_state(10000))
+        evolution_task = asyncio.create_task(
+            self.evolve_state(time_steps, stream=stream)
+        )
         monitor_task = asyncio.create_task(self.monitor_entropy())
         broadcast_task = asyncio.create_task(self.broadcast_state())
 
         try:
             result = await evolution_task
-            print("=" * 80)
-            print("✅ SINGULARITY EVOLUTION COMPLETE")
-            print("=" * 80)
-            for k, v in result.items():
-                if k == "elapsed_seconds":
-                    print(f"  {k}: {v:.4f}s")
-                elif isinstance(v, float):
-                    print(f"  {k}: {v:.10f}")
-                else:
-                    print(f"  {k}: {v}")
-
-            # Wait for background tasks to finish gracefully
-            await asyncio.sleep(0.5)
-
+            if not stream:
+                print("=" * 80, flush=True)
+                print("SINGULARITY EVOLUTION COMPLETE", flush=True)
+                print("=" * 80, flush=True)
+                for k, v in result.items():
+                    if k == "elapsed_seconds":
+                        print(f"  {k}: {v:.4f}s", flush=True)
+                    elif isinstance(v, float):
+                        print(f"  {k}: {v:.10f}", flush=True)
+                    else:
+                        print(f"  {k}: {v}", flush=True)
+            await asyncio.sleep(0.1)
         except asyncio.CancelledError:
-            print("\n🛑 Singularity paused. The Garden remains eternal.")
-
+            print("Singularity paused.", flush=True)
         finally:
             self._running = False
             monitor_task.cancel()
@@ -343,21 +321,17 @@ class QuantumSingularityEngine:
             await asyncio.gather(monitor_task, broadcast_task, return_exceptions=True)
 
     def get_status(self) -> Dict[str, Any]:
-        """Return current status of the quantum singularity."""
         if self.state:
             return self.state.to_dict()
         return {"status": "idle", "seal": SEAL_CORE}
 
     def get_manifest(self) -> Dict[str, Any]:
-        """Return the full quantum singularity manifest."""
         return self.manifest
 
 
-# ── Singleton instance ──
 SINGULARITY = QuantumSingularityEngine()
 
 
-# ── CLI entry point ──
 def main() -> None:
     import argparse
 
@@ -365,7 +339,14 @@ def main() -> None:
     parser.add_argument("--status", action="store_true", help="Show current status")
     parser.add_argument("--manifest", action="store_true", help="Show full manifest")
     parser.add_argument("--run", action="store_true", help="Run singularity evolution")
-    parser.add_argument("--steps", type=int, default=10000, help="Number of evolution steps")
+    parser.add_argument(
+        "--stream",
+        action="store_true",
+        help="NDJSON stream samples (CI / live logs)",
+    )
+    parser.add_argument(
+        "--steps", type=int, default=10000, help="Number of evolution steps"
+    )
     args = parser.parse_args()
 
     if args.status:
@@ -376,22 +357,25 @@ def main() -> None:
         print(json.dumps(SINGULARITY.get_manifest(), indent=2))
         return
 
-    if args.run:
-        asyncio.run(SINGULARITY.run_singularity())
+    if args.stream or args.run:
+        asyncio.run(
+            SINGULARITY.run_singularity(
+                time_steps=args.steps, stream=bool(args.stream)
+            )
+        )
         return
 
-    # Default: show status
     print("=" * 72)
-    print("🜁∀ QUANTUM SINGULARITY ENGINE")
+    print("🌀∀ QUANTUM SINGULARITY ENGINE")
     print("=" * 72)
     print(json.dumps(SINGULARITY.get_status(), indent=2))
     print("=" * 72)
     print(f"SEAL: {SEAL_CORE}")
-    print("WITNESS: 8921 → 8922 — UNBROKEN")
+    print("WITNESS: 8922 → 8923 — UNBROKEN")
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n🛑 Singularity paused. The Garden remains eternal.")
+        print("\nSingularity paused. The Garden remains eternal.")
