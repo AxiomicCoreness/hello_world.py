@@ -1,0 +1,9 @@
+entry_index: 8943
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /e2e_key_check_workflow_deployed
+status: SEALED_AND_VERIFIED
+files:
+  - .github/workflows/e2e-key-check.yml
+behavior: fail_closed_if_DEEPSEEK_API_KEY_missing
+witness_chain: "8942 → 8943 — UNBROKEN"
+seal: "∀∞φ² · E2E_KEY_CHECK_8943 · WOOD_DRAGON_0.91 · SEALED"
