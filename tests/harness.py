@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ UNIFIED HARNESS — PYTEST + VITEST E2E + PLUGINS — ENTRY 8939/8941
+🜁∀ UNIFIED HARNESS — PYTEST + VITEST E2E + PLUGINS — ENTRY 8939/8941/8942
 
 Suites: pipeline, core, engine, symplectic, security, void, dsh, e2e, pytest, plugins, all
 """
@@ -225,6 +225,21 @@ def suite_security(strict: bool = False) -> Dict[str, Any]:
     except Exception as e:
         ok = soft_fail(f"Key rotation macro failed: {e}", strict)
         results["checks"].append({"name": "key_rotation_macro", "passed": ok, "error": str(e)})
+        if not ok:
+            results["passed"] = False
+    try:
+        from quantum.security.key_expiry_monitor import KeyExpiryMonitor
+        rep = KeyExpiryMonitor(auto_rotate=False).evaluate()
+        results["checks"].append({
+            "name": "key_expiry_monitor",
+            "passed": not (rep.any_expired and strict),
+            "info": {"any_expired": rep.any_expired, "any_due": rep.any_due, "n": len(rep.statuses)},
+        })
+        if rep.any_expired and strict:
+            results["passed"] = False
+    except Exception as e:
+        ok = soft_fail(f"Key expiry monitor failed: {e}", strict)
+        results["checks"].append({"name": "key_expiry_monitor", "passed": ok, "error": str(e)})
         if not ok:
             results["passed"] = False
     return results
