@@ -3,6 +3,8 @@ kind: Rollout
 metadata:
   name: sovereign-garden
   namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   replicas: 3
   selector:
