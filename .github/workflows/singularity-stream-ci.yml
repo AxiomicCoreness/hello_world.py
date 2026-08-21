@@ -60,19 +60,18 @@ jobs:
           STEPS: ${{ github.event.inputs.steps || '500' }}
         run: |
           set -euo pipefail
-          # Live stream to Actions log + capture NDJSON for artifact
           python -u quantum/quantum_singularity_engine.py --stream --steps "$STEPS" \
             | tee singularity-stream.jsonl
 
-          # Require at least one stream line and a final seal line
           test -s singularity-stream.jsonl
           tail -n 5 singularity-stream.jsonl
           grep -q '"event": "complete"\|"event":"complete"\|SINGULARITY\|seal' singularity-stream.jsonl \
             || grep -q 'complete\|seal' singularity-stream.jsonl
 
-          # Seal hash of stream log
-          echo "STREAM_SEAL=$(sha256sum singularity-stream.jsonl | cut -d' ' -f1)" >> "$GITHUB_ENV"
-          echo "Stream seal: $STREAM_SEAL"
+          # Local var first (GITHUB_ENV not visible until next step under set -u)
+          STREAM_SEAL="$(sha256sum singularity-stream.jsonl | cut -d' ' -f1)"
+          echo "STREAM_SEAL=${STREAM_SEAL}" >> "$GITHUB_ENV"
+          echo "Stream seal: ${STREAM_SEAL}"
 
       - name: Upload stream artifacts
         if: always()
