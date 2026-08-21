@@ -7,6 +7,8 @@ metadata:
     app: sovereign-garden
     role: stable
     fallback: enabled
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   selector:
     app: sovereign-garden
@@ -18,6 +20,3 @@ spec:
     - name: http-fallback-1
       port: 8001
       targetPort: 8001
-    - name: http-fallback-2
-      port: 8002
-      targetPort: 8002
