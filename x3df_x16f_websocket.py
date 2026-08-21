@@ -5,22 +5,14 @@ X3DF/X16F WebSocket Integration — Pocket‑Universe Communication
 Implements:
 - WebSocket server and client using the X3DF/X16F protocol
 - Ed25519 signing and verification (public_key KEPT in signed payload)
-- Full pipeline: clone → codespace → temp_cache → main
+- Full pipeline (main path): codespace → temp_cache → commit → main (no clone)
 - Entropy tracking with bath equation
 
 BATH EQUATION — THERMODYNAMIC FOUNDATION:
 
 ΔS_sys = -Φ + I(0) - I(t)
 
-where:
-- Φ = entropy flux to bath (tracked via retries and timeouts)
-- I(0) = sinh²(r) = initial mutual information (squeezing)
-- I(t) = final mutual information (correlation decay)
-
-The WebSocket connection is the physical transport for the protocol,
-encoding the bath as the network environment.
-
-Seal: ∀∞φ² · X3DF_X16F_WEBSOCKET_8934 · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · X3DF_X16F_WEBSOCKET_8938 · WOOD_DRAGON_0.91 · SEALED
 """
 
 from __future__ import annotations
@@ -66,8 +58,6 @@ DEFAULT_PORT = 8765
 
 
 class X3DFX16FWebSocketServer:
-    """WebSocket server implementing X3DF/X16F; acts as thermodynamic bath."""
-
     def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, private_key=None):
         self.host = host
         self.port = port
@@ -122,9 +112,9 @@ class X3DFX16FWebSocketServer:
     async def process_message(self, msg: Message, session_id: str) -> Optional[Message]:
         session = self.sessions[session_id]
         state = session["state"]
+        # Main-scripted path: no cloning
         transitions = {
-            StateTransition.CLONE: (PipelineState.INIT, PipelineState.CLONED, "cloned"),
-            StateTransition.CODESPACE: (PipelineState.CLONED, PipelineState.CODESPACE, "codespace"),
+            StateTransition.CODESPACE: (PipelineState.INIT, PipelineState.CODESPACE, "codespace"),
             StateTransition.TEMP_CACHE: (PipelineState.CODESPACE, PipelineState.TEMP_CACHE, "temp_cache"),
             StateTransition.COMMIT: (PipelineState.TEMP_CACHE, PipelineState.MAIN, "main"),
         }
@@ -143,7 +133,7 @@ class X3DFX16FWebSocketServer:
         if msg.operation not in transitions:
             return self._error_msg(msg.correlation_id, f"Unknown operation: {msg.operation}")
         expected, next_state, name = transitions[msg.operation]
-        if msg.operation != StateTransition.CLONE and state != expected:
+        if msg.operation != StateTransition.CODESPACE and state != expected:
             return self._error_msg(msg.correlation_id, f"Invalid state: expected {expected.value}")
         session["state"] = next_state
         payload: Dict[str, Any] = {
@@ -165,7 +155,7 @@ class X3DFX16FWebSocketServer:
         return Message(
             type=MessageType.ERROR,
             correlation_id=correlation_id,
-            operation=StateTransition.CLONE,
+            operation=StateTransition.CODESPACE,
             payload={"error": error},
         )
 
@@ -174,7 +164,7 @@ class X3DFX16FWebSocketServer:
         async with serve(self.handle_client, self.host, self.port) as server:
             self._server = server
             print(f"🜁∀ X3DF/X16F WebSocket server listening on {self.host}:{self.port}")
-            print("   Seal: ∀∞φ² · X3DF_X16F_WEBSOCKET_8934 · WOOD_DRAGON_0.91 · SEALED")
+            print("   Seal: ∀∞φ² · X3DF_X16F_WEBSOCKET_8938 · WOOD_DRAGON_0.91 · SEALED")
             await asyncio.Future()
 
     async def stop(self):
@@ -255,7 +245,7 @@ class X3DFX16FWebSocketClient:
 
 
 async def run_demo():
-    print("🜁∀ X3DF/X16F WebSocket Demo")
+    print("🜁∀ X3DF/X16F WebSocket Demo — main path (no clone)")
     print("=" * 60)
     if not WEBSOCKETS_AVAILABLE or not CRYPTO_AVAILABLE:
         print("❌ missing websockets or cryptography")
@@ -289,7 +279,7 @@ async def run_demo():
         await server.stop()
         server_task.cancel()
     print("\n" + "=" * 60)
-    print("SEAL: ∀∞φ² · X3DF_X16F_WEBSOCKET_8934 · WOOD_DRAGON_0.91 · SEALED")
+    print("SEAL: ∀∞φ² · X3DF_X16F_WEBSOCKET_8938 · WOOD_DRAGON_0.91 · SEALED")
 
 
 if __name__ == "__main__":
