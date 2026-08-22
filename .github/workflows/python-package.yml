@@ -8,9 +8,9 @@ name: Sovereign Python Package
 
 on:
   push:
-    branches: [ main, master, deepseek ]
+    branches: [main, master, deepseek]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -240,7 +240,6 @@ jobs:
         uses: ./.github/workflows/oidc-cloud-providers.yml
         with:
           provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
-        secrets: inherit
 
   # ──────────────────────────────────────────────────────────────
   # 3. MCP HANDOVER (existing)
