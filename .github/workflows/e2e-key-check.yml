@@ -207,4 +207,4 @@ jobs:
           path: |
             /tmp/*.log
             argocd/*.yaml
-          retention-days: 365
+          retention-days: 7
