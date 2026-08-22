@@ -14,7 +14,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  id-token: write   # Required for OIDC federation
 
 jobs:
   validate-contract:
@@ -120,21 +120,20 @@ jobs:
                   print(f"❌ Failed {p}: {e}")
           PY
 
+  # ──────────────────────────────────────────────────────────────
+  # CORRECTED: Reusable workflow call at JOB level, not inside a step
+  # ──────────────────────────────────────────────────────────────
   oidc-federation:
-    runs-on: ubuntu-latest
     needs: [validate-contract, validate-argo]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Call OIDC cloud providers workflow
-        uses: ./.github/workflows/oidc-cloud-providers.yml
-        with:
-          provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
+    uses: ./.github/workflows/oidc-cloud-providers.yml
+    with:
+      provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
 
   deploy-argo:
     name: CD · Argo sync
     runs-on: ubuntu-latest
-    needs: [validate-contract, validate-argo]
+    needs: [validate-contract, validate-argo, oidc-federation]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
