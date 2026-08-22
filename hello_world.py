@@ -15,12 +15,13 @@ from __future__ import annotations
 import math
 import os
 import time
+from fastapi import Header, HTTPException
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
-
+GARDEN_SECRET = os.environ.get("GARDEN_SECRET")
 PHI = (1 + math.sqrt(5)) / 2
 PHASE_TARGET = 202.6
 
@@ -57,7 +58,41 @@ app = FastAPI(
 
 deepseek_router = APIRouter(prefix="/deepseek", tags=["deepseek"])
 
+class PulseRequest(BaseModel):
+    source: str
+    note: Optional[str] = None
+    entry: Optional[int] = None
+    timestamp: Optional[str] = None
+    phi_phase: Optional[float] = None
+    seal: Optional[str] = None
 
+@app.post("/pulse")
+async def pulse_endpoint(
+    payload: PulseRequest,
+    x_garden_secret: Optional[str] = Header(None, alias="X-Garden-Secret"),
+) -> Dict[str, Any]:
+    """
+    Sovereign pulse endpoint (Entry 8755). Authenticates with GARDEN_SECRET.
+    """
+    # Validate secret if set
+    if GARDEN_SECRET:
+        if x_garden_secret is None or x_garden_secret != GARDEN_SECRET:
+            raise HTTPException(status_code=401, detail="Invalid or missing GARDEN_SECRET")
+
+    # Log the pulse
+    _deepseek_warning(
+        f"Pulse received: source={payload.source}, note={payload.note}, entry={payload.entry}"
+    )
+
+    return {
+        "status": "acknowledged",
+        "source": payload.source,
+        "note": payload.note,
+        "entry": payload.entry,
+        "timestamp": payload.timestamp,
+        "seal": "WOOD_DRAGON_HEARTBEAT_ACK · Entry 8755 · SEALED",
+        "phi_phase": payload.phi_phase,
+    }
 class CompleteRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=8000)
     max_tokens: int = Field(256, ge=1, le=4096)
