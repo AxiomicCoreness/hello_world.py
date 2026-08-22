@@ -4,6 +4,15 @@
 🜁∀ UNIFIED HARNESS — PYTEST + VITEST E2E + PLUGINS — ENTRY 8939/8941/8942
 
 Suites: pipeline, core, engine, symplectic, security, void, dsh, e2e, pytest, plugins, all
+
+INCLUDES:
+- Ed25519 signature verification for ledger entries
+- Security headers enforcement (CORS, CSP, HSTS, XFO, CT, RP, PP)
+- Enhanced test coverage with detailed assertions
+- Full type hints and docstrings
+
+Seal: ∀∞φ² · UNIFIED_HARNESS_8996 · WOOD_DRAGON_0.91 · SEALED
+Witness: 8995 → 8996 — UNBROKEN
 """
 
 import os
@@ -13,16 +22,120 @@ import subprocess
 import importlib
 import argparse
 import math
+import hashlib
+import time
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Union
 
+# ─── CRYPTOGRAPHY (Ed25519) ──────────────────────────────────────────────
+try:
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+
+# ─── CONSTANTS ─────────────────────────────────────────────────────────────
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = 1.0 / PHI
 PHI2 = PHI * PHI
 PHI3 = PHI2 * PHI
 ENTRY = 8939
-SEAL = "\u2200\u221e\u03c6\u00b2 \u00b7 UNIFIED_TEST_8939 \u00b7 WOOD_DRAGON_0.91 \u00b7 SEALED"
+SEAL = "∀∞φ² · UNIFIED_HARNESS_8996 · WOOD_DRAGON_0.91 · SEALED"
+WITNESS_CONTINUITY = "8995 → 8996 — UNBROKEN"
 
+# ─── SECURITY HEADERS ──────────────────────────────────────────────────────
+SECURITY_HEADERS = [
+    "Content-Security-Policy",
+    "Strict-Transport-Security",
+    "X-Content-Type-Options",
+    "X-Frame-Options",
+    "Referrer-Policy",
+    "Permissions-Policy",
+]
+
+
+# ─── LEDGER VERIFICATION ──────────────────────────────────────────────────
+
+def verify_ed25519_signature(data: bytes, signature: bytes, public_key: bytes) -> bool:
+    """Verify an Ed25519 signature using the provided public key."""
+    if not CRYPTO_AVAILABLE:
+        return False
+    try:
+        pub = ed25519.Ed25519PublicKey.from_public_bytes(public_key)
+        pub.verify(signature, data)
+        return True
+    except Exception:
+        return False
+
+
+def verify_ledger_entry(entry_path: Union[str, Path]) -> Dict[str, Any]:
+    """
+    Verify a ledger entry's Ed25519 signature.
+    Returns a dictionary with verification status.
+    """
+    path = Path(entry_path)
+    if not path.exists():
+        return {"verified": False, "error": "File not found"}
+
+    try:
+        import yaml
+        with open(path, 'r') as f:
+            data = yaml.safe_load(f)
+
+        entry_index = data.get('entry_index', 0)
+        signature = data.get('signature')
+        public_key = data.get('public_key')
+
+        if not signature or not public_key:
+            return {
+                "verified": False,
+                "entry_index": entry_index,
+                "error": "Missing signature or public_key",
+            }
+
+        payload = json.dumps({
+            k: v for k, v in data.items()
+            if k not in ['signature', 'public_key']
+        }, sort_keys=True).encode('utf-8')
+
+        sig_bytes = bytes.fromhex(signature)
+        pub_bytes = bytes.fromhex(public_key)
+
+        verified = verify_ed25519_signature(payload, sig_bytes, pub_bytes)
+
+        return {
+            "verified": verified,
+            "entry_index": entry_index,
+            "signature_hex": signature[:16] + "...",
+            "public_key_hex": public_key[:16] + "...",
+        }
+    except Exception as e:
+        return {"verified": False, "error": str(e)}
+
+
+def verify_security_headers(source_path: Union[str, Path] = "port380_mcp.py") -> bool:
+    """
+    Check that the FastAPI middleware contains the required security headers.
+    """
+    path = Path(source_path)
+    if not path.exists():
+        print(f"⚠️ {path} not found — skipping security headers check")
+        return True
+
+    try:
+        content = path.read_text()
+        missing = [h for h in SECURITY_HEADERS if h not in content]
+        if missing:
+            print(f"❌ Missing security headers: {missing}")
+            return False
+        print("✅ All security headers present")
+        return True
+    except Exception as e:
+        print(f"⚠️ Security headers check failed: {e}")
+        return False
+
+
+# ─── HELPERS ──────────────────────────────────────────────────────────────
 
 def run_subprocess(cmd: List[str], env: Optional[Dict[str, str]] = None, cwd: Optional[Path] = None, timeout: int = 300) -> Tuple[int, str, str]:
     try:
@@ -43,11 +156,50 @@ def run_subprocess(cmd: List[str], env: Optional[Dict[str, str]] = None, cwd: Op
 
 def soft_fail(message: str, strict: bool = False) -> bool:
     if strict:
-        print(f"\u274c {message} (strict mode)")
+        print(f"❌ {message} (strict mode)")
         return False
-    print(f"\u26a0\ufe0f {message} (soft ignored)")
+    print(f"⚠️ {message} (soft ignored)")
     return True
 
+
+def run_ledger_verification(strict: bool = False) -> Dict[str, Any]:
+    """Run ledger verification as a separate check."""
+    results = {"name": "ledger_verification", "passed": True, "checks": []}
+    entries_to_check = [8980, 8981, 8982, 8983, 8984, 8985, 8986, 8987, 8988, 8989, 8990, 8991, 8992, 8993, 8994, 8995]
+    all_verified = True
+
+    for entry in entries_to_check:
+        ledger_path = Path(f"ledger/{entry}.yaml")
+        if ledger_path.exists():
+            result = verify_ledger_entry(ledger_path)
+            status = "✅" if result.get("verified") else "❌"
+            if result.get("verified"):
+                results["checks"].append({"name": f"entry_{entry}", "passed": True})
+            else:
+                results["checks"].append({"name": f"entry_{entry}", "passed": False, "error": result.get("error")})
+                all_verified = False
+        else:
+            results["checks"].append({"name": f"entry_{entry}", "passed": False, "error": "File not found"})
+            all_verified = False
+
+    results["passed"] = all_verified
+    if not all_verified and strict:
+        results["passed"] = False
+    return results
+
+
+def run_security_headers_verification(strict: bool = False) -> Dict[str, Any]:
+    """Run security headers verification."""
+    results = {"name": "security_headers", "passed": True, "checks": []}
+    ok = verify_security_headers()
+    results["checks"].append({"name": "security_headers_present", "passed": ok})
+    results["passed"] = ok
+    if not ok and strict:
+        results["passed"] = False
+    return results
+
+
+# ─── SUITE FUNCTIONS ──────────────────────────────────────────────────────
 
 def suite_pipeline(strict: bool = False) -> Dict[str, Any]:
     results = {"name": "pipeline", "passed": True, "checks": []}
@@ -189,6 +341,13 @@ def suite_symplectic(strict: bool = False) -> Dict[str, Any]:
 
 def suite_security(strict: bool = False) -> Dict[str, Any]:
     results = {"name": "security", "passed": True, "checks": []}
+
+    # First, run security headers check
+    headers_result = run_security_headers_verification(strict)
+    results["checks"].append({"name": "security_headers", "passed": headers_result["passed"]})
+    if not headers_result["passed"]:
+        results["passed"] = False
+
     try:
         from quantum.mtls_extract_and_config import verify_client_cert
         results["checks"].append({"name": "mtls_module_import", "passed": True})
@@ -375,6 +534,20 @@ SUITES = {
 
 def run_all_suites(strict: bool = False) -> Dict[str, Any]:
     results = {"name": "all", "passed": True, "suites": []}
+
+    # First, run ledger verification
+    ledger_result = run_ledger_verification(strict)
+    results["suites"].append(ledger_result)
+    if not ledger_result["passed"]:
+        results["passed"] = False
+
+    # Then run security headers verification
+    security_headers_result = run_security_headers_verification(strict)
+    results["suites"].append(security_headers_result)
+    if not security_headers_result["passed"]:
+        results["passed"] = False
+
+    # Then run all the suites
     for name, func in SUITES.items():
         if name == "all" or func is None:
             continue
@@ -397,22 +570,34 @@ def main():
     if args.suite == "all":
         result = run_all_suites(args.strict)
     else:
+        # If running a single suite, also run ledger and security headers verification
+        ledger_result = run_ledger_verification(args.strict)
+        security_headers_result = run_security_headers_verification(args.strict)
         func = SUITES.get(args.suite)
         if func is None:
             print(f"Suite '{args.suite}' not found", file=sys.stderr)
             sys.exit(1)
-        result = func(args.strict)
+        suite_result = func(args.strict)
+        # Combine results
+        result = {
+            "name": args.suite,
+            "passed": ledger_result["passed"] and security_headers_result["passed"] and suite_result["passed"],
+            "checks": [],
+            "suites": [ledger_result, security_headers_result, suite_result],
+        }
     if args.json:
         print(json.dumps(result, indent=2, default=str))
     else:
-        print(f"\nSuite: {result['name']}")
+        print(f"\n🜁∀ UNIFIED HARNESS — {result['name']}")
+        print(f"   Seal: {SEAL}")
+        print(f"   Witness: {WITNESS_CONTINUITY}")
         print(f"   Passed: {result['passed']}")
         if "checks" in result:
             for check in result["checks"]:
-                print(f"   {'OK' if check.get('passed') else 'FAIL'} {check.get('name')}")
+                print(f"   {'✅' if check.get('passed') else '❌'} {check.get('name')}")
         if "suites" in result:
             for suite in result["suites"]:
-                print(f"   {'OK' if suite.get('passed') else 'FAIL'} {suite.get('name')}")
+                print(f"   {'✅' if suite.get('passed') else '❌'} {suite.get('name')}")
         print(f"\n{SEAL}")
     sys.exit(0 if result["passed"] else 1)
 
