@@ -19,8 +19,10 @@ SMOKE_TESTS = [
     ["python", "x3df_x16f_websocket.py"],
     ["python", "lattice/octonian_heal_loop.py"],
     ["python", "sovereign_suite.py"],
-    # ── NEW: Symplectic POD scaffold tests (Entry 8536) ──
-    ["pytest", "test_symplectic_pod.py", "-v", "--tb=short"],  # <-- added
+    # ── Symplectic POD scaffold tests (Entry 8536) ──
+    ["pytest", "test_symplectic_pod.py", "-v", "--tb=short"],
+    # ── Hybrid RK4 tests (float + Q8.24) ──
+    ["pytest", "test_hybrid_rk4.py", "-v", "--tb=short"],
 ]
 
 ENTRY_INDEX = 8958
@@ -40,7 +42,7 @@ def run_tests():
                 cwd=Path(__file__).resolve().parent.parent,
                 capture_output=True,
                 text=True,
-                timeout=120,  # increased for pytest
+                timeout=120,
             )
             stdout = proc.stdout
             stderr = proc.stderr
