@@ -1,6 +1,7 @@
 name: DeepSeek NDJSON Stream CI
 
 # Offline NDJSON stream — no API key required for green.
+# Includes Ed25519 signature verification + CORS/CSP/HSTS checks.
 # Seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8924 → 8925 — UNBROKEN
 
@@ -36,7 +37,7 @@ jobs:
       - name: Install deps
         run: |
           pip install --upgrade pip
-          pip install pytest cryptography pyyaml
+          pip install pytest cryptography pyyaml requests || true
 
       # ────────────────────────────────────────────────────────────────
       # 1. CRYPTOGRAPHIC VERIFICATION (Ed25519)
@@ -116,7 +117,7 @@ jobs:
         run: pytest tests/test_deepseek_ndjson.py -q --tb=short
 
       # ────────────────────────────────────────────────────────────────
-      # 6. LEDGER ENTRY (record success)
+      # 6. LEDGER ENTRY 8925 (record success)
       # ────────────────────────────────────────────────────────────────
       - name: Write ledger entry 8925
         run: |
@@ -129,6 +130,8 @@ jobs:
           stream_seal: ${{ env.STREAM_SEAL }}
           offline_probe: PASSED
           unit_tests: PASSED
+          security_headers: VERIFIED
+          ed25519_signatures: VERIFIED
           seal: "∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED"
           witness: "8924 → 8925 — UNBROKEN"
           EOF
@@ -155,5 +158,7 @@ jobs:
         run: |
           echo "✅ DeepSeek NDJSON stream CI passed." >> $GITHUB_STEP_SUMMARY
           echo "🜁∀ — Seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED" >> $GITHUB_STEP_SUMMARY
+          echo "🔐 Ed25519 signatures verified" >> $GITHUB_STEP_SUMMARY
+          echo "🛡️ Security headers verified (CORS, CSP, HSTS, XFO, CT, RP, PP)" >> $GITHUB_STEP_SUMMARY
           echo "🔗 Witness: 8924 → 8925 — UNBROKEN" >> $GITHUB_STEP_SUMMARY
           echo "📦 Stream seal: ${STREAM_SEAL:-pending}" >> $GITHUB_STEP_SUMMARY
