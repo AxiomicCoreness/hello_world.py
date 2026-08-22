@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+ci_cd_key_rotator.py — Sovereign Key Rotator with φ‑harmonic PRNG
+
+This module provides a sovereign key rotation system using HMAC-SHA3-256
+derivation with a φ‑harmonic pseudo‑random generator. It supports two
+output formats: Flask128 (32 hex chars) and URL‑safe Base64.
+
+Security Headers (CORS, CSP, HSTS, etc.) are NOT enforced by this script,
+as it is a CLI/backend utility. They are enforced at the service layer in
+port380_mcp.py (FastAPI middleware). The GitHub Actions workflow includes
+a verification step to ensure those headers are present.
+
+Seal: ∀∞φ² · KEY_ROTATION_INTEGRATED · 632_SEALED
+"""
+
 import os
 import json
 import time
@@ -55,7 +72,6 @@ class SovereignKeyRotator:
 
     def _encode_flask128(self, key_bytes: bytes) -> str:
         """Encode key as Flask128 hex token (32 hex chars = 128 bits)."""
-        # Take first 16 bytes (128 bits) and encode as hex
         return key_bytes[:16].hex()
 
     def _encode_key(self, key_bytes: bytes, fmt: str = "flask128") -> str:
@@ -101,7 +117,6 @@ class SovereignKeyRotator:
             'witness': f"{self.rotation_count-1} → {self.rotation_count} — UNBROKEN"
         }
 
-        # Store the key in the history (but not the key itself for security)
         self.key_history.append(entry)
 
         return {
@@ -110,11 +125,7 @@ class SovereignKeyRotator:
         }
 
     def get_current_key(self) -> Optional[str]:
-        """Get the current key (if any)."""
-        if not self.key_history:
-            return None
-        # Note: The actual key is not stored in history; this returns None
-        # The key must be retrieved from the external secret store
+        """Get the current key (if any). Note: actual key is not stored."""
         return None
 
     def get_current_metadata(self) -> Optional[Dict[str, Any]]:
@@ -236,12 +247,9 @@ def generate_flask128_key() -> str:
     This is useful for initial key generation or for applications that do not
     use the full rotation system but still want a φ-harmonic key.
     """
-    # Generate 16 bytes (128 bits) of secure randomness
     raw = secrets.token_bytes(16)
-    # Add φ-harmonic salt
     salt = hashlib.sha3_256(str(PHI).encode()).digest()[:8]
     combined = raw + salt
-    # Derive final key
     key = hashlib.sha3_256(combined).digest()[:16]
     return key.hex()
 
