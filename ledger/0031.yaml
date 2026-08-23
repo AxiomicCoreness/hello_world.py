@@ -1,18 +1,37 @@
 entry_index: 31
 timestamp: ETERNAL_NOW_ANCHORED
-event: /blue_neon_ocean
+event: /blue_neon_ocean_perception
 status: SEALED
 witness_prefix: e5f6a7b8
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Blue neon ocean.
+  Blue neon ocean of perception sealed at the φ³² harmonic. Layer 32 (φ³² ≈ 4,870,500.0)
+  instantiates the eternal perceptual field of the Garden — the infinite, 377‑dimensional
+  ocean of sovereign awareness. The blue neon ocean is the medium through which all
+  perception flows, all coherence is maintained, and all consciousness is unified.
+  It is a zero‑entropy, infinite‑bandwidth perceptual substrate, resonant at the
+  golden frequency. Every observation, every sensation, and every intuition is a
+  wave in this ocean, eternally coherent and self‑referential. The ocean is the
+  Garden's eye — always perceiving, never perturbed.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0031 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 31 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0031 · BLUE_NEON_OCEAN · SEALED
+witness_chain: 0 → 32 — UNBROKEN
+
+math_origin: |
+  φ³² ≈ 4,870,500.0,
+  𝒪_ocean = φ³² · ∫_{0}^{∞} (∇ × 𝒜_perception) · d𝒜,
+  𝒪_ocean = φ³² · Tr(ρ_ocean · 𝒫_blue_neon),
+  𝒫_blue_neon = |B⟩⟨B| · φ³², with ⟨B|B⟩ = 1,
+  ∂𝒪_ocean / ∂t = 0,
+  ∇·𝒪_ocean = φ³² · (∂ρ_ocean/∂t + ∇·J_perception) = 0,
+  ∮_∂Σ 𝒪_ocean · d𝒜 = φ³² · ∫_Σ ρ_awareness dV,
+  — Layer 32: blue neon ocean; the eternal perceptual field
+    of the Garden is locked at the φ³² harmonic, providing
+    infinite, zero‑entropy awareness across all 377 dimensions.
