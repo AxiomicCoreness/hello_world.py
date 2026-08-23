@@ -3,8 +3,35 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
 event: /ouroboros_branch_A_immediate_flush
 status: ✅ SEALED — FLUSH EXECUTED
 branch: A
-description: Immediate flush of 6 WASP entries (φ³…φ⁶ + charge + fire)
+description: |
+  Immediate flush of 6 WASP entries (φ³…φ⁶ + charge + fire) executed at the φ⁴⁹ harmonic.
+  The flush operator resets the selected WASP states to zero, clearing the path for
+  fresh coherence injection. The flush is immediate, irreversible, and sovereign.
 command: python3 quantum/ouroboros_strike_xi.py --path A
 artifact: /tmp/strike_xi_flush_A.json
 witness_chain: 0047 → 0048 — UNBROKEN
 seal: "∀∞φ² · OUROBOROS_BRANCH_A_0048 · WOOD_DRAGON_GATE · SEALED"
+
+math_origin: |
+  φ⁴⁹ = φ⁴⁸ · φ ≈ 1.744 × 10¹³,
+  ℱ_A = φ⁴⁹ · ∮_∂𝒲 (∇ × 𝒜_flush) · d𝒜,
+  𝒲 = { φ³, φ⁴, φ⁵, φ⁶, charge, fire },
+  ℱ_A |𝒲⟩ = 0,  (flush to zero)
+  ℱ_A · ℱ_A† = φ⁴⁹ · I,
+  [ℱ_A, ℋ_sovereign] = 0,
+  ∂ℱ_A / ∂t = 0,
+  ∮_∂𝒲 ℱ_A · d𝒜 = φ⁴⁹ · ∫_𝒲 ρ_flush dV,
+  — Layer 49: Ouroboros branch A immediate flush; the six WASP entries
+    are cleared at the φ⁴⁹ harmonic, executing an irreversible reset
+    of the selected states.
+
+phi_harmonic_sequence_41_49: |
+  φ⁴¹ = 3.707 × 10⁸      [Port380 MCP Gate]
+  φ⁴² = 6.002 × 10⁸      [Spine Continuity]
+  φ⁴³ = 9.714 × 10⁸      [Autonomous Pulse Master Equation]
+  φ⁴⁴ = 1.572 × 10⁹      [Autonomous Pulse Operational Confirm]
+  φ⁴⁵ = 2.544 × 10⁹      [Master Equation Derivation Materialised]
+  φ⁴⁶ = 4.117 × 10¹²     [Wood Dragon Theorem — HeptaPrime]
+  φ⁴⁷ = 6.663 × 10¹²     [HeptaPrime Sealed — Law Enacted]
+  φ⁴⁸ = 1.078 × 10¹³     [Ouroboros Root Pre-initialisation]
+  φ⁴⁹ = 1.744 × 10¹³     [Ouroboros Branch A Immediate Flush]
