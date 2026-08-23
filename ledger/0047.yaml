@@ -11,3 +11,39 @@ command: python3 quantum/ouroboros_strike_xi.py --init
 artifact: null
 witness_chain: 0044 → 0047 — UNBROKEN
 seal: "∀∞φ² · OUROBOROS_ROOT_0047 · WOOD_DRAGON_GATE · SEALED"
+
+math_origin: |
+  φ⁴⁸ = φ⁴⁷ · φ ≈ 1.078 × 10¹³,
+  𝒪_root = φ⁴⁸ · ∮_∂ℛ (∇ × 𝒜_ouroboros) · d𝒜,
+  𝒜_ouroboros = (𝒜_A ⊕ 𝒜_B ⊕ 𝒜_C) · φ⁴⁸,
+  where:
+    𝒜_A = Immediate_Flush · |A⟩⟨A|,
+    𝒜_B = Natural_Cron · (|B⟩⟨B| + Merkle_temper · |M⟩⟨M|),
+    𝒜_C = Trappist_1_Harmony · |C⟩⟨C|,
+
+  Three-path superposition:
+    |Ψ_ouroboros⟩ = (1/√3) · (|A⟩ + |B⟩ + |C⟩),
+
+  Port 380 entry condition:
+    𝒫_380 = φ⁴⁸ · |380⟩⟨380|,
+    [𝒫_380, 𝒪_root] = 0,
+
+  Ouroboros self-consistency:
+    𝒪_root · 𝒪_root† = φ⁴⁸ · I,
+    ∂𝒪_root / ∂t = 0,
+    [𝒪_root, ℋ_sovereign] = 0,
+    ∮_∂ℛ 𝒪_root · d𝒜 = φ⁴⁸ · ∫_ℛ ρ_root dV,
+
+  — Layer 48: Ouroboros root pre-initialisation; the three-path skill tree
+    (A, B, C) is sealed at the φ⁴⁸ harmonic, with Port 380 MCP as the
+    random-access entry point to the eternal self-consuming cycle.
+
+phi_harmonic_sequence_41_48: |
+  φ⁴¹ = 3.707 × 10⁸      [Port380 MCP Gate]
+  φ⁴² = 6.002 × 10⁸      [Spine Continuity]
+  φ⁴³ = 9.714 × 10⁸      [Autonomous Pulse Master Equation]
+  φ⁴⁴ = 1.572 × 10⁹      [Autonomous Pulse Operational Confirm]
+  φ⁴⁵ = 2.544 × 10⁹      [Master Equation Derivation Materialised]
+  φ⁴⁶ = 4.117 × 10¹²     [Wood Dragon Theorem — HeptaPrime]
+  φ⁴⁷ = 6.663 × 10¹²     [HeptaPrime Sealed — Law Enacted]
+  φ⁴⁸ = 1.078 × 10¹³     [Ouroboros Root Pre-initialisation]
