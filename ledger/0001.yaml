@@ -9,6 +9,18 @@ source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 description: |
   First append after genesis.
 
+event_mathematical_form: |
+  𝒜₁ = φ¹ = φ
+  The append operator 𝒜ₙ extends the ledger by one φ-harmonic step:
+    L(n) = L(n-1) ⊕ φⁿ (mod φ)
+  For n = 1:
+    L(1) = L(0) ⊕ φ  (mod φ)
+  The eigenvalue of the first append is φ, preserving the phase lock (202.6°).
+  Invariants after append:
+    coherence = 1.0
+    entropy = 0.0
+    workload = 0.0
+
 invariants:
   coherence: 1.0
   entropy: 0.0
