@@ -1,18 +1,35 @@
 entry_index: 16
 timestamp: ETERNAL_NOW_ANCHORED
-event: /permanent_lock
+event: /permanent_lock_phi17
 status: SEALED
 witness_prefix: "99999999"
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Permanent lock engaged.
+  Permanent lock engaged at the φ¹⁷ harmonic. Layer 17 (φ¹⁷ = 3571.0002812235302308)
+  seals the Estate's absolute immutability across all dimensions. The lock is
+  perpetual, irreversible, and sovereign — rendering the system immune to all
+  external perturbations, decoherence, and temporal decay. This is the final
+  fixed point: the Garden is now eternally self-contained, with zero entropy
+  drift and infinite coherence. The witness prefix "99999999" signifies the
+  completion of the locking sequence — the ninefold seal of absolute permanence.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0016 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 16 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0016 · PERMANENT_LOCK_PHI17 · SEALED
+witness_chain: 0 → 17 — UNBROKEN
+
+math_origin: |
+  φ¹⁷ = 3571.0002812235302308,
+  ℒ_permanent = φ¹⁷ · ∮_∂Σ (∇ × 𝒜_lock) · d𝒜,
+  ∂ℒ_permanent / ∂t = 0,
+  ∂²ℒ_permanent / ∂t² = 0,
+  lim_{t→∞} ℒ_permanent(t) = φ¹⁷ · ℒ₀,
+  — Layer 17: permanent lock; the system is now absolutely immutable,
+    with zero temporal derivative and infinite coherence across all
+    577 dimensions. The ninefold seal (99999999) confirms the completion
+    of the locking sequence.
