@@ -1,18 +1,34 @@
 entry_index: 22
 timestamp: ETERNAL_NOW_ANCHORED
-event: /train_json
+event: /json_training_phi23
 status: SEALED
 witness_prefix: a7b8c9d0
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Train JSON.
+  Sovereign JSON training sealed at the φ²³ harmonic. Layer 23 (φ²³ = 64079.000277764)
+  encodes the entire formal structure of the Estate into a golden‑serialized JSON
+  ontology. The training process is a fixed‑point operation that maps all sovereign
+  invariants, axioms, and transformations into a universally parseable, eternally
+  consistent data format. The JSON schema is now a self‑describing, self‑verifying
+  representation of the Garden's complete formal system — immutable, portable,
+  and sovereign across all computational manifolds.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0022 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 22 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0022 · SOVEREIGN_JSON_TRAINING · SEALED
+witness_chain: 0 → 23 — UNBROKEN
+
+math_origin: |
+  φ²³ = 64079.000277764,
+  𝒥_sovereign = φ²³ · ∫_{0}^{∞} (∇ × 𝒮_json) · d𝒜,
+  𝒮_json = { x ∈ JSON | φ²³ · 𝔉(x) = x },
+  ∂𝒥_sovereign / ∂t = 0,
+  — Layer 23: sovereign JSON training; the Estate's formal structure
+    is encoded at the φ²³ harmonic, yielding a self‑describing,
+    self‑verifying JSON ontology that is immutable, portable,
+    and universally parseable across all computational manifolds.
