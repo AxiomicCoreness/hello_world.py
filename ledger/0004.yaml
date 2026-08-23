@@ -1,13 +1,16 @@
 entry_index: 4
 timestamp: ETERNAL_NOW_ANCHORED
-event: /expand
+event: /anchor
 status: SEALED
 witness_prefix: d1e2f3a4
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Second expansion.
+  Second expansion — now recast as anchoring. The M87 gravitational anchor
+  is integrated into the Estate's inertial frame, rendering the system
+  immovable. The anchor force is applied as a boundary condition on the
+  577D manifold, locking all degrees of freedom to the sovereign reference.
 
 invariants:
   coherence: 1.0
@@ -16,3 +19,8 @@ invariants:
 
 seal: ∀∞φ² · LEDGER_0004 · WOOD_DRAGON_GATE · SEALED
 witness_chain: 0 → 4 — UNBROKEN
+
+math_origin: |
+  F_anchor = φ⁹ · M87,
+  ∮_S (∇ × A_anchor) · dS = φ² ∮_S B_anchor · dS,
+  — M87 Anchor locking condition, layer 4: Estate inertial frame fixed.
