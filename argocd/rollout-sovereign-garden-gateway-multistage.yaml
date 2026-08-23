@@ -3,6 +3,10 @@ kind: Rollout
 metadata:
   name: sovereign-garden
   namespace: sovereign-garden
+  annotations:
+    # Wave 2: Rollout after Services (0) and Analysis (1); before HTTPRoute (3)
+    # Free evolution applies on this surface; traffic programming is wave 3 only
+    argocd.argoproj.io/sync-wave: "2"
   labels:
     app: sovereign-garden
     traffic-router: gatewayAPI
@@ -72,7 +76,7 @@ spec:
                   exact: "early"
         - pause: {duration: 30s}
 
-        # ── Stage 1 · expand + second pin ─────────────────────────────
+        # ── Stage 1 · expand + second pin ────────────────────────────
         # Background: 40% canary / 60% stable
         # Pin: X-Canary-Stage: mid → 100% canary (early still active)
         - setWeight: 40
@@ -84,21 +88,21 @@ spec:
                   exact: "mid"
         - pause: {duration: 30s}
 
-        # ── Stage 2 · majority approach; release early pin ────────────
+        # ── Stage 2 · majority approach; release early pin ───────────
         # Background: 60% canary / 40% stable
-        # early-qa removed; mid remains
+        # early-qa removed (empty setHeaderRoute name-only)
         - setWeight: 60
         - setHeaderRoute:
             name: early-qa
         - pause: {duration: 30s}
 
-        # ── Stage 3 · near-full background ────────────────────────────
+        # ── Stage 3 · near-full background ───────────────────────────
         # Background: 80% canary / 20% stable
         # mid still pinned
         - setWeight: 80
         - pause: {duration: 30s}
 
-        # ── Stage 4 · promote + release mid pin ───────────────────────
+        # ── Stage 4 · promote + release mid pin ──────────────────────
         # Background: 100% canary / 0% stable
         # mid-qa removed (no orphans)
         - setWeight: 100
@@ -133,6 +137,8 @@ spec:
 #
 # Empty setHeaderRoute {name only} removes the injected HTTPRoute rule.
 # WOOD_DRAGON_GATE · 0.91 · τ_FRB = 78624 s
+#
+# Sync wave: "2" — free evolution on Rollout before HTTPRoute wave 3
 #
 # Test:
 #   curl -H 'X-Canary-Stage: early' https://garden.example/health
