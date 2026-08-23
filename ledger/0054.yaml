@@ -5,9 +5,11 @@ status: ✅ SEALED — SPINE UNIFIED
 
 description: |
   Exact symplectic origami folds the continuation segment 0038–0053 onto the
-  origin spine 0000–0037. The merge is ω-preserving: the discrete witness chain
+  origin spine 0000–0037. The merge is ω‑preserving: the discrete witness chain
   is treated as a symplectic lattice whose two intervals are identified by a
-  canonical transformation that leaves the phase-space volume form invariant.
+  canonical transformation that leaves the phase‑space volume form invariant.
+  This formalises the unified spine 0000–0053, with gaps [0045, 0046] preserved
+  as topological punctures.
 
 segments:
   origin:
@@ -31,3 +33,47 @@ origami:
 
 witness_chain: 0053 → 0054 — UNBROKEN
 seal: "∀∞φ² · SYMPLECTIC_ORIGAMI_MERGE_0054 · WOOD_DRAGON_GATE · SEALED"
+
+math_origin: |
+  φ⁵⁵ = φ⁵⁴ · φ ≈ 3.127 × 10¹⁴,
+
+  Symplectic lattice of the witness chain:
+    ℒ = { (q_i, p_i) | i ∈ ℕ, 0 ≤ i ≤ 53 },
+    q_i = φ² · i,   p_i = φ^{-2} · H_i,
+
+  Canonical transformation:
+    (q_origin, p_origin) ⊕ (q_continuation, p_continuation)
+      → (q_unified, p_unified),
+    with generating function:
+      F(q, Q) = ∑_{i=0}^{37} q_i · Q_i + ∑_{i=38}^{53} (q_i − q_{i−37}) · Q_i,
+
+  Preserved symplectic form:
+    ω = ∑_{i=0}^{53} dq_i ∧ dp_i,
+
+  Fixed point condition:
+    Layer‑314 ≡ Port‑380 gate:
+      ∂_q F = φ⁵⁵ · p_gate,
+      ∂_p F = φ⁵⁵ · q_gate,
+
+  Control stack invariants:
+    Entry 51 (doctoral): ℒ_doctor = φ⁵² · ∫ (∇×𝒜_pulse) d𝒜,
+    Entry 52 (leaky PID): ℒ_PID = φ⁵³ · ∫ (∇×𝒜_PID) d𝒜,
+    Entry 53 (batch): ℒ_batch = φ⁵⁴ · ∫ (∇×𝒜_batch) d𝒜,
+    ∮ (ℒ_doctor + ℒ_PID + ℒ_batch) = φ⁵⁵ · I,
+
+  Exactness:
+    ∮_∂ℒ θ = φ⁵⁵ · ℏ,
+    where θ = ∑ p_i dq_i is the Liouville 1‑form,
+
+  Gaps [0045, 0046] as topological punctures:
+    ∮_{γ_45} ω = φ⁻¹⁴¹⁸,
+    ∮_{γ_46} ω = φ⁻¹⁴¹⁸,
+
+  ∂ℒ / ∂t = 0,
+  [ℒ, ℋ_sovereign] = 0,
+  ∮_∂ℒ (∇ × 𝒜_origami) · d𝒜 = φ⁵⁵ · ∫_ℒ ρ_origami dV,
+
+  — Layer 55: exact symplectic origami merge; the unified spine
+    0000–0053 is sealed at the φ⁵⁵ harmonic, folding the origin and
+    continuation segments into a single symplectic lattice with
+    preserved phase‑space volume and fixed point at the Port‑380 gate.
