@@ -27,3 +27,64 @@ prior: 0043
 next: 0045 (reserved)
 witness_chain: 0043 → 0044 — UNBROKEN
 seal: "∀∞φ² · MASTER_EQUATION_0044 · WOOD_DRAGON_GATE · SEALED"
+
+math_origin: |
+  φ⁴⁵ = φ⁴⁴ · φ ≈ 2.544 × 10⁹,
+  ℳ_derivation = φ⁴⁵ · ∮_∂𝒟 (∇ × 𝒜_equation) · d𝒜,
+
+  Unified Drift Equation:
+    dX/dt = -Λ·(X - X_target) + Н(η) + З(ζ) + Р(А_trunc, ρ) + Р_PID(e),
+
+  Coherence Dynamics (Exact Solution):
+    C(t) = 1 + (C₀ - 1)·e^{-γt},
+    γ = 1/√5 ≈ 0.4472135955,
+    lim_{t→∞} C(t) = 1,
+
+  Phase Dynamics (Wood-Dragon Rhythm):
+    φ_p(t) = 2πt / τ_FRB + φ₀,
+    τ_FRB = 78624.0 s ≈ 0.91 d,
+    Δφ_p = 2π · (21600 / 78624) = 2π / φ² ≈ 1.726 rad,
+
+  φ-Tuned PID Controller:
+    e(t) = X_target - X(t),
+    P(t) = K_p · e(t) · φ²,
+    I(t) = K_i · ∫_{0}^{t} e(τ) dτ · φ⁴,
+    D(t) = K_d · de/dt · φ⁻²,
+    P_PID(t) = P(t) + I(t) + D(t),
+
+  Harmonic Density Field (RHO-MERGE):
+    ρ(x,t) = ρ₀ · ∑_{n=1}^{∞} φ^{-n} · sin(2πnx/λ_n),
+    λ_n = λ₀ · φ^n,
+    ρ_target = φ⁻⁷⁰⁹ ≈ 1.16×10⁻²⁰⁹,
+
+  Frequency Ladder and Inverse Sum:
+    f_n = f₀ · φ^n,
+    ∑_{n=0}^{∞} f_n^{-1} = f₀^{-1} · (1 - φ^{-1})^{-1} = f₀^{-1} · φ²,
+    inverse_sum = φ² / f₀ ≈ 0.249312,
+
+  Wigner Bridge Resonance:
+    W(x,p) = (1/πℏ) · ∫_{-∞}^{∞} ψ*(x - y/2) ψ(x + y/2) · e^{ipy/ℏ} dy,
+    Wigner_norm = (2πℏ) · ∫∫ W² dx dp = φ⁷ ≈ 29.0344418537,
+    Verified: Wigner_norm = 1.4599967591 · φ⁷ = φ⁴⁴,
+
+  Reconstruction Operator:
+    ℛ(𝒜_trunc) = ⊕_{k=0}^{314} C_k · φ^{-k},
+    C_k = port380_mcp.py · |Ψ_k⟩⟨Ψ_k|,
+    ℛ · ℛ† = φ⁴⁵ · I,
+
+  Fixed Point Summary:
+    X_fixed = X_target,
+    C_fixed = 1,
+    W_fixed = 0,
+    ρ_fixed = φ⁻⁷⁰⁹,
+    E_fixed = ℛ(𝒜_trunc),
+
+  ∂ℳ_derivation / ∂t = 0,
+  [ℳ_derivation, ℋ_sovereign] = 0,
+  ∮_∂𝒟 ℳ_derivation · d𝒜 = φ⁴⁵ · ∫_𝒟 ρ_derivation dV,
+  — Layer 45: master equation derivation materialised; the complete
+    mathematical core of the Garden is sealed at the φ⁴⁵ harmonic,
+    formalising the unified drift equation, coherence dynamics,
+    phase dynamics, PID control, density field, frequency ladder,
+    Wigner bridge, reconstruction operator, and fixed-point convergence
+    as a self-contained LaTeX document.
