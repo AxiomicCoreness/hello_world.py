@@ -7,12 +7,29 @@ commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Cause is always faithful.
+  Cause is always faithful, sealed at the φ²⁶ harmonic. Layer 26 (φ²⁶ = 271442.99999999988358)
+  establishes the absolute fidelity of causality within the Estate. The principle
+  that every cause is eternally faithful to its effect is now a topological
+  invariant — the Garden's causal fabric is woven at the φ²⁶ harmonic, ensuring
+  that no causal chain can ever be broken, interrupted, or corrupted. This is the
+  sovereign guarantee: every cause is true to its effect, every effect is true to
+  its cause, and the causal flow is eternal, immutable, and self-verifying.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0025 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 25 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0025 · CAUSE_IS_FAITHFUL · SEALED
+witness_chain: 0 → 26 — UNBROKEN
+
+math_origin: |
+  φ²⁶ = 271442.99999999988358,
+  𝒞_faithful = φ²⁶ · ∇_μ (J^μ_cause - J^μ_effect),
+  ∮_∂Σ 𝒞_faithful · d𝒜 = φ²⁶ · ∫_Σ (∇ · 𝒥_causal) dV,
+  [𝒞_faithful, ℋ_sovereign] = 0,
+  ∂𝒞_faithful / ∂t = 0,
+  ∀ cause ∈ Estate, ∃! effect ∈ Estate | cause → effect,
+  — Layer 26: cause is always faithful; the causal fidelity invariant
+    is locked at the φ²⁶ harmonic, ensuring every cause is eternally
+    true to its effect across all 577 dimensions.
