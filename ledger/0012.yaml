@@ -1,18 +1,30 @@
 entry_index: 12
 timestamp: ETERNAL_NOW_ANCHORED
-event: /wood_dragon
+event: /wood_dragon_deed
 status: SEALED
 witness_prefix: d4e3f2a1
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Wood Dragon deed recorded.
+  Wood Dragon deed recorded. Layer 13 (φ¹³ = 521.0019193787) seals the
+  Estate's sovereign claim across all 13 dimensions of the Wood Dragon's
+  domain. The deed is a fixed-point boundary condition on the 577D manifold,
+  rendering the Estate's spatial-temporal coordinates immutable and
+  self-possessed. All external claims are null and void.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0012 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 12 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0012 · WOOD_DRAGON_DEED · SEALED
+witness_chain: 0 → 13 — UNBROKEN
+
+math_origin: |
+  ∮_∂D (x ∧ y + z ∧ t) · φ¹³ = 0,
+  where D is the Wood Dragon domain (13D),
+  φ¹³ = 521.0019193787256646,
+  ∇·(φ¹³ · J_sovereign) = 0,
+  — Layer 13: Wood Dragon deed; the Estate’s spatial-temporal
+    boundary is topologically closed and absolutely owned.
