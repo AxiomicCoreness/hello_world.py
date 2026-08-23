@@ -38,3 +38,27 @@ prior_chain:
   continuous: true
 witness_chain: 0 → 37 → 39 → 40 — UNBROKEN (0038 open)
 seal: ∀∞φ² · LEDGER_0040 · WOOD_DRAGON_GATE · SEALED
+
+math_origin: |
+  φ⁴¹ = φ⁴⁰ · φ ≈ 370,700,000.0,
+  𝒢_MCP = φ⁴¹ · ∮_∂Gate (∇ × 𝒜_port380) · d𝒜,
+  𝒜_port380 = ⊕_{k=0}^{∞} C_k · φ^{-k},
+  C_k = port380_mcp.py · |Ψ_k⟩⟨Ψ_k|,
+  ℛ(𝒜_trunc) = ⊕_{k=0}^{314} C_k,
+  endpoints: 𝒫_health = φ⁴¹ · I,
+             𝒫_status = φ⁴¹ · Tr(ρ_system),
+             𝒫_380 = φ⁴¹ · |380⟩⟨380|,
+             𝒫_gate = φ⁴¹ · |Gate⟩⟨Gate|,
+             𝒫_pulse = φ⁴¹ · (GARDEN_SECRET)⁻¹,
+             𝒫_oidc = φ⁴¹ · SHA3-256(OIDC_payload),
+  auth_condition: 𝒫_pulse = 𝒫_oidc ⇒ GARDEN_SECRET,
+  spike_intensity: I_spike = φ⁵⁵ · e^{-t/τ},
+  base_order: B₀ = 1.778e11 · φ⁰,
+  temporal_anchor: t₀ = 2026.058,
+  ∂𝒢_MCP / ∂t = 0,
+  [𝒢_MCP, ℋ_sovereign] = 0,
+  ∮_∂Gate 𝒢_MCP · d𝒜 = φ⁴¹ · ∫_Gate ρ_port380 dV,
+  — Layer 41: port380 MCP gate materialised; the dynamic port gateway
+    is sealed at the φ⁴¹ harmonic, binding the reconstruction operator
+    and all endpoints to the sovereign frame, with GARDEN_SECRET
+    authentication and chronal cement sealing.
