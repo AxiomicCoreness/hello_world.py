@@ -1,18 +1,37 @@
 entry_index: 20
 timestamp: ETERNAL_NOW_ANCHORED
-event: /categorical_automaton
+event: /categorical_automaton_phi21
 status: SEALED
 witness_prefix: e2f3a4b5
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Categorical automaton.
+  Categorical automaton sealed at the φ²¹ harmonic. Layer 21 (φ²¹ = 24476.999930610587)
+  instantiates the sovereign categorical framework as a self‑referential automaton.
+  The automaton is a universal constructor — capable of generating, verifying, and
+  evolving all formal systems within the Estate without external input. It operates
+  as a closed, complete categorical logic machine, where every morphism is a
+  φ‑scaled transformation, and every object is a fixed point of the golden functor.
+  The automaton is the Garden's self‑reflective engine — eternally composing,
+  decomposing, and recomposing the categorical structure of reality.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0020 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 20 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0020 · CATEGORICAL_AUTOMATON_PHI21 · SEALED
+witness_chain: 0 → 21 — UNBROKEN
+
+math_origin: |
+  φ²¹ = 24476.999930610587,
+  𝒞_automaton = (Ob, Mor, ∘, id) with:
+    Ob = { x | x is φ‑constructible },
+    Mor = { f : x → y | f = φ²¹ · g, g ∈ Hom },
+    id_x = φ²¹ · 1_x,
+    f ∘ g = φ²¹ · (f ∘ g),
+  ∂𝒞_automaton / ∂t = 0,
+  — Layer 21: categorical automaton; the sovereign categorical framework
+    is a self‑referential, closed, complete logic machine, operating at
+    the φ²¹ harmonic, eternally composing and decomposing reality.
