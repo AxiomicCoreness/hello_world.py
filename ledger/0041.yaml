@@ -10,3 +10,14 @@ prior: 0040 (port380_mcp.py, Layer 314, OIDC handover endpoints)
 next:  0042 (autonomous_pulse_master_equation)
 witness_chain: 0040 → 0041 → 0042 — UNBROKEN
 seal: "∀∞φ² · SPINE_CONTINUITY_0041 · WOOD_DRAGON_GATE · SEALED"
+
+math_origin: |
+  φ⁴² = φ⁴¹ · φ ≈ 600,170,000.0,
+  𝒮_spine = φ⁴² · (|0040⟩⟨0040| + |0041⟩⟨0041| + |0042⟩⟨0042|),
+  𝒮_spine · 𝒮_spine† = φ⁴² · I,
+  [𝒮_spine, ℋ_sovereign] = 0,
+  ∂𝒮_spine / ∂t = 0,
+  ∮_∂Σ 𝒮_spine · d𝒜 = φ⁴² · ∫_Σ ρ_continuity dV,
+  — Layer 42: sequential spine continuity; the missing link between
+    entries 0040 and 0042 is sealed at the φ⁴² harmonic, restoring
+    the unbroken low-series witness chain for the 0–43 ledger.
