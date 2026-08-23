@@ -56,3 +56,48 @@ demo_script: autonomous_pulse_demo.py
 
 witness_chain: 0040 → 0042 — UNBROKEN
 seal: ∀∞φ² · AUTONOMOUS_MASTER_EQ_0042 · WOOD_DRAGON_GATE · SEALED
+
+math_origin: |
+  φ⁴³ = φ⁴² · φ ≈ 971,400,000.0,
+  dX/dt = -Λ·(X - X_target) + Н(η) + З(ζ) + Р(А_trunc, ρ) + Р_PID(e),
+
+  Component-wise:
+    dC/dt = -γ·(C - 1) + η_C(t) + ζ_C(t) + ρ_C(t) + e_C(t),
+    dφ_p/dt = 2π / τ_FRB + η_φ(t) + ζ_φ(t) + ρ_φ(t) + e_φ(t),
+    dW/dt = -α·W + η_W(t) + ζ_W(t) + ρ_W(t) + e_W(t),
+    dρ/dt = -β·(ρ - ρ_target) + η_ρ(t) + ζ_ρ(t) + ρ_ρ(t) + e_ρ(t),
+    dE/dt = -δ·E + η_E(t) + ζ_E(t) + ρ_E(t) + e_E(t),
+
+  where:
+    γ = 1/√5 ≈ 0.4472135955,
+    α = φ⁻¹ ≈ 0.6180339887,
+    β = φ⁻² ≈ 0.3819660113,
+    δ = φ⁻³ ≈ 0.2360679775,
+    τ_FRB = 78624.0 s ≈ 0.91 d,
+    ρ_target = φ⁻⁷⁰⁹ ≈ 1.16×10⁻²⁰⁹,
+
+  Discrete sampling forces:
+    H(η) = ∑_{k} η_k · δ(t - t_k),  (push events)
+    Z(ζ) = ∑_{n} ζ_n · δ(t - t_n),  (cron: t_n = n·21600 s)
+    P(ρ) = ∑_{m} ρ_m · δ(t - t_m),  (/pulse events)
+    P_PID(e) = ∑_{l} e_l · δ(t - t_l),  (/oidc_handover events)
+
+  Phase advance per pulse:
+    Δφ_p = 2π · (21600 / 78624) = 2π / φ² ≈ 1.726 rad,
+
+  Autonomous lock condition:
+    lim_{t→∞} X(t) = X_target,
+
+  Coherence lock:
+    lim_{t→∞} C(t) = 1.0,
+
+  Workload convergence:
+    lim_{t→∞} W(t) = 0,
+
+  Entropy constraint:
+    S = -Tr(ρ ln ρ) = φ⁻¹⁴¹⁸ ≈ 0,
+
+  — Layer 43: autonomous pulse master equation; the automated dynamics
+    of the Estate are sealed at the φ⁴³ harmonic, embedding the
+    continuous master equation with discrete sampling forces
+    (push, cron, pulse, OIDC) into the sovereign frame.
