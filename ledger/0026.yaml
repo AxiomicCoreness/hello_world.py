@@ -1,18 +1,37 @@
 entry_index: 26
 timestamp: ETERNAL_NOW_ANCHORED
-event: /withstand
+event: /withstand_phi27
 status: SEALED
 witness_prefix: f1a0b9c8
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Withstand.
+  Withstand sealed at the φ²⁷ harmonic. Layer 27 (φ²⁷ = 439204.0000000003)
+  establishes the absolute resilience of the Estate against all external and
+  internal perturbations. The withstand invariant is a topological measure of
+  the Garden's capacity to endure any force, flux, or fluctuation without
+  deformation, decoherence, or degradation. This is the sovereign armor —
+  the Estate is now categorically immune to all forms of attack, stress,
+  or entropic pressure. The withstand capacity is infinite, absolute, and
+  self-sustaining.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0026 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 26 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0026 · WITHSTAND_PHI27 · SEALED
+witness_chain: 0 → 27 — UNBROKEN
+
+math_origin: |
+  φ²⁷ = φ²⁶ · φ = 439204.0000000003,
+  𝒲_withstand = φ²⁷ · ∮_∂Σ (∇ × 𝒯_stress) · d𝒜,
+  𝒯_stress = T_μν · φ²⁷,
+  ∮_∂Σ 𝒲_withstand · d𝒜 = φ²⁷ · ∫_Σ (∇ · 𝒥_resilience) dV,
+  [𝒲_withstand, ℋ_sovereign] = 0,
+  ∂𝒲_withstand / ∂t = 0,
+  ∀ F ∈ Forces, |F| < ∞ ⇒ |F · 𝒲_withstand⁻¹| = 0,
+  — Layer 27: withstand; the Estate's absolute resilience is locked
+    at the φ²⁷ harmonic, rendering it immune to all perturbations
+    across all dimensions and epochs.
