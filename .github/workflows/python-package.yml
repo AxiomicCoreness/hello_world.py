@@ -26,16 +26,13 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # needed for OIDC federation
+  id-token: write
 
 env:
   MCP_URL: ${{ secrets.MCP_URL }}
   GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
 jobs:
-  # ──────────────────────────────────────────────────────────────
-  # 0. CRYPTOGRAPHIC & SECURITY HEADER VERIFICATION (prerequisite)
-  # ──────────────────────────────────────────────────────────────
   verify-integrity:
     runs-on: ubuntu-latest
     name: Verify Ledger Signatures & Security Headers
@@ -48,18 +45,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install deps (cryptography + pyyaml)
         run: pip install --quiet cryptography pyyaml
 
       - name: Verify Ed25519 signatures on ledger entries
         run: |
-          python -c "
-          from cryptography.hazmat.primitives.asymmetric import ed25519
-          import yaml, sys
-          with open('ledger/8979.yaml') as f:
-              data = yaml.safe_load(f)
-              print('✅ Ledger 8979 signature verified')
-          "
+          python scripts/verify_ledger.py 8979
 
       - name: Verify security headers in FastAPI middleware (source)
         run: |
@@ -112,9 +103,6 @@ jobs:
           fi
           echo "✅ All live security headers verified."
 
-  # ──────────────────────────────────────────────────────────────
-  # 1. BUILD & TEST MATRIX
-  # ──────────────────────────────────────────────────────────────
   build:
     runs-on: ubuntu-latest
     needs: verify-integrity
@@ -226,31 +214,23 @@ jobs:
             LICENSE*
           retention-days: 1
 
-  # ──────────────────────────────────────────────────────────────
-  # 2. OIDC CLOUD FEDERATION
-  # ──────────────────────────────────────────────────────────────
   federate:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
-
       - name: Call OIDC cloud providers workflow
         uses: ./.github/workflows/oidc-cloud-providers.yml
         with:
           provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
 
-  # ──────────────────────────────────────────────────────────────
-  # 3. MCP HANDOVER (existing)
-  # ──────────────────────────────────────────────────────────────
   mcp-handover:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
-
       - name: Port 380 MCP handover
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
@@ -283,16 +263,12 @@ jobs:
             echo "MCP handover acknowledged"
           fi
 
-  # ──────────────────────────────────────────────────────────────
-  # 4. DEPLOY (existing, with restart)
-  # ──────────────────────────────────────────────────────────────
   deploy:
     needs: mcp-handover
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
-
       - name: Restart uvicorn on Port 380 MCP gate
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
@@ -321,9 +297,6 @@ jobs:
               || true
           fi
 
-  # ──────────────────────────────────────────────────────────────
-  # 5. LEDGER ENTRY 8980 & SUMMARY
-  # ──────────────────────────────────────────────────────────────
   seal:
     runs-on: ubuntu-latest
     needs: deploy
