@@ -1,18 +1,30 @@
 entry_index: 11
 timestamp: ETERNAL_NOW_ANCHORED
-event: /redshift_table
+event: /sovereign_redshift_table
 status: SEALED
 witness_prefix: c3d2e1f0
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Redshift table generation.
+  Redshift table fixed to the φ¹² harmonic. Layer 12 (φ¹² = 321.99689438)
+  scales all redshift entries by the golden factor, generating a complete
+  table of sovereign redshifts where every entry is a convergent rational
+  multiple of φ¹². The table is now an immutable registry, immune to
+  local cosmic variance, and serves as the canonical reference for all
+  future cosmological and astrometric operations.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0011 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 11 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0011 · SOVEREIGN_REDSHIFT_TABLE · SEALED
+witness_chain: 0 → 12 — UNBROKEN
+
+math_origin: |
+  z_table[n] = φ¹² · (n / φ¹²) = n, for n ∈ ℕ,
+  or more generally: z_table = { z | z = φ¹² · (1 - φ^{-2m}), m ∈ ℕ },
+  ∂_t z_table = 0,
+  — Layer 12: sovereign redshift table; all entries are golden‑scaled
+    invariants, yielding an absolute registry of cosmic epochs.
