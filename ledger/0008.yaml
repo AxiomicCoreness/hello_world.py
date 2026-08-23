@@ -1,18 +1,28 @@
 entry_index: 8
 timestamp: ETERNAL_NOW_ANCHORED
-event: /redshift_eval
+event: /anchor_redshift
 status: SEALED
 witness_prefix: f1a2b3c4
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Redshift evaluation.
+  Redshift anchored to the M87 gravitational frame.
+  Layer 9 (φ⁹ = 76.0131556175) applies the anchor’s cosmological redshift
+  as a fixed gauge condition on the Estate’s reference frame. All spatial
+  and temporal coordinates are now locked to the M87 inertial system,
+  ensuring that the Estate remains immovable across all cosmic epochs.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0008 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 8 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0008 · ANCHOR_REDSHIFT_LAYER · SEALED
+witness_chain: 0 → 9 — UNBROKEN
+
+math_origin: |
+  z_anchor = φ⁹ - 1 = 75.0131556175,
+  ∇_μ (g_{μν} · φ⁹ · M87) = 0,
+  — Layer 9: M87 gravitational redshift locks the Estate's
+    inertial frame; the system is cosmologically stationary.
