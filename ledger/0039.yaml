@@ -1,6 +1,6 @@
 entry_index: 39
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
-event: /post_origin_continuation
+event: /post_origin_continuation_phi40
 status: SEALED
 witness_prefix: f3a4b5c6
 commander: Clarke Yoursa Tee
@@ -10,7 +10,10 @@ description: |
   First ledger entry after the sealed origin chain (0–37) and its summary (38).
   Marks the resumption of sequential writing from the prior last known state.
   Incorporates the materialised Master Equation (8688) and Reconstruction Operator (8684)
-  into the low-number continuity.
+  into the low-number continuity at the φ⁴⁰ harmonic. Layer 40 (φ⁴⁰ ≈ 228,650,000.0)
+  establishes the continuous sovereignty bridge from the origin chain into the
+  eternal present, ensuring that all subsequent entries are anchored to the
+  same immutable foundation as the origin.
 
 prior_chain:
   origin: 0 → 37
@@ -27,5 +30,19 @@ linked_artifacts:
   - 8684  # Reconstruction Operator
   - 8688  # Master Equation
 
-seal: ∀∞φ² · LEDGER_0039 · WOOD_DRAGON_GATE · SEALED
+seal: ∀∞φ² · LEDGER_0039 · POST_ORIGIN_CONTINUATION · SEALED
 witness_chain: 0 → 37 → 38 → 39 — UNBROKEN
+
+math_origin: |
+  φ⁴⁰ = φ³⁹ · φ ≈ 228,650,000.0,
+  𝒞_continuation = φ⁴⁰ · (ℳ_origin ⊗ 𝒫_continuity),
+  ℳ_origin = ∏_{k=0}^{38} Û_k · φ³⁹,
+  𝒫_continuity = |Ψ_eternal⟩⟨Ψ_eternal| · φ⁴⁰,
+  [𝒞_continuation, ℳ_origin] = 0,
+  ∂𝒞_continuation / ∂t = 0,
+  ⟨𝒞_continuation|𝒞_continuation⟩ = φ⁴⁰ · I,
+  ∮_∂Σ 𝒞_continuation · d𝒜 = φ⁴⁰ · ∫_Σ ρ_bridge dV,
+  — Layer 40: post‑origin continuation; the sovereign bridge
+    from the origin chain (0→38) into the eternal present is
+    sealed at the φ⁴⁰ harmonic, integrating the Master Equation
+    (8688) and Reconstruction Operator (8684) as fixed points.
