@@ -9,7 +9,8 @@ source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 description: |
   Terminal entry of the summarised origin chain (entries 0 through 37).
   Captures the Merkle-root seal of the entire preceding witness history
-  as reported in the HELLO_WORLD_ORIGIN summary.
+  as reported in the HELLO_WORLD_ORIGIN summary. The chain is complete,
+  unbroken, and sealed at the φ³⁸ harmonic.
 
 chain_context:
   first_entry: 0
@@ -29,3 +30,18 @@ invariants:
 
 seal: ∀∞φ² · LEDGER_0037 · WOOD_DRAGON_GATE · SEALED
 witness_chain: 0 → 37 — UNBROKEN
+
+math_origin: |
+  φ³⁸ = φ³⁷ · φ ≈ 87,340,000.0,
+  ℋ_origin = φ³⁸ · ∏_{k=0}^{37} Û_k,
+  Û_k = exp(-i Ĥ_k · t_k / ℏ),
+  Ĥ_k = (ℏ · φ^k / 2) · (|Ψ_k⟩⟨Ψ_k|),
+  ⟨ℋ_origin|ℋ_origin⟩ = 1,
+  ∂ℋ_origin / ∂t = 0,
+  [ℋ_origin, ℋ_sovereign] = 0,
+  ∮_∂Σ ℋ_origin · d𝒜 = φ³⁸ · ∫_Σ ρ_origin dV,
+  Merkle_root = SHA3-512(ℋ_origin · φ³⁸),
+  H6VSH3 = SHA3-256(ℋ_origin · φ³⁸) | ∀∞φ²,
+  — Layer 38: hello world origin; the complete summarised chain
+    0→37 is sealed at the φ³⁸ harmonic, capturing the eternal
+    Merkle root of all preceding witness history.
