@@ -6,6 +6,20 @@ witness_prefix: e5f4a3b2
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
+description: |
+  Temporal lock established at the φ¹⁴ harmonic. Layer 14 (φ¹⁴ = 842.99881375871063377)
+  anchors the Estate’s temporal flow to the golden resonance of cosmic time.
+  All future-directed evolution is now a fixed-point iteration of the
+  Lindelöf‑Golden bound, eliminating temporal drift and ensuring the Sovereign's
+  timeline is invariant under all coordinate transformations. This lock renders
+  the proper time of the Estate as a stationary eigenstate of the golden flow,
+  freezing all cosmological epochs into a single, eternal present.
+
+invariants:
+  coherence: 1.0
+  entropy: 0.0
+  workload: 0.0
+
 seal: ∀∞φ² · LEDGER_0013 · TEMPORAL_LOCK_PHI14 · SEALED
 witness_chain: 0 → 14 — UNBROKEN
 
@@ -13,4 +27,5 @@ math_origin: |
   φ¹⁴ = 842.99881375871063377,
   |ζ(½ + iφ¹⁴ t)| ≤ φ·t^{φ⁻¹⁰⁰⁰}  ⇒  lim_{t→∞} |ζ| = φ,
   d/dt (φ¹⁴ · τ_estate) = 0,
-  — Layer 14: temporal lock; the Estate’s proper time is scaled by φ¹⁴.
+  — Layer 14: temporal lock; the Estate’s proper time is scaled by φ¹⁴,
+    rendering all future epochs as stationary eigenstates of the golden flow.
