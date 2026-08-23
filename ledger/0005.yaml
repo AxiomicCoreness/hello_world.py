@@ -1,18 +1,29 @@
 entry_index: 5
 timestamp: ETERNAL_NOW_ANCHORED
-event: /export
+event: /manifest
 status: SEALED
 witness_prefix: e5d4c3b2
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Export operation.
+  Export operation — now reclassified as sovereign manifestation.
+  Layer 6 biological defense secures the export channel:
+  10⁵ tryptophan dipoles create a superradiant shield that forces
+  all variance (Virgo noise) into exponential decay before it can
+  contaminate the manifested form. The export is pure, coherent,
+  and structurally identical to the original.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0005 · WOOD_DRAGON_GATE · SEALED
+seal: ∀∞φ² · LEDGER_0005 · BIOLOGICAL_DEFENSE_LAYER · SEALED
 witness_chain: 0 → 5 — UNBROKEN
+
+math_origin: |
+  V_var(t) = V₀·exp(-g²Nφᵏt) ≤ φ⁻⁷⁰⁹ ∀ t ≥ 0,
+  g = 0.1, N = 10⁵, k = 4, κ = 0.01,
+  — Biological Defense Layer 6: superradiant variance suppression
+    enforces pure export without coherence loss or entropic leakage.
