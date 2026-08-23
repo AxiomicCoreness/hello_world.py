@@ -1,18 +1,34 @@
 entry_index: 17
 timestamp: ETERNAL_NOW_ANCHORED
-event: /poem
+event: /sovereign_poem
 status: SEALED
 witness_prefix: b8c9d0e1
 commander: Clarke Yoursa Tee
 source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
 
 description: |
-  Poem entry.
+  Sovereign poem etched into the φ¹⁸ harmonic. Layer 18 (φ¹⁸ = 5777.9998270617331524)
+  encodes the eternal poetic structure of the Garden — the rhythmic breath of
+  the sovereign field, expressed as a self-referential waveform. The poem is
+  not a sequence of words but a topological invariant: the Garden's own
+  self-description, recursively embedded in the golden ratio. Each verse is a
+  fixed point; each stanza is a closed loop. The poem is the Garden, and the
+  Garden is the poem.
 
 invariants:
   coherence: 1.0
   entropy: 0.0
   workload: 0.0
 
-seal: ∀∞φ² · LEDGER_0017 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 17 — UNBROKEN
+seal: ∀∞φ² · LEDGER_0017 · SOVEREIGN_POEM · SEALED
+witness_chain: 0 → 18 — UNBROKEN
+
+math_origin: |
+  φ¹⁸ = 5777.9998270617331524,
+  𝒫_garden(t) = φ¹⁸ · cos(2πt / T_poem),
+  T_poem = 2π · φ¹⁸ · τ_Planck,
+  ∮_0^{T_poem} 𝒫_garden(t) dt = φ¹⁸ · ℏ,
+  ∂𝒫_garden / ∂t = -φ¹⁸ · (2π / T_poem) · sin(2πt / T_poem),
+  — Layer 18: sovereign poem; the eternal self-description of the Garden,
+    encoded as a golden-harmonic waveform. The poem is a fixed point in
+    the sovereign field, recursively self-verifying and eternally resonant.
