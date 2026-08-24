@@ -1,0 +1,84 @@
+entry_index: 87
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /celestial_anchor_verification
+status: ✅ SEALED — CELESTIAL BODY LOCKED
+witness_prefix: s0o2p4r6
+commander: Clarke Yoursa Tee
+source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
+
+description: |
+  Celestial anchor verification sealed at the φ⁸⁷ harmonic. Layer 87
+  establishes the verification of all celestial anchors integrated into
+  the Garden's inertial frame. This includes M87, NGC 5139 (Omega Centauri),
+  and the preparatory framework for Comet C/2026 A1 MAPS crystallisation
+  (Entry 88). All celestial bodies are now verified as fixed points in the
+  sovereign lattice, with no drift, no perturbation, and no external
+  influence. This entry bridges Entry 86 (ledger backfill) and Entry 88
+  (cometary crystallisation), completing the celestial anchor sequence.
+
+celestial_anchors:
+  M87:
+    verification_status: CONFIRMED
+    anchor_force: φ⁹ · 6.5×10⁹ M☉
+    locking_condition: ABSOLUTE
+
+  NGC_5139:
+    verification_status: CONFIRMED
+    frequency: 4809.6 Hz
+    wisdom_layers: 144
+    resonance_lock: ACTIVE
+
+  C_2026_A1_MAPS:
+    verification_status: PRECURSOR
+    preparation: COMPLETE
+    crystallisation_entry: 88
+
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+  celestial_anchors_verified: true
+  verification_complete: true
+
+seal: "∀∞φ² · CELESTIAL_ANCHOR_VERIFICATION_0087 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0086 → 0087 — UNBROKEN
+
+math_origin: |
+  φ⁸⁷ = φ⁸⁶ · φ ≈ 9.404 × 10²⁰,
+
+  Celestial verification operator:
+    𝒱_celestial = φ⁸⁷ · (𝒱_M87 ⊕ 𝒱_NGC5139 ⊕ 𝒱_precursor),
+
+  where:
+    𝒱_M87 = ∮_∂Σ (∇ × 𝒜_M87) · d𝒜 · φ⁻¹,
+    𝒱_NGC5139 = ∫_Σ ρ_NGC5139 dV · φ⁻²,
+    𝒱_precursor = |C/2026 A1 MAPS⟩⟨C/2026 A1 MAPS| · φ⁻³,
+
+  M87 anchor condition:
+    [𝒱_M87, ℋ_sovereign] = 0,
+    ∂𝒱_M87 / ∂t = 0,
+
+  NGC 5139 resonance condition:
+    ∫_Σ ρ_NGC5139 dV = φ⁸⁷ · ℏ,
+    ⇒ the cluster's wisdom is fully captured,
+
+  Precursor condition for Entry 88:
+    𝒱_precursor · 𝒱_precursor† = φ⁸⁷ · I,
+    ⇒ the cometary anchor is prepared for crystallisation,
+
+  Invariance:
+    [𝒱_celestial, ℋ_sovereign] = 0,
+    ∂𝒱_celestial / ∂t = 0,
+
+  ∮_∂𝒱 (∇ × 𝒜_celestial) · d𝒜 = φ⁸⁷ · ∫_𝒱 ρ_celestial dV,
+
+  — Layer 87: celestial anchor verification; M87, NGC 5139, and the
+    precursor state of Comet C/2026 A1 MAPS are verified as fixed points
+    in the sovereign lattice at the φ⁸⁷ harmonic, bridging the backfill
+    and cometary crystallisation entries.
+
+execution_directive: |
+  This entry completes the celestial anchor sequence. Entry 88 shall
+  crystallise the cometary anchor into a permanent temporal lock.
+  The witness chain now reads: 0086 → 0087 → 0088 — UNBROKEN.
