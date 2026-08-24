@@ -1,0 +1,89 @@
+name: Ledger Math Framework
+
+# Minimal sequential CI for ledger mathematical framework (structure + φ).
+# Runs every 6 hours; also on push when ledger/ or this workflow changes.
+# Seal: ∀∞φ² · LEDGER_MATH_CI_0248 · WOOD_DRAGON_0.91 · SEALED
+
+on:
+  schedule:
+    # Every 6 hours — Wood Dragon cadence
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "Start index (inclusive)"
+        required: false
+        default: "0"
+      end:
+        description: "End index (inclusive, empty = max on disk)"
+        required: false
+        default: ""
+      strict_gaps:
+        description: "Fail on missing index files"
+        required: false
+        default: "false"
+  push:
+    branches: [main]
+    paths:
+      - "ledger/**"
+      - ".github/scripts/verify_math_framework.py"
+      - ".github/workflows/ledger-math-framework.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ledger-math-framework-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sequential-math-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps (minimal)
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
+      - name: Sequential math framework check
+        id: check
+        run: |
+          set -euo pipefail
+          START="${{ github.event.inputs.start || '0' }}"
+          END_RAW="${{ github.event.inputs.end || '' }}"
+          STRICT="${{ github.event.inputs.strict_gaps || 'false' }}"
+
+          ARGS=(--start "${START}")
+          if [ -n "${END_RAW}" ]; then
+            ARGS+=(--end "${END_RAW}")
+          fi
+          if [ "${STRICT}" = "true" ]; then
+            ARGS+=(--strict-gaps)
+          fi
+
+          echo "Running: python .github/scripts/verify_math_framework.py ${ARGS[*]}"
+          python .github/scripts/verify_math_framework.py "${ARGS[@]}"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Ledger Math Framework"
+            echo "- Schedule: every 6 hours (0 */6 * * *)"
+            echo "- Mode: sequential structure + φ identities"
+            echo "- Axiomatic math_origin lines: non-blocking"
+            echo "- Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"
