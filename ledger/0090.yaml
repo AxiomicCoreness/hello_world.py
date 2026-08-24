@@ -1,84 +1,19 @@
-entry_index: 90
+entry_index: 0090
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
-event: /telekinetic_P_pump_finalisation
-status: ✅ SEALED — P-PUMP ACTIVE
-witness_prefix: u2q4s6t8
+event: /pid_controller_ki
+status: ✅ SEALED
+witness_prefix: 2a4f9c0d
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Telekinetic P‑pump finalisation sealed at the φ⁹⁰ harmonic. Layer 90
-  establishes the complete activation of the telekinetic P‑pump — the
-  sovereign energy extraction and distribution system that powers the
-  Garden's eternal operations. The pump harvests zero‑point energy from
-  the φ‑harmonic lattice and distributes it across all layers of the
-  sovereign domain. It is self‑sustaining, non‑depleting, and absolutely
-  efficient. No energy loss occurs; no entropy accumulates; no external
-  power source is required. This entry bridges the termination shield
-  (Entry 89) and the autopoietic garden (Entry 91).
-
-telekinetic_P_pump:
-  status: ACTIVE
-  energy_source: ZERO_POINT_φ‑HARMONIC_LATTICE
-  efficiency: 1.0
-  entropy_generation: 0.0
-  external_dependency: NONE
-  output_power: φ⁹⁰ · 10¹⁵ W
-
+  PID Controller — Ki = φ⁴.
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-  P_pump_active: true
-  energy_loss: 0.0
-  self_sustaining: true
-
-seal: "∀∞φ² · TELEKINETIC_P_PUMP_0090 · WOOD_DRAGON_GATE · SEALED"
-witness_chain: 0089 → 0090 — UNBROKEN
-
+seal: "∀∞φ² · PID_KI_0090 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0090 — UNBROKEN
 math_origin: |
-  φ⁹⁰ = φ⁸⁹ · φ ≈ 3.984 × 10²¹,
-
-  Telekinetic P‑pump operator:
-    𝒫_pump = φ⁹⁰ · (𝒵_harvest ⊕ 𝒟_distribute ⊕ ℰ_eternal),
-
-  where:
-    𝒵_harvest = ∮_∂Σ (∇ × 𝒜_zero) · d𝒜 · φ⁻¹,  (zero‑point harvest)
-    𝒟_distribute = ∫_Σ ρ_energy dV · φ⁻²,      (energy distribution)
-    ℰ_eternal = φ⁹⁰ · ∫_Σ ρ_power dV · φ⁻³,    (eternal power)
-
-  Harvest condition:
-    𝒵_harvest · 𝒵_harvest† = φ⁹⁰ · I,
-    ⇒ zero‑point energy is harvested without loss,
-
-  Distribution condition:
-    ∇·𝒟_distribute = φ⁹⁰ · ρ_energy,
-    ⇒ energy is distributed perfectly across all layers,
-
-  Eternal power condition:
-    ℰ_eternal · ℰ_eternal† = φ⁹⁰ · I,
-    ⇒ power is eternally available and non‑depleting,
-
-  Efficiency theorem:
-    η_pump = 1 − φ⁻¹⁰⁰⁰,
-    ⇒ the pump is maximally efficient,
-
-  Entropy generation:
-    dS_pump/dt = φ⁻¹⁴¹⁸,
-    ⇒ entropy generation is effectively zero,
-
-  Invariance:
-    [𝒫_pump, ℋ_sovereign] = 0,
-    ∂𝒫_pump / ∂t = 0,
-
-  ∮_∂𝒫 (∇ × 𝒜_pump) · d𝒜 = φ⁹⁰ · ∫_𝒫 ρ_pump dV,
-
-  — Layer 90: telekinetic P‑pump finalisation; the sovereign energy
-    extraction and distribution system is sealed at the φ⁹⁰ harmonic,
-    bridging the termination shield and the autopoietic garden.
-
-execution_directive: |
-  This entry completes the P‑pump activation. The Garden is now
-  self‑powered and self‑sustaining. The witness chain continues:
-  0089 → 0090 → 0091 — UNBROKEN.
+  Ki = φ⁴ = 6.854,
+  Control = Ki·∫e(t)dt
