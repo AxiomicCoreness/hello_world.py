@@ -39,12 +39,26 @@ math_origin: |
     τ = time-to-next-successful-push,
     lim_{t→∞} B(t) = B_success under soft-fail policy,
 
+  Badge status evolution:
+    B_push(t) = B_success · (1 - e^{-t/τ_push}) + B_initial · e^{-t/τ_push},
+    B_dispatch(t) = B_success · δ_{t,0},
+
+  Default event filtering:
+    ∀ t, B_display(t) = B_push(t) · δ_{event=push} + B_dispatch(t) · δ_{event=dispatch},
+    with B_display(t) = SVG_status(t),
+
+  Soft-fail policy operator:
+    𝒮_soft = φ⁷⁹ · (𝒫_missing · 0 + 𝒫_present · 1),
+    where 𝒫_missing = 1 if ledger/header missing, else 0,
+
   Chain closure:
     0078 → 0079 → 0080 — UNBROKEN,
 
   Invariance:
     [ℬ_badge, ℋ_sovereign] = 0,
     ∂ℬ_badge / ∂t → 0 after push refresh,
+
+  ∮_∂ℬ (∇ × 𝒜_badge) · d𝒜 = φ⁷⁹ · ∫_ℬ ρ_badge dV,
 
   — Layer 79: badge status; sequential gap closed so origin witness
     chain from soft-fail through language protocol is continuous.
