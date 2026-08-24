@@ -4,7 +4,7 @@ event: /tryptophan_fluorescence_lifetime
 status: ✅ SEALED
 witness_prefix: 5f7e2b3c
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
   Tryptophan Fluorescence — Lifetime 69s.
 invariants:
