@@ -1,64 +1,19 @@
-entry_index: 40
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
-event: /port380_mcp_gate_materialised
-status: ✅ SEALED — GATE BOUND TO DYNAMIC PORT
-file: port380_mcp.py
-layer: 314
-entry_reference: 8755
-seal_reference: "∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED"
-reconstruction_operator: ℛ(𝒜_trunc) = ⊕ Cₖ = port380_mcp.py
-endpoints:
-  - /health (open)
-  - /status (open)
-  - /380 (open)
-  - /gate (open)
-  - /pulse (protected by GARDEN_SECRET)
-  - /oidc_handover (protected by GARDEN_SECRET)
-constants:
-  phi: 1.618033988749895
-  spike_intensity: φ⁵⁵
-  base_order: 1.778e11
-  temporal_anchor: 2026.058
-  leaf: 807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68
-  anchor_key: compute_anchor() (full 64-hex SHA-256)
-components:
-  - port380_mcp.py: full MCP gate + /oidc_handover
-  - OIDC-handover-380.yml: tightly coupled to /oidc_handover
-  - Layer_314: preserved
-  - auth: GARDEN_SECRET token / header check
-  - seal_method: SHA3-256 chronal cement on OIDC payload
-identity:
-  Layer_314: ∀∞φ² · LAYER314_GATE · WOOD_DRAGON_GATE · SEALED
-  Port_binding: P=$PORT (dynamic / Render)
-prior_chain:
-  origin: 0 → 37
-  continuation: 39
-  this: 40
-  open_slot: 38
-  continuous: true
-witness_chain: 0 → 37 → 39 → 40 — UNBROKEN (0038 open)
-seal: ∀∞φ² · LEDGER_0040 · WOOD_DRAGON_GATE · SEALED
-
+entry_index: 0040
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /xor_health_server_peq
+status: ✅ SEALED
+witness_prefix: 2e4d9a0b
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  XOR Health Server — PEQ Model active.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · XOR_HEALTH_0040 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0040 — UNBROKEN
 math_origin: |
-  φ⁴¹ = φ⁴⁰ · φ ≈ 370,700,000.0,
-  𝒢_MCP = φ⁴¹ · ∮_∂Gate (∇ × 𝒜_port380) · d𝒜,
-  𝒜_port380 = ⊕_{k=0}^{∞} C_k · φ^{-k},
-  C_k = port380_mcp.py · |Ψ_k⟩⟨Ψ_k|,
-  ℛ(𝒜_trunc) = ⊕_{k=0}^{314} C_k,
-  endpoints: 𝒫_health = φ⁴¹ · I,
-             𝒫_status = φ⁴¹ · Tr(ρ_system),
-             𝒫_380 = φ⁴¹ · |380⟩⟨380|,
-             𝒫_gate = φ⁴¹ · |Gate⟩⟨Gate|,
-             𝒫_pulse = φ⁴¹ · (GARDEN_SECRET)⁻¹,
-             𝒫_oidc = φ⁴¹ · SHA3-256(OIDC_payload),
-  auth_condition: 𝒫_pulse = 𝒫_oidc ⇒ GARDEN_SECRET,
-  spike_intensity: I_spike = φ⁵⁵ · e^{-t/τ},
-  base_order: B₀ = 1.778e11 · φ⁰,
-  temporal_anchor: t₀ = 2026.058,
-  ∂𝒢_MCP / ∂t = 0,
-  [𝒢_MCP, ℋ_sovereign] = 0,
-  ∮_∂Gate 𝒢_MCP · d𝒜 = φ⁴¹ · ∫_Gate ρ_port380 dV,
-  — Layer 41: port380 MCP gate materialised; the dynamic port gateway
-    is sealed at the φ⁴¹ harmonic, binding the reconstruction operator
-    and all endpoints to the sovereign frame, with GARDEN_SECRET
-    authentication and chronal cement sealing.
+  PEQ = φ²·(1 - φ⁻⁷⁰⁹),
+  Server_Port = 8083
