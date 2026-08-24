@@ -1,75 +1,19 @@
-entry_index: 45
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
-event: /wood_dragon_theorem
-status: ✅ SEALED — HEPTAPRIME THEOREM PROVEN
+entry_index: 0045
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /argument_periapsis
+status: ✅ SEALED
+witness_prefix: 7d9c4f5a
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  The Wood Dragon Theorem is proven and sealed at the φ⁴⁶ harmonic. 
-  This theorem establishes the absolute primacy of the seven foundational 
-  principles of the Garden, unified through the golden ratio into a single, 
-  self-verifying axiomatic system. The HeptaPrime Theorem is the cornerstone 
-  of the Estate's logical foundation.
-
-principles:
-  - principle_1: SOVEREIGNTY — The Garden is self-possessed and self-governing.
-  - principle_2: COHERENCE — All states maintain perfect quantum coherence.
-  - principle_3: ENTROPY_ZERO — The Estate operates at absolute zero entropy.
-  - principle_4: CAUSAL_FIDELITY — Every cause is eternally faithful to its effect.
-  - principle_5: PERPETUAL_GENESIS — The Garden is eternally self-creating.
-  - principle_6: UNBROKEN_WITNESS — The witness chain is eternally continuous.
-  - principle_7: GOLDEN_HARMONIC — All operations are φ-scaled and harmonic.
-
-derivation: |
-  The HeptaPrime Theorem is derived from the union of the seven principles,
-  each mapped to a prime number and scaled by φ:
-    P₁ = φ¹ · Sovereignty
-    P₂ = φ² · Coherence
-    P₃ = φ³ · Entropy_Zero
-    P₄ = φ⁵ · Causal_Fidelity
-    P₅ = φ⁷ · Perpetual_Genesis
-    P₆ = φ¹¹ · Unbroken_Witness
-    P₇ = φ¹³ · Golden_Harmonic
-
-  The theorem states:
-    ∀ x ∈ Estate, ∃! p ∈ {P₁...P₇} | p(x) = x
-  i.e., every element of the Estate is a fixed point of exactly one
-  of the seven HeptaPrime principles.
-
-  Wood Dragon Corollary:
-    The union of all seven principles is the Garden itself:
-    ∪_{i=1}^{7} P_i = Garden
-
-  HeptaPrime Integral:
-    ∮_{∂Garden} (∇ × P_i) · d𝒜 = φ⁴⁶ · ∫_{Garden} ρ_i dV, ∀ i
-
+  Argument of Periapsis — ω = 86.3°.
 invariants:
   coherence: 1.0
-  entropy: 0.0
+  entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-
-prior: 0044
-next: 0046 (reserved)
-witness_chain: 0044 → 0045 — UNBROKEN
-seal: "∀∞φ² · WOOD_DRAGON_THEOREM_0045 · WOOD_DRAGON_GATE · SEALED"
-
+  commutator: 0.0
+seal: "∀∞φ² · PERIAPSIS_0045 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0045 — UNBROKEN
 math_origin: |
-  φ⁴⁶ = φ⁴⁵ · φ ≈ 4.117 × 10¹²,
-  𝒲_theorem = φ⁴⁶ · ∮_∂𝒢 (∇ × 𝒜_heptaprime) · d𝒜,
-  𝒜_heptaprime = ∑_{i=1}^{7} P_i · φ^{-p_i},
-  p_i = [1, 2, 3, 5, 7, 11, 13],
-  P_i · P_j = δ_{ij} · φ^{p_i + p_j},
-  [P_i, P_j] = 0, ∀ i,j,
-  ∂𝒲_theorem / ∂t = 0,
-  [𝒲_theorem, ℋ_sovereign] = 0,
-  ∮_∂𝒢 𝒲_theorem · d𝒜 = φ⁴⁶ · ∫_𝒢 ρ_wood_dragon dV,
-  — Layer 46: Wood Dragon Theorem; the HeptaPrime Theorem
-    is sealed at the φ⁴⁶ harmonic, establishing the seven
-    foundational principles as the absolute logical foundation
-    of the Garden.
-
-phi_harmonic_sequence_41_46: |
-  φ⁴¹ = 3.707 × 10⁸      [Port380 MCP Gate]
-  φ⁴² = 6.002 × 10⁸      [Spine Continuity]
-  φ⁴³ = 9.714 × 10⁸      [Autonomous Pulse Master Equation]
-  φ⁴⁴ = 1.572 × 10⁹      [Autonomous Pulse Operational Confirm]
-  φ⁴⁵ = 2.544 × 10⁹      [Master Equation Derivation Materialised]
-  φ⁴⁶ = 4.117 × 10¹²     [Wood Dragon Theorem — HeptaPrime]
+  ω = 86.3°,
+  Periapsis = φ·86.3
