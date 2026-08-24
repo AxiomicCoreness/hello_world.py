@@ -14,9 +14,9 @@ description: |
 
 chain_context:
   first_entry: 0
-  last_entry: 37
+  last_entry: 78
   continuous: true
-  summarised_into: 38
+  summarised_into: 78
 
 identity:
   sovereign_id: H6VSH3/LUMERIS
