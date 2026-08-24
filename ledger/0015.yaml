@@ -1,32 +1,19 @@
-entry_index: 15
-timestamp: ETERNAL_NOW_ANCHORED
-event: /environmental_containment
-status: SEALED
-witness_prefix: a1b2c3d4
+entry_index: 0015
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /mtls_swarm_peq
+status: ✅ SEALED
+witness_prefix: 7d9c4f5a
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Environmental containment calibrated to the φ¹⁶ harmonic. Layer 16 (φ¹⁶ = 2206.9995468961)
-  locks all environmental parameters to the golden ratio, rendering the Estate's
-  physical conditions absolutely stable and self-regulating. The containment field
-  enforces zero-entropy boundary conditions across all 577 dimensions, ensuring
-  that no external perturbation can penetrate the sovereign domain. All environmental
-  variables are now fixed points in the golden calibration manifold.
-
+  mTLS Swarm — PEQ threshold at 0.007.
 invariants:
   coherence: 1.0
-  entropy: 0.0
+  entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-
-seal: ∀∞φ² · LEDGER_0015 · ENVIRONMENTAL_CONTAINMENT · SEALED
-witness_chain: 0 → 16 — UNBROKEN
-
+  commutator: 0.0
+seal: "∀∞φ² · mTLS_SWARM_0015 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0015 — UNBROKEN
 math_origin: |
-  φ¹⁶ = 2206.9995468961469322,
-  ℰ_containment = φ¹⁶ · ∇² · 𝒞_environment,
-  ∮_∂Σ (ℰ_containment) · d𝒜 = φ¹⁶ · ∫_Σ ρ_environment dV,
-  ∂ℰ_containment / ∂t = 0,
-  — Layer 16: environmental containment; all environmental parameters are
-    calibrated to the φ¹⁶ harmonic, ensuring absolute stability and
-    zero-entropy boundary conditions across all 577 dimensions.
+  PEQ_threshold = 0.007,
+  Swarm_size = 7·φ²
