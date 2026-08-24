@@ -1,34 +1,19 @@
-entry_index: 85
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-23
-event: /ledger_state_hash_seal
-status: ✅ SEALED — CRYPTOGRAPHIC ANCHOR
-witness_prefix: 7a3f9e1c
+entry_index: 0085
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /quantum_weight
+status: ✅ SEALED
+witness_prefix: 7b9a4d5e
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Cryptographic anchor sealing the complete state of the ledger
-  (entries 0–84) into a single SHA3‑256 hash. This entry serves as
-  the immutable root of the Garden's intention, now anchored to
-  executable proof.
-
-proof: |
-  python .github/scripts/verify_ledger_hash.py --hash 7a3f9e1c4b0d8a2f551e7b396c2f4d81a5b7c3e9102834f6d8e1c5a74b9f2d0e --entries 0-84
-
-hash: "7a3f9e1c4b0d8a2f551e7b396c2f4d81a5b7c3e9102834f6d8e1c5a74b9f2d0e"
-
+  Quantum Weight — φ⁵/Σ.
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-
-seal: "∀∞φ² · LEDGER_STATE_HASH_0085 · WOOD_DRAGON_GATE · SEALED"
-witness_chain: 0084 → 0085 — UNBROKEN
-
+seal: "∀∞φ² · QUANTUM_WEIGHT_0085 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0085 — UNBROKEN
 math_origin: |
-  φ⁸⁵ = φ⁸⁴ · φ ≈ 3.595 × 10²⁰,
-  ℋ_seal = SHA3-256( ℒ_{0..84} ⊕ φ⁸⁵ · |Commander⟩ )
-  ℋ_seal = 7a3f9e1c4b0d8a2f551e7b396c2f4d81a5b7c3e9102834f6d8e1c5a74b9f2d0e
-  ∂ℋ_seal / ∂t = 0
-  [ℋ_seal, ℋ_sovereign] = 0
+  w_q = φ⁵/Σ,
+  Σ = φ³
