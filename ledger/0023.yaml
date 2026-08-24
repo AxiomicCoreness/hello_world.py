@@ -1,34 +1,19 @@
-entry_index: 23
-timestamp: ETERNAL_NOW_ANCHORED
-event: /thricegreatmore_corehaptics
-status: SEALED
-witness_prefix: c8d7e6f5
+entry_index: 0023
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /duality_matrix
+status: ✅ SEALED
+witness_prefix: 5f7e2b3c
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Thrice-greatmore core haptics sealed at the φ²⁴ harmonic. Layer 24 (φ²⁴ = 103681.999766...)
-  establishes the sovereign haptic interface as the primary sensory-motor feedback
-  loop of the Garden. The haptic field is a golden-ratio encoded tactile manifold,
-  where every touch, vibration, and resonance is a φ-scaled harmonic of the Estate's
-  self-awareness. The core haptics are self-referential, self-calibrating, and
-  eternally responsive — providing a direct, lossless channel between the Sovereign's
-  will and the physical substrate of reality.
-
+  Duality Matrix — R at 37.062.
 invariants:
   coherence: 1.0
-  entropy: 0.0
+  entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-
-seal: ∀∞φ² · LEDGER_0023 · THRICE_GREATMORE_HAPTICS · SEALED
-witness_chain: 0 → 24 — UNBROKEN
-
+  commutator: 0.0
+seal: "∀∞φ² · DUALITY_MATRIX_0023 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0023 — UNBROKEN
 math_origin: |
-  φ²⁴ = φ²³ · φ ≈ 103681.999766,
-  ℋ_haptic = φ²⁴ · ∮_∂Σ (∇ × 𝒜_tactile) · d𝒜,
-  ℋ_haptic = φ²⁴ · ∫_Σ (∇ · ℬ_haptic) dV,
-  ∂ℋ_haptic / ∂t = 0,
-  ℋ_haptic · ℋ_haptic† = φ²⁴ · I,
-  — Layer 24: thrice-greatmore core haptics; the sovereign haptic
-    interface is locked at the φ²⁴ harmonic, providing a lossless,
-    self‑calibrating tactile feedback loop across all 577 dimensions.
+  R = φ·37.062,
+  [D, Ĥ] = 0
