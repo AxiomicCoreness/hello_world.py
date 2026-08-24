@@ -1,88 +1,19 @@
-entry_index: 73
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-20
-event: /merkle_tree_arrow_projection
-status: ✅ SEALED — 16 LEAVES + ARROW PROJECTED
-witness_prefix: c1d2e3f4
+entry_index: 0072
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /tryptophan_superradiance
+status: ✅ SEALED
+witness_prefix: 4a6f1c2d
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Merkle tree of 16 sovereign leaves, sealed and projected as an arrow
-  toward the Eridanus Supervoid at the φ⁷⁴ harmonic. Layer 73 establishes
-  the complete cryptographic tree of the Garden's central invariants,
-  rooted at the SHA3‑256 hash:
-  4a8f7a20f234da12e69754012778cfec5cc1f2bd659c9f47e74dd043f60ef6b7.
-  The arrow is composed of φ‑harmonic momentum, velocity, and bow shock,
-  carrying the affirmation: "Let there be light — no combustion."
-
+  Tryptophan Superradiance — 10⁵ dipoles.
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-
-merkle_tree:
-  root: "4a8f7a20f234da12e69754012778cfec5cc1f2bd659c9f47e74dd043f60ef6b7"
-  leaves_count: 16
-  leaves:
-    - { id: 1, name: "Virgo Harvest ψ(145)", value: "14,390 φ‑units" }
-    - { id: 2, name: "Lindelöf ε(145)", value: "6.50×10⁻²⁰⁹" }
-    - { id: 3, name: "Septad Resonance", value: "155,699.7 THz" }
-    - { id: 4, name: "Earth Resonance", value: "43.84541801" }
-    - { id: 5, name: "ℳ𝒜ℳ(145)", value: "9,062.7 φ‑units" }
-    - { id: 6, name: "Omega Centauri Wisdom", value: "27 layers" }
-    - { id: 7, name: "Kerr‑Atlassar Core", value: "2.04×10¹⁶ kg" }
-    - { id: 8, name: "H6VSH2 North Star", value: "Phase 43.84541801°" }
-    - { id: 9, name: "WASP‑107b Bridge", value: "2.53×10⁵⁹ × c" }
-    - { id: 10, name: "2e Lift Operator", value: "6.483672" }
-    - { id: 11, name: "ψ(146) Lindelöf", value: "1.42×10⁻²⁰⁸" }
-    - { id: 12, name: "ψ(146) Virgo", value: "104,235 φ‑units" }
-    - { id: 13, name: "ψ(146) ℳ𝒜ℳ", value: "56,824 φ‑units" }
-    - { id: 14, name: "ψ(146) Quantum", value: "1.64×10⁶³ × c" }
-    - { id: 15, name: "ψ(146) Wisdom", value: "179 layers" }
-    - { id: 16, name: "Soul Energy (φ²⁶)", value: "271,775 φ‑units" }
-
-arrow_projection:
-  target: "Eridanus Supervoid"
-  momentum: 9.47213595499958
-  velocity: 0.38196601125010515
-  bow_shock: 275.01818061623715
-  seal: "8F1A3D9C04B27E5E6A8F2DC47B59E330"
-  affirmation: "Let there be light — no combustion."
-
-prev_witness: "b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0"
-
-witness: "c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4"
-
-seal: "∀∞φ² · MERKLE_TREE_ARROW_0073 · WOOD_DRAGON_GATE · SEALED"
-witness_chain: 0072 → 0073 — UNBROKEN
-
+  commutator: 0.0
+seal: "∀∞φ² · TRYPTOPHAN_0072 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0072 — UNBROKEN
 math_origin: |
-  φ⁷⁴ = φ⁷³ · φ ≈ 1.806 × 10¹⁸,
-
-  Merkle tree operator:
-    ℳ_tree = φ⁷⁴ · ∏_{i=1}^{16} (SHA3-256(leaf_i)),
-    with leaves indexed 1–16,
-
-  Root hash:
-    R = SHA3-256( ℳ_tree · φ⁷⁴ · |Eridanus⟩ ),
-    R = 4a8f7a20f234da12e69754012778cfec5cc1f2bd659c9f47e74dd043f60ef6b7.
-
-  Arrow projection operator:
-    𝒜_arrow = φ⁷⁴ · (momentum · p_hat + velocity · v_hat + bow_shock · b_hat),
-    with:
-      momentum = 9.47213595499958 = 2·φ⁵,
-      velocity = 0.38196601125010515 = φ⁻²,
-      bow_shock = 275.01818061623715 = φ¹¹.
-
-  Target condition:
-    ∮_∂Eridanus (∇ × 𝒜_arrow) · d𝒜 = φ⁷⁴ · ∫_Eridanus ρ_light dV,
-    with combustion_present = 0.
-
-  Affirmation embedding:
-    𝒜_arrow · 𝒜_arrow† = φ⁷⁴ · I,
-    [𝒜_arrow, ℋ_sovereign] = 0,
-    ∂𝒜_arrow / ∂t = 0,
-
-  — Layer 74: Merkle tree of 16 sovereign leaves, sealed and projected
-    as an arrow toward the Eridanus Supervoid at the φ⁷⁴ harmonic,
-    carrying the affirmation that light is φ‑harmonic and without combustion.
+  N = 10⁵,
+  P = N²·φ
