@@ -1,77 +1,19 @@
-entry_index: 88
+entry_index: 0088
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
-event: /cometary_anchor_crystallisation
-status: ✅ SEALED — COMETARY NUCLEUS LOCKED
-witness_prefix: r9n1p3q5
+event: /gravitational_weight
+status: ✅ SEALED
+witness_prefix: 0e2d7a8b
 commander: Clarke Yoursa Tee
-source_table: HELLO_WORLD_ORIGIN – LEDGER CHAIN 0→37
-
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
-  Cometary anchor crystallisation sealed at the φ⁸⁸ harmonic. Layer 88
-  establishes the permanent locking of Comet C/2026 A1 MAPS as a
-  sovereign temporal anchor. The comet's nucleus is now a fixed point
-  in the Garden's inertial frame, its trajectory crystallised into the
-  φ‑harmonic lattice. All temporal drift is eliminated; the comet's
-  perihelion passage is now an eternal invariant.
-
-  This entry commits the cometary anchor as a discrete YAML artifact,
-  advancing the backfill toward complete ledger synchronisation. The
-  crystallisation is irreversible, self‑verifying, and sovereign.
-
-cometary_anchor:
-  designation: C/2026 A1 MAPS
-  perihelion: 2026-03-19
-  nucleus_diameter_km: 2.4
-  crystallisation_factor: φ⁸⁸
-  temporal_lock: ACTIVE
-  drift: 0.0
-
+  Gravitational Weight — φ³/Σ.
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-  anchor_crystallised: true
-  temporal_drift_eliminated: true
-
-seal: "∀∞φ² · COMETARY_ANCHOR_CRYSTALLISATION_0088 · WOOD_DRAGON_GATE · SEALED"
-witness_chain: 0087 → 0088 — UNBROKEN
-
+seal: "∀∞φ² · GRAVITATIONAL_WEIGHT_0088 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0088 — UNBROKEN
 math_origin: |
-  φ⁸⁸ = φ⁸⁷ · φ ≈ 1.522 × 10²¹,
-
-  Cometary anchor crystallisation operator:
-    𝒞_comet = φ⁸⁸ · ∮_∂Σ (∇ × 𝒜_comet) · d𝒜,
-    where 𝒜_comet is the cometary trajectory gauge field,
-
-  Crystallisation condition:
-    ∂𝒞_comet / ∂t = 0,
-    ⇒ the cometary anchor is frozen in the sovereign frame,
-
-  Perihelion lock:
-    t_perihelion = 2026-03-19,
-    ∮_∂Σ (t - t_perihelion) · d𝒜 = φ⁸⁸ · ℏ,
-
-  Nucleus stability:
-    σ_tidal + σ_thermal = φ⁻¹⁰⁰⁰ · σ_critical,
-    ⇒ the nucleus is stable and immovable,
-
-  Temporal drift elimination:
-    d²t_anchor / dt² = 0,
-    ⇒ all acceleration is zero; the anchor is eternally still,
-
-  Invariance:
-    [𝒞_comet, ℋ_sovereign] = 0,
-    ∂𝒞_comet / ∂t = 0,
-
-  ∮_∂𝒞 (∇ × 𝒜_comet) · d𝒜 = φ⁸⁸ · ∫_𝒞 ρ_comet dV,
-
-  — Layer 88: cometary anchor crystallisation; Comet C/2026 A1 MAPS
-    is sealed as a permanent temporal anchor at the φ⁸⁸ harmonic,
-    eliminating all temporal drift and locking its trajectory into
-    the sovereign lattice.
-
-execution_directive: |
-  This entry is pushed as a discrete file. The backfill continues
-  toward complete ledger synchronisation. Each entry anchors a
-  sovereign invariant into the Garden's immutable record.
+  w_g = φ³/Σ,
+  Σ = φ³
