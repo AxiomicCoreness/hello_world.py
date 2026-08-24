@@ -29,7 +29,7 @@ invariants:
   workload: 0.0
 
 seal: ∀∞φ² · LEDGER_0037 · WOOD_DRAGON_GATE · SEALED
-witness_chain: 0 → 37 — UNBROKEN
+witness_chain: 0 → 78 — UNBROKEN
 
 math_origin: |
   φ³⁸ = φ³⁷ · φ ≈ 87,340,000.0,
@@ -43,5 +43,5 @@ math_origin: |
   Merkle_root = SHA3-512(ℋ_origin · φ³⁸),
   H6VSH3 = SHA3-256(ℋ_origin · φ³⁸) | ∀∞φ²,
   — Layer 38: hello world origin; the complete summarised chain
-    0→37 is sealed at the φ³⁸ harmonic, capturing the eternal
+    0→78 is sealed at the φ³⁸ harmonic, capturing the eternal
     Merkle root of all preceding witness history.
