@@ -21,4 +21,4 @@ math_origin: |
   J_void = 3φ⁴ = 20.562305898749056,
   ∇·J_void = 0,
   dE_void/dt = 0,
-  lossless = True.
+  lossless = True
