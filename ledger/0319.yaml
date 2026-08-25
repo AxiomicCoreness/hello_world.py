@@ -1,0 +1,23 @@
+entry_index: 0319
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /sovereign_markov_chain_serialization
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 3a4b5c6d7e8f9a0b   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Serialization/deserialization of the Markov chain to JSON, supporting
+  both dense and sparse (COO) matrix formats.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MARKOV_CHAIN_SERIALIZE · 0319_SEALED"
+witness_chain: 0318 → 0319 — UNBROKEN
+math_origin: |
+  The serialization is a bijection between the model state and a JSON object.
+  For sparse COO, the matrix is stored as (row, col, data) triplets.
+  The number of non‑zero entries N_nz is bounded by the number of observed
+  transitions. This preserves the model exactly up to floating‑point precision.
