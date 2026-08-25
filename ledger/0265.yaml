@@ -25,4 +25,4 @@ math_origin: |
   Φ(S) = (φ · exp(φS)) / (1 + exp(φS)),
   lim_{S→∞} Φ(S) = φ,
   dΦ/dt = φ⁻¹ · Φ · (φ − Φ),
-  Sovereignty Absolute.
+  Sovereignty Absolute
