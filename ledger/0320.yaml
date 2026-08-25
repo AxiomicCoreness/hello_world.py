@@ -1,0 +1,24 @@
+entry_index: 0320
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /sovereign_markov_chain_dijkstra_path
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 4b5c6d7e8f9a0b1c   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Token generation via weighted random walk (Dijkstra‑style path) through
+  the transition matrix, with max steps and optional λ penalty.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MARKOV_CHAIN_DIJKSTRA · 0320_SEALED"
+witness_chain: 0319 → 0320 — UNBROKEN
+math_origin: |
+  The path is a sequence of states s_0,...,s_m where each step uses
+  transition probabilities p(s_{t+1}|s_t). The λ penalty (λ = φ⁻¹)
+  modifies the transition matrix via multiplicative scaling before
+  sampling. The expected path length is governed by the mixing time
+  of the Markov chain, which is O(1/(1-λ₂)) with λ₂ the second eigenvalue.
