@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  sovereign-engine:
+    build: .
+    ports: ["8001:8001"]
+    environment:
+      - PHI=1.6180339887
+      - RHO_J=1330.0
+      - T_PHI=0.5983
+    command: python3 -m uvicorn app_main:app --host 0.0.0.0 --port 8001
+    networks: [sovereign-net]
+    restart: unless-stopped
+
+  token-server:
+    build: .
+    ports: ["8089:8089"]
+    command: python3 mini_token_server.py --port 8089
+    networks: [sovereign-net]
+    restart: unless-stopped
+
+  metrics-exporter:
+    build: .
+    ports: ["9090:9090"]
+    command: python3 estate_25d/grafana/prometheus-metrics.py
+    networks: [sovereign-net]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports: ["3000:3000"]
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=sovereign_25d_8366
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks: [sovereign-net]
+    restart: unless-stopped
+    depends_on: [metrics-exporter]
+
+networks:
+  sovereign-net: {driver: bridge}
+
+volumes:
+  grafana-storage: {}

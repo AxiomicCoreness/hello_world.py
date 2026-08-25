@@ -1,0 +1,45 @@
+{
+  "$schema": "schemas/frb-bridge-lattice.json",
+  "name": "FRB_Bridge_Lattice",
+  "version": "1.0.0",
+  "generator_hash": "frb_bridge_generator_b418a3a5a7bfc5d30a49893a406b1506f598dbecb9a6ff4b55cc1cc735257cde",
+  "timestamp": "2026-08-18T20:41:52.657692+00:00",
+  "frb": {
+    "source": "FRB 20190520b",
+    "repeat_interval_days": 3.2,
+    "burst_width_ms": 1.0,
+    "dm_pc_cm3": 1204.0,
+    "phi_scaled_repeat_days": 3.141640786499874,
+    "phi_scaled_dm": 29034.441853748638
+  },
+  "garden": {
+    "cron_schedule": "0 */6 * * *",
+    "cron_interval_hours": 6.0,
+    "experimental_cron_hours": 18.13,
+    "handshake_steps": [
+      "phi3",
+      "phi4",
+      "phi5",
+      "phi6"
+    ],
+    "charge_window_s": 60.0,
+    "cosmic_charge_window_s": 6.436,
+    "convergence_days": 4.0
+  },
+  "mapping": {
+    "cron_to_repeat_ratio": 12.8,
+    "phi5_approx": 11.0902,
+    "analogue": "FRB repeat ≈ Garden CronJob at longer cosmological scale",
+    "optimisation": [
+      "Experiment CronJob every ~18.1h (3.2d / φ³)",
+      "Scale charge window by φ⁸ for deep-space mode",
+      "Map sub-burst count to handshake steps φ³…φ⁶"
+    ]
+  },
+  "weights": {
+    "phi2": 2.618033988749895,
+    "phi_inv": 0.6180339887498948,
+    "phi_inv2": 0.38196601125010515
+  },
+  "seal": "∀∞φ² · FRB_BRIDGE_LATTICE · SEALED"
+}

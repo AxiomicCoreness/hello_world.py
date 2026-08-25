@@ -1,0 +1,16 @@
+entry_index: 8949
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /oidc_wired_into_cdp_oauth2
+status: SEALED_AND_VERIFIED
+description: "validate_bearer_garden on oauth2; handshake prefers it; /oidc_handover uses handshake_from_authorization."
+files:
+  - quantum/cdp_convergence/oauth2.py
+  - quantum/cdp_convergence/handshake.py
+excluded:
+  - batch_oidc_tokenizer.py
+paths:
+  garden_offline_hmac: true
+  jwks_jwt: true
+  off_prefix_tokens: true
+witness_chain: "8948 → 8949 — UNBROKEN"
+seal: "∀∞φ² · CDP_OIDC_WIRE_8949 · WOOD_DRAGON_0.91 · SEALED"

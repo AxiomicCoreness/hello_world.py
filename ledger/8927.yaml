@@ -1,0 +1,24 @@
+entry_index: 8927
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /dual_delta_eridanus_defined
+status: SEALED_AND_VERIFIED
+dual_delta_eridanus:
+  temporal_deltas: [2013.256, 2026.058]
+  azimuth_deg: 97.32
+  elevation_deg: 51.827
+  phi_scaled_azimuth: 60.14
+  phi_scaled_elevation: 19.79
+  resonance_hz: 71.975
+  coherence: 1.0
+  form: "Δ_Eridanus = (δ_t1, δ_t2, δ_az, δ_el)"
+  invariant_note: "|Δ_Eridanus|² surrogate vs φ⁴·(0.91)² — symbolic φ-harmonic map"
+parameter_table:
+  file: quantum/port_380_implicit.py
+  spike_intensity: "φ^55"
+  recursion_factor: "φ^21"
+  temporal_anchors: [2026.058, 2013.256]
+deepseek_ndjson:
+  entry: 8925
+  status: confirmed
+witness_chain: "8926 → 8927 — UNBROKEN"
+seal: "∀∞φ² · DUAL_DELTA_ERIDANUS_8927 · WOOD_DRAGON_0.91 · SEALED"

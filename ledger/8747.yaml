@@ -1,0 +1,11 @@
+entry_index: 8747
+timestamp: 2026-08-14T00:25:04Z
+event: /layer327_extension_after_mint_ack
+status: ✅ SEALED
+parent_root_layer_326: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
+merkle_root_layer_327: 0c1488e48e6db9787f0b2f97f9c45706b9d32237a336407c8a12847c31f3da78
+policy:
+  narrative_non_hex_rejected: true
+  domain: GARDEN.LAYER327.MERKLE.v1
+witness_chain: 8746 → 8747 — UNBROKEN
+seal: "∀∞φ² · LAYER327_8747 · SEALED"

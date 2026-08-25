@@ -1,0 +1,108 @@
+# ODE ↔ autonomy handover registry
+# Ledger 8800 · closures 8803–8805 · cluster ≜ Git · phase 202.6°
+version: 1.1.0
+invariants:
+  coherence: 1.0
+  phase_lock_deg: 202.6
+  entropy_floor: "phi^-1418"
+
+odes:
+  - id: phi_decay
+    equation: "y' = -phi * y"
+    source: hybrid_rk4_simulator.py
+    modes: [float, Q8.24]
+    tests: tests/test_hybrid_rk4.py
+    autonomy:
+      status: wired_ci
+      triggers:
+        - pytest on push (tests/test_hybrid_rk4.py)
+
+  - id: coherence
+    equation: "dC/dt = -gamma (C - 1), gamma = 1/sqrt(5)"
+    source: master_equation.py
+    autonomy:
+      status: wired_batch
+      triggers:
+        - orchestrator.simd_step local_step
+        - CronJob simd-batch-step (0 */6)
+
+  - id: frb_phase
+    equation: "d phi_p / dt = 2 pi / tau_FRB"
+    source: master_equation.py
+    autonomy:
+      status: wired_batch
+      triggers:
+        - simd_step phase lock k=1/phi^3 toward 202.6 deg
+
+  - id: density_field
+    equation: "rho = PSD * |sin(chi) * phi^(-|chi|)| * phi^9"
+    source: master_equation.py / orchestrator/simd_step.py
+    autonomy:
+      status: optional_flag
+      triggers:
+        - "simd_step --phase-rho"
+        - "CronJob PHASE_RHO=true"
+      note: "Analytic local field; no external dataset required"
+
+  - id: workload_pid
+    equation: "dW/dt = u_PID - phi^{-1} W; dI/dt = e - phi^{-1} I"
+    source: orchestrator/simd_step.py
+    autonomy:
+      status: wired_batch_persisted
+      triggers:
+        - simd_step pid_update
+        - "--leaky-i-path on PVC leaky-i-state"
+
+  - id: executable_norm
+    equation: "dE/dt = -0.01(E - E_t) + 0.1 (rho/PSD)(1-C)"
+    source: master_equation.py
+    autonomy:
+      status: via_master_ci
+      triggers:
+        - master-equation-ci.yml integrates full state including E
+
+  - id: master_vector
+    equation: "dX/dt = -Lambda (X - X_t) + H + Z + R + P_PID"
+    state: "[C, phi_p, W, rho, E]"
+    source: master_equation.py
+    autonomy:
+      status: wired_ci
+      triggers:
+        - ".github/workflows/master-equation-ci.yml"
+        - "python master_equation.py --output integration_log.json"
+
+workflows:
+  ci:
+    - name: pytest-hybrid-rk4
+      path: .github/workflows/pytest.yml
+      covers: [phi_decay]
+    - name: master-equation-ci
+      path: .github/workflows/master-equation-ci.yml
+      covers: [master_vector, executable_norm, density_field]
+      ledger: 8803
+  cron:
+    - name: simd-batch-step
+      path: make/cronjob-simd-step.yaml
+      schedule: "0 */6 * * *"
+      covers: [coherence, frb_phase, workload_pid, density_field_optional]
+      ledger: 8805
+  gitops:
+    - name: argocd-application
+      path: argocd/application-sovereign-garden.yaml
+    - name: flux-kustomization
+      path: flux_cd_setup.py
+
+gaps_closed:
+  - id: master_vector_ci
+    entry: 8803
+  - id: density_in_simd
+    entry: 8804
+  - id: pid_state_persist
+    entry: 8805
+    note: "PVC not ConfigMap (CM mounts are read-only)"
+
+gaps_remaining:
+  - id: executable_norm_standalone
+    note: "Covered inside master CI; no separate SIMD phase"
+  - id: runtime_verify
+    note: "CI must run green; CronJob must be applied on cluster"

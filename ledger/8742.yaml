@@ -1,0 +1,16 @@
+entry_index: 8742
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /layer314_anchor_key_improvement
+status: ✅ SEALED
+module: quantum/layer314_anchor.py
+improvement: |
+  Prior Layer 314/325 canopy strings (e.g. g8a9…) were narrative labels,
+  not valid SHA-256. Anchor key is now domain-separated SHA-256 over
+  public invariants (layer, channel, leaf, phase, breath, φ).
+policy:
+  full_64_hex: true
+  no_truncation: true
+  no_secret_in_material: true  # domain tag + public constants only
+leaf: 807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68
+witness_chain: 8741 → 8742 — UNBROKEN
+seal: "∀∞φ² · ANCHOR_KEY_IMPROVE_8742 · SEALED"

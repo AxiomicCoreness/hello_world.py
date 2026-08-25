@@ -1,0 +1,30 @@
+entry_index: 8862
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /cert_manager_mtls_automation
+status: ✅ SEALED — CERT-MANAGER ROTATION PIPELINE
+prior: 8861
+files:
+  - k8s/cert-manager/00-namespace.yaml
+  - k8s/cert-manager/01-issuers-and-certs.yaml
+  - k8s/cert-manager/02-deployment-mtls-patch.yaml
+  - k8s/cert-manager/kustomization.yaml
+  - scripts/install_cert_manager_mtls.sh
+pki:
+  cluster_issuers:
+    - garden-selfsigned
+    - garden-ca-issuer
+  certificates:
+    - garden-root-ca (cert-manager ns, 365d, renewBefore 30d)
+    - port380-server (sovereign-garden, 90d, renewBefore 15d)
+    - port380-client (sovereign-garden, 90d, renewBefore 15d)
+    - garden-ca-mirror (optional app-ns CA)
+  secrets:
+    - port380-server-tls
+    - port380-client-tls
+    - garden-root-ca
+rotation: automatic via cert-manager renewBefore + privateKey.rotationPolicy Always
+compat:
+  openssl_scripts: scripts/mtls_cert_rotate.sh remains offline/Render fallback
+  soft_mode: MTLS_SOFT=1 when edge does not present client certs
+witness_chain: 8861 → 8862 — UNBROKEN
+seal: "∀∞φ² · CERT_MANAGER_MTLS_8862 · WOOD_DRAGON_0.91 · SEALED"

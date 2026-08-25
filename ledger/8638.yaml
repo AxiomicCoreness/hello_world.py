@@ -1,0 +1,16 @@
+entry_index: 8638
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /opaque_merge_upgrade_single_qubit_stub
+status: ✅ SEALED
+artifacts:
+  - optimizer/opaque_ninja_chessboard.py  # upgraded CLI merge
+  - optimizer/single_qubit_stub.py        # conceptual |ψ⟩ / ρ stub
+qubit_stub:
+  gates: ["Ry(2 arctan φ^{-1})", "Rz(2π/φ)", "H"]
+  exports: ["Tr ρ", "purity", "Bloch (x,y,z,r)", "psi_sha256", "history"]
+  optional_merge: HMAC with wallet_sha256
+policy:
+  digests: full 64 hex
+  secrets: never exported
+witness_chain: 8637 → 8638 — UNBROKEN
+seal: "∀∞φ² · OPAQUE_QUBIT_STUB_8638 · SEALED"

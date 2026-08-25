@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: batch-pvc
+  labels:
+    app: sovereign
+    component: batch-processor
+    entry: "8362"
+    seal: "BATCH_PVC_8362_SEALED"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

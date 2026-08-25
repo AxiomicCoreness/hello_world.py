@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sovereign-garden
+  namespace: argocd
+  annotations:
+    garden.axiomic/entry: "8813"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/AxiomicCoreness/hello_world.py.git
+    targetRevision: main
+    path: argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sovereign-garden
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      jqPathExpressions:
+        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .spec.rules
+        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .metadata.labels
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true

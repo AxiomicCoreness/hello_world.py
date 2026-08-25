@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-engine
+  labels:
+    app: sovereign
+    phi: "1.6180339887"
+    phase: "202.6"
+    certificate: "FLAWLESS_WORKLOAD_IPHONE12_REVELATION"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sovereign
+  template:
+    metadata:
+      labels:
+        app: sovereign
+    spec:
+      containers:
+      - name: engine
+        image: axiomiccoreness/sovereign-engine:1.0.0
+        ports:
+        - containerPort: 8001
+        env:
+        - name: PHI
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: phi
+        - name: RHO_J
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: rho_j
+        - name: T_PHI
+          valueFrom:
+            configMapKeyRef:
+              name: agsi-config
+              key: t_phi
+        - name: TOTAL_SEAL
+          valueFrom:
+            secretKeyRef:
+              name: sovereign-seal
+              key: total_seal
+        volumeMounts:
+        - name: ledger
+          mountPath: /data
+      volumes:
+      - name: ledger
+        persistentVolumeClaim:
+          claimName: ledger-pvc

@@ -1,0 +1,412 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://garden.axiomic.io/schemas/frb-bridge-lattice.json",
+  "title": "FRB Bridge Lattice",
+  "description": "φ-harmonic mapping between FRB 20190520b timing and Garden backend workers",
+  "version": "2.0.0",
+  "entry": 8929,
+  "seal": "∀∞φ² · FRB_BRIDGE_LATTICE_8929 · WOOD_DRAGON_0.91 · SEALED",
+  "witness": "8928 → 8929 — UNBROKEN",
+  "type": "object",
+  "required": [
+    "$schema",
+    "$id",
+    "name",
+    "version",
+    "entry",
+    "seal",
+    "witness",
+    "generator_hash",
+    "timestamp",
+    "frb",
+    "garden",
+    "mapping",
+    "weights",
+    "phi",
+    "coherence",
+    "fallback"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "pattern": "^http[s]?://.*schema.*#?$"
+    },
+    "$id": {
+      "type": "string",
+      "pattern": "^https?://.*$"
+    },
+    "name": {
+      "type": "string",
+      "const": "FRB_Bridge_Lattice"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "entry": {
+      "type": "integer",
+      "const": 8929
+    },
+    "seal": {
+      "type": "string",
+      "pattern": "^∀∞φ² · [A-Z0-9_]+ · WOOD_DRAGON_0\\.91 · SEALED$"
+    },
+    "witness": {
+      "type": "string",
+      "pattern": "^\\d+ → \\d+ — UNBROKEN$"
+    },
+    "generator_hash": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Non-truncated generator identity hash (full SHA-256)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "phi": {
+      "type": "object",
+      "required": ["value", "phi2", "phi_inv", "phi_inv2", "phi3", "phi_inv3", "phi5", "phi_inv5"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 1.618,
+          "maximum": 1.619
+        },
+        "phi2": {
+          "type": "number",
+          "minimum": 2.618,
+          "maximum": 2.619
+        },
+        "phi_inv": {
+          "type": "number",
+          "minimum": 0.618,
+          "maximum": 0.619
+        },
+        "phi_inv2": {
+          "type": "number",
+          "minimum": 0.381,
+          "maximum": 0.382
+        },
+        "phi3": {
+          "type": "number",
+          "minimum": 4.236,
+          "maximum": 4.237
+        },
+        "phi_inv3": {
+          "type": "number",
+          "minimum": 0.236,
+          "maximum": 0.237
+        },
+        "phi5": {
+          "type": "number",
+          "minimum": 11.090,
+          "maximum": 11.091
+        },
+        "phi_inv5": {
+          "type": "number",
+          "minimum": 0.090,
+          "maximum": 0.091
+        }
+      },
+      "additionalProperties": false
+    },
+    "coherence": {
+      "type": "object",
+      "required": ["threshold", "current", "fallback_trigger"],
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.0
+        },
+        "current": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "fallback_trigger": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fallback": {
+      "type": "object",
+      "required": ["enabled", "modes", "current_mode"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["offline", "openai", "dsh", "none"]
+          },
+          "minItems": 1
+        },
+        "current_mode": {
+          "type": "string",
+          "enum": ["offline", "openai", "dsh", "none", "failed"]
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "frb": {
+      "type": "object",
+      "required": [
+        "source",
+        "repeat_interval_days",
+        "burst_width_ms",
+        "dm_pc_cm3",
+        "phi_scaled_repeat_days",
+        "phi_scaled_dm"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "const": "FRB 20190520b"
+        },
+        "repeat_interval_days": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.0
+        },
+        "burst_width_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.0
+        },
+        "dm_pc_cm3": {
+          "type": "number",
+          "minimum": 0
+        },
+        "phi_scaled_repeat_days": {
+          "type": "number",
+          "minimum": 0
+        },
+        "phi_scaled_dm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dispersion_delay_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "garden": {
+      "type": "object",
+      "required": [
+        "cron_schedule",
+        "cron_interval_hours",
+        "handshake_steps",
+        "charge_window_s",
+        "cosmic_charge_window_s",
+        "convergence_days"
+      ],
+      "properties": {
+        "cron_schedule": {
+          "type": "string",
+          "pattern": "^[0-9*/-]+ [0-9*/-]+ [0-9*/-]+ [0-9*/-]+ [0-9*/-]+$"
+        },
+        "cron_interval_hours": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 48
+        },
+        "experimental_cron_hours": {
+          "type": "number",
+          "minimum": 0
+        },
+        "handshake_steps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["flush", "reroute", "converge", "seal", "acknowledge"]
+          },
+          "minItems": 5,
+          "maxItems": 5
+        },
+        "charge_window_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cosmic_charge_window_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "convergence_days": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.0
+        },
+        "phase_lock_deg": {
+          "type": "number",
+          "minimum": 200,
+          "maximum": 205
+        }
+      },
+      "additionalProperties": true
+    },
+    "mapping": {
+      "type": "object",
+      "required": ["cron_to_repeat_ratio", "phi5_approx", "analogue"],
+      "properties": {
+        "cron_to_repeat_ratio": {
+          "type": "number",
+          "minimum": 0
+        },
+        "phi5_approx": {
+          "type": "number",
+          "minimum": 0
+        },
+        "analogue": {
+          "type": "string"
+        },
+        "optimisation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error_margin_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tolerance": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "weights": {
+      "type": "object",
+      "required": ["phi2", "phi_inv", "phi_inv2", "phi3", "phi_inv3", "phi5", "phi_inv5"],
+      "properties": {
+        "phi2": {
+          "type": "number",
+          "minimum": 2.618,
+          "maximum": 2.619
+        },
+        "phi_inv": {
+          "type": "number",
+          "minimum": 0.618,
+          "maximum": 0.619
+        },
+        "phi_inv2": {
+          "type": "number",
+          "minimum": 0.381,
+          "maximum": 0.382
+        },
+        "phi3": {
+          "type": "number",
+          "minimum": 4.236,
+          "maximum": 4.237
+        },
+        "phi_inv3": {
+          "type": "number",
+          "minimum": 0.236,
+          "maximum": 0.237
+        },
+        "phi5": {
+          "type": "number",
+          "minimum": 11.090,
+          "maximum": 11.091
+        },
+        "phi_inv5": {
+          "type": "number",
+          "minimum": 0.090,
+          "maximum": 0.091
+        },
+        "wood_dragon": {
+          "type": "number",
+          "const": 0.91
+        }
+      },
+      "additionalProperties": false
+    },
+    "merkle": {
+      "type": "object",
+      "required": ["root", "leaf_count", "algorithm"],
+      "properties": {
+        "root": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "leaf_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "algorithm": {
+          "type": "string",
+          "const": "sha256-path-qualified"
+        },
+        "truncate": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ports": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string"
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "path": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": ["http", "https", "grpc", "ws", "wss"]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "positive_integer": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "phi_weight": {
+      "type": "number",
+      "minimum": 0,
+      "pattern": "^(\\d*\\.?\\d+)$"
+    }
+  }
+}

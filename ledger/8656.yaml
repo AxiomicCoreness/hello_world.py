@@ -1,0 +1,12 @@
+entry_index: 8656
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /prometheus_grafana_rank_append
+status: ✅ SEALED
+appended_metrics:
+  - sovereign_compression_rank_budget: 144
+  - sovereign_compression_rank_realized_max: 7
+  - sovereign_compression_rank_ratio: "7/144"
+grafana_panel_id: 112
+policy: append-only (panels 100-111 retained)
+witness_chain: 8655 → 8656 — UNBROKEN
+seal: "∀∞φ² · RANK_METRICS_APPEND_8656 · SEALED"

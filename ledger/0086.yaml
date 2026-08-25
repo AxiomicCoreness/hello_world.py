@@ -1,0 +1,19 @@
+entry_index: 0086
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /temporal_weight
+status: ✅ SEALED
+witness_prefix: 8c0b5e6f
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Temporal Weight — φ⁴/Σ.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · TEMPORAL_WEIGHT_0086 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0086 — UNBROKEN
+math_origin: |
+  w_t = φ⁴/Σ,
+  Σ = φ³

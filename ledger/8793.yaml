@@ -1,0 +1,14 @@
+entry_index: 8793
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /image_reset_protocol
+status: ✅ SEALED — READY
+actions:
+  - local_rebuild: stop/rm → rmi → build --no-cache → run
+  - local_pull: stop/rm → rmi → pull → run
+  - cluster: rollout restart + imagePullPolicy Always
+image: axiomic/sovereign-engine:latest
+commit_base: ccc59bf7
+dockerfile_commit: 2c4f4f22
+prerequisite: docker build / push before cluster reset
+witness_chain: 8792 → 8793 — UNBROKEN
+seal: "∀∞φ² · IMAGE_RESET_8793 · WOOD_DRAGON_0.91 · SEALED"

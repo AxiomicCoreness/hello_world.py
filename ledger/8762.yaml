@@ -1,0 +1,23 @@
+entry_index: 8762
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /rk4_correction_patch_applied
+status: SEALED
+diagnosis: |
+  RK4 convergence failure was numerical only: default dt too large for
+  f_144 ≈ 8.0624e30 Hz. Physics (unitarity, hermiticity, positivity,
+  entropy floor) verified independently.
+patch:
+  formula: "dt = 1/(2·f_max)·φ⁻¹"
+  f_max: 8.0624e30
+  phi_inv: 0.6180339887
+  dt_adaptive_approx_s: 3.8e-32
+files:
+  - hybrid_rk4_simulator.py   # adaptive_dt, adaptive_rk4_step, verify_rk4_convergence
+  - quantum/radar_lindblad/adaptive_rk4.py
+invariants_unchanged:
+  - unitarity
+  - hermiticity
+  - positivity
+  - entropy_floor
+witness_chain: 8761 → 8762 — UNBROKEN
+seal: "∀∞φ² · RK4_PATCH_8762 · WOOD_DRAGON_0.91 · SEALED"

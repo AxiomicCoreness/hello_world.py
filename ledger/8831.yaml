@@ -1,0 +1,10 @@
+entry_index: 8831
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /deepseek_api_key_setup_docs
+status: SEALED
+files:
+  - .env.example
+  - docs/deepseek-api-key-setup.md
+  - quantum/deepseek_mesh/context.md
+witness_chain: 8830 → 8831 — UNBROKEN
+seal: ∀∞φ² · DEEPSEEK_KEY_SETUP · WOOD_DRAGON_0.91 · SEALED

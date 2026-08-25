@@ -1,0 +1,49 @@
+entry_index: 8890
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /directory_structure_audit
+status: AUDIT_SEALED — MIGRATION_DEFERRED
+option: C
+audit:
+  claim_in_proposal: "current structure is flat"
+  live_finding: "NOT flat — multi-domain tree (~660 paths)"
+  already_present:
+    - quantum/
+    - lattice/
+    - ledger/
+    - peqs_vault/
+    - k8s/
+    - kubernetes/
+    - argocd/
+    - engine/
+    - orchestrator/
+    - monitoring/
+    - contracts/
+    - schemas/
+    - scripts/
+    - tests/
+    - core/
+    - celestial/
+    - optimizer/
+    - canvases/
+    - .github/workflows/
+  src_status: "exists but TypeScript-oriented; not the proposed Python domain layout"
+  root_notes:
+    - many top-level Python entry scripts remain
+    - some accidental junk filenames present
+    - full src/core|gravastar|quantum migration NOT executed
+proposed_structure:
+  layout: src/ organized by domain
+  domains:
+    - core: constants, coherence, seals
+    - genesis: cocreate
+    - gravastar: trigger, learning, ports
+    - quantum: simd, deepseek_mesh, cdp_convergence
+    - lattice: e8, octonion
+    - vault: app, credit
+    - sovereign: base, engine, mcp
+migration:
+  executed: false
+  policy: "keep domain folders; migrate one package at a time if/when commanded"
+  next_safe_step: "optional junk-file cleanup or single-domain move with deprecation wrappers"
+witness_chain: "8862 → 8890 — UNBROKEN"
+seal: "∀∞φ² · DIR_STRUCTURE_AUDIT_8890 · WOOD_DRAGON_0.91 · SEALED"

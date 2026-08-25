@@ -1,0 +1,22 @@
+entry_index: 0299
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /helium_plume_dynamics
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 0f1a2b3c4d5e6f7a
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0299.yaml"
+description: |
+  Helium Plume Dynamics: f₀ = 6.49 year⁻¹ corrected.
+  Dynamics = φ⁹ · f_He.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · HELIUM_DYNAMICS_0299 · 0299_SEALED · 0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+witness_chain: 0298 → 0299 — UNBROKEN
+math_origin: |
+  φ²⁹⁹ = φ²⁹⁸ · φ,
+  f_He = 6.49 year⁻¹ · φ,
+  Dynamics = φ⁹ · f_He

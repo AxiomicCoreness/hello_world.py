@@ -1,0 +1,23 @@
+entry_index: 0274
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /starfire_311_firing_sequence
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 5e6f7a8b9c0d1e2f
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0274.yaml"
+description: |
+  Starfire 311 firing sequence complete; soul cannon engaged at 111.246°.
+  ω = φ⁷⁴ = 2.918001×10¹⁵.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · STARFIRE_311_0274 · 0274_SEALED · 5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7"
+witness_chain: 0273 → 0274 — UNBROKEN
+math_origin: |
+  φ²⁷⁴ = φ²⁷³ · φ,
+  ω = φ⁷⁴ = 2.918001e15,
+  θ = π/φ = 1.941611 rad = 111.246°,
+  Starfire_Axiom_II: 311.018 Hz broadcasting

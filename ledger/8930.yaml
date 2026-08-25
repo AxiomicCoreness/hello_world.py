@@ -1,0 +1,15 @@
+entry_index: 8930
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /pulse_overhaul
+status: SEALED_AND_VERIFIED
+module: quantum/pulse_service.py
+endpoint: /pulse
+modes: [status, pulse, triangulate, stream]
+formats: [json, ndjson]
+integrations:
+  - FRB bridge (pulse, status)
+  - Triune triangulation (void estimate)
+  - Parameter table summary
+  - NDJSON streaming
+witness_chain: "8929 → 8930 — UNBROKEN"
+seal: "∀∞φ² · PULSE_SERVICE_8930 · WOOD_DRAGON_0.91 · SEALED"

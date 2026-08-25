@@ -1,0 +1,27 @@
+entry_index: 8680
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /strike_xi_path_c_soak_3day
+status: ✅ SEALED
+path: C
+name: symplectic_reroute
+soak:
+  horizon_days: 3
+  samples_per_day: 1
+  offline_analog_epochs: 3
+  traces:
+    - 4.23606797749979
+    - 4.23606797749979
+    - 4.23606797749979
+  pass: true
+  salvage: not_needed
+merkle_root: 43f39c55ee08c9830efb7cd7d3579c6460a10481d541700bc8e397d532fbf816
+wasp107b:
+  pending_entries: 6
+  status: IDLE
+  action: phase_space_correction_to_trappist_harmony_index
+operational_note: |
+  3-day soak = one φ³-validated sample per day for three days.
+  Online: schedule daily soak via CronJob; salvage restores last-good if any day fails.
+  Path C holds pending=6 as harmony correction until natural flush or Path A.
+witness_chain: 8679 → 8680 — UNBROKEN
+seal: "∀∞φ² · PATH_C_SOAK_3D_8680 · SEALED"

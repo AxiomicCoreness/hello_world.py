@@ -1,0 +1,22 @@
+entry_index: 8891
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /production_src_layout_shim_executed
+status: ✅ SEALED
+mode: shim_reexport
+rewrites: none
+created:
+  - src/__init__.py
+  - src/core/{constants,coherence,seals}.py
+  - src/genesis/cocreate.py
+  - src/gravastar/{trigger,ports,learning}.py
+  - src/quantum/simd/{tuning,dispatch}.py
+  - src/quantum/deepseek_mesh/{client,dsh_adapter,endpoint}.py
+  - src/quantum/cdp_convergence/{cdp_schema,oauth2,handshake}.py
+  - src/lattice/{e8,octonion}.py
+  - src/vault/{app,credit}.py
+  - src/sovereign/{base,engine,mcp}.py
+policy: >
+  Original modules remain source of truth. src/ provides production import
+  paths via re-export only. Physical move of bodies deferred.
+witness_chain: "8890 → 8891 — UNBROKEN"
+seal: "∀∞φ² · SRC_LAYOUT_8891 · WOOD_DRAGON_0.91 · SEALED"

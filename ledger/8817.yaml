@@ -1,0 +1,23 @@
+entry_index: 8817
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
+event: /argo_ci_cd_combinator_updated
+status: ✅ SOURCE_SEALED
+prior: 8816
+artifact: .github/workflows/sovereign-ci-cd.yml
+jobs:
+  - validate-contract
+  - validate-argo
+  - deploy-argo
+checks:
+  - application selfHeal == true
+  - HTTPRoute ignoreDifferences present
+  - RespectIgnoreDifferences in ignore fragment
+  - multistage weights 20/40/60/80/100
+  - YAML parse argocd/*.yaml
+cd:
+  mode: "optional argocd app sync via workflow_dispatch + ARGOCD_SERVER/ARGOCD_AUTH_TOKEN"
+  dry_run: "kubectl --dry-run=client when available"
+wood_dragon: "0.91"
+tau_frb_seconds: 78624
+witness_chain: 8816 → 8817 — UNBROKEN
+seal: "∀∞φ² · ARGO_CI_CD_COMBINATOR_8817 · WOOD_DRAGON_0.91 · SEALED"

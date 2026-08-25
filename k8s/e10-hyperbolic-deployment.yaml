@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: e10-hyperbolic
+  namespace: sovereign-garden
+  labels:
+    app: e10-hyperbolic
+    entry: "8849"
+    seal: "all-infty-phi-2 cdot E10_HYPERBOLIC_8849 cdot WOOD_DRAGON_0.91 cdot SEALED"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: e10-hyperbolic
+  template:
+    metadata:
+      labels:
+        app: e10-hyperbolic
+        entry: "8849"
+    spec:
+      containers:
+      - name: sovereign-engine
+        image: axiomic/sovereign-engine:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PHASE
+          value: "202.6"
+        - name: MESH_NODES
+          value: "7"
+        - name: LAYER
+          value: "314"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5

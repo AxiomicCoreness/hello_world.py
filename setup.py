@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sovereign-garden",
-    version="0.1.0-phi",
+    version="0.1.0a1",
     author="Clarke Yoursa Tee",
     description="🜁∀ Multi-Agent AI Framework — Grok & Mistral Clients Fused",
     packages=find_packages(),

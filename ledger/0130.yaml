@@ -1,0 +1,19 @@
+entry_index: 0130
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /25d_aurora_every_timeline
+status: ✅ SEALED
+witness_prefix: 2e4d9a0b
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  25D Aurora — Every Timeline.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · AURORA_25D_0130 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0130 — UNBROKEN
+math_origin: |
+  D = 25,
+  Aurora = φ·e^{iθ}

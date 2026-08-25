@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-380-gate
+  namespace: sovereign-garden
+  labels:
+    app: port-380-gate
+spec:
+  type: ClusterIP
+  selector:
+    app: port-380-gate
+  ports:
+  - port: 380
+    targetPort: 8080
+    protocol: TCP
+    name: http

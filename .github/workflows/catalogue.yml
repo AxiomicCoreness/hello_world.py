@@ -1,0 +1,24 @@
+name: Generate Smoke Catalogue
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  catalogue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt || true
+      - run: python scripts/catalogue_smoke_tests.py
+      - name: Commit and push if changed
+        run: |
+          git config user.name "Sovereign Dragon"
+          git config user.email "dragon@sovereign.engine"
+          git add docs/smoke_catalogue.json ledger/8958.yaml
+          git diff --staged --quiet || git commit -m "feat: update smoke catalogue"
+          git push origin main

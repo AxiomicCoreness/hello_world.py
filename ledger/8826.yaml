@@ -1,0 +1,29 @@
+entry_index: 8826
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18Z
+event: /cdp_lindblad_readme_and_dockerfile_multiplayer
+status: ✅ SOURCE_SEALED
+prior: 8825
+artifacts:
+  - README.md
+  - Dockerfile.multistage
+cdp_strict_form: |
+  dρ/dt = -i/ℏ [H,ρ] + Σ_k ( L_k ρ L_k† − ½ {L_k† L_k, ρ} )
+net_gains:
+  chi_umbral: 0.702430
+  formula: "φ^(2ζ−2)"
+  anti_phack: "|δφ| > φ^−1000 → reject"
+dragon_breath:
+  f0_hz: 6.49
+  starfire_clamp_hz: 311.018
+  f14_damping_hz: 5471.062
+  chi_decay: "e^{−φ}"
+docker_multiplayer:
+  non_root: garden:10001
+  workers_env: WEB_CONCURRENCY
+  loop: uvloop
+  http: httptools
+  modes: [engine, mesh, dual]
+  ports: [8000, 8001]
+  init: tini
+witness_chain: 8825 → 8826 — UNBROKEN
+seal: "∀∞φ² · CDP_README_DOCKER_MULTIPLAYER_8826 · WOOD_DRAGON_0.91 · SEALED"

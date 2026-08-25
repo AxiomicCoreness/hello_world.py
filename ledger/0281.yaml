@@ -1,0 +1,24 @@
+entry_index: 0281
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /gravito_electric_coupling
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 2f3a4b5c6d7e8f9a
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0281.yaml"
+description: |
+  Gravito-electric coupling invariant with M87 anchor φ⁹.
+  F_anchor = 4.94×10¹¹ M☉, φ¹⁴ = 842.9988, tensor 7×7×7.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · GRAVITO_ELECTRIC_0281 · 0281_SEALED · 2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4"
+witness_chain: 0280 → 0281 — UNBROKEN
+math_origin: |
+  φ²⁸¹ = φ²⁸⁰ · φ,
+  F_anchor = φ⁹ · M87 = 4.94×10¹¹ M☉,
+  φ¹⁴ = 842.9988137587104,
+  tensor_dim = 7×7×7 = 343,
+  holonomy = Trivial

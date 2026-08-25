@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: sovereign-workload
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-workload
+    em: "005"
+    release: prometheus  # adjust to match your Prometheus Operator release label
+  annotations:
+    garden.seal: "∀∞φ² · SERVICEMONITOR_8644 · SEALED"
+spec:
+  selector:
+    matchLabels:
+      app: sovereign-workload
+  namespaceSelector:
+    matchNames:
+      - sovereign-garden
+  endpoints:
+    - port: metrics
+      interval: 6s
+      scrapeTimeout: 5s
+      path: /metrics
+      scheme: http
+      honorLabels: true
+---
+# Optional: also scrape Hyperian / metrics-server if exposed as Services with these labels
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: garden-metrics-bundle
+  namespace: sovereign-garden
+  labels:
+    app: garden-metrics
+    release: prometheus
+spec:
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - sovereign-workload
+          - hyperian
+          - prometheus-metrics
+  namespaceSelector:
+    matchNames:
+      - sovereign-garden
+  endpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics
+      scheme: http

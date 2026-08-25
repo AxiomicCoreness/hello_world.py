@@ -1,0 +1,24 @@
+# Entry 8755 — Port 380 MCP gate for Render / free Docker web service
+# Conceptual identity: Port 380 / Layer 314
+# Runtime bind: $PORT only (no hardcoded 380 listen)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements-mcp.txt .
+RUN pip install --no-cache-dir -r requirements-mcp.txt
+
+# Quadrant FastAPI surface as port380_mcp module
+COPY quantum/deepseek_mesh/endpoint.py ./port380_mcp.py
+COPY quantum/ ./quantum/
+
+ENV PORT=8000 \
+    PYTHONUNBUFFERED=1 \
+    GARDEN_SECRET=""
+
+# EXPOSE: publish default container port (build-time metadata).
+# Runtime listen still uses ${PORT} so Render/K8s can override.
+EXPOSE 8000
+
+# Shell form required so ${PORT} expands (Render / K8s inject PORT)
+CMD ["sh", "-c", "exec uvicorn port380_mcp:app --host 0.0.0.0 --port ${PORT:-8000}"]

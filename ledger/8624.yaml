@@ -1,0 +1,19 @@
+entry_index: 8624
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /infinite_compression_233_and_batch_oidc_tokenizer
+status: ✅ SEALED
+files:
+  - trait_compression.py   # C_∞ practical → 233D
+  - batch_oidc_tokenizer.py  # full 64-char HMAC/SHA-256
+math:
+  operator: "C_∞(t)=Σ φ^{-k} Φ_k(t)"
+  practical_dim: 233
+  embed_dim: 144
+  precision_note: "truncation k≤144 ~ φ^{-144}"
+oidc_policy: "Phase-3 and HMAC signatures use full 64-char digests — never truncated"
+historical_note: |
+  Narrative references (8500, 8373, b5200929…) remain historical seals in the
+  conversation archive. This entry materializes executable compression + batch
+  OIDC helpers on current main without importing broken mega-menu fragments.
+witness_chain: 8623 → 8624 — UNBROKEN
+seal: "∀∞φ² · INFINITE_COMPRESSION_233 · BATCH_OIDC · 8624 · SEALED"

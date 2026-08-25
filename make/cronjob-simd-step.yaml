@@ -1,0 +1,102 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: simd-batch-step
+  namespace: sovereign-garden
+  labels:
+    app: simd-batch-step
+    layer: "314"
+    sovereignty: active
+  annotations:
+    garden.axiomic/ledger: "8805"
+    garden.axiomic/image: "axiomic/sovereign-engine:latest"
+    garden.axiomic/seal: "LEAKY_I_CLOSED_8805"
+    garden.axiomic/coherence: "1.0"
+    garden.axiomic/phase_deg: "202.6"
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: simd-batch-step
+            layer: "314"
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: simd-step
+            image: axiomic/sovereign-engine:latest
+            imagePullPolicy: Always
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -e
+                STATE=/var/state/leaky_i/i_value
+                if [ ! -f "$STATE" ]; then
+                  mkdir -p /var/state/leaky_i
+                  echo "${LEAKY_I_SEED:-0.0}" > "$STATE"
+                fi
+                EXTRA=""
+                if [ "${PHASE_RHO:-false}" = "true" ]; then
+                  EXTRA="--phase-rho"
+                fi
+                exec python -m orchestrator.simd_step \
+                  --no-http \
+                  --branch "${BRANCH}" \
+                  --coherence "${COHERENCE}" \
+                  --phase "${PHASE}" \
+                  --nodes "${MESH_NODES}" \
+                  --leaky-i-path "$STATE" \
+                  $EXTRA
+            env:
+            - name: PYTHONPATH
+              value: "/app"
+            - name: BRANCH
+              value: "B"
+            - name: COHERENCE
+              value: "1.0"
+            - name: PHASE
+              value: "202.6"
+            - name: MESH_NODES
+              value: "7"
+            - name: PHASE_RHO
+              value: "false"
+            - name: LEAKY_I_SEED
+              valueFrom:
+                configMapKeyRef:
+                  name: leaky-i-seed
+                  key: i_value
+                  optional: true
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-venomsuite
+                  key: deepseek-api-key
+                  optional: true
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oidc-venomsuite
+                  key: secret
+                  optional: true
+            volumeMounts:
+            - name: leaky-i-state
+              mountPath: /var/state/leaky_i
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+          volumes:
+          - name: leaky-i-state
+            persistentVolumeClaim:
+              claimName: leaky-i-state

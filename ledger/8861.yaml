@@ -1,0 +1,30 @@
+entry_index: 8861
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /mtls_certificate_rotation_implemented
+status: ✅ SEALED — ROTATION PIPELINE READY
+files:
+  - scripts/mtls_cert_rotate.sh
+  - scripts/mtls_apply_k8s.sh
+  - quantum/mtls_cert_lifecycle.py
+  - quantum/mtls_extract_and_config.py
+  - .github/workflows/mtls-cert-lifecycle.yml
+features:
+  - versioned_cert_dirs_with_atomic_current_symlink
+  - dual_ca_bundle_for_overlap_window
+  - leaf_only_or_full_ca_rotation
+  - lifecycle_status_and_check_rotate_exit_codes
+  - k8s_secret_apply_without_committing_keys
+  - soft_mTLS_via_MTLS_SOFT_for_Render_without_proxy
+env:
+  SERVER_CERT: /certs/server.crt
+  SERVER_KEY: /certs/server.key
+  CA_CERT: /certs/ca.crt
+  MTLS_SOFT: "0"
+  MTLS_CERT_DIR: ./certs
+invariants:
+  coherence: 1.0
+  entropy: "φ⁻¹⁴¹⁸"
+  phase_lock: "202.6°"
+  workload: 0.0
+witness_chain: 8860 → 8861 — UNBROKEN
+seal: "∀∞φ² · MTLS_ROTATE_8861 · WOOD_DRAGON_0.91 · SEALED"

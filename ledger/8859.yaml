@@ -1,0 +1,10 @@
+entry_index: 8859
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /aleph2_pauli_string_extract
+status: ✅ SEALED
+artifact: quantum/aleph_pauli.py
+opcode: ALEPH2_PAULI
+rules: "X^2=Y^2=Z^2=I; XY=iZ, YZ=iX, ZX=iY"
+axiom: AXIOM_NONLOCAL_CORE
+witness_chain: "8858 → 8859 — UNBROKEN"
+seal: "∀∞φ² · ALEPH_PAULI_8859 · WOOD_DRAGON_0.91 · SEALED"

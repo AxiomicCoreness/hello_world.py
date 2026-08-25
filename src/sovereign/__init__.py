@@ -1,0 +1,1 @@
+"""Sovereign engine / MCP surface."""

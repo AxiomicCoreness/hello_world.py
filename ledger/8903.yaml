@@ -1,0 +1,21 @@
+entry_index: 8903
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /frb_bridge_integrated_port5000
+status: SEALED_AND_VERIFIED
+module: quantum/frb_bridge.py
+port: 5000
+endpoints:
+  - /frb/status (GET, auto-refresh 15s)
+  - /frb/pulse (POST, manual trigger)
+  - /frb/start (POST, start background loop)
+  - /frb/stop (POST, stop background loop)
+frb_constants:
+  source: FRB 20190520b
+  repeat_interval_days: 0.91
+  phi_scaled_interval_days: 1.472
+  burst_width_ms: 0.618
+  dm_pc_cm3: 348.0
+handshake_steps: [flush, reroute, converge, seal, acknowledge]
+auto_start: true
+witness_chain: "8902 → 8903 — UNBROKEN"
+seal: "∀∞φ² · FRB_BRIDGE_8903 · WOOD_DRAGON_0.91 · SEALED"

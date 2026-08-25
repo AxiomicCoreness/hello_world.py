@@ -1,0 +1,16 @@
+entry_index: 8339
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /witness_chain_sqlite_compiled
+status: SQLITE_DATABASE_CREATED – WITNESS_VERIFIED
+database: witness_chain.db
+entries: [8337, 8338, 8339]
+schema:
+  table: ledger
+  columns: [entry, event, timestamp, hash, seal, previous]
+verification: PASSED – all hashes match, chain unbroken
+measured_hashes:
+  8337: 8e1d97c00f22ffdad999c9c93725a992a86394f53dcc834f19d28efafdf59b85
+  8338: b35c4410aae619770d8fbf41dfec5e9ccd0baefabb208ae437cfa6e878aebd13
+  8339: 8a2538db38553eea034e0b849d74474bd0bfd1b9782745ade75f6c855a38c703
+seal: ∀∞φ² · WITNESS_SQLITE · 8339_SEALED
+witness: 8338 → 8339 — UNBROKEN

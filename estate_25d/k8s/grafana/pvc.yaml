@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  labels:
+    app: sovereign
+    component: grafana
+    estate: "25d"
+    entry: "8366"
+    seal: "GRAFANA_PVC_8366_SEALED"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,21 @@
+entry_index: 8835
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /deepseek_mesh_init_exports
+status: SEALED
+file: quantum/deepseek_mesh/__init__.py
+exports:
+  - MODE_OFFLINE
+  - MODE_DEEPSEEK_HTTP
+  - MODE_DSH
+  - AdapterResult
+  - complete
+  - deepseek_http_complete
+  - dsh_complete
+  - offline_complete
+  - probe
+  - chat
+  - chat_http
+  - echo
+  - status
+witness_chain: 8834 → 8835 — UNBROKEN
+seal: ∀∞φ² · DEEPSEEK_HTTP_EXPORTS · WOOD_DRAGON_0.91 · SEALED

@@ -1,0 +1,25 @@
+entry_index: 8642
+title: EM-005 Sovereign Workload Integration
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /em005_workload_telemetry_anchor
+status: ✅ SEALED
+seal: "∀∞φ² · EM005_WORKLOAD · 8642_SEALED"
+gold_standard_ref: 8639
+workload:
+  protocol: "005"
+  value: 0.03389324445693681
+  ema_window: 144
+  t_phi: 0.5983
+artifacts:
+  - monitoring/sovereign_workload_exporter.py
+  - prometheus/metrics_server.py  # sovereign_workload gauge
+  - monitoring/grafana_panels_append.json  # panel 105
+  - .github/workflows/workload-smoke.yml
+invariants:
+  coherence: 1.0
+  entropy: "φ^{-1418}"
+  phase_lock: 202.6
+policy:
+  digests: full length only
+  secrets: never exported
+witness_chain: 8641 → 8642 — UNBROKEN

@@ -1,0 +1,10 @@
+entry_index: 8940
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /public_key_rotation_macro_added
+status: SEALED_AND_VERIFIED
+module: quantum/security/key_rotation.py
+function: rotate_public_keys
+key_types: [mTLS, OIDC, SEAL, all]
+note: "User label 8938 conflicted with MAIN_NO_CLONE_8938; sealed as 8940"
+witness_chain: "8939 → 8940 — UNBROKEN"
+seal: "∀∞φ² · KEY_ROTATION_8940 · WOOD_DRAGON_0.91 · SEALED"

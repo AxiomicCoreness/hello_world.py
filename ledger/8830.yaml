@@ -1,0 +1,11 @@
+entry_index: 8830
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /deepseek_mcp_only_adapter_rebuild
+status: SEALED
+changes:
+  - quantum/deepseek_mesh/dsh_adapter.py rebuilt DeepSeek-only
+  - removed mode openai / openai_compatible_complete
+  - modes: offline | deepseek | dsh
+  - deepseek/api.py comments + online mode label → deepseek
+witness_chain: 8829 → 8830 — UNBROKEN
+seal: ∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED

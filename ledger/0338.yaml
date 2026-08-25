@@ -1,0 +1,22 @@
+entry_index: 0338
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /pre_main_invariant_check
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 2b3c4d5e6f7a8b9c   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  pre_main_invariant_check verifies φ against (1+√5)/2 within 1e-12.
+  Raises RuntimeError if drift detected.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · PRE_MAIN_CHECK · 0338_SEALED"
+witness_chain: 0337 → 0338 — UNBROKEN
+math_origin: |
+  Check: |φ - (1+√5)/2| ≤ 1e-12.
+  This is a sanity check on the constant's precision.
+  If violated, the system assumes harmonic drift and invokes correction.

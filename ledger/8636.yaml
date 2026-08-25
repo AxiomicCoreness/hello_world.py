@@ -1,0 +1,19 @@
+entry_index: 8636
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /optimizer_wallet_dat_sync_rotate_stub
+status: ✅ SEALED
+component: optimizer/wallet_sync_rotate.py
+scope: |
+  Opaque wallet.dat path sync (full SHA-256 of file bytes) + session material
+  rotation. Does not decrypt, export, or log private keys. Not a Bitcoin RPC
+  client — local file integrity + rotation fingerprints only.
+exports:
+  - content_sha256 (64 hex)
+  - material_sha256 (64 hex)
+  - sizes / mtimes / rotation_count
+never_exports:
+  - raw wallet bytes
+  - master_seed
+  - rotated material plaintext
+witness_chain: 8635 → 8636 — UNBROKEN
+seal: "∀∞φ² · OPTIMIZER_WALLET_SYNC_ROTATE_8636 · SEALED"

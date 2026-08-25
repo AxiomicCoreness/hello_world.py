@@ -1,0 +1,19 @@
+entry_index: 8811
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /gateway_api_traffic_split_source_provided
+status: ✅ MANIFESTS_PROVIDED — NOT EXECUTED
+artifacts:
+  - argocd/sovereign-garden-stable.yaml
+  - argocd/sovereign-garden-canary.yaml
+  - argocd/sovereign-garden-httproute.yaml
+  - apply_gateway_route.py
+model: proportional backendRefs via Gateway API
+argo_integration: plugin patches weights during canary steps
+weight_sequence:
+  - "20 → 80 / 20"
+  - "40 → 60 / 40"
+  - "60 → 40 / 60"
+  - "80 → 20 / 80"
+  - "100 → 0 / 100"
+witness_chain: 8810 → 8811 — UNBROKEN
+seal: "∀∞φ² · GATEWAY_API_SPLIT_8811 · WOOD_DRAGON_GATE · SEALED"

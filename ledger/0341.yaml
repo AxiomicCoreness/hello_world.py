@@ -1,0 +1,21 @@
+entry_index: 0341
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /source_code_retrieval
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 5e6f7a8b9c0d1e2f   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Graceful retrieval of source code via __file__ or sys.argv[0] fallback.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · SOURCE_RETRIEVAL · 0341_SEALED"
+witness_chain: 0340 → 0341 — UNBROKEN
+math_origin: |
+  The retrieval is a deterministic function of the file system:
+  first try __file__, then sys.argv[0]. If both fail, use fallback
+  training code. This ensures the model can always locate its own source.

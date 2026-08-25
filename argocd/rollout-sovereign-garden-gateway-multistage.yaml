@@ -1,0 +1,146 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  annotations:
+    # Wave 2: Rollout after Services (0) and Analysis (1); before HTTPRoute (3)
+    # Free evolution applies on this surface; traffic programming is wave 3 only
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app: sovereign-garden
+    traffic-router: gatewayAPI
+    entry: "8814"
+    variant: multistage-headers
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+        - name: sovereign-engine
+          image: axiomic/sovereign-engine:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PHASE
+              value: "202.6"
+            - name: MESH_NODES
+              value: "7"
+            - name: TRAFFIC_ROUTER
+              value: "gatewayAPI"
+            - name: WOOD_DRAGON_TAU
+              value: "0.91"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  strategy:
+    canary:
+      canaryService: sovereign-garden-canary
+      stableService: sovereign-garden-stable
+      trafficRouting:
+        managedRoutes:
+          - name: early-qa
+          - name: mid-qa
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoutes:
+              - name: sovereign-garden-route
+                useHeaderRoutes: true
+            namespace: sovereign-garden
+      steps:
+        # ── Stage 0 · probe ───────────────────────────────────────────
+        # Background: 20% canary / 80% stable
+        # Pin: X-Canary-Stage: early → 100% canary
+        - setWeight: 20
+        - setHeaderRoute:
+            name: early-qa
+            match:
+              - headerName: X-Canary-Stage
+                headerValue:
+                  exact: "early"
+        - pause: {duration: 30s}
+
+        # ── Stage 1 · expand + second pin ────────────────────────────
+        # Background: 40% canary / 60% stable
+        # Pin: X-Canary-Stage: mid → 100% canary (early still active)
+        - setWeight: 40
+        - setHeaderRoute:
+            name: mid-qa
+            match:
+              - headerName: X-Canary-Stage
+                headerValue:
+                  exact: "mid"
+        - pause: {duration: 30s}
+
+        # ── Stage 2 · majority approach; release early pin ───────────
+        # Background: 60% canary / 40% stable
+        # early-qa removed (empty setHeaderRoute name-only)
+        - setWeight: 60
+        - setHeaderRoute:
+            name: early-qa
+        - pause: {duration: 30s}
+
+        # ── Stage 3 · near-full background ───────────────────────────
+        # Background: 80% canary / 20% stable
+        # mid still pinned
+        - setWeight: 80
+        - pause: {duration: 30s}
+
+        # ── Stage 4 · promote + release mid pin ──────────────────────
+        # Background: 100% canary / 0% stable
+        # mid-qa removed (no orphans)
+        - setWeight: 100
+        - setHeaderRoute:
+            name: mid-qa
+        - pause: {duration: 30s}
+
+      analysis:
+        templates:
+          - templateName: sovereign-health-check
+        args:
+          - name: service-name
+            value: sovereign-garden-canary
+---
+# Multi-stage header pin — refined weights (Entry 8814)
+#
+# Aligns background schedule with Entry 8811 proportional model:
+#
+#   setWeight   stable/canary   header pins active
+#   ---------   -------------   ------------------
+#        20      80 / 20        early
+#        40      60 / 40        early + mid
+#        60      40 / 60        mid          (early dropped)
+#        80      20 / 80        mid
+#       100       0 / 100       —            (mid dropped)
+#
+# Header                 Window
+# --------------------   --------------------------------
+# X-Canary-Stage: early  stages 0–1 (cleared at stage 2)
+# X-Canary-Stage: mid    stages 1–3 (cleared at stage 4)
+# (no header)            follows setWeight column above
+#
+# Empty setHeaderRoute {name only} removes the injected HTTPRoute rule.
+# WOOD_DRAGON_GATE · 0.91 · τ_FRB = 78624 s
+#
+# Sync wave: "2" — free evolution on Rollout before HTTPRoute wave 3
+#
+# Test:
+#   curl -H 'X-Canary-Stage: early' https://garden.example/health
+#   curl -H 'X-Canary-Stage: mid'   https://garden.example/health
+#   curl                            https://garden.example/health

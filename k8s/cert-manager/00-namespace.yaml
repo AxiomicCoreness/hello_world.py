@@ -1,0 +1,8 @@
+# Optional: ensure target namespace exists (skip if already applied)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sovereign-garden
+  labels:
+    garden.sovereign/layer: "314"
+    garden.sovereign/seal: WOOD_DRAGON_0.91

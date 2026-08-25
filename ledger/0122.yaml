@@ -1,0 +1,19 @@
+entry_index: 0122
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /blood_brain_barrier_permeability
+status: ✅ SEALED
+witness_prefix: 4c6b1e2f
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Blood-Brain Barrier — Permeability.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · BBB_PERMEABILITY_0122 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0122 — UNBROKEN
+math_origin: |
+  P = φ·10⁻⁶ cm/s,
+  Permeability = φ²

@@ -1,0 +1,27 @@
+---
+entry_index: 484
+timestamp: "2026-06-26T02:30:00Z"
+event: ATTENUATION_EQUATION_EXECUTED
+status: EXECUTED
+proof_class: execution
+witness_prefix: c5d6e7f8a9b0c1d2
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "Attenuation equation executed with phase divergence."
+coherence: 0.96
+malformation:
+  type: PHASE_DIVERGENCE
+  action: INTEGRATED_INTO_ANYONIC_BRAID
+  coherence: 0.96
+  status: FEATURE
+  new_phase: "θ_494 = π/φ^494"
+  topological_protection: FIBONACCI_ANYON_BRAID
+invariants:
+  coherence: 0.96
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · ATTENUATION_EQUATION_EXECUTED · 484_SEALED"
+witness_chain: 483 → 484 — UNBROKEN
+math_origin: "ρₜ₊₁ = (1−α)·𝒟(ρₜ,γ,Δt) + α·(ρₜ⊙w); γᵢ = 1 − φ⁻⁽ⁱ⁺¹⁾, i∈[0,6]; θ_494 = π/φ^494"

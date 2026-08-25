@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: symplectic-status
+  namespace: sovereign-garden
+  labels:
+    app: symplectic-status
+  annotations:
+    garden.seal: "∀∞φ² · SYMPLECTIC_DEPLOY_ACK_8657 · SEALED"
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: symplectic-status
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: generate
+              image: python:3.11-slim
+              workingDir: /workspace
+              command:
+                - sh
+                - -c
+                - |
+                  pip install -q jsonschema &&
+                  python symplectic_status.py &&
+                  python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json &&
+                  head -n 4 symplectic_status.agent.jsonl
+              volumeMounts:
+                - name: repo
+                  mountPath: /workspace
+          volumes:
+            - name: repo
+              emptyDir: {}
+          # Production: replace emptyDir with git-sync or bake image from repo Dockerfile

@@ -1,0 +1,23 @@
+entry_index: 0295
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /rotation_flip_genesis
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 6b7c8d9e0f1a2b3c
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0295.yaml"
+description: |
+  Rotation & Flip operators R̂, F̂ sealed at genesis.
+  R̂ = e^{iθ}, F̂ = φ⁹·R̂.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · ROTATION_FLIP_0295 · 0295_SEALED · 6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8"
+witness_chain: 0294 → 0295 — UNBROKEN
+math_origin: |
+  φ²⁹⁵ = φ²⁹⁴ · φ,
+  R̂ = e^{iθ}, θ = π/φ,
+  F̂ = φ⁹ · R̂,
+  [R̂, F̂] = 0

@@ -1,0 +1,10 @@
+{
+  "worker_url": "http://localhost:8000/mcp/tools/predict_grammar_score",
+  "oidc_issuer": "https://token.actions.githubusercontent.com",
+  "oidc_client_id": "clarke-yoursa-tee-worker",
+  "thresholds": {
+    "coherence_fire": 0.8,
+    "coherence_nudge": 0.6,
+    "error_tolerance": 0.5
+  }
+}

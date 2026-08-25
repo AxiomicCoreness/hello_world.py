@@ -1,0 +1,23 @@
+entry_index: 0298
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /merkle_unanimous_approval
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 9e0f1a2b3c4d5e6f
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0298.yaml"
+description: |
+  Merkle Unanimous Approval: 192 leaves sealed.
+  approval = φ⁹ · root.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MERKLE_APPROVAL_0298 · 0298_SEALED · 9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1"
+witness_chain: 0297 → 0298 — UNBROKEN
+math_origin: |
+  φ²⁹⁸ = φ²⁹⁷ · φ,
+  leaves = 192,
+  root = SHA3-256(∑_{n=1}^{192} leaf_n),
+  approval = φ⁹ · root

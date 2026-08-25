@@ -1,0 +1,14 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "sovereign-engine-25d",
+    "title": "Sovereign Engine - 25D Estate",
+    "tags": ["sovereign", "phi-harmonic", "agsi", "25d"],
+    "timezone": "browser",
+    "schemaVersion": 37,
+    "version": 1,
+    "refresh": "5s"
+  },
+  "folderId": 0,
+  "overwrite": true
+}

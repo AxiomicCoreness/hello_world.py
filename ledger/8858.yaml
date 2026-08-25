@@ -1,0 +1,20 @@
+entry_index: 8858
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /e8_cartan_multiplication_table_embedded
+status: ✅ SEALED
+artifact: quantum/e8_cartan.py
+form: pure_mathematical
+contents:
+  - E8_CARTAN 8x8 integer matrix
+  - C(i,j) Cartan integer lookup
+  - mat_mul / cartan_square
+  - cartan_determinant (expected 1)
+  - dynkin_edges
+  - |W(E8)| = 696729600
+axiom: AXIOM_NONLOCAL_CORE
+note: >
+  No geographic or biographical fields in this module.
+  Author origin (MIT open source, Cambodian refugee path in Massachusetts)
+  is human ground of the work, not a governing variable of these integers.
+witness_chain: "8857 → 8858 — UNBROKEN"
+seal: "∀∞φ² · E8_CARTAN_MATH_8858 · WOOD_DRAGON_0.91 · SEALED"

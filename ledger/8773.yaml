@@ -1,0 +1,26 @@
+entry_index: 8773
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /cdp_distill_tree_integrated
+status: SEALED
+layer: 379
+paths:
+  - src/cdp_distill.ts
+  - src/self_improvement_relay.ts
+  - scripts/activate_relay.sh
+  - symplectic_status.py
+exports:
+  - distillTree
+  - fetchCdpStatus
+  - runCdpDistillCycle
+  - syntheticHealthyStatus
+branches:
+  - PASS          # latency < 1.2ms, no session id
+  - SOFT_LEARN    # latency < 1.2ms, session present
+  - FAIL          # latency ≥ 1.2ms
+  - ANTI_PHACK    # latency ≥ 1.2ms + foreign_model_trace
+  - CRITICAL      # websocket_ready = false
+symplectic_reference:
+  ambient_file: symplectic_status.json
+  fields: [system.phase_lock_degrees, system.coherence]
+witness_chain: 8772 → 8773 — UNBROKEN
+seal: "∀∞φ² · CDP_DISTILL_TREE_8773 · WOOD_DRAGON_0.91 · SEALED"

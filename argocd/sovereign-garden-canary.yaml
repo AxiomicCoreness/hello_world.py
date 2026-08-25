@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-canary
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: canary
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app: sovereign-garden
+    role: canary
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: http-fallback-1
+      port: 8001
+      targetPort: 8001

@@ -1,0 +1,15 @@
+entry_index: 8799
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /flux_python_fallback_pytest
+status: ✅ SETUP_SCRIPT_AND_TEST_SEALED
+files:
+  - flux_cd_setup.py
+  - tests/test_flux.py
+python_dependencies:
+  - kubernetes
+  - pytest
+notes:
+  - FLUX_BOOTSTRAP=true requires flux CLI + GITHUB_TOKEN
+  - CR API version v1 (source/kustomize toolkits)
+witness_chain: 8798 → 8799 — UNBROKEN
+seal: "∀∞φ² · FLUX_PYTHON_8799 · WOOD_DRAGON_GATE · SEALED"

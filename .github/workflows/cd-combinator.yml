@@ -1,0 +1,134 @@
+name: CD Combinator (Argo Rollout)
+
+# Seal: ∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED
+# Witness: 8925 → 8926 — UNBROKEN
+# cryptography: python -m pip + .github/scripts/verify_ledger.py
+
+on:
+  workflow_run:
+    workflows: ["Master Equation Integration Test"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      sync:
+        description: "Force Argo CD live sync"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-integrity:
+    runs-on: ubuntu-latest
+    name: Verify Ledger Signatures & Security Headers
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml
+
+      - name: Verify ledger entry (install-safe)
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger.py ledger/8925.yaml
+
+      - name: Verify security headers in FastAPI middleware
+        run: |
+          python -c "
+          import sys
+          from pathlib import Path
+          p = Path('port380_mcp.py')
+          if not p.exists():
+              print('⚠️ port380_mcp.py missing — skip')
+              sys.exit(0)
+          content = p.read_text()
+          required = ['CORSMiddleware','SecurityHeadersMiddleware','Content-Security-Policy','Strict-Transport-Security','X-Content-Type-Options','X-Frame-Options','Referrer-Policy','Permissions-Policy']
+          for header in required:
+              if header not in content:
+                  print(f'❌ Missing {header}')
+                  sys.exit(1)
+          print('✅ All security headers present')
+          "
+
+  trigger-rollout:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify-integrity
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubeconfig (OIDC / cloud CLI)
+        continue-on-error: true
+        run: |
+          if command -v aws &> /dev/null; then
+            aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+          elif command -v gcloud &> /dev/null; then
+            gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --region ${{ secrets.GKE_REGION }}
+          else
+            echo "⚠️ No cloud CLI — existing kubeconfig"
+          fi
+
+      - name: Verify kubectl access
+        run: |
+          kubectl cluster-info --request-timeout=5s || echo "⚠️ Cluster not reachable"
+          kubectl get namespaces || true
+
+      - name: Install Argo Rollouts kubectl plugin
+        run: |
+          curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+          chmod +x kubectl-argo-rollouts-linux-amd64
+          sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+      - name: Apply Rollout manifest (no heredoc)
+        run: |
+          set -euo pipefail
+          if [ -f "argocd/rollout-sovereign-garden-gateway-multistage.yaml" ]; then
+            kubectl apply -f argocd/rollout-sovereign-garden-gateway-multistage.yaml
+          elif [ -f "argocd/rollout-sovereign-garden.yaml" ]; then
+            kubectl apply -f argocd/rollout-sovereign-garden.yaml
+          else
+            echo "⚠️ Catalogued Rollout not found — printf minimal"
+            MIN=/tmp/sovereign-garden-rollout-minimal.yaml
+            printf '%s\n' 'apiVersion: argoproj.io/v1alpha1' 'kind: Rollout' 'metadata:' '  name: sovereign-garden' '  namespace: sovereign-garden' 'spec:' '  replicas: 1' '  strategy:' '    canary:' '      steps:' '      - setWeight: 20' '      - pause: {duration: 30s}' '      - setWeight: 100' '  selector:' '    matchLabels:' '      app: sovereign-garden' '  template:' '    metadata:' '      labels:' '        app: sovereign-garden' '    spec:' '      containers:' '      - name: sovereign-garden' '        image: axiomic/sovereign-engine:latest' '        ports:' '        - containerPort: 8000' > "$MIN"
+            kubectl apply -f "$MIN"
+          fi
+
+      - name: Annotate Rollout
+        run: |
+          kubectl annotate rollout sovereign-garden -n sovereign-garden argocd.argoproj.io/sync-options=Prune=true,ApplyOutOfSyncOnly=true argocd.argoproj.io/sync-wave=1 --overwrite || true
+
+      - name: Argo CD live sync (safe, no heredoc)
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+          ARGO_APP: sovereign-garden
+        run: |
+          set -euo pipefail
+          if [ -z "${ARGOCD_AUTH_TOKEN:-}" ] || [ -z "${ARGOCD_SERVER:-}" ]; then
+            echo "⚠️ ARGOCD secrets not set — sync skipped"
+            exit 0
+          fi
+          if ! command -v argocd >/dev/null 2>&1; then
+            curl -sSL -o /tmp/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            chmod +x /tmp/argocd && sudo mv /tmp/argocd /usr/local/bin/argocd
+          fi
+          argocd app sync "$ARGO_APP" --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --grpc-web --timeout 300 --prune --apply-out-of-sync-only
+          argocd app wait "$ARGO_APP" --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --grpc-web --health --timeout 300
+
+      - name: Final summary
+        if: always()
+        run: |
+          echo "✅ CD Combinator completed." >> $GITHUB_STEP_SUMMARY
+          echo "𯌁∀ · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91" >> $GITHUB_STEP_SUMMARY

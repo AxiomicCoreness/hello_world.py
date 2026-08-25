@@ -1,0 +1,15 @@
+entry_index: 8645
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /precompute_lattice_grafana_crd_injection
+status: ✅ SEALED
+artifacts:
+  - cronjobs/precompute_lattice.py
+  - k8s/grafana-dashboard-garden.yaml
+  - k8s/cronjob-precompute-lattice.yaml
+grafana:
+  apiVersion: grafana.integreatly.org/v1beta1
+  kind: GrafanaDashboard
+  name: garden-sovereign-metrics
+requires: Grafana Operator + matching instanceSelector labels
+witness_chain: 8644 → 8645 — UNBROKEN
+seal: "∀∞φ² · GRAFANA_CRD_LATTICE_8645 · SEALED"

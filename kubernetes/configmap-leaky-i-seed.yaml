@@ -1,0 +1,8 @@
+# Optional seed value only (read-only). Runtime state lives on PVC leaky-i-state.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: leaky-i-seed
+  namespace: sovereign-garden
+data:
+  i_value: "0.0"

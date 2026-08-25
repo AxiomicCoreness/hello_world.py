@@ -1,0 +1,20 @@
+entry_index: 8775
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /fal_ternary_merged_into_cdp
+status: SEALED
+fal:
+  ternary:
+    "-1": invert   # foreign_model_trace
+    "0": nullify   # websocket_ready false OR oauth not validated
+    "1": identity  # oauth ok + websocket_ready
+  default_harmony: 0.7337473231
+paths:
+  - quantum/radar_lindblad/port_380_gate.py
+  - quantum/cdp_convergence/cdp_schema.py
+  - quantum/deepseek_mesh/endpoint.py
+endpoints:
+  - POST /gate   # ternary or CDP-derived FAL scale
+  - GET /cdp/status  # includes fal_ternary, harmony_out
+cli: "python -m quantum.radar_lindblad.port_380_gate --ternary 0"
+witness_chain: 8774 → 8775 — UNBROKEN
+seal: "∀∞φ² · FAL_CDP_MERGE_8775 · WOOD_DRAGON_0.91 · SEALED"

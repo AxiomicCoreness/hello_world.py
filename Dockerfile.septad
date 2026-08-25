@@ -1,0 +1,35 @@
+# Septad Ψ₁–Ψ₇ container — EM-005 / Layer 193
+# Build: docker build -f Dockerfile.septad -t garden-septad:8667 .
+# Run:   docker run --rm -p 8000:8000 -p 9090:9090 garden-septad:8667
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir fastapi uvicorn pydantic 2>/dev/null || true
+
+# Core engine + quantum + worker surfaces (append-only copy set)
+COPY sovereign_engine.py .
+COPY batch_oidc_tokenizer.py* ./
+COPY clarke_yoursa_tee_worker.py* ./
+COPY quantum/ ./quantum/
+COPY prometheus/ ./prometheus/
+COPY celestial/ ./celestial/
+COPY monitoring/ ./monitoring/
+
+ENV PHI=1.618033988749895
+ENV PHASE_LOCK_DEG=202.6
+ENV NORTH_STAR_HZ=71.975
+ENV SEPTAD_LAYER=193
+ENV PORT=8000
+ENV METRICS_PORT=9090
+
+EXPOSE 8000 9090
+
+# Default: systems_go + septad status, then metrics server
+CMD ["sh", "-c", "python -c 'from quantum.septad_psi import SeptadField; from sovereign_engine import systems_go; import json; print(json.dumps({\"septad\": SeptadField().status(), \"engine\": systems_go()}, indent=2))' && python -m prometheus.metrics_server --port 9090"]

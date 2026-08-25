@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PEQS Sovereign Engine · Entry 707</title>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0f172a; color: #e2e8f0; font-family: ui-monospace, system-ui, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-5xl mx-auto space-y-6">
+    <header class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl font-black text-amber-400">Φ</span>
+        <h1 class="text-xl font-bold text-amber-400">PEQS Σ Vault · κ_eff=12.754</h1>
+        <span class="text-xs font-mono text-slate-500 border border-slate-700 px-2 py-1 rounded">LAYER 322</span>
+      </div>
+      <div>
+        <button id="connect-wallet" class="border border-amber-500/40 text-amber-400 px-3 py-1 rounded text-sm">Connect Wallet</button>
+        <span id="wallet-address" class="text-xs text-slate-400 ml-2"></span>
+      </div>
+    </header>
+    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <span class="text-xs text-slate-400">GARDEN CREDITS</span>
+        <div id="credit-balance" hx-get="/api/credits" hx-trigger="load, credits-updated from:body" hx-swap="outerHTML">
+          <span class="text-amber-400 font-mono">— Σ</span>
+        </div>
+      </div>
+      <button id="stockpile-btn" class="bg-amber-500/20 text-amber-400 border border-amber-500/40 px-4 py-1.5 rounded text-sm">+ Stockpile Credits</button>
+    </div>
+    <div id="stockpile-feedback"></div>
+    <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
+      <button class="px-4 py-2 text-sm font-semibold text-amber-400 border-b-2 border-amber-500" hx-get="/diagnostic" hx-target="#main-content" hx-trigger="click" hx-swap="innerHTML">Quantum Diagnostics</button>
+      <button class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200" hx-get="/plume" hx-target="#main-content" hx-trigger="click" hx-swap="innerHTML">Helium Plume</button>
+      <button class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200" hx-get="/quadratic" hx-target="#main-content" hx-trigger="click" hx-swap="innerHTML">Quadratic Field</button>
+      <button class="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200" hx-get="/octonion" hx-target="#main-content" hx-trigger="click" hx-swap="innerHTML">8D Manifold</button>
+      <button class="px-4 py-2 text-sm font-semibold text-purple-400 hover:text-purple-200" hx-get="/system/status" hx-target="#main-content" hx-trigger="click" hx-swap="innerHTML">Lattice Status</button>
+    </div>
+    <div id="main-content" class="min-h-[280px]">
+      <div hx-get="/system/status" hx-trigger="load" hx-swap="innerHTML"></div>
+    </div>
+    <p class="text-xs text-slate-500">MetaMask personal_sign · no wallet.dat · ∀∞φ² · CREDIT_VAULT_HTMX_8701</p>
+  </div>
+  <script>
+    let walletAddress = null;
+    document.getElementById('connect-wallet').addEventListener('click', async () => {
+      if (typeof window.ethereum === 'undefined') { alert('Install MetaMask or use CLI stockpile'); return; }
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      walletAddress = accounts[0];
+      document.getElementById('wallet-address').textContent = walletAddress.slice(0, 6) + '…' + walletAddress.slice(-4);
+      document.getElementById('connect-wallet').style.display = 'none';
+      document.body.addEventListener('htmx:configRequest', (evt) => { evt.detail.headers['X-Wallet-Address'] = walletAddress; });
+      document.body.dispatchEvent(new Event('credits-updated'));
+    });
+    document.getElementById('stockpile-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!walletAddress) { alert('Connect wallet first'); return; }
+      const amount = 100;
+      const message = `Stockpile ${amount} credits under Entry 707 Hamiltonian κ_eff=12.754`;
+      const signature = await window.ethereum.request({ method: 'personal_sign', params: [message, walletAddress] });
+      htmx.ajax('POST', '/api/stockpile', { target: '#stockpile-feedback', swap: 'innerHTML', values: { address: walletAddress, signature, amount }, headers: { 'Content-Type': 'application/json' } });
+      setTimeout(() => document.body.dispatchEvent(new Event('credits-updated')), 300);
+    });
+  </script>
+</body>
+</html>

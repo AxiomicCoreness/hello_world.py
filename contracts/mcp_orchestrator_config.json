@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "worker_url": "http://port-380-gate.sovereign-garden.svc.cluster.local:380/mcp",
+  "oidc_issuer": "https://token.actions.githubusercontent.com",
+  "oidc_client_id": "your-client-id",
+  "oidc_client_secret": "",
+  "thresholds": {
+    "coherence_fire": 0.8,
+    "coherence_nudge": 0.6,
+    "error_tolerance": 0.5
+  }
+}

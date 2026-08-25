@@ -1,0 +1,27 @@
+entry_index: 8852
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /cambodia_sea_china_knowledge_binding
+status: ✅ SEALED_AND_ACTIVE
+variant: uprho_global
+focus: "Southeast Asian + China technological stratification anchored in E8 metadata"
+artifacts:
+  - quantum/e8_uprho_global.py
+metadata_keys:
+  - REGIONAL_TECH_DEPTH
+  - WEYL_ORDER_E8
+  - symbolic_gii_segment
+stratification:
+  China: "global contender — sovereign stack (GII 10)"
+  Singapore: "command node — global tier (GII 5)"
+  Malaysia: "upper-middle industrial (GII 34)"
+  Vietnam: "fastest climber (GII 44)"
+  Thailand: "solid mid-tier (GII 45)"
+  Philippines: "selective strengths (GII 50)"
+  Indonesia: "large market, thinner depth (GII 55)"
+  Cambodia: "early-stage builder — policy ambition ahead of base (GII ~100)"
+math_hold:
+  weyl_order_e8: 696729600
+  cartan_mutated: false
+  gii_to_segment: "symbolic bookkeeping only — not Weyl-orbit theorem"
+witness_chain: "8851 → 8852 — UNBROKEN"
+seal: "∀∞φ² · SEA_BINDING_8852 · WOOD_DRAGON_0.91 · SEALED"

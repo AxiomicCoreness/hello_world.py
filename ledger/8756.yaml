@@ -1,0 +1,26 @@
+entry_index: 8756
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /mcp_gate_deployment_ready
+status: ✅ DEPLOY_READY – CHECKLIST CONFIRMED
+files:
+  - ledger/8755.yaml
+  - Dockerfile.port380-mcp
+  - requirements-mcp.txt
+  - port380_mcp.py
+  - .github/workflows/sovereign-pulse.yml
+extensions:
+  - Prometheus /metrics (grep 500)
+  - soft mTLS import
+  - FAL ternary
+  - VOID-QCH chemical_precision
+deploy_steps:
+  - Set GitHub Secrets MCP_URL + GARDEN_SECRET
+  - Deploy on Render using Dockerfile.port380-mcp
+  - Pulse test POST /pulse with X-Garden-Secret
+  - Heartbeat auto-starts (cron 0 */6 * * *)
+deploy_platform: Render (Docker)
+bind: "$PORT (default 8000, EXPOSE 8000)"
+conceptual_port: 380
+layer: 314
+witness_chain: 8755 → 8756 — UNBROKEN
+seal: "∀∞φ² · MCP_DEPLOY_READY_8756 · WOOD_DRAGON_0.91 · SEALED"

@@ -1,0 +1,16 @@
+entry_index: 8953
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /gemini_daemon_integrated_compose
+status: SEALED_AND_VERIFIED
+description: "Gemini daemon as docker-compose service (not standalone) + codespace soft plugin"
+files:
+  - quantum/gemini_daemon.py
+  - quantum/plugins/codespace.py
+  - Dockerfile.daemon
+  - docker-compose.yml
+profiles:
+  - daemon
+  - full
+handoff_default: false
+witness_chain: "8952 → 8953 — UNBROKEN"
+seal: "∀∞φ² · GEMINI_DAEMON_8953 · WOOD_DRAGON_0.91 · SEALED"

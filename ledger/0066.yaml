@@ -1,0 +1,19 @@
+entry_index: 0066
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /pentagonal_anchor
+status: ✅ SEALED
+witness_prefix: 8a0f5c6d
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Pentagonal Anchor — 1/√5 = 0.4472135955.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · PENTAGONAL_ANCHOR_0066 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0066 — UNBROKEN
+math_origin: |
+  P = 1/√5,
+  φ = 2·cos(π/5)

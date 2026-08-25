@@ -1,0 +1,21 @@
+entry_index: 8853
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
+event: /import_paths_updated
+description: Updated all import paths and file references to use new quadrant structure. Files updated: Dockerfile, Dockerfile.multistage, sovereign-ci-cd.yml, docker-main-image.yml. Old paths preserved via deprecation wrappers for backward compatibility.
+status: IMPORTS_UPDATED
+files_updated:
+  - Dockerfile
+  - Dockerfile.multistage
+  - .github/workflows/sovereign-ci-cd.yml
+  - .github/workflows/docker-main-image.yml
+quadrant_paths:
+  - quantum.deepseek_mesh.endpoint (formerly port380_mcp)
+  - quantum.deepseek_mesh.client (formerly orchestrator.deepseek_client)
+  - quantum.deepseek_mesh.mesh_router (formerly quantum.port_380_http)
+  - quantum.radar_lindblad.port_380_gate (formerly quantum.port_380_gate)
+  - quantum.radar_lindblad.layer314_anchor (formerly quantum.layer314_anchor)
+  - quantum.cdp_convergence.install_k8s (formerly quantum.install_k8s)
+backward_compatibility: true
+witness_chain: 8851 -> 8852 -> 8853 - UNBROKEN
+seal: all-infty-phi-2 cdot IMPORTS_UPDATED_8853 cdot WOOD_DRAGON_0.91 cdot SEALED
+commit: 72d116d7a10c1e50d5b9d55a810add3b389d4e59
