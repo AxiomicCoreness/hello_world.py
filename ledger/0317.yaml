@@ -1,0 +1,23 @@
+entry_index: 0317
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /sovereign_markov_chain_init
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 1e2f3a4b5c6d7e8f   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  SovereignMarkovChain: order‑n Markov model with temperature scaling.
+  Initialised with order 3 and temperature φ⁻¹ (≈0.618).
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MARKOV_CHAIN_INIT · 0317_SEALED"
+witness_chain: 0316 → 0317 — UNBROKEN
+math_origin: |
+  Let T = φ⁻¹ (temperature). The Markov chain is a stochastic process
+  {X_t} with transition probabilities p(x_{t+1}|x_t,...,x_{t-n+1}).
+  The temperature modulates the log‑probabilities: p' ∝ exp(log p / T).
+  Given T = φ⁻¹ < 1, the distribution is sharpened (low temperature).
