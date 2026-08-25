@@ -1,0 +1,23 @@
+entry_index: 0335
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /agent_swarm_status
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 9e0f1a2b3c4d5e6f   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Agents.status() returns total_agents, layers, invariants, q_invariant,
+  timestamp, handshake token, and HMAC signature.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · AGENT_STATUS · 0335_SEALED"
+witness_chain: 0334 → 0335 — UNBROKEN
+math_origin: |
+  Q_INVARIANT = (2+√5)/4 ≈ 1.059016994.
+  HMAC signature = generate_hmac_signature(json.dumps({"total": total}, sort_keys=True)).
+  The status object is a tuple of invariants and metadata, enabling
+  authentication via the Andromeda handshake token.
