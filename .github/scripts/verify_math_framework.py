@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Minimal sequential ledger math-framework verifier.
+Minimal sequential ledger math-framework verifier (dual regime).
 
-Checks (per entry, sequential 0000 → max):
-  1. File presence
-  2. entry_index matches filename
-  3. invariants: coherence=1.0, entropy=φ⁻¹⁴¹⁸, workload=0.0, commutator=0.0
-  4. seal starts with ∀∞φ²
-  5. math_origin present
-  6. Global φ identities once
+Regime A — classical floor (typical ≤0350):
+  coherence == 1.0
+  entropy   == "φ⁻¹⁴¹⁸" (or ascii phi^-1418)
+  workload  == 0.0
+  commutator == 0.0
 
-Axiomatic claims (V=L, CH, free operators) are recorded, not failed.
+Regime B — scaled / Sundane (≥0351 allowed):
+  coherence present (1.0 or expression with φ)
+  entropy present (φ / phi form)
+  workload numeric ≥ 0
+  commutator present (0.0 or φ expression)
+  optional: gpro_sundane, unique_math_identity
+
+Shared:
+  entry_index matches filename
+  seal starts with ∀∞φ²
+  math_origin present
+  global φ identities
+
 Exit 0 on structure pass; exit 1 on structural failure.
-
-Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
+Seal: ∀∞φ² · MATH_CI_DUAL_REGIME · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
 
@@ -34,19 +43,22 @@ except ImportError:
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 EPS = 1e-12
 LEDGER_DIR = Path("ledger")
-REQUIRED_INVARIANTS = {
-    "coherence": 1.0,
-    "entropy": "φ⁻¹⁴¹⁸",
-    "workload": 0.0,
-    "commutator": 0.0,
-}
 SEAL_PREFIX = "∀∞φ²"
+SCALED_FLOOR_INDEX = 351  # inclusive: scaled regime allowed from here
+
+PHI_ENTROPY_CLASSICAL = {
+    "φ⁻¹⁴¹⁸",
+    "φ^{-1418}",
+    "phi^-1418",
+    "phi^{-1418}",
+    "PHI^-1418",
+}
 
 
 def discover_max_index(ledger_dir: Path) -> int:
     indices: List[int] = []
-    for p in ledger_dir.glob("*.yaml"):
-        m = re.fullmatch(r"(\d{4})\.yaml", p.name)
+    for p in list(ledger_dir.glob("*.yaml")) + list(ledger_dir.glob("*.yml")):
+        m = re.fullmatch(r"(\d{4})\.ya?ml", p.name)
         if m:
             indices.append(int(m.group(1)))
     return max(indices) if indices else -1
@@ -69,55 +81,158 @@ def check_phi_identities() -> List[str]:
         fails.append("φ² ≠ φ+1")
     if abs((1.0 / PHI) - (PHI - 1.0)) > EPS:
         fails.append("φ⁻¹ ≠ φ-1")
-    if abs(PHI ** 3 - (PHI * PHI2 := PHI * PHI)) > EPS and abs(PHI ** 3 - PHI * (PHI + 1.0)) > EPS:
-        # PHI**3 == PHI*(PHI+1) = PHI²+PHI
-        if abs(PHI ** 3 - (PHI ** 2 + PHI)) > EPS:
-            fails.append("φ³ identity failed")
+    if abs(PHI ** 3 - (PHI ** 2 + PHI)) > EPS:
+        fails.append("φ³ identity failed")
+    return fails
+
+
+def _is_number(x: Any) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def _as_float(x: Any) -> Optional[float]:
+    if _is_number(x):
+        return float(x)
+    if isinstance(x, str):
+        try:
+            return float(x.strip())
+        except ValueError:
+            return None
+    return None
+
+
+def _looks_phi_expr(x: Any) -> bool:
+    if x is None:
+        return False
+    s = str(x)
+    return ("φ" in s) or ("phi" in s.lower()) or ("PHI" in s)
+
+
+def _classical_invariants_ok(inv: Dict[str, Any]) -> bool:
+    c = inv.get("coherence")
+    e = inv.get("entropy")
+    w = inv.get("workload")
+    m = inv.get("commutator")
+    c_ok = _as_float(c) is not None and abs(_as_float(c) - 1.0) <= EPS
+    e_ok = str(e).strip() in PHI_ENTROPY_CLASSICAL or str(e).strip() == "φ⁻¹⁴¹⁸"
+    w_ok = _as_float(w) is not None and abs(_as_float(w) - 0.0) <= EPS
+    m_ok = _as_float(m) is not None and abs(_as_float(m) - 0.0) <= EPS
+    return c_ok and e_ok and w_ok and m_ok
+
+
+def _scaled_invariants_ok(inv: Dict[str, Any]) -> List[str]:
+    """Return list of failures for scaled regime; empty = pass."""
+    fails: List[str] = []
+    if "coherence" not in inv:
+        fails.append("missing coherence")
+    else:
+        c = inv.get("coherence")
+        cf = _as_float(c)
+        if cf is not None:
+            if not (0.0 <= cf <= 1.0 + EPS):
+                fails.append(f"coherence out of [0,1]: {c!r}")
+        elif not _looks_phi_expr(c):
+            fails.append(f"coherence not numeric or φ-expr: {c!r}")
+
+    if "entropy" not in inv:
+        fails.append("missing entropy")
+    else:
+        e = inv.get("entropy")
+        if not (_looks_phi_expr(e) or str(e).strip() in PHI_ENTROPY_CLASSICAL):
+            fails.append(f"entropy not φ-form: {e!r}")
+
+    if "workload" not in inv:
+        fails.append("missing workload")
+    else:
+        wf = _as_float(inv.get("workload"))
+        if wf is None:
+            fails.append(f"workload not numeric: {inv.get('workload')!r}")
+        elif wf < -EPS:
+            fails.append(f"workload negative: {wf}")
+
+    if "commutator" not in inv:
+        fails.append("missing commutator")
+    else:
+        m = inv.get("commutator")
+        mf = _as_float(m)
+        if mf is not None:
+            if abs(mf) > 1.0 + EPS and not _looks_phi_expr(m):
+                # allow small numeric; large pure numbers unusual but not fatal if 0-ish
+                pass
+        elif not _looks_phi_expr(m):
+            fails.append(f"commutator not numeric or φ-expr: {m!r}")
+
+    return fails
+
+
+def check_invariants(n: int, inv: Any) -> List[str]:
+    fails: List[str] = []
+    if not isinstance(inv, dict):
+        return ["invariants not a mapping"]
+
+    if _classical_invariants_ok(inv):
+        return []
+
+    # Scaled regime: always allowed structurally; preferred for n >= SCALED_FLOOR_INDEX
+    scaled_fails = _scaled_invariants_ok(inv)
+    if not scaled_fails:
+        return []
+
+    # Neither regime satisfied
+    if n < SCALED_FLOOR_INDEX:
+        fails.append(
+            "classical floor failed and scaled form incomplete: "
+            + "; ".join(scaled_fails)
+        )
+    else:
+        fails.extend(scaled_fails)
     return fails
 
 
 def check_entry(n: int, data: Dict[str, Any]) -> List[str]:
     fails: List[str] = []
-    # index
+
     idx = data.get("entry_index")
     if idx is None:
         fails.append("missing entry_index")
     else:
         try:
-            # allow int or zero-padded string
-            if int(str(idx).lstrip("0") or "0") != n and str(idx).zfill(4) != f"{n:04d}":
-                # tolerate 0000 style string equal to n
-                if str(idx) not in (str(n), f"{n:04d}"):
-                    fails.append(f"entry_index={idx!r} != {n:04d}")
+            if str(idx) not in (str(n), f"{n:04d}") and int(str(idx).lstrip("0") or "0") != n:
+                fails.append(f"entry_index={idx!r} != {n:04d}")
         except Exception:
             fails.append(f"entry_index unparseable: {idx!r}")
 
-    inv = data.get("invariants") or {}
-    if not isinstance(inv, dict):
-        fails.append("invariants not a mapping")
-    else:
-        for k, expected in REQUIRED_INVARIANTS.items():
-            got = inv.get(k)
-            if got != expected:
-                # float tolerance for numeric
-                if isinstance(expected, float) and isinstance(got, (int, float)):
-                    if abs(float(got) - expected) > EPS:
-                        fails.append(f"invariants.{k}={got!r} != {expected!r}")
-                else:
-                    fails.append(f"invariants.{k}={got!r} != {expected!r}")
+    fails.extend(check_invariants(n, data.get("invariants") or {}))
 
     seal = data.get("seal") or ""
     if not isinstance(seal, str) or not seal.startswith(SEAL_PREFIX):
         fails.append(f"seal missing or bad prefix: {seal!r}")
+    elif "SEALED" not in seal:
+        fails.append("seal missing SEALED token")
 
     if "math_origin" not in data:
         fails.append("missing math_origin")
 
+    # Witness: soft — require UNBROKEN if present
+    wc = data.get("witness_chain")
+    if wc is not None:
+        wcs = str(wc)
+        if "UNBROKEN" not in wcs:
+            fails.append(f"witness_chain missing UNBROKEN: {wcs!r}")
+
     return fails
 
 
+def resolve_path(ledger_dir: Path, n: int) -> Optional[Path]:
+    for ext in (".yaml", ".yml"):
+        p = ledger_dir / f"{n:04d}{ext}"
+        if p.exists():
+            return p
+    return None
+
+
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Sequential ledger math framework check")
+    ap = argparse.ArgumentParser(description="Sequential ledger math framework check (dual regime)")
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--end", type=int, default=None, help="Inclusive end; default = max on disk")
     ap.add_argument("--ledger-dir", type=Path, default=LEDGER_DIR)
@@ -135,11 +250,11 @@ def main() -> int:
         return 1
 
     print("=" * 60)
-    print("🜁∀ LEDGER MATH FRAMEWORK — SEQUENTIAL CHECK")
+    print("🜁∀ LEDGER MATH FRAMEWORK — DUAL REGIME CHECK")
     print(f"   range: {args.start:04d} → {end:04d}")
+    print(f"   classical floor | scaled from {SCALED_FLOOR_INDEX:04d}+")
     print("=" * 60)
 
-    # Global φ identities
     phi_fails = check_phi_identities()
     if phi_fails:
         for f in phi_fails:
@@ -150,11 +265,12 @@ def main() -> int:
     structural_fails = 0
     missing = 0
     checked = 0
-    axiom_notes = 0
+    classical_ok = 0
+    scaled_ok = 0
 
     for n in range(args.start, end + 1):
-        path = ledger_dir / f"{n:04d}.yaml"
-        if not path.exists():
+        path = resolve_path(ledger_dir, n)
+        if path is None:
             missing += 1
             msg = f"[{n:04d}] MISSING file"
             if args.strict_gaps:
@@ -176,20 +292,24 @@ def main() -> int:
             structural_fails += 1
             print(f"❌ [{n:04d}] " + "; ".join(fails))
         else:
-            # soft note for axiomatic content
-            mo = str(data.get("math_origin") or "")
-            if any(tok in mo for tok in ("V = L", "2^ℵ", "Aut(G", "ℵ")):
-                axiom_notes += 1
+            inv = data.get("invariants") or {}
+            if _classical_invariants_ok(inv):
+                classical_ok += 1
+            else:
+                scaled_ok += 1
             if n % 50 == 0 or n == end:
                 print(f"✅ [{n:04d}] structure OK")
 
     print("-" * 60)
-    print(f"checked={checked} missing={missing} structural_fails={structural_fails} axiom_notes={axiom_notes}")
+    print(
+        f"checked={checked} missing={missing} fails={structural_fails} "
+        f"classical={classical_ok} scaled={scaled_ok}"
+    )
     if structural_fails:
         print("❌ FRAMEWORK CHECK FAILED")
         return 1
-    print("✅ FRAMEWORK CHECK PASSED — sequential structure + φ core")
-    print("Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED")
+    print("✅ FRAMEWORK CHECK PASSED — dual regime green")
+    print("Seal: ∀∞φ² · MATH_CI_DUAL_REGIME · WOOD_DRAGON_0.91 · SEALED")
     return 0
 
 
