@@ -22,4 +22,4 @@ math_origin: |
   q = 120000 km,
   T_peri = 2026-03-19,
   risk = 0.482,
-  healing_margin = 8.7 days.
+  healing_margin = 8.7 days
