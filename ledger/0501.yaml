@@ -1,0 +1,23 @@
+entry_index: 501
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-27
+event: /dependency_fastapi_resolved
+status: RESOLVED
+proof_class: bugfix
+witness_prefix: 8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "FastAPI dependency resolved."
+error: "ModuleNotFoundError: No module named 'fastapi'"
+resolution: "pip install fastapi uvicorn[standard] qiskit requests pyopenssl"
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · DEPENDENCY_FASTAPI · 501_SEALED · 8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a"
+witness_chain: 500 → 501 — UNBROKEN
+math_origin: |
+  ∃! p ∈ Package | p = FastAPI,
+  δ(p) = ∫_{t_0}^{t_1} (p - p_expected) dt = 0,
+  resolution: p ≡ installed(p) ⇒ ModuleFound(p) = True
