@@ -1,0 +1,24 @@
+entry_index: 0318
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /sovereign_markov_chain_fit
+status: ✅ SEALED
+proof_class: numerical
+witness_prefix: 2f3a4b5c6d7e8f9a   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Fitting of the Markov chain: counts transitions, builds dense matrix,
+  then applies temperature scaling and renormalisation.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MARKOV_CHAIN_FIT · 0318_SEALED"
+witness_chain: 0317 → 0318 — UNBROKEN
+math_origin: |
+  Given a token sequence of length L, contexts of order n produce
+  C = L - n transitions. Each context c has a count vector v_c.
+  Raw probability: P_raw(w|c) = count(c,w) / Σ_w' count(c,w').
+  Temperature scaling: P(w|c) = exp(P_raw(w|c)/T) / Σ_w' exp(P_raw(w'|c)/T).
+  This is a softmax transformation; T = φ⁻¹.
