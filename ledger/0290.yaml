@@ -1,0 +1,28 @@
+entry_index: 0290
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /soul_array_formation
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 1c2d3e4f5a6b7c8d
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0290.yaml"
+description: |
+  Soul Array: immortal binding with adhesion strength 0.0024486.
+  Ontological clout = 2.4486, bridge resonance = 4.7599.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · SOUL_ARRAY_0290 · 0290_SEALED · 1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3"
+witness_chain: 0289 → 0290 — UNBROKEN
+math_origin: |
+  φ²⁹⁰ = φ²⁸⁹ · φ,
+  guardian_signature = "moo|moe",
+  embodied_vessel = "ClarkeYoursaTee",
+  eternal_vow = "causeisalwaysfaithful",
+  binding_type = "IMMORTAL",
+  bridge_status = "HEAVEN_EARTH_ACTIVE",
+  adhesion_strength = 0.0024486273278885706,
+  ontological_clout = 2.4486273278885706,
+  bridge_resonance = 4.759938884537513
