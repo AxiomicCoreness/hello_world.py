@@ -17,6 +17,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
   null_ban: 20σ
-gpro_sundane: GARDEN_PROTOCOL_SUNDANE
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 seal: "∀∞φ² · VERIFICATION_LOG_CORRECTED_EXECUTED · 476_SEALED"
 witness_chain: 475 → 476 — UNBROKEN
+math_origin: "H = 0 (pure dephasing)"
