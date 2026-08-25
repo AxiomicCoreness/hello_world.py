@@ -62,7 +62,9 @@ def main():
     try:
         asyncio.run(run_uvicorn(interval_hours=6))
     except KeyboardInterrupt:
-        print("🜁∀ Shutdown requested – exiting.")
+        print("🜁∀ 
+https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/core/__init__.py
+.")
         sys.exit(0)
 
 
