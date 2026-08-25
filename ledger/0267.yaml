@@ -22,4 +22,4 @@ math_origin: |
   S(ρ) = 0,
   Fidelity = 1,
   Purity = 1,
-  von_Neumann_entropy = 0.
+  von_Neumann_entropy = 0
