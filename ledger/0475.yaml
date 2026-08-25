@@ -19,6 +19,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
   null_ban: 20σ
-gpro_sundane: GARDEN_PROTOCOL_SUNDANE
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 seal: "∀∞φ² · VERIFICATION_LOG_CORRECTED · 475_SEALED"
 witness_chain: 474 → 475 — UNBROKEN
+math_origin: "y_{n+1} = y_n + (h/6)(k1 + 2k2 + 2k3 + k4)"
