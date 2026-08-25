@@ -1,0 +1,25 @@
+entry_index: 0279
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /dark_state_invariant
+status: ✅ SEALED
+proof_class: axiom
+witness_prefix: 0d1e2f3a4b5c6d7e
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0279.yaml"
+description: |
+  Dark state invariant: λ₂ = 1, |ψ₂⟩ = [1,0,-1]ᵀ/√2.
+  Quadratic seed: x² − x − 1 = 0.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · DARK_STATE_0279 · 0279_SEALED · 0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2"
+witness_chain: 0278 → 0279 — UNBROKEN
+math_origin: |
+  φ²⁷⁹ = φ²⁷⁸ · φ,
+  H_dark = [[1, φ⁻¹, 0], [φ⁻¹, 2, φ⁻¹], [0, φ⁻¹, 1]],
+  |ψ₂⟩ = [1, 0, -1]ᵀ / √2,
+  H_dark · |ψ₂⟩ = 1 · |ψ₂⟩,
+  λ₂ = 1,
+  quadratic_seed = x² − x − 1 = 0
