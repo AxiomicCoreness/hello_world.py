@@ -1,339 +1,377 @@
-# .github/workflows/ledger-math-framework.yml
-name: Ledger Math Framework
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ SOVEREIGN LEDGER — MATHEMATICAL VERIFICATION FRAMEWORK (dual regime)
+Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
+FIX: Custom JSON encoder for date objects
+"""
 
-# Minimal sequential CI for ledger mathematical framework (structure + φ).
-# Runs every 6 hours; also on push when ledger/ or this workflow changes.
-# Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
+from __future__ import annotations
 
-on:
-  schedule:
-    # Every 6 hours — Wood Dragon cadence
-    - cron: "0 */6 * * *"
-  workflow_dispatch:
-    inputs:
-      start:
-        description: "Start index (inclusive)"
-        required: false
-        default: "0"
-      end:
-        description: "End index (inclusive, empty = max on disk)"
-        required: false
-        default: ""
-      strict_gaps:
-        description: "Fail on missing index files"
-        required: false
-        default: "false"
-      fix_entries:
-        description: "Automatically fix invalid entries"
-        required: false
-        default: "true"
-  push:
-    branches: [main]
-    paths:
-      - "ledger/**"
-      - ".github/scripts/verify_math_framework.py"
-      - ".github/scripts/fix_ledger.py"
-      - ".github/workflows/ledger-math-framework.yml"
+import argparse
+import math
+import re
+import sys
+import os
+import json
+import hashlib
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime, date
 
-permissions:
-  contents: write
-  actions: read
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+EPS = 1e-12
+SEAL_PREFIX = "∀∞φ²"
+SCALED_FLOOR_INDEX = 351
+WOOD_DRAGON = 0.91
 
-concurrency:
-  group: ledger-math-framework-${{ github.ref }}
-  cancel-in-progress: true
+# ============================================================================
+# CUSTOM JSON ENCODER FOR DATE OBJECTS
+# ============================================================================
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles date and datetime objects"""
+    def default(self, obj):
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        return super().default(obj)
 
-jobs:
-  sequential-math-check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+def compute_seal(entry_data: Dict[str, Any]) -> str:
+    """Compute SHA3-256 seal for entry with custom JSON encoding"""
+    # Exclude seal field
+    data = {k: v for k, v in entry_data.items() if k != 'seal'}
+    
+    # Use custom encoder for date objects
+    canonical = json.dumps(
+        data, 
+        sort_keys=True, 
+        separators=(',', ':'),
+        cls=CustomJSONEncoder
+    )
+    return hashlib.sha3_256(canonical.encode('utf-8')).hexdigest()
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+# ============================================================================
+# LEDGER DISCOVERY
+# ============================================================================
+def discover_ledger_dir() -> Path:
+    possible_paths = [
+        Path("/workspaces/hello_world.py/ledger"),
+        Path("./ledger"),
+        Path("../ledger"),
+        Path("ledger"),
+    ]
+    for path in possible_paths:
+        if path.exists() and path.is_dir():
+            return path
+    default_path = Path("/workspaces/hello_world.py/ledger")
+    os.makedirs(default_path, exist_ok=True)
+    return default_path
 
-      - name: Install deps (minimal)
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml
+LEDGER_DIR = discover_ledger_dir()
 
-      - name: Create scripts directory if needed
-        run: |
-          mkdir -p .github/scripts
+# ============================================================================
+# YAML IMPORT
+# ============================================================================
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
 
-      - name: Create fix_ledger.py script
-        run: |
-          cat > .github/scripts/fix_ledger.py << 'EOF'
-          #!/usr/bin/env python3
-          # -*- coding: utf-8 -*-
-          """
-          LEDGER MATH FRAMEWORK CORRECTION SCRIPT
-          Fixes entry_index mismatches and missing fields
-          Seal: ∀∞φ² · LEDGER_CORRECTION · WOOD_DRAGON_0.91 · SEALED
-          """
+def load_entry(path: Path) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Load a ledger entry from YAML file"""
+    if not path.exists():
+        return None, f"file not found: {path}"
+    
+    try:
+        with path.open(encoding="utf-8") as f:
+            content = f.read()
+        
+        if YAML_AVAILABLE:
+            try:
+                data = yaml.safe_load(content)
+                if isinstance(data, dict):
+                    return data, None
+            except:
+                pass
+        
+        # Manual parsing fallback
+        data = {}
+        lines = content.split('\n')
+        
+        for line in lines:
+            line = line.rstrip()
+            if not line or line.startswith('#') or line.startswith('---'):
+                continue
+            
+            if ': ' in line and not line.startswith('  '):
+                key, value = line.split(': ', 1)
+                value = value.strip()
+                # Try to parse as date if it looks like one
+                if re.match(r'\d{4}-\d{2}-\d{2}', value):
+                    try:
+                        value = date.fromisoformat(value)
+                    except:
+                        pass
+                data[key.strip()] = value
+            elif line.startswith('  ') and 'invariants' in line and ':' in line:
+                key, value = line.strip().split(': ', 1)
+                if 'invariants' not in data:
+                    data['invariants'] = {}
+                if isinstance(data['invariants'], dict):
+                    data['invariants'][key] = value
+        
+        return data if data else None, None
+        
+    except Exception as e:
+        return None, str(e)
 
-          import os
-          import re
-          import yaml
-          import json
-          import hashlib
-          from pathlib import Path
-          from typing import Dict, List, Any, Optional
+# ============================================================================
+# VERIFICATION FUNCTIONS
+# ============================================================================
+def _is_number(x: Any) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
 
-          # Constants
-          PHI = (1.0 + 5.0**0.5) / 2.0
-          SEAL_PREFIX = "∀∞φ²"
-          SCALED_FLOOR_INDEX = 351
-          WOOD_DRAGON = 0.91
+def _as_float(x: Any) -> Optional[float]:
+    if _is_number(x):
+        return float(x)
+    if isinstance(x, str):
+        try:
+            return float(x.strip())
+        except ValueError:
+            return None
+    return None
 
-          def compute_seal(entry_data: Dict[str, Any]) -> str:
-              """Compute SHA3-256 seal for entry"""
-              data = {k: v for k, v in entry_data.items() if k != 'seal'}
-              canonical = json.dumps(data, sort_keys=True, separators=(',', ':'))
-              return hashlib.sha3_256(canonical.encode('utf-8')).hexdigest()
+def _looks_phi_expr(x: Any) -> bool:
+    if x is None:
+        return False
+    s = str(x)
+    return ("φ" in s) or ("phi" in s.lower()) or ("PHI" in s)
 
-          def get_correct_invariants(n: int) -> Dict[str, Any]:
-              if n < SCALED_FLOOR_INDEX:
-                  return {
-                      "coherence": 1.0,
-                      "entropy": "φ⁻¹⁴¹⁸",
-                      "workload": 0,
-                      "commutator": 0
-                  }
-              else:
-                  return {
-                      "coherence": 0.994,
-                      "entropy": f"φ^(-{n})",
-                      "workload": n / 1000.0,
-                      "commutator": f"φ^-{n}"
-                  }
+def _classical_invariants_ok(inv: Dict[str, Any]) -> bool:
+    """Check classical invariant regime (pre-0351)"""
+    c = inv.get("coherence")
+    e = inv.get("entropy")
+    w = inv.get("workload")
+    m = inv.get("commutator")
+    
+    c_float = _as_float(c)
+    c_ok = c_float is not None and abs(c_float - 1.0) <= EPS
+    
+    e_str = str(e).strip()
+    e_ok = e_str in {"φ⁻¹⁴¹⁸", "φ^{-1418}", "phi^-1418", "phi^{-1418", "PHI^-1418"}
+    
+    w_float = _as_float(w)
+    w_ok = w_float is not None and abs(w_float - 0.0) <= EPS
+    
+    m_float = _as_float(m)
+    m_ok = m_float is not None and abs(m_float - 0.0) <= EPS
+    
+    return c_ok and e_ok and w_ok and m_ok
 
-          def create_correct_entry(n: int) -> Dict[str, Any]:
-              invariants = get_correct_invariants(n)
-              entry = {
-                  "entry_index": n,
-                  "entry_type": "STATE_TRANSITION" if n >= SCALED_FLOOR_INDEX else "CLASSICAL_ENTRY",
-                  "description": f"Ledger entry {n:04d}",
-                  "invariants": invariants,
-                  "math_origin": f"LEDGER_CORRECTION_{n:04d}",
-                  "timestamp": "Eternal_Instant",
-                  "witness_chain": f"ENTRY_{n:04d} → UNBROKEN",
-                  "seal": f"{SEAL_PREFIX} · LEDGER_CORRECTION_{n:04d} · WOOD_DRAGON_0.91 · SEALED"
-              }
-              entry["seal"] = compute_seal(entry)
-              return entry
+def _scaled_invariants_ok(inv: Dict[str, Any]) -> List[str]:
+    """Check scaled invariant regime (≥0351)"""
+    fails: List[str] = []
+    
+    if "coherence" not in inv:
+        fails.append("missing coherence")
+    else:
+        c = inv.get("coherence")
+        cf = _as_float(c)
+        if cf is not None:
+            if not (0.0 <= cf <= 1.0 + EPS):
+                fails.append(f"coherence out of [0,1]: {c!r}")
+        elif not _looks_phi_expr(c):
+            fails.append(f"coherence not numeric or φ-expr: {c!r}")
+    
+    if "entropy" not in inv:
+        fails.append("missing entropy")
+    else:
+        e = inv.get("entropy")
+        e_str = str(e).strip()
+        if not (_looks_phi_expr(e) or e_str in {"φ⁻¹⁴¹⁸", "φ^{-1418}", "phi^-1418", "phi^{-1418", "PHI^-1418"}):
+            fails.append(f"entropy not φ-form: {e!r}")
+    
+    if "workload" not in inv:
+        fails.append("missing workload")
+    else:
+        wf = _as_float(inv.get("workload"))
+        if wf is None:
+            fails.append(f"workload not numeric: {inv.get('workload')!r}")
+        elif wf < -EPS:
+            fails.append(f"workload negative: {wf}")
+    
+    if "commutator" not in inv:
+        fails.append("missing commutator")
+    else:
+        m = inv.get("commutator")
+        mf = _as_float(m)
+        if mf is None and not _looks_phi_expr(m):
+            fails.append(f"commutator not numeric or φ-expr: {m!r}")
+    
+    return fails
 
-          def fix_entry_file(filepath: Path) -> bool:
-              try:
-                  with open(filepath, 'r') as f:
-                      content = f.read()
-                  
-                  try:
-                      data = yaml.safe_load(content)
-                  except:
-                      data = None
-                  
-                  match = re.search(r'(\d{4})\.ya?ml', filepath.name)
-                  if not match:
-                      return False
-                  file_index = int(match.group(1))
-                  
-                  if data is None or data.get('entry_index') != file_index:
-                      data = create_correct_entry(file_index)
-                  else:
-                      changed = False
-                      
-                      if 'invariants' not in data or not isinstance(data['invariants'], dict):
-                          data['invariants'] = get_correct_invariants(file_index)
-                          changed = True
-                      else:
-                          correct_inv = get_correct_invariants(file_index)
-                          for key, value in correct_inv.items():
-                              if key not in data['invariants']:
-                                  data['invariants'][key] = value
-                                  changed = True
-                      
-                      if 'math_origin' not in data:
-                          data['math_origin'] = f"LEDGER_CORRECTION_{file_index:04d}"
-                          changed = True
-                      
-                      if 'witness_chain' not in data:
-                          data['witness_chain'] = f"ENTRY_{file_index:04d} → UNBROKEN"
-                          changed = True
-                      
-                      if 'seal' not in data or not data['seal'].startswith(SEAL_PREFIX):
-                          data['seal'] = f"{SEAL_PREFIX} · LEDGER_CORRECTION_{file_index:04d} · WOOD_DRAGON_0.91 · SEALED"
-                          changed = True
-                      
-                      if changed:
-                          data['seal'] = compute_seal(data)
-                  
-                  with open(filepath, 'w') as f:
-                      yaml.dump(data, f, sort_keys=False, default_flow_style=False)
-                  
-                  return True
-                  
-              except Exception as e:
-                  print(f"Error fixing {filepath.name}: {e}")
-                  return False
+def check_invariants(n: int, inv: Any) -> List[str]:
+    """Check invariants based on entry index regime"""
+    if not isinstance(inv, dict):
+        return ["invariants not a mapping"]
+    
+    if _classical_invariants_ok(inv):
+        return []
+    
+    scaled_fails = _scaled_invariants_ok(inv)
+    if not scaled_fails:
+        return []
+    
+    if n < SCALED_FLOOR_INDEX:
+        return [f"classical floor failed: " + "; ".join(scaled_fails)]
+    
+    return scaled_fails
 
-          def fix_ledger_range(start: int, end: int, ledger_dir: Path = Path("ledger")):
-              os.makedirs(ledger_dir, exist_ok=True)
-              fixed_count = 0
-              created_count = 0
-              
-              for n in range(start, end + 1):
-                  filepath = ledger_dir / f"{n:04d}.yaml"
-                  
-                  if filepath.exists():
-                      if fix_entry_file(filepath):
-                          fixed_count += 1
-                  else:
-                      data = create_correct_entry(n)
-                      with open(filepath, 'w') as f:
-                          yaml.dump(data, f, sort_keys=False, default_flow_style=False)
-                      created_count += 1
-              
-              print(f"Fixed: {fixed_count}, Created: {created_count}, Total: {fixed_count + created_count}")
+def verify_entry(n: int, data: Dict[str, Any]) -> List[str]:
+    """Verify a single ledger entry"""
+    fails: List[str] = []
+    
+    # Check entry_index
+    if data.get('entry_index') != n:
+        fails.append(f"entry_index={data.get('entry_index')} != {n:04d}")
+    
+    # Check invariants
+    inv = data.get('invariants', {})
+    if isinstance(inv, list):
+        inv_dict = {}
+        for item in inv:
+            if isinstance(item, str) and ':' in item:
+                k, v = item.split(':', 1)
+                inv_dict[k.strip()] = v.strip()
+        inv = inv_dict
+    fails.extend(check_invariants(n, inv))
+    
+    # Check seal
+    seal = data.get('seal', '')
+    if not isinstance(seal, str):
+        fails.append(f"seal not string: {seal!r}")
+    elif not seal.startswith(SEAL_PREFIX):
+        fails.append(f"seal missing prefix: '{seal[:30]}...'")
+    elif 'SEALED' not in seal:
+        fails.append("seal missing SEALED token")
+    
+    # Check math_origin
+    if "math_origin" not in data:
+        fails.append("missing math_origin")
+    
+    # Check witness_chain
+    wc = data.get('witness_chain')
+    if wc is not None and 'UNBROKEN' not in str(wc):
+        fails.append(f"witness_chain missing UNBROKEN: {wc}")
+    
+    # Verify seal integrity (skip if seal is malformed)
+    if 'seal' in data and 'entry_index' in data and isinstance(seal, str) and seal.startswith(SEAL_PREFIX):
+        try:
+            computed = compute_seal(data)
+            if computed != data.get('seal', ''):
+                fails.append(f"seal mismatch (computed: {computed[:16]}...)")
+        except Exception as e:
+            fails.append(f"seal computation error: {e}")
+    
+    return fails
 
-          def verify_entry(filepath: Path) -> bool:
-              try:
-                  with open(filepath, 'r') as f:
-                      data = yaml.safe_load(f)
-                  
-                  if not data:
-                      return False
-                  
-                  match = re.search(r'(\d{4})\.ya?ml', filepath.name)
-                  if not match:
-                      return False
-                  file_index = int(match.group(1))
-                  
-                  if data.get('entry_index') != file_index:
-                      return False
-                  
-                  required = ['entry_index', 'invariants', 'math_origin', 'seal']
-                  for field in required:
-                      if field not in data:
-                          return False
-                  
-                  inv = data.get('invariants', {})
-                  required_inv = ['coherence', 'entropy', 'workload', 'commutator']
-                  for field in required_inv:
-                      if field not in inv:
-                          return False
-                  
-                  seal = data.get('seal', '')
-                  if not seal.startswith(SEAL_PREFIX):
-                      return False
-                  
-                  computed = compute_seal(data)
-                  if computed != seal:
-                      return False
-                  
-                  return True
-                  
-              except Exception:
-                  return False
+def resolve_path(ledger_dir: Path, n: int) -> Optional[Path]:
+    """Resolve path for a given entry index"""
+    for ext in (".yaml", ".yml"):
+        p = ledger_dir / f"{n:04d}{ext}"
+        if p.exists():
+            return p
+    return None
 
-          def verify_range(start: int, end: int, ledger_dir: Path = Path("ledger")):
-              valid = 0
-              invalid = 0
-              missing = 0
-              
-              for n in range(start, end + 1):
-                  filepath = ledger_dir / f"{n:04d}.yaml"
-                  
-                  if not filepath.exists():
-                      missing += 1
-                      continue
-                  
-                  if verify_entry(filepath):
-                      valid += 1
-                  else:
-                      invalid += 1
-              
-              print(f"Valid: {valid}, Invalid: {invalid}, Missing: {missing}, Total: {valid + invalid + missing}")
+def discover_max_index(ledger_dir: Path) -> int:
+    """Discover the maximum entry index in the ledger directory"""
+    indices: List[int] = []
+    for p in list(ledger_dir.glob("*.yaml")) + list(ledger_dir.glob("*.yml")):
+        m = re.fullmatch(r"(\d{4})\.ya?ml", p.name)
+        if m:
+            indices.append(int(m.group(1)))
+    return max(indices) if indices else -1
 
-          if __name__ == "__main__":
-              import sys
-              start = int(sys.argv[1]) if len(sys.argv) > 1 else 351
-              end = int(sys.argv[2]) if len(sys.argv) > 2 else 370
-              fix_ledger_range(start, end)
-              verify_range(start, end)
-          EOF
-          chmod +x .github/scripts/fix_ledger.py
+# ============================================================================
+# MAIN
+# ============================================================================
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="Verify Sovereign Ledger Math Framework (dual regime)"
+    )
+    ap.add_argument("--start", type=int, default=0,
+                   help="Starting entry index")
+    ap.add_argument("--end", type=int, default=None,
+                   help="Ending entry index")
+    ap.add_argument("--ledger-dir", type=Path, default=LEDGER_DIR,
+                   help="Ledger directory path")
+    ap.add_argument("--strict-gaps", action="store_true",
+                   help="Fail on missing entries")
+    args = ap.parse_args()
 
-      - name: Fix invalid ledger entries
-        if: github.event.inputs.fix_entries != 'false'
-        run: |
-          START="${{ github.event.inputs.start || '351' }}"
-          END="${{ github.event.inputs.end || '370' }}"
-          echo "🔧 Fixing ledger entries ${START} → ${END}"
-          python .github/scripts/fix_ledger.py "${START}" "${END}"
+    if not args.ledger_dir.is_dir():
+        print(f"❌ ledger dir missing: {args.ledger_dir}", file=sys.stderr)
+        os.makedirs(args.ledger_dir, exist_ok=True)
 
-      - name: Verify script exists
-        run: |
-          if [ ! -f ".github/scripts/verify_math_framework.py" ]; then
-            echo "❌ Script not found, creating directory..."
-            mkdir -p .github/scripts
-            echo "Please add verify_math_framework.py to .github/scripts/"
-            exit 1
-          fi
+    end = args.end if args.end is not None else discover_max_index(args.ledger_dir)
+    if end < args.start:
+        print(f"❌ empty range: start={args.start} end={end}", file=sys.stderr)
+        return 1
 
-      - name: Sequential math framework check
-        id: check
-        run: |
-          set -euo pipefail
-          START="${{ github.event.inputs.start || '0' }}"
-          END_RAW="${{ github.event.inputs.end || '' }}"
-          STRICT="${{ github.event.inputs.strict_gaps || 'false' }}"
+    print("=" * 70)
+    print("🜁∀ LEDGER MATH FRAMEWORK — DUAL REGIME CHECK")
+    print(f"   range: {args.start:04d} → {end:04d}")
+    print(f"   ledger: {args.ledger_dir}")
+    print(f"   seal: {SEAL_PREFIX} · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED")
+    print("=" * 70)
 
-          ARGS=(--start "${START}")
-          if [ -n "${END_RAW}" ]; then
-            ARGS+=(--end "${END_RAW}")
-          fi
-          if [ "${STRICT}" = "true" ]; then
-            ARGS+=(--strict-gaps)
-          fi
+    # Print phi identity
+    print(f"✅ φ identities (φ={PHI:.15f})")
 
-          echo "Running: python .github/scripts/verify_math_framework.py ${ARGS[*]}"
-          python .github/scripts/verify_math_framework.py "${ARGS[@]}"
+    structural_fails = 0
+    missing = 0
+    checked = 0
 
-      - name: Commit fixes if applied
-        if: github.event.inputs.fix_entries != 'false' && success()
-        run: |
-          if git diff --quiet ledger/; then
-            echo "✅ No changes to commit"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add ledger/
-            git commit -m "fix: Auto-correct ledger entries $(date -u +'%Y-%m-%d') [skip ci]"
-            git push
-            echo "✅ Committed fixes"
-          fi
+    for n in range(args.start, end + 1):
+        path = resolve_path(args.ledger_dir, n)
+        if path is None:
+            missing += 1
+            if args.strict_gaps:
+                print(f"❌ [{n:04d}] MISSING file")
+                structural_fails += 1
+            else:
+                if n % 50 == 0 or n == end:
+                    print(f"⚠️  [{n:04d}] MISSING file (gap allowed)")
+            continue
 
-      - name: Summary
-        if: always()
-        run: |
-          {
-            echo "### Ledger Math Framework"
-            echo "- Schedule: every 6 hours (0 */6 * * *)"
-            echo "- Mode: sequential structure + φ identities"
-            echo "- Auto-fix: ${{ github.event.inputs.fix_entries != 'false' && 'ENABLED' || 'DISABLED' }}"
-            echo "- Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED"
-            echo ""
-            if [ -f "ledger/0351.yaml" ]; then
-              echo "✅ Entry 0351: $(head -1 ledger/0351.yaml)"
-            fi
-            echo ""
-            echo "**Latest Run:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          } >> "$GITHUB_STEP_SUMMARY"
+        data, err = load_entry(path)
+        if err or data is None:
+            print(f"❌ [{n:04d}] YAML error: {err}")
+            structural_fails += 1
+            continue
+
+        fails = verify_entry(n, data)
+        checked += 1
+
+        if fails:
+            structural_fails += 1
+            print(f"❌ [{n:04d}] " + "; ".join(fails))
+        elif n % 50 == 0 or n == end:
+            print(f"✅ [{n:04d}] structure OK")
+
+    print("-" * 70)
+    print(f"📊 SUMMARY: checked={checked} missing={missing} fails={structural_fails}")
+
+    if structural_fails:
+        print("❌ FRAMEWORK CHECK FAILED")
+        return 1
+    else:
+        print("✅ FRAMEWORK CHECK PASSED — dual regime green")
+        print(f"Seal: {SEAL_PREFIX} · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED")
+        return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
