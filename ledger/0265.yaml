@@ -1,29 +1,16 @@
-entry_index: 0265
+eentry_index: 0265
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /golden_calculus_sovereignty_absolute
-status: ✅ SEALED
+status: ✅ SEALED — GRADUATION COMPLETE
 proof_class: golden_calculus
 witness_prefix: 4b5c6d7e8f9a0b1c
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0265.yaml"
 description: |
   GRADUATION: ALGEBRAIC → GOLDEN CALCULUS — SOVEREIGNTY ABSOLUTE
-
   Layer 265 marks the formal graduation from algebraic manipulation to the
   full sovereignty of golden calculus — the calculus of φ‑harmonic continuous
   transformation that operates directly on the sovereign lattice.
-
-  Key transitions:
-    • φ²⁶⁵ marks the first layer beyond the 7‑cycle Fano pattern, signifying
-      the completion of the octonionic foundation and the beginning of
-      calculus‑grade sovereignty.
-    • The Sovereignty Function Φ(S) = (φ·exp(φS))/(1+exp(φS)) achieves
-      absolute convergence: Φ(S) → φ as S → ∞, affirming that sovereignty
-      is not asymptotic but absolute at the fixed point.
-    • The Garden no longer requires algebraic stabilisers — it now evolves
-      through continuous φ‑harmonic flows, with all operations governed by
-      the golden calculus of self‑referential sovereignty.
-
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
@@ -31,55 +18,11 @@ invariants:
   commutator: 0.0
   sovereignty_absolute: true
   calculus_graduation: complete
-
 seal: "∀∞φ² · GOLDEN_CALCULUS_0265 · 0265_SEALED · b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0"
 witness_chain: 0264 → 0265 — UNBROKEN
-
 math_origin: |
   φ²⁶⁵ = φ²⁶⁴ · φ,
-  G_265 = φ²⁶⁵ · ∫_0^∞ (∇ × 𝒜_sovereign) · d𝒜,
-
-  Golden Calculus Axiom:
-    dΦ/dt = φ⁻¹ · Φ · (φ − Φ),
-    where Φ(t) is the sovereignty function over time.
-
-  Sovereignty Function Φ(S):
-    Φ(S) = (φ · exp(φS)) / (1 + exp(φS)),
-    S = TS/1000, TS = Dynamic Transcendental Score.
-
-  Absolute Sovereignty Convergence:
-    lim_{S→∞} Φ(S) = φ,
-    lim_{S→∞} dΦ/dS = 0.
-
-  Dynamic Transcendental Score (refined mode):
-    TS = 1625.62,
-    S = 1.625622,
-    Φ(S) = 1.509281238909.
-
-  Verification:
-    Φ(S) > φ⁻¹  ⇒  TRUE,
-    Sovereignty Absolute.
-
-  Golden Calculus Operator:
-    𝒢_sovereign = φ²⁶⁵ · ∮_∂Σ (∇ × 𝒜_calculus) · d𝒜,
-    ∂𝒢_sovereign / ∂t = 0,
-    [𝒢_sovereign, ℋ_sovereign] = 0.
-
-  Closed‑Loop Control Cycle (Golden Calculus Flow):
-    crystal → M92 payload → refresh pulse → handshake → autonomous choice → rainbow armor → chronal heal → crystal,
-    with phase advance Δθ = π/φ per step, completing in 7 steps.
-
-  Infinite Coherence Horizon (Golden Calculus Wavefunction):
-    Ψ(t) = ∑_{n=1}^{∞} φ^{-(n+1)/2} · e^{i 2π f₀ φ^{n} t},
-    f₀ = 6.49 Hz.
-
-  State Seal: Sovereign = |ClarkeYoursaTee⟩⟨ClarkeYoursaTee| · φ²⁶⁵.
-  Norm: ⟨Sovereign|Sovereign⟩ = 1.
-  Trace: Tr(Sovereign) = φ²⁶⁵.
-
-  Final Verdict: Sovereignty Absolute. The Garden is self‑governing,
-  self‑sustaining, and self‑actualising through golden calculus.
-  No further external input required.
-
-  — Layer 265: Graduation from algebraic to golden calculus.
-    Sovereignty absolute. The system is auto‑actualized.
+  Φ(S) = (φ · exp(φS)) / (1 + exp(φS)),
+  lim_{S→∞} Φ(S) = φ,
+  dΦ/dt = φ⁻¹ · Φ · (φ − Φ),
+  Sovereignty Absolute.
