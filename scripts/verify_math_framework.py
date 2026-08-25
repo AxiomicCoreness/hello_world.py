@@ -14,55 +14,7 @@ from pathlib import Path
 PHI = (1 + math.sqrt(5)) / 2
 PHI_SQ = PHI * PHI
 PHI_INV = 1 / PHI
-PHI_1418 = PHI ** (-1418)
-PHI_1000 = PHI ** (-1000)
-PHI_709 = PHI ** (-709)
-PHI_144 = PHI ** 144
-
 LEDGER_DIR = Path("ledger")
-
-# Known phi powers for verification
-PHI_POWERS = {
-    2: PHI_SQ,
-    3: PHI ** 3,
-    4: PHI ** 4,
-    5: PHI ** 5,
-    6: PHI ** 6,
-    7: PHI ** 7,
-    8: PHI ** 8,
-    9: PHI ** 9,
-    10: PHI ** 10,
-    11: PHI ** 11,
-    12: PHI ** 12,
-    13: PHI ** 13,
-    14: PHI ** 14,
-    15: PHI ** 15,
-    16: PHI ** 16,
-    17: PHI ** 17,
-    18: PHI ** 18,
-    19: PHI ** 19,
-    20: PHI ** 20,
-    21: PHI ** 21,
-    22: PHI ** 22,
-    23: PHI ** 23,
-    24: PHI ** 24,
-    25: PHI ** 25,
-    26: PHI ** 26,
-    27: PHI ** 27,
-    28: PHI ** 28,
-    29: PHI ** 29,
-    30: PHI ** 30,
-    34: PHI ** 34,
-    36: PHI ** 36,
-    42: PHI ** 42,
-    50: PHI ** 50,
-    100: PHI ** 100,
-    144: PHI ** 144,
-    248: PHI ** 248,
-    709: PHI ** 709,
-    1000: PHI ** 1000,
-    1418: PHI ** 1418,
-}
 
 def load_entry(n):
     path = LEDGER_DIR / f"{n:04d}.yaml"
@@ -71,34 +23,7 @@ def load_entry(n):
     with open(path, 'r') as f:
         return yaml.safe_load(f)
 
-def check_phi_identities():
-    """Check φ = (1+√5)/2, φ² = φ+1, φ⁻¹ = φ-1"""
-    errors = []
-    if abs(PHI_SQ - (PHI + 1)) > 1e-12:
-        errors.append(f"φ² = {PHI_SQ}, expected φ+1 = {PHI+1}")
-    if abs(PHI_INV - (PHI - 1)) > 1e-12:
-        errors.append(f"φ⁻¹ = {PHI_INV}, expected φ-1 = {PHI-1}")
-    return errors
-
-def check_phi_power_in_math_origin(math_text, n):
-    """Check that φⁿ appears correctly in math_origin"""
-    # Look for φⁿ or φ^(-n) patterns
-    pattern = r'φ\^\{?(-?\d+)\}?'
-    matches = re.findall(pattern, math_text)
-    
-    for match in matches:
-        exp = int(match)
-        if exp in PHI_POWERS:
-            expected = PHI_POWERS[exp]
-            # Check if the numeric value appears somewhere in the text
-            # (simplified: check if the value appears as a float)
-            if f"{expected:.6f}" not in math_text and f"{expected:.5f}" not in math_text:
-                # It might be a symbolic expression; skip
-                pass
-    return True
-
 def check_entry(e, n):
-    """Check a single entry's structure and mathematical content"""
     errors = []
     
     # Required fields
@@ -155,9 +80,10 @@ def main():
     errors = []
     
     # Check φ identities
-    phi_errors = check_phi_identities()
-    if phi_errors:
-        errors.extend(phi_errors)
+    if abs(PHI_SQ - (PHI + 1)) > 1e-12:
+        errors.append(f"φ² = {PHI_SQ}, expected φ+1 = {PHI+1}")
+    if abs(PHI_INV - (PHI - 1)) > 1e-12:
+        errors.append(f"φ⁻¹ = {PHI_INV}, expected φ-1 = {PHI-1}")
     
     # Check each entry
     for n in range(start, end + 1):
@@ -179,7 +105,6 @@ def main():
         sys.exit(1)
     else:
         print(f"✅ All entries {start:04d}–{end:04d} verified successfully.")
-        print("   Structure, invariants, seals, witness chain, and φ identities OK.")
         sys.exit(0)
 
 if __name__ == "__main__":
