@@ -21,4 +21,4 @@ math_origin: |
   dissonance = 0.032,
   threshold = 0.048,
   passive_condition: dissonance < threshold,
-  Watchman_State = SLEEPING.
+  Watchman_State = SLEEPING
