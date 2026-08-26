@@ -1,46 +1,75 @@
-# GitHub Actions CI Secrets
+# GitHub Actions secrets context
 
 Seal: `∀∞φ² · CI_SECRETS_8832 · WOOD_DRAGON_0.91 · SEALED`
 
-Secrets **cannot** be written via the public git API. Set them in the UI or with `gh`.
+This repository does not read an environment variable named `GARDEN_SECRETS`.
+This repository does not read `SUPERSECRET`.
+This repository does not read a repository secret named `github_token`.
+This repository does not read `NPM_TOKEN`.
 
-## Required names
+## Name map from the requested JSON
 
-| Secret | Used by | CI without it |
-|--------|---------|----------------|
-| `DEEPSEEK_API_KEY` | deepseek-ci-secrets, optional pytest | Offline probe still passes |
-| `MCP_URL` | sovereign-pulse.yml | Pulse job fails until set |
-| `GARDEN_SECRET` | sovereign-pulse.yml | Pulse runs without auth header (warn) |
+| Requested blank | Name the code actually reads | Actions context |
+|-----------------|------------------------------|-----------------|
+| `github_token` | `GITHUB_TOKEN` (automatic job token) | `${{ secrets.GITHUB_TOKEN }}` assigned to `GH_TOKEN` for `gh` |
+| `NPM_TOKEN` | none | unused |
+| `SUPERSECRET` | `GARDEN_SECRET` | `${{ secrets.GARDEN_SECRET }}` sent as header `X-Garden-Secret` |
 
-Optional: `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL` (defaults in code).
+## Repository secrets to create
 
-## Set via UI
+| Secret | Required | Consumer |
+|--------|----------|----------|
+| `GARDEN_SECRET` | yes for authenticated `/pulse` | `port380_mcp.py`, `sovereign-pulse.yml` |
+| `MCP_URL` | yes for a remote pulse | `sovereign-pulse.yml`; local default `http://127.0.0.1:380` |
+| `DEEPSEEK_API_KEY` | no | DeepSeek online probe only |
+| `DEEPSEEK_BASE_URL` | no | default `https://api.deepseek.com` |
+| `DEEPSEEK_MODEL` | no | default `deepseek-chat` |
 
-1. https://github.com/AxiomicCoreness/hello_world.py/settings/secrets/actions
-2. **New repository secret** for each name above
-3. Values only — never commit them
-
-## Set via CLI
+Create them in the repository Actions secrets page or with the GitHub CLI. The CLI prompts for the value on stdin when `--body` is omitted.
 
 ```bash
-gh secret set DEEPSEEK_API_KEY --repo AxiomicCoreness/hello_world.py
-gh secret set MCP_URL --repo AxiomicCoreness/hello_world.py --body "https://YOUR-SERVICE.onrender.com"
 gh secret set GARDEN_SECRET --repo AxiomicCoreness/hello_world.py
+gh secret set MCP_URL --repo AxiomicCoreness/hello_world.py --body "http://127.0.0.1:380"
 ```
 
-(`gh secret set NAME` with no `--body` prompts securely.)
+## Example: secrets context plus strategy context
 
-## Workflow behaviour
+```yaml
+name: Open new issue
+on: workflow_dispatch
+jobs:
+  open-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - run: |
+          gh issue --repo ${{ github.repository }} \
+            create --title "Issue title" --body "Issue body"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-- **deepseek-ci-secrets.yml** — reports which secrets are *present* (boolean only), runs offline probe always, online `prefer=deepseek` only if key is set.
-- **sovereign-pulse.yml** — requires `MCP_URL`; uses `GARDEN_SECRET` when set.
-- **pytest.yml** — injects `DEEPSEEK_API_KEY` into the job env when configured; tests must not require live API.
-
-## Verify
-
-```bash
-gh workflow run deepseek-ci-secrets.yml --repo AxiomicCoreness/hello_world.py
-gh run list --workflow=deepseek-ci-secrets.yml --repo AxiomicCoreness/hello_world.py -L 3
+  pulse-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [health, pulse]
+    env:
+      MCP_URL: ${{ secrets.MCP_URL }}
+      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+    steps:
+      - run: |
+          echo "strategy.job-index=${{ strategy.job-index }}"
+          echo "strategy.job-total=${{ strategy.job-total }}"
+          echo "matrix.target=${{ matrix.target }}"
 ```
 
+`strategy.job-index` is the zero-based index of the current matrix job.
+`strategy.job-total` is the number of matrix combinations.
+`matrix.target` is `health` or `pulse` from the list above.
+
+Companion machine-readable file: `docs/secrets-context.json`.
 Contract file: `contracts/ci-secrets.yaml`.
+Workflow example: `.github/workflows/secrets-context-example.yml`.
