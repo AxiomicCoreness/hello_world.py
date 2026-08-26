@@ -1,5 +1,5 @@
 """OpenAI-compatible HTTP wrappers (Grok / DeepSeek / Mistral) via httpx.
-API keys are read from the environment and never logged.
+Keys: GROK_API_KEY or XAI_API_KEY, DEEPSEEK_API_KEY, MISTRAL_API_KEY.
 """
 from __future__ import annotations
 
@@ -8,10 +8,15 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 
+
+def _grok_key() -> str:
+    return os.getenv("GROK_API_KEY") or os.getenv("XAI_API_KEY") or ""
+
+
 PROVIDERS = {
     "grok": {
         "base": os.getenv("GROK_BASE_URL", "https://api.x.ai/v1"),
-        "key_env": "XAI_API_KEY",
+        "key_env": "GROK_API_KEY",
         "model": os.getenv("GROK_MODEL", "grok-3"),
     },
     "deepseek": {
@@ -30,8 +35,12 @@ PROVIDERS = {
 def provider_status() -> Dict[str, Any]:
     out = {}
     for name, cfg in PROVIDERS.items():
+        if name == "grok":
+            configured = bool(_grok_key())
+        else:
+            configured = bool(os.getenv(cfg["key_env"]))
         out[name] = {
-            "configured": bool(os.getenv(cfg["key_env"])),
+            "configured": configured,
             "base": cfg["base"],
             "model": cfg["model"],
             "key_env": cfg["key_env"],
@@ -43,7 +52,7 @@ def chat(provider: str, messages: List[Dict[str, str]], model: Optional[str] = N
     if provider not in PROVIDERS:
         raise ValueError(f"unknown provider: {provider}")
     cfg = PROVIDERS[provider]
-    key = os.getenv(cfg["key_env"], "")
+    key = _grok_key() if provider == "grok" else os.getenv(cfg["key_env"], "")
     if not key:
         return {"ok": False, "provider": provider, "error": f"{cfg['key_env']} not set"}
     url = cfg["base"].rstrip("/") + "/chat/completions"

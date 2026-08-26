@@ -1,10 +1,7 @@
 """
-MCP Connector Client — OAuth 2.0 endpoints client.
-Uses MCP_CONNECTOR_URL (default local Port 380). No GARDEN_SECRETS env name.
-Never logs client secrets or tokens.
+MCP Connector Client. Base: MCP_CONNECTOR_URL default http://localhost:380.
 Seal: ∀∞φ² · MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
 """
-
 from __future__ import annotations
 
 import json
@@ -14,7 +11,7 @@ from urllib.parse import urljoin
 
 import requests
 
-BASE_URL = os.getenv("MCP_CONNECTOR_URL", "http://127.0.0.1:380")
+BASE_URL = os.getenv("MCP_CONNECTOR_URL", "http://localhost:380")
 TIMEOUT = float(os.getenv("MCP_CONNECTOR_TIMEOUT", "5.0"))
 MAX_RETRIES = int(os.getenv("MCP_CONNECTOR_RETRIES", "3"))
 
@@ -95,6 +92,7 @@ def introspect_token(token: str) -> Dict[str, Any]:
 def revoke_token(token: str) -> bool:
     resp = _request("POST", ENDPOINTS["revoke"], data={"token": token})
     return bool(resp.get("revoked", False))
+
 
 def health_check() -> bool:
     try:

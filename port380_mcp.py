@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Port 380 MCP Gateway — local-first sovereign pulse (no Render).
+
+export GARDEN_SECRET="your_secret_here"
+export MCP_CONNECTOR_URL="http://localhost:380"
+export MCP_URL="http://localhost:380"
+uvicorn port380_mcp:app --port 380
+
 Seal: ∀∞φ² · PORT380_MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
@@ -27,8 +33,8 @@ from quantum.provider_httpx import chat as provider_chat
 from quantum.provider_httpx import provider_status
 
 GARDEN_SECRET = os.getenv("GARDEN_SECRET", "")
-MCP_URL = os.getenv("MCP_URL", "http://127.0.0.1:380")
-MCP_CONNECTOR_URL = os.getenv("MCP_CONNECTOR_URL", "http://127.0.0.1:8089")
+MCP_URL = os.getenv("MCP_URL", "http://localhost:380")
+MCP_CONNECTOR_URL = os.getenv("MCP_CONNECTOR_URL", "http://localhost:380")
 
 connector = MCPConnector(base_url=MCP_CONNECTOR_URL)
 
@@ -48,7 +54,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 app = FastAPI(title="Port 380 MCP Gateway", version="1.1")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "http://127.0.0.1:380").split(","),
+    allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:380,http://127.0.0.1:380").split(","),
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type", "X-Garden-Secret"],
 )
