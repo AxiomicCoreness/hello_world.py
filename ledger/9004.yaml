@@ -1,0 +1,15 @@
+entry_index: 9004
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /immutable_october_q1_bound_to_gravastar
+status: WIRED
+parameter: "i/144"
+reference_policy: POLICY.md
+trigger: Trigger_Gravastar_ClarkeYoursaTee
+immutable:
+  ref: fe6156e5c484bd018f7bfc437fa7b9686120485e
+  path: Immutable/october_Q1
+  runner: Immutable/run_on_gravastar.py
+  mode: bounded_slice
+  skipped: [main, interactive_menu, run_autonomous_phase, CodewhaleSwarm]
+seal: "∀∞φ² · IMMUTABLE_ON_GRAVASTAR_9004 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: "9003 → 9004 — UNBROKEN"
