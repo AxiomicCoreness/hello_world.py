@@ -1,0 +1,23 @@
+entry_index: 8980
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26Z
+event: /quantum_reality_engine_predecessor
+status: SEALED
+proof_class: structural
+commander: Clarke Yoursa Tee
+description: "Predecessor workflow entry for Quantum Reality Engine 510510. Holds Ed25519 public material only."
+successor: 510510
+ed25519:
+  scheme: Ed25519
+  message: "GARDEN.LEDGER.8980->510510.v1"
+  public_key_hex: e9f1cbab9b01ccdd5bddfc3c3afeb00271481f44d2cc90f51c88b4ab9c3b4bff
+  signature_hex: 4cbc54f2b6b888f250fd7ad4f639a3205719d599d79a82c833ebea12d0c0ff63f326b4caf1a21fccb1ad284c350a162ca9332c70699f6445927220f1f9d47700
+  public_fingerprint_sha3_256: c1c34cd4b62598665385073f007e26567b19c4d5332fc12771e8e41e730b378b
+  private_key: ABSENT
+  note: "Verify signature over message with public_key_hex. Private key is not in the repository."
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  phase_lock: 202.6°
+seal: "∀∞φ² · QRE_PREDECESSOR_8980 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: "8979 → 8980 — UNBROKEN"
+math_origin: "predecessor of QUADRATIC_ROOT_QUADRANT.v1 / Ωⁿ=510510"

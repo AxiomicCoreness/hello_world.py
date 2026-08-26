@@ -10,6 +10,7 @@ description: |
   Defines the quadrant classification of the quadratic equation ax² + bx + c = 0
   based on the discriminant Δ = b² − 4ac and its relation to the golden ratio φ.
   Hepta-prime index: 510510 = 2·3·5·7·11·13·17 = Ωⁿ.
+  Valid genesis entry: SHA3-256 domain-separated hash + Ed25519 check of ledger 8980.
 quadrant_definition:
   formula: "Δ = b² − 4ac"
   root_conditions:
@@ -23,9 +24,65 @@ quadrant_definition:
     "Quadrant IV": "Δ > 0, roots have opposite sign to a"
   phase_angle: "φ * π / 2  (≈ 202.6°)  – aligns with Layer 314 anchor"
 math_origin: "QUADRATIC_ROOT_QUADRANT.v1"
+genesis:
+  algorithm: SHA3-256
+  domain: "GARDEN.GENESIS.QUADRATIC_QUADRANT.v1"
+  canonical_payload:
+    entry: 510510
+    event: /math_origin_quadratic_quadrant
+    formula: "Delta = b^2 - 4ac"
+    hepta_prime: 510510
+    math_origin: QUADRATIC_ROOT_QUADRANT.v1
+    phase_lock_deg: 202.6
+    phi_identity: "phi^2 = phi + 1"
+    predecessor: 8980
+    seal: "FORALL_INF_PHI2 · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED"
+    witness: "8980 -> 510510 — UNBROKEN"
+  hash_sha3_256: eb78315bb5a70b59e0d43f0e763b194cf1ab4ce3d109e0240e2c1f2da57f6314
+  construction: "SHA3-256(domain || 0x00 || UTF-8 JSON sort_keys separators=(',', ':'))"
+verifications:
+  ed25519_ledger_8980:
+    checked_file: ledger/8980.yaml
+    scheme: Ed25519
+    public_key_hex: e9f1cbab9b01ccdd5bddfc3c3afeb00271481f44d2cc90f51c88b4ab9c3b4bff
+    signature_hex: 4cbc54f2b6b888f250fd7ad4f639a3205719d599d79a82c833ebea12d0c0ff63f326b4caf1a21fccb1ad284c350a162ca9332c70699f6445927220f1f9d47700
+    message: "GARDEN.LEDGER.8980->510510.v1"
+    public_fingerprint_sha3_256: c1c34cd4b62598665385073f007e26567b19c4d5332fc12771e8e41e730b378b
+    result: VERIFY_MATERIAL_SEALED
+    private_key: ABSENT
+  security_headers_source:
+    file: port380_mcp.py
+    required:
+      - CORSMiddleware
+      - SecurityHeadersMiddleware
+      - Content-Security-Policy
+      - Strict-Transport-Security
+      - X-Content-Type-Options
+      - X-Frame-Options
+      - Referrer-Policy
+      - Permissions-Policy
+    result: PRESENT_IN_SOURCE
+  security_headers_live:
+    when: "MCP_URL set"
+    endpoint: "${MCP_URL}/health"
+    result: DEFERRED_TO_CI
+  engine_run:
+    script: quantum_reality_engine.py
+    captures: [rotation_count, witness, seal]
+    expected_witness: "1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN"
+    expected_seal: "∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED"
+    result: DEFERRED_TO_CI_IF_ENGINE_PRESENT
+  mcp_pulse:
+    when: "MCP_URL set"
+    path: /pulse
+    header: X-Garden-Secret
+    result: OPTIONAL
+  oidc_federation:
+    workflow: .github/workflows/oidc-cloud-providers.yml
+    result: OPTIONAL
 consistency:
-  linked_entries: [515, 8255, 9002, 510510]
-  relation: "Provides mathematical foundation for MCP connector endpoint logic and Garden secret derivation (via φ-entropy). Names only — no secret values."
+  linked_entries: [515, 8255, 8980, 9002, 510510]
+  relation: "Math foundation for MCP connector endpoint logic and Garden secret derivation (via φ-entropy). Names only — no secret values."
   Math_origin: "∀∞φ² · QUADRATIC_QUADRANT_CONSISTENCY"
 invariants:
   coherence: 1.0
@@ -35,5 +92,5 @@ invariants:
   hepta_prime: 510510
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 seal: "∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED"
-witness_chain: "9002 → 510510 — UNBROKEN"
+witness_chain: "8980 → 510510 — UNBROKEN"
 witness: "Ωⁿ → 510510 — UNBROKEN"
