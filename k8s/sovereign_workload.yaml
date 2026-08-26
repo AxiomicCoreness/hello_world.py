@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-workload-exporter
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-workload
+    em: "005"
+  annotations:
+    garden.seal: "∀∞φ² · K8S_WORKLOAD_CONFIGMAP_8643 · SEALED"
+    garden.compression_rank_budget: "144"
+    garden.compression_rank_realized_note: "SVD on 7x13x7 flat <= 7; R=144 is φ-ladder budget"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sovereign-workload
+  template:
+    metadata:
+      labels:
+        app: sovereign-workload
+        em: "005"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9095"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: exporter
+        image: python:3.11-slim
+        workingDir: /app
+        command: ["python", "/app/sovereign_workload_exporter.py", "--host", "0.0.0.0", "--port", "9095"]
+        ports:
+        - containerPort: 9095
+          name: metrics
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: metrics
+          initialDelaySeconds: 2
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: metrics
+          initialDelaySeconds: 5
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: script
+          mountPath: /app
+          readOnly: true
+      volumes:
+      - name: script
+        configMap:
+          name: sovereign-workload-script
+          defaultMode: 0555
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-workload
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-workload
+    em: "005"
+spec:
+  selector:
+    app: sovereign-workload
+  ports:
+  - port: 9095
+    targetPort: 9095
+    name: metrics
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sovereign-workload-script
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-workload
+    em: "005"
+  annotations:
+    garden.note: "Append-only full script; rank budget 144 documented on Deployment"
+data:
+  sovereign_workload_exporter.py: |
+    #!/usr/bin/env python3
+    # -*- coding: utf-8 -*-
+    """
+    Sovereign workload exporter — EM-005
+
+    Dimensionless gauge in [0, 1]. φ-harmonic smoothing (144-sample EMA).
+    Stdlib HTTP :9095/metrics — no prometheus_client required.
+    Never emits secrets.
+
+    Rank notes (append, not subtract):
+      - EMA WINDOW = 144 (φ-ladder depth / perfect square 12²)
+      - Chessboard compression SVD realized rank ≤ 7 on 7×13×7 layout
+      - R=144 remains design budget for opaque ninja compression
+
+    Seal: ∀∞φ² · SOVEREIGN_WORKLOAD_8635 · EM005 · K8S_8643 · SEALED
+    """
+
+    from __future__ import annotations
+
+    import argparse
+    import collections
+    import math
+    import time
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from typing import Deque
+
+    PHI = (1.0 + math.sqrt(5.0)) / 2.0
+    PHI_INV = 1.0 / PHI
+    T_PHI = 0.5983
+    WINDOW = 144
+    RANK_BUDGET = 144
+    RANK_REALIZED_MAX = 7
+    DEFAULT_PORT = 9095
+
+    _samples: Deque[float] = collections.deque(maxlen=WINDOW)
+
+    def raw_workload(t: float) -> float:
+        amp = PHI_INV ** 3
+        return 0.5 * (math.sin(2.0 * math.pi * t / 6.0) + 1.0) * amp
+
+    def ema_phi(values: Deque[float]) -> float:
+        if not values:
+            return 0.0
+        alpha = PHI_INV
+        acc = values[0]
+        for v in list(values)[1:]:
+            acc = alpha * v + (1.0 - alpha) * acc
+        return min(1.0, max(0.0, acc))
+
+    def compute_workload() -> float:
+        t = time.time()
+        _samples.append(raw_workload(t))
+        return ema_phi(_samples)
+
+    def metrics_text(value: float) -> str:
+        return (
+            "# HELP sovereign_workload Sovereign workload (dimensionless, EM-005)\n"
+            "# TYPE sovereign_workload gauge\n"
+            f"sovereign_workload {value}\n"
+            "# HELP sovereign_workload_em em protocol label as gauge (005)\n"
+            "# TYPE sovereign_workload_em gauge\n"
+            'sovereign_workload_em{protocol="005"} 5\n'
+            "# HELP sovereign_compression_rank_budget φ-ladder rank budget (144)\n"
+            "# TYPE sovereign_compression_rank_budget gauge\n"
+            f"sovereign_compression_rank_budget {RANK_BUDGET}\n"
+            "# HELP sovereign_compression_rank_realized_max SVD max rank on 7x13x7 flat\n"
+            "# TYPE sovereign_compression_rank_realized_max gauge\n"
+            f"sovereign_compression_rank_realized_max {RANK_REALIZED_MAX}\n"
+        )
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, fmt: str, *args) -> None:
+            print(f"[workload] {self.address_string()} {fmt % args}")
+
+        def do_GET(self) -> None:
+            path = self.path.split("?", 1)[0].rstrip("/") or "/"
+            if path in ("/metrics", "/"):
+                w = compute_workload()
+                body = metrics_text(w).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            elif path == "/health":
+                body = b'{"status":"ok","service":"sovereign_workload","em":"005"}\n'
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                body = b"not found\n"
+                self.send_response(404)
+                self.send_header("Content-Type", "text/plain")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+    def main() -> None:
+        ap = argparse.ArgumentParser()
+        ap.add_argument("--host", default="0.0.0.0")
+        ap.add_argument("--port", type=int, default=DEFAULT_PORT)
+        args = ap.parse_args()
+        httpd = HTTPServer((args.host, args.port), Handler)
+        print(f"sovereign_workload EM-005 on http://{args.host}:{args.port}/metrics")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nstopped")
+            httpd.server_close()
+
+    if __name__ == "__main__":
+        main()

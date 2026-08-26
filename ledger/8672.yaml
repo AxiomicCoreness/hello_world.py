@@ -1,0 +1,18 @@
+entry_index: 8672
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /autonomous_bootstrap_dispatch_module
+status: ✅ SEALED
+artifacts:
+  - activate_dispatch.sh
+  - sovereign_workload_bootstrap.py
+  - ledger/8672_bootstrap.json  # written at runtime by bootstrap
+behavior:
+  - detect missing gh → Python bootstrap
+  - ensure .github/workflows/oidc-handover.yml
+  - optional API dispatch with GITHUB_TOKEN
+  - manual URL fallback if API 422 / no token
+note: |
+  GitHub API may still return 422 if Actions index rejects workflow_dispatch;
+  UI Run workflow remains the reliable path.
+witness_chain: 8671 → 8672 — UNBROKEN
+seal: "∀∞φ² · AUTONOMOUS_DISPATCH_8672 · SEALED"

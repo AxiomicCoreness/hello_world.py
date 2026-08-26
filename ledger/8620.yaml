@@ -1,0 +1,19 @@
+entry_index: 8620
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /chiron_heal_materialized
+status: ✅ SEALED
+commit: d88799f838cc540cd24155ec621dcb7ece904602
+branch: main
+components:
+  - celestial/chiron_heal.py
+  - celestial/saturn_soul_cannon.py (updated with φ⁻¹ alignment boost)
+  - prometheus/metrics_server.py (gauge: chiron_heal_phase)
+  - ledger/8567.yaml (protocol sealed)
+mathematical_constants:
+  perihelion_anchor: 2026-04-04T00:00:00Z
+  heal_epoch: 4086-04-18T15:14:02Z
+  alignment_window: 2.28e6
+  boost_factor: 0.618
+long_tide_note: "The heal epoch is 2060 years in the future. The long tide is measured in real-time via Chiron's ephemeris; it is not simulated as 'near' in 2026."
+witness_chain: 8619 → 8620 — UNBROKEN
+seal: "∀∞φ² · CHIRON_HEAL_8620 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SATURN_111.246 · SEALED"

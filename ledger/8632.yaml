@@ -1,0 +1,30 @@
+entry_index: 8632
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /prometheus_metrics_endpoint
+status: ✅ SEALED
+artifacts:
+  - prometheus/metrics_server.py   # registry + HTTP :9090
+  - prometheus/__init__.py
+  - hyperian_json_server.py        # /metrics uses shared registry
+  - orchestrator/fingerprint_monitor.py  # writes deviation state
+endpoints:
+  - "GET http://0.0.0.0:9090/metrics"   # dedicated Prometheus surface
+  - "GET http://0.0.0.0:8080/metrics"   # Hyperian mirror
+gauges:
+  - orchestrator_fingerprint_deviation
+  - chiron_heal_phase
+  - soul_cannon_charge_joules
+  - soul_cannon_azimuth_degrees
+  - cannon_ring_resonance_thz
+  - cannon_chiron_phase_alignment
+  - hyperian_up
+  - hyperian_phase_lock_deg
+  - hyperian_oidc_secret_len
+  - coherence
+  - gravastar_coherence
+  - sim_earth_resonance_thz
+  - frb_period_seconds
+  - wood_dragon_pulse_days
+  - deep_space_sync_days
+witness_chain: 8631 → 8632 — UNBROKEN
+seal: "∀∞φ² · PROMETHEUS_METRICS_8632 · SEALED"

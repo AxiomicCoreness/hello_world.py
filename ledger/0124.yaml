@@ -1,0 +1,19 @@
+entry_index: 0124
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /tau_protein_hyperphosphorylation
+status: ✅ SEALED
+witness_prefix: 6e8d3a4b
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Tau Protein — Hyperphosphorylation.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · TAU_PHOSPHORYLATION_0124 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0124 — UNBROKEN
+math_origin: |
+  Tau = φ·10⁶ Da,
+  Hyper = φ²

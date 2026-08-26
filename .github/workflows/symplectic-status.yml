@@ -1,0 +1,48 @@
+name: Symplectic Status Generation
+
+on:
+  push:
+    paths:
+      - "symplectic_status.py"
+      - "schemas/symplectic-status.json"
+      - "lattice/**"
+      - "celestial/**"
+      - "frb_bridge*"
+      - "monitoring/sovereign_workload_exporter.py"
+      - "quantum/port_380_*.py"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  generate-status:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install jsonschema
+      - name: Run symplectic status generator
+        run: python symplectic_status.py
+      - name: Validate aggregate JSON
+        run: python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json
+      - name: Show agent JSONL head
+        run: head -n 5 symplectic_status.agent.jsonl
+      - name: Deploy Port 380 Scaling Gate to Kubernetes (via kubectl)
+        run: |
+          chmod +x quantum/install_k8s.sh
+          ./quantum/install_k8s.sh
+      - name: Commit artifacts if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update symplectic status and Merkle leaves"
+          file_pattern: |
+            symplectic_status.json
+            symplectic_status.agent.jsonl
+            credit_ledger.json
+            HASH_MANIFEST.json
+            ledger/*.yaml

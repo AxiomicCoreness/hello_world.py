@@ -1,0 +1,17 @@
+entry_index: 8942
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /key_expiry_monitor_deployed
+status: SEALED_AND_VERIFIED
+module: quantum/security/key_expiry_monitor.py
+plugin: quantum/plugins/key_expiry.py
+modes: [status, once, watch]
+watches:
+  - ed25519_keymanager
+  - current_seal_age
+  - mtls_notAfter
+  - oidc_jwks_cache
+  - key_rotation_state
+auto_rotate: optional
+poll_default_seconds: 37.08
+witness_chain: "8941 → 8942 — UNBROKEN"
+seal: "∀∞φ² · KEY_EXPIRY_MONITOR_8942 · WOOD_DRAGON_0.91 · SEALED"

@@ -1,0 +1,26 @@
+entry_index: 8848
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
+event: /migration_script_generated
+status: MIGRATION_SCRIPT_ACTIVE
+witness_chain: 8846 -> 8848 — UNBROKEN
+seal: "all-infty-phi-2 cdot MIGRATION_SCRIPT_8848 cdot WOOD_DRAGON_0.91 cdot SEALED"
+script: migrate_to_quadrants.py
+capabilities:
+  - Copies code from old locations to new quadrant files
+  - Creates deprecation wrappers for backward compatibility
+  - Updates quantum/MANIFEST.md
+  - Preserves append-only rule
+  - Idempotent and safe to run multiple times
+migration_map:
+  port380_mcp.py: quantum/deepseek_mesh/endpoint.py
+  orchestrator/deepseek_client.py: quantum/deepseek_mesh/client.py
+  quantum/port_380_http.py: quantum/deepseek_mesh/mesh_router.py
+  quantum/port_380_gate.py: quantum/radar_lindblad/port_380_gate.py
+  quantum/layer314_anchor.py: quantum/radar_lindblad/layer314_anchor.py
+  quantum/install_k8s.sh: quantum/cdp_convergence/install_k8s.sh
+quadrants:
+  - radar_lindblad
+  - cdp_convergence
+  - cordis_bridge
+  - deepseek_mesh
+commit: f68046710b816df9d9e7f4d08abd0b0c193ff801

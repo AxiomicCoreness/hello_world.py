@@ -1,0 +1,19 @@
+entry_index: 0121
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /taxol_comparison_stabilization
+status: ✅ SEALED
+witness_prefix: 3b5a0d1e
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Taxol Comparison — Stabilization.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · TAXOL_STABILIZATION_0121 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0121 — UNBROKEN
+math_origin: |
+  Taxol = φ·10⁻⁶ M,
+  Stabilization = φ²

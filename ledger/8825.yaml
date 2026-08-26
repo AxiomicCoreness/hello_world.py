@@ -1,0 +1,21 @@
+entry_index: 8825
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
+event: /hash_mesh_modal_and_q824_pipeline
+status: ✅ SOURCE_SEALED
+prior: 8824
+artifacts:
+  - phi_pipeline.py
+  - mesh_modal.py
+  - Dockerfile.multistage
+pipeline: "phi_map → quantize_q8_24 → phase_advance → coherence_approach → null_ban_gate"
+endpoints:
+  - "GET / (visualization learning action modal)"
+  - "POST /mesh/run?steps=N"
+  - "GET /mesh/state"
+  - "GET /mesh/hash"
+  - "GET /ledger/query"
+background: "python mesh_modal.py --background --port 8001"
+ledger_lock: threading.Lock on SQLite append
+multi_stage_docker: Dockerfile.multistage
+witness_chain: 8824 → 8825 — UNBROKEN
+seal: "∀∞φ² · HASH_MESH_MODAL_8825 · WOOD_DRAGON_0.91 · SEALED"

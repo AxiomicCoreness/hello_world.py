@@ -1,0 +1,19 @@
+entry_index: 8625
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /hyperian_json_server_materialized
+status: ✅ SEALED
+file: hyperian_json_server.py
+port: 8080
+endpoints:
+  - GET /health
+  - GET /status
+  - GET /compression
+  - GET /oidc
+  - GET /metrics
+compression_note: |
+  C_∞ is complete in the φ-harmonic Hilbert space in the limit.
+  Practical truncation k=144 yields ~φ^{-144} ≈ 10^{-30} precision;
+  output fingerprint dim=233 (trait_compression.InfiniteCompressor).
+oidc_policy: full 64-char digests — never truncated
+witness_chain: 8624 → 8625 — UNBROKEN
+seal: "∀∞φ² · HYPERIAN_JSON_SERVER_8625 · SEALED"

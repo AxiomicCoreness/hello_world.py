@@ -1,0 +1,19 @@
+entry_index: 0014
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /entangled_pair_bell
+status: ✅ SEALED
+witness_prefix: 6c8b3e4f
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Entangled Pair — Bell coefficient at 0.7071 (1/√2).
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · BELL_PAIR_0014 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0014 — UNBROKEN
+math_origin: |
+  |Ψ⟩ = (|00⟩ + |11⟩)/√2,
+  Bell_coef = 1/√2

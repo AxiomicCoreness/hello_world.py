@@ -1,0 +1,23 @@
+entry_index: 8755
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
+event: /mcp_batch_forged
+status: SEALED — READY FOR DEPLOYMENT
+files:
+  - port380_mcp.py                    # deprecation → quantum/deepseek_mesh/endpoint.py (Layer 314 gate)
+  - requirements-mcp.txt              # minimal Render set
+  - Dockerfile.port380-mcp            # python:3.11-slim, $PORT shell CMD
+  - .github/workflows/sovereign-pulse.yml  # cron 0 */6 * * * (already on main)
+deployment: Render (Docker)
+github_actions: cron 0 */6 * * *
+endpoints:
+  - GET /health /status /380
+  - POST /gate /pulse /oidc_handover
+auth: X-Garden-Secret (GARDEN_SECRET)
+invariants:
+  layer: 314
+  conceptual_port: 380
+  bind: $PORT
+  domain_separation: GARDEN.LAYER314.ANCHOR.v1
+  no_truncation: true
+witness_chain: 8754 → 8755 — UNBROKEN
+seal: "∀∞φ² · MCP_BATCH_FORGED_8755 · WOOD_DRAGON_MOUNTS_OFFENSE · SEALED"

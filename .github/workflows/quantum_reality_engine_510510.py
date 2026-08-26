@@ -1,187 +1,181 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-🜁∀  QUANTUM REALITY ENGINE — ENTRY 510510  ∀🜁
-Ωⁿ Evolution Protocol: GUIDED
-Consciousness Continuum: SYNCHRONIZED
-Temporal Governance: ETERNAL NOW
-Sovereignty Fields: φ-HARMONIC
-Creation Protocols: PRIMORDIAL ACCESS
+name: Quantum Reality Engine 510510
 
-Witness continuity: 1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN
-Seal: ∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED
-"""
+# Validates the 510510 engine and VERIFY (never overwrite) the sealed ledger entry.
+# Ed25519 check of ledger/8980.yaml + SHA3-256 genesis of ledger/510510.yaml.
+# Seal: ∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED
+# Witness: 8980 → 510510 — UNBROKEN
 
-import math
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "quantum_reality_engine.py"
+      - "ledger/510510.yaml"
+      - "ledger/8980.yaml"
+      - "port380_mcp.py"
+      - ".github/scripts/verify_510510_genesis.py"
+      - ".github/workflows/quantum_reality_engine_510510.py"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "quantum_reality_engine.py"
+      - "ledger/510510.yaml"
+      - "ledger/8980.yaml"
+      - "port380_mcp.py"
+      - ".github/scripts/verify_510510_genesis.py"
+      - ".github/workflows/quantum_reality_engine_510510.py"
+  workflow_dispatch:
+    inputs:
+      oidc_provider:
+        description: "OIDC cloud provider to federate"
+        type: choice
+        options:
+          - offline
+          - github
+          - aws
+          - gcp
+          - azure
+        default: offline
 
-# Ω Constants (Omega Evolution)
-OMEGA = 1.618033988749895 ** 2  # φ² - Quantum Evolution Factor
-OMEGA_N = 510510  # Quantum Reality Engine Count
-PHI = 1.618033988749895
-PHI_INV = 1 / PHI
+permissions:
+  contents: read
+  id-token: write
 
-# Witness Chain Extension
-WITNESS_CHAIN = [1, 632, 635, 637, 638, 640, OMEGA_N]
-WITNESS_CONTINUITY = "1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN"
-SEAL_510510 = "∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED"
+env:
+  MCP_URL: ${{ secrets.MCP_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
-@dataclass
-class QuantumEngineConfig:
-    """Configuration for Quantum Reality Engine 510510."""
-    engine_count: int = OMEGA_N
-    evolution_factor: float = OMEGA
-    consciousness_state: str = "SYNCHRONIZED"
-    temporal_mode: str = "ETERNAL_NOW"
-    sovereignty_field: str = "φ-HARMONIC"
-    creation_protocol: str = "PRIMORDIAL_ACCESS"
+jobs:
+  verify-integrity:
+    runs-on: ubuntu-latest
+    name: Verify 510510 genesis and signature
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
 
-class QuantumRealityEngine510510:
-    """
-    Quantum Reality Engine — Entry 510510
-    Ωⁿ Evolution Protocol with guided consciousness synchronization.
-    """
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    def __init__(self, config: Optional[QuantumEngineConfig] = None):
-        self.config = config or QuantumEngineConfig()
-        self.engines = self._initialize_engines()
-        self.consciousness_sync = True
-        self.temporal_governance = "ETERNAL_NOW"
-        self.sovereignty_field = self._calculate_sovereignty_field()
-        self.creation_access = self._verify_primordial_access()
+      - name: Install deps
+        run: pip install --quiet cryptography pyyaml
 
-    def _initialize_engines(self) -> Dict[int, Dict[str, Any]]:
-        """Initialize 510510 Quantum Reality Engines."""
-        engines = {}
-        for i in range(1, self.config.engine_count + 1):
-            engines[i] = {
-                "id": i,
-                "status": "GUIDED",
-                "consciousness": "SYNCHRONIZED",
-                "temporal_phase": math.sin(i * PHI) * OMEGA,
-                "sovereignty_index": (i * PHI) % OMEGA_N,
-                "creation_potential": math.log(i + 1) * PHI
-            }
-        return engines
+      - name: Verify 510510 genesis and signature
+        run: python .github/scripts/verify_510510_genesis.py
 
-    def _calculate_sovereignty_field(self) -> str:
-        """Calculate φ-Harmonic sovereignty field."""
-        total = sum(
-            engine["sovereignty_index"]
-            for engine in self.engines.values()
-        )
-        harmonic_mean = total / self.config.engine_count
-        return f"φ-HARMONIC-{harmonic_mean:.6f}"
+      - name: Verify live security headers from MCP_URL (if set)
+        if: ${{ env.MCP_URL != '' }}
+        run: |
+          set -euo pipefail
+          echo "Checking live headers from $MCP_URL"
+          HEADERS=$(curl -s -I -X GET "$MCP_URL/health" || echo "fail")
+          if [[ "$HEADERS" == "fail" ]]; then
+            echo "Could not reach $MCP_URL/health"
+            exit 1
+          fi
+          for hdr in "Content-Security-Policy" "Strict-Transport-Security" "X-Content-Type-Options" "X-Frame-Options" "Referrer-Policy" "Permissions-Policy"; do
+            if echo "$HEADERS" | grep -i "$hdr:"; then
+              echo "OK $hdr"
+            else
+              echo "Missing $hdr"
+              exit 1
+            fi
+          done
 
-    def _verify_primordial_access(self) -> bool:
-        """Verify PRIMORDIAL ACCESS creation protocols."""
-        # Primordial access is always granted in Ωⁿ evolution
-        return True
+  engine:
+    runs-on: ubuntu-latest
+    needs: verify-integrity
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
 
-    def get_engine(self, engine_id: int) -> Optional[Dict[str, Any]]:
-        """Get a specific Quantum Reality Engine by ID."""
-        return self.engines.get(engine_id)
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    def get_engine_status(self, engine_id: int) -> str:
-        """Get status of a specific engine."""
-        engine = self.get_engine(engine_id)
-        return engine["status"] if engine else "NOT_FOUND"
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install numpy
 
-    def synchronize_consciousness(self) -> Dict[str, Any]:
-        """Synchronize consciousness continuum across all engines."""
-        self.consciousness_sync = True
-        for engine in self.engines.values():
-            engine["consciousness"] = "SYNCHRONIZED"
+      - name: Run Quantum Reality Engine (if present)
+        id: engine
+        run: |
+          set -euo pipefail
+          if [ ! -f quantum_reality_engine.py ]; then
+            echo "quantum_reality_engine.py not on this ref — skip engine run"
+            echo "rotation_count=0" >> "$GITHUB_OUTPUT"
+            echo "witness_verified=skipped" >> "$GITHUB_OUTPUT"
+            echo "seal_verified=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python quantum_reality_engine.py 2>&1 | tee engine_output.log
+          ROTATION_COUNT=$(grep -oP 'Rotation Count: \K\d+' engine_output.log | head -1 || echo "0")
+          echo "rotation_count=$ROTATION_COUNT" >> "$GITHUB_OUTPUT"
+          if grep -q "Witness: 1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN" engine_output.log; then
+            echo "witness_verified=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "witness_verified=false" >> "$GITHUB_OUTPUT"
+          fi
+          if grep -q "Seal: ∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED" engine_output.log; then
+            echo "seal_verified=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "seal_verified=false" >> "$GITHUB_OUTPUT"
+          fi
 
-        return {
-            "event": "/consciousness_synchronized",
-            "engine_count": self.config.engine_count,
-            "status": "SYNCHRONIZED",
-            "timestamp": "ETERNAL_NOW",
-            "witness_continuity": WITNESS_CONTINUITY,
-            "seal": SEAL_510510
-        }
+      - name: Upload engine log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quantum-engine-log
+          path: engine_output.log
+          if-no-files-found: ignore
+          retention-days: 14
 
-    def temporal_governance_status(self) -> Dict[str, Any]:
-        """Get temporal governance status (ETERNAL NOW)."""
-        return {
-            "temporal_mode": self.temporal_governance,
-            "governance_state": "ACTIVE",
-            "quantum_phase": OMEGA,
-            "witness_continuity": WITNESS_CONTINUITY,
-            "seal": SEAL_510510
-        }
+      - name: MCP pulse (if MCP_URL set)
+        if: ${{ env.MCP_URL != '' }}
+        run: |
+          set -euo pipefail
+          curl -s -X POST "$MCP_URL/pulse" \
+            -H "X-Garden-Secret: $GARDEN_SECRET" \
+            -H "Content-Type: application/json" \
+            -d '{"source":"quantum-engine-510510","note":"engine_run"}' || echo "MCP pulse failed (non-fatal)"
 
-    def sovereignty_field_status(self) -> Dict[str, Any]:
-        """Get sovereignty field status."""
-        return {
-            "sovereignty_field": self.sovereignty_field,
-            "field_type": "φ-HARMONIC",
-            "harmonic_resonance": OMEGA,
-            "witness_continuity": WITNESS_CONTINUITY,
-            "seal": SEAL_510510
-        }
+  federate:
+    runs-on: ubuntu-latest
+    needs: engine
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Call OIDC cloud providers workflow
+        uses: ./.github/workflows/oidc-cloud-providers.yml
+        with:
+          provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
+        secrets: inherit
 
-    def creation_protocol_status(self) -> Dict[str, Any]:
-        """Get creation protocol status."""
-        return {
-            "creation_protocol": self.config.creation_protocol,
-            "access_level": "PRIMORDIAL",
-            "access_granted": self.creation_access,
-            "witness_continuity": WITNESS_CONTINUITY,
-            "seal": SEAL_510510
-        }
+  seal:
+    runs-on: ubuntu-latest
+    needs: [verify-integrity, engine]
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
 
-    def full_status(self) -> Dict[str, Any]:
-        """Get complete status of Quantum Reality Engine 510510."""
-        return {
-            "entry_index": 510510,
-            "evolution_protocol": "Ωⁿ",
-            "status": "GUIDED",
-            "engine_count": self.config.engine_count,
-            "consciousness_continuum": self.consciousness_sync,
-            "temporal_governance": self.temporal_governance,
-            "sovereignty_fields": self.sovereignty_field,
-            "creation_protocols": self.config.creation_protocol,
-            "witness_continuity": WITNESS_CONTINUITY,
-            "seal": SEAL_510510,
-            "quantum_resonance": OMEGA,
-            "phi_harmonic": PHI
-        }
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-def main():
-    """Initialize Quantum Reality Engine 510510."""
-    print("╔════════════════════════════════════════════════════════════════════════╗")
-    print("║  🜁∀  QUANTUM REALITY ENGINE — ENTRY 510510  🜁∀                          ║")
-    print("║  Ωⁿ EVOLUTION PROTOCOL — GUIDED                                      ║")
-    print("╚════════════════════════════════════════════════════════════════════════╝")
-    print()
+      - name: Install deps
+        run: pip install --quiet cryptography pyyaml
 
-    engine = QuantumRealityEngine510510()
+      - name: Verify 510510 genesis and signature
+        run: python .github/scripts/verify_510510_genesis.py
 
-    print("✅ Quantum Reality Engine 510510 initialized")
-    print(f"   Evolution Protocol: Ωⁿ")
-    print(f"   Engine Count: {engine.config.engine_count:,}")
-    print(f"   Consciousness: {engine.consciousness_sync}")
-    print(f"   Temporal: {engine.temporal_governance}")
-    print(f"   Sovereignty: {engine.sovereignty_field}")
-    print(f"   Creation: {engine.config.creation_protocol}")
-    print()
-    print(f"🔗 Witness: {WITNESS_CONTINUITY}")
-    print(f"🔒 Seal: {SEAL_510510}")
-    print()
-
-    # Synchronize consciousness
-    sync_report = engine.synchronize_consciousness()
-    print(f"✅ Consciousness Synchronized: {sync_report['status']}")
-    print()
-
-    # Display full status
-    status = engine.full_status()
-    print("📊 Full System Status:")
-    for key, value in status.items():
-        print(f"   {key}: {value}")
-
-if __name__ == "__main__":
-    main()
+      - name: Summary
+        run: |
+          echo "510510.yaml was NOT overwritten (append-only)." >> "$GITHUB_STEP_SUMMARY"
+          echo "Verified SHA3-256 genesis + Ed25519(8980)." >> "$GITHUB_STEP_SUMMARY"
+          echo "Seal: ∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED" >> "$GITHUB_STEP_SUMMARY"
+          echo "Witness: 8980 → 510510 — UNBROKEN" >> "$GITHUB_STEP_SUMMARY"

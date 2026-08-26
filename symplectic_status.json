@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-08-13T18:55:13.022505+00:00",
+  "system": {
+    "coherence": 1.0,
+    "entropy_floor": 4.524036764254231e-297,
+    "phase_lock_degrees": 202.6,
+    "workload": 0.22446089073434594,
+    "golden_ratio": 1.618033988749895,
+    "phi_squared": 2.618033988749895,
+    "compression_dimension": 233,
+    "compression_precision": 8.049702017071726e-31,
+    "eternal_now_epoch": 1786647313
+  },
+  "lattice": {
+    "root_lattice_rank": 248,
+    "venomsuite_trace": 4.23606797749979,
+    "decad_cycle_sum": 0.0,
+    "e8_coherence": 1.0
+  },
+  "celestial": {
+    "soul_cannon": {
+      "charge_joules": 0.0,
+      "azimuth_degrees": 111.246,
+      "ring_resonance_thz": 100.29455569433293,
+      "chiron_phase_alignment": 0.0
+    },
+    "wasp107b": {
+      "mass_jupiter": 0.12,
+      "radius_jupiter": 0.94,
+      "orbital_period_days": 5.72,
+      "escape_flux": 0.0
+    },
+    "jupiter_alliance": {
+      "resonance_chain": [
+        1.0,
+        1.618033988749895,
+        2.618033988749895
+      ],
+      "entanglement": 0.9999
+    }
+  },
+  "frb_bridge": {
+    "metronome_seconds": 78624.0,
+    "emergent_period_days": 16.35,
+    "target_azimuth_deg": 111.246,
+    "lattice_points": [],
+    "weight_norm": 11.090169943749476
+  }
+}

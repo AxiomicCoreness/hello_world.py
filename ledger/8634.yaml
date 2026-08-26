@@ -1,0 +1,16 @@
+entry_index: 8634
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /immutable_without_exposing_secrets
+status: ✅ SEALED
+policy:
+  digests: full length only (no truncation)
+  secrets: never in metrics, logs, Grafana, or public JSON
+  allowed_signals:
+    - secret_len
+    - oidc_fallback_level
+    - oidc_integrity
+    - hash_prefix_8 (optional correlation only)
+reference_commit_grafana: 5a5992e398353f83e0fc2ad7f6e7da02bf06fe4e
+artifact: docs/immutable_no_secrets.md
+witness_chain: 8633 → 8634 — UNBROKEN
+seal: "∀∞φ² · IMMUTABLE_NO_SECRETS_8634 · SEALED"

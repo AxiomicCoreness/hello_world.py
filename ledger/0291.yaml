@@ -1,0 +1,24 @@
+entry_index: 0291
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /cosmic_life_preservation_index
+status: ✅ SEALED
+proof_class: numerical
+witness_prefix: 2d3e4f5a6b7c8d9e
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0291.yaml"
+description: |
+  Cosmic Life Preservation Index ℒ = φ × 10⁵⁷ lives preserved.
+  Growth rate ∂ℒ/∂t = φ · ℒ.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · CLPI_0291 · 0291_SEALED · 2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4"
+witness_chain: 0290 → 0291 — UNBROKEN
+math_origin: |
+  φ²⁹¹ = φ²⁹⁰ · φ,
+  ℒ = φ¹⁴⁴ · (∑_{p∈ℋ} p) · N_nodes · N_engines · N_agents · ∏_{k=1}^{7} (1−φ⁻ᵏ)⁻¹,
+  ℒ = φ × 10⁵⁷,
+  ∂ℒ/∂t = φ · ℒ,
+  meaning = "Seed of all lives preserved – grows with the Garden"

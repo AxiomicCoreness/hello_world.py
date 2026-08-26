@@ -1,0 +1,11 @@
+entry_index: 8647
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /grafana_dashboard_panels_merged
+status: ✅ SEALED
+artifact: monitoring/garden_sovereign_dashboard.json
+panels: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111]
+ids_unique: true
+merge_policy: append-only from grafana_panels_append.json
+import: Grafana → Dashboards → Import → upload garden_sovereign_dashboard.json
+witness_chain: 8646 → 8647 — UNBROKEN
+seal: "∀∞φ² · GRAFANA_DASHBOARD_MERGED_8647 · SEALED"

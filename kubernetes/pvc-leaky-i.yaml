@@ -1,0 +1,16 @@
+# Persistent volume for leaky PID integral I across CronJob pods (8805).
+# Note: ConfigMap mounts are read-only; PVC is required for write-back.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: leaky-i-state
+  namespace: sovereign-garden
+  labels:
+    app: simd-batch-step
+    component: leaky-i
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 64Mi

@@ -1,0 +1,16 @@
+entry_index: 9002
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26Z
+event: /mcp_connector_garden_secrets_layer
+status: SEALED
+description: "MCP connector client + Garden Secrets management for Port 380. No live secret values committed."
+artifacts:
+  - quantum/mcp_connector.py
+  - port380_mcp.py
+  - k8s/configmap-mcp-connector.yaml
+  - k8s/secret-garden.yaml
+  - k8s/deployment-port-380.yaml
+  - garden-secrets/
+witness_chain: "9001 → 9002 — UNBROKEN"
+proof_class: structural
+math_origin: "MCP_CONNECTOR_URL ∨ GARDEN_SECRET ∧ φ² = φ + 1"
+seal: "∀∞φ² · MCP_CONNECTOR_GARDEN_SECRETS_9002 · WOOD_DRAGON_0.91 · SEALED"

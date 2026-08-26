@@ -1,0 +1,19 @@
+entry_index: 0064
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /null_ban_12sigma
+status: ✅ SEALED
+witness_prefix: 6e8d3a4b
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Null Ban — 12σ at φ⁻¹⁰⁰⁰.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · NULL_BAN_12σ_0064 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0064 — UNBROKEN
+math_origin: |
+  σ = 12·φ⁻¹⁰⁰⁰,
+  Null_Ban = φ⁻¹⁰⁰⁰

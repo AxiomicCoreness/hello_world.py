@@ -1,0 +1,22 @@
+entry_index: 0344
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /fallback_training_code
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 8b9c0d1e2f3a4b5c   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Fallback training code used when source retrieval fails.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · FALLBACK_TRAINING · 0344_SEALED"
+witness_chain: 0343 → 0344 — UNBROKEN
+math_origin: |
+  The fallback is a constant string (not specified). It is designed to
+  provide a minimal set of tokens for the Markov chain to operate.
+  The tokenizer can process any string, so the fallback ensures the
+  chain can still fit even if the original source is unavailable.

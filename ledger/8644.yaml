@@ -1,0 +1,17 @@
+entry_index: 8644
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /prometheus_servicemonitor_sovereign_workload
+status: ✅ SEALED
+artifact: k8s/servicemonitor-sovereign-workload.yaml
+spec:
+  kind: ServiceMonitor
+  apiVersion: monitoring.coreos.com/v1
+  target: app=sovereign-workload
+  port: metrics
+  interval: 6s
+  path: /metrics
+note: |
+  Requires Prometheus Operator CRDs. Adjust metadata.labels.release to match
+  your Prometheus instance serviceMonitorSelector.
+witness_chain: 8643 → 8644 — UNBROKEN
+seal: "∀∞φ² · SERVICEMONITOR_8644 · SEALED"

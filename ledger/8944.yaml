@@ -1,0 +1,16 @@
+entry_index: 8944
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
+event: /oidc_cloud_providers_deployed
+status: SEALED_AND_VERIFIED
+module: quantum/security/oidc_cloud.py
+workflow: .github/workflows/oidc-cloud-providers.yml
+plugin: quantum/plugins/oidc_cloud.py
+providers:
+  - github_actions
+  - aws_sts_web_identity
+  - gcp_workload_identity
+  - azure_federated
+  - offline_hmac
+  - generic_jwks_verify
+witness_chain: "8943 → 8944 — UNBROKEN"
+seal: "∀∞φ² · OIDC_CLOUD_8944 · WOOD_DRAGON_0.91 · SEALED"

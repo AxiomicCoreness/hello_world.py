@@ -55,7 +55,7 @@ class AWSSecretsManagerRotator(SovereignKeyRotator):
             SecretString=json.dumps(state)
         )
 
-    def rotate_keys(self) -> dict:
+    def rotate_and_report(self) -> dict:
         """Execute a key rotation, persist to AWS, and return a full rotation report."""
         new_key = self.rotate()  # Calls parent class rotate() method
         self.save_state()
@@ -68,7 +68,7 @@ class AWSSecretsManagerRotator(SovereignKeyRotator):
             
         return {
             'rotation_count': self.rotation_index,
-            'current_key_fingerprint': latest_hash[:16] if len(latest_hash) >= 16 else latest_hash,
+            'current_key_fingerprint': latest_hash,  # full digest/key id — no truncation
             'witness_continuity': f"1 → {self.rotation_index + 629} — UNBROKEN",
             'seal': f"∀∞φ² · SOVEREIGN_HAMILTONIAN · {self.rotation_index + 629}_SEALED",
             'next_rotation': self._next_rotation_interval()
@@ -102,7 +102,7 @@ class AWSSecretsManagerRotator(SovereignKeyRotator):
         """Return current status without performing a rotation."""
         return {
             'rotation_count': self.rotation_index,
-            'current_key_fingerprint': self.current_key[:16] if self.current_key else "None",
+            'current_key_fingerprint': self.current_key if self.current_key else "None",  # full value — no truncation
             'witness_continuity': f"1 → {self.rotation_index + 629} — UNBROKEN" if self.rotation_index > 0 else "NEW DEPLOYMENT",
             'seal': f"∀∞φ² · SOVEREIGN_HAMILTONIAN · {self.rotation_index + 629}_SEALED" if self.rotation_index > 0 else "UNSEALED",
             'next_rotation': self._next_rotation_interval() if self.rotation_index > 0 else "TBD"

@@ -1,0 +1,17 @@
+entry_index: 8935
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /key_rotation_macro_timed_specificity
+status: SEALED_AND_VERIFIED
+module: key_rotation_macro.py
+features:
+  - KeyManager_count_and_time
+  - TimedSpecificity_phi_harmonic
+  - with_key_rotation_decorator
+  - sign_message_with_rotation
+  - public_key_kept_in_signed_payload
+timed_specificity:
+  model: "next_rotate_at = t0 + n·τ"
+  tau_sources: [max_age_seconds, phi_k_base, cadence_seconds, schedule_epochs]
+  default_phi_interval: "60 · φ^{-1} ≈ 37.08s"
+witness_chain: "8934 → 8935 — UNBROKEN"
+seal: "∀∞φ² · KEY_ROTATION_MACRO_8935 · WOOD_DRAGON_0.91 · SEALED"

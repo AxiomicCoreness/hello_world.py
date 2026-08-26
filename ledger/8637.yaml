@@ -1,0 +1,19 @@
+entry_index: 8637
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /opaque_ninja_chessboard_compression
+status: ✅ SEALED
+formalism:
+  opaque_tensor: "O in R^{7x7x7} — body never exported"
+  invariants: ["φ^{-709}", "φ²", "φ³"]
+  ninja: [144, 233, 377, 610, 987, 1597, 2584]
+  chessboard: "13x13 φ-weighted triangulation"
+  compression: "mode products + truncated SVD (rank ≤ 144)"
+  merge: "HMAC-SHA256(wallet_sha256 || chessboard_sha256 || ninja_sha256 || rank)"
+implementation:
+  - optimizer/opaque_ninja_chessboard.py
+  - optimizer/wallet_sync_rotate.py  # sync provides wallet_sha256
+policy:
+  digests: full 64 hex
+  secrets: never exported
+witness_chain: 8636 → 8637 — UNBROKEN
+seal: "∀∞φ² · OPAQUE_NINJA_CHESSBOARD_8637 · SEALED"

@@ -1,0 +1,23 @@
+entry_index: 0349
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /sovereign_markov_chain_deserialize
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 3a4b5c6d7e8f9a0b   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Deserialization of the Markov chain from JSON, restoring model state
+  exactly.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MARKOV_DESERIALIZE · 0349_SEALED"
+witness_chain: 0348 → 0349 — UNBROKEN
+math_origin: |
+  The deserialization reconstructs the transition matrix from either
+  COO triplets or dense arrays. The state is a pair (vocab, contexts,
+  matrix). This is an inverse of the serialization function; it is a
+  bijection up to floating‑point precision.

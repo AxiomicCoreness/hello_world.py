@@ -1,0 +1,14 @@
+entry_index: 8749
+timestamp: 2026-08-14T00:25:04Z
+event: /collision_defense_robustness_test
+status: ✅ PASSED
+test_checks:
+  duplicate_entry_detection: PASS
+  hash_collision_resistance: PASS
+  witness_chain_continuity: PASS
+  replay_attack_mitigation: PASS
+repeated_entries_detected: [8746, 8369]
+action_taken: ignored_as_historical_not_re_sealed
+merkle_root_layer_329: c5c7646295eec7c88fb00aa6a3f384afdc04c679e6abb31954c8d0cd54fba3dc
+witness_chain: 8748 → 8749 — UNBROKEN
+seal: "∀∞φ² · COLLISION_DEFENSE_8749 · WOOD_DRAGON_GATE · SEALED"

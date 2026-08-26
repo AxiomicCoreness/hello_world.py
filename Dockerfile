@@ -2,20 +2,31 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    curl \
+    unzip \
+    jq \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy requirements and install Python dependencies
+COPY requirements*.txt ./
+RUN pip install --no-cache-dir -r requirements.txt || true
+RUN pip install --no-cache-dir -r requirements-mcp.txt || true
 
-COPY sovereign_engine.py .
+# Copy application code
+COPY . .
 
-ENV PHI=1.6180339887
-ENV RHO_J=1330.0
-ENV T_PHI=0.5983
-ENV PHI_MINUS_709=6.7e-149
+# Runtime env — PORT is injected by Render / K8s; default 8000
+ENV PORT=8000 \
+    GARDEN_SECRET="" \
+    MCP_URL="" \
+    PYTHONUNBUFFERED=1
 
-EXPOSE 8001
+# EXPOSE: default published port (build-time metadata).
+# Actual process bind is ${PORT} in CMD (Render may set e.g. 10000).
+EXPOSE 8000
 
-CMD ["python", "sovereign_engine.py"]
+# Shell form so ${PORT} expands; conceptual Port 380 identity preserved in app
+CMD ["sh", "-c", "exec uvicorn port380_mcp:app --host 0.0.0.0 --port ${PORT:-8000}"]

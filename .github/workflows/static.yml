@@ -1,0 +1,125 @@
+name: Sovereign Pulse
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Optional pulse note"
+        required: false
+        default: "scheduled-pulse"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sovereign-pulse.yml"
+
+permissions:
+  contents: read
+
+env:
+  MCP_URL: ${{ vars.MCP_URL }}
+  MCP_CONNECTOR_URL: ${{ vars.MCP_CONNECTOR_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml requests
+
+      - name: Verify ledger entry (soft-skip if missing)
+        run: |
+          set -euo pipefail
+          if [ -f "ledger/8978.yaml" ]; then
+            python .github/scripts/verify_ledger.py ledger/8978.yaml
+          else
+            echo "⚠️ ledger/8978.yaml not found — skipping verification"
+          fi
+
+      - name: Verify security headers (source)
+        run: |
+          python -c "
+          import sys, pathlib
+          p = pathlib.Path('port380_mcp.py')
+          if not p.exists():
+              print('⚠️ port380_mcp.py missing — skip')
+              sys.exit(0)
+          content = p.read_text()
+          required = ['CORSMiddleware','SecurityHeadersMiddleware','Content-Security-Policy','Strict-Transport-Security']
+          missing = [h for h in required if h not in content]
+          if missing:
+              print(f'❌ Missing headers: {missing}')
+              sys.exit(1)
+          print('✅ All security headers present')
+          "
+
+      - name: Send Sovereign Pulse
+        id: pulse
+        env:
+          NOTE: ${{ github.event.inputs.note || 'scheduled-pulse' }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "::error::MCP_URL is not set"
+            exit 1
+          fi
+          if [ -z "${GARDEN_SECRET:-}" ]; then
+            echo "::error::GARDEN_SECRET is not set"
+            exit 1
+          fi
+
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          BODY=$(printf '{"source":"sovereign-pulse","entry":8755,"note":"%s","timestamp":"%s","seal":"PULSE"}' "$NOTE" "$TIMESTAMP")
+
+          HTTP_CODE=$(curl -sS -o /tmp/pulse_resp.json -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Garden-Secret: ${GARDEN_SECRET}" \
+            -d "$BODY" \
+            --max-time 20 \
+            "${MCP_URL%/}/pulse" || echo "000")
+
+          echo "HTTP ${HTTP_CODE}"
+          cat /tmp/pulse_resp.json || true
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Pulse failed with HTTP ${HTTP_CODE}"
+            exit 1
+          fi
+          echo "pulse_success=true" >> $GITHUB_OUTPUT
+
+      - name: Write ledger entry 8979 (on success)
+        if: success()
+        run: |
+          mkdir -p ledger
+          cat > ledger/8979.yaml << 'EOF'
+          entry_index: 8979
+          timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+          event: /sovereign_pulse_run
+          status: SUCCESS
+          seal: "∀∞φ² · SOVEREIGN_PULSE_8979 · WOOD_DRAGON_0.91 · SEALED"
+          witness_chain: "8978 → 8979 — UNBROKEN"
+          EOF
+
+      - name: Upload pulse response (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-response
+          path: /tmp/pulse_resp.json
+          retention-days: 7

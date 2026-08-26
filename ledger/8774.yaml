@@ -1,0 +1,24 @@
+entry_index: 8774
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /oauth2_cdp_websocket_ready_gated
+status: SEALED
+rule: "websocket_ready defaults false until OAuth 2.0 validates"
+quantum_paths:
+  - quantum/cdp_convergence/cdp_schema.py
+  - quantum/cdp_convergence/oauth2.py
+  - quantum/cdp_convergence/handshake.py
+  - quantum/cdp_convergence/__init__.py
+  - quantum/deepseek_mesh/endpoint.py
+mcp_endpoints:
+  - GET /cdp/status
+  - POST /cdp/handshake
+  - POST /oidc_handover  # now OAuth-aware
+env:
+  - OIDC_TOKEN_URL / OAUTH_TOKEN_URL
+  - OIDC_CLIENT_ID / OAUTH_CLIENT_ID
+  - OIDC_CLIENT_SECRET / OAUTH_CLIENT_SECRET
+  - OAUTH_OFFLINE=1  # explicit offline off_* tokens
+  - OAUTH_INTROSPECT_URL  # optional
+distill_link: src/cdp_distill.ts reads /cdp/status → CRITICAL if websocket_ready false
+witness_chain: 8773 → 8774 — UNBROKEN
+seal: "∀∞φ² · OAUTH2_CDP_WS_8774 · WOOD_DRAGON_0.91 · SEALED"

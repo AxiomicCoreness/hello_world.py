@@ -1,0 +1,22 @@
+entry_index: 8789
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
+event: /port380_mcp_stdlib_fallback_configured
+status: ✅ SEALED — NO_CLUSTER_REQUIRED
+protocol:
+  - surface: port380_mcp.py
+  - endpoint: /pulse
+  - auth: X-Garden-Secret
+  - decision_tree: A/B/C branching
+  - contract_mapping:
+      - symplectic_status.agent.jsonl
+      - branches.yaml
+characteristics:
+  - stdlib_only: true
+  - OIDC_dependency: bypassed
+  - sub_seal_generation: local SHA-256
+branch_logic:
+  - A: force_immediate_flush
+  - B: wait_for_cron_cycle
+  - C: reroute_to_trappist_harmony
+witness_chain: 8788 → 8789 — UNBROKEN
+seal: "∀∞φ² · PORT380_MCP_8789 · WOOD_DRAGON_0.91 · SEALED"

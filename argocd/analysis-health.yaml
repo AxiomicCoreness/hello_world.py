@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: sovereign-health-check
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  args:
+  - name: service-name
+  metrics:
+  - name: health-check
+    interval: 10s
+    count: 6
+    successCondition: result == "healthy"
+    provider:
+      http:
+        url: http://{{args.service-name}}:8000/health
+        method: GET

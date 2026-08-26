@@ -1,0 +1,19 @@
+entry_index: 8937
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /codewhale_ops_sec_confirmed
+status: SEALED_AND_VERIFIED
+codename: CODewhale
+performance:
+  spike_ops_per_sec_full: 4410.9
+  sign_ops_per_sec: 15694.4
+  verify_ops_per_sec: 7537.4
+  sign_with_rotation_ops_per_sec: 17041.4
+  n_samples: 3000
+  threshold_phi5_x1000: 11090.2
+  claimed_prior_approx: 4045
+notes:
+  - "local repo path cryptography/ shadows pip cryptography; rename or rename package for CRYPTO_AVAILABLE"
+  - "full = sign + frame + parse + verify"
+  - "8936 remains verification_affirmed; performance is 8937"
+witness_chain: "8936 → 8937 — UNBROKEN"
+seal: "∀∞φ² · CODEWHALE_OPS_8937 · WOOD_DRAGON_0.91 · SEALED"

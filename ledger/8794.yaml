@@ -1,0 +1,20 @@
+entry_index: 8794
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
+event: /simd_cronjob_configured_cluster_reset
+status: ✅ SEALED
+prior: 8793
+artifacts:
+  - kubernetes/cronjob-simd-step.yaml
+  - scripts/cluster_reset.sh
+  - docs/simd-architecture.md
+image: axiomic/sovereign-engine:latest
+commit_refs:
+  - "88c08bc4"  # ledger 8793
+  - "ccc59bf7"  # SIMD base
+  - "2c4f4f22"  # Dockerfile uvicorn
+schedule: "0 */6 * * *"
+imagePullPolicy: Always
+mesh_nodes_default: 7
+phase_lock_deg: 202.6
+witness_chain: 8793 → 8794 — UNBROKEN
+seal: "∀∞φ² · SIMD_CRON_RESET_8794 · WOOD_DRAGON_0.91 · SEALED"

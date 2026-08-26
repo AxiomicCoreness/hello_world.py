@@ -1,0 +1,30 @@
+# three-files-contract.yaml
+version: 1.0.0
+description: "Contract governing the symplectic status, chronal cement, and orchestrator configuration."
+
+files:
+  - id: symplectic_status
+    path: symplectic_status.agent.jsonl
+    schema: contracts/symplectic_status.schema.json
+    output: stream of events for agents
+  - id: chronal_cement
+    path: chronal_cement_schema.json
+    schema: contracts/chronal_cement.schema.json
+    role: validation of override payloads
+  - id: orchestrator_config
+    path: mcp_orchestrator_config.json
+    schema: contracts/orchestrator_config.schema.json
+    role: configuration for the orchestrator client
+
+dependencies:
+  - orchestrator reads coherence and phi_phase from the latest symplectic_status.agent.jsonl line with role="system"
+  - orchestrator uses the thresholds from orchestrator_config to decide action
+  - chronal_cement validator requires a payload that matches chronal_cement_schema.json and recomputes the seal
+  - if the validator succeeds, the override is forwarded to the synchronizer; if it fails, the override is rejected and logged into symplectic_status.agent.jsonl (role="validator", event="seal_failure")
+
+validation_cycle:
+  - Every 6 hours, generate a new symplectic_status.agent.jsonl line
+  - The orchestrator picks the latest line and calls the worker
+  - The worker responds with a prediction, recorded as a new line in symplectic_status.agent.jsonl
+  - The orchestrator decides action and writes the decision back (as another line)
+  - The chronal cement validator watches for the "fire_soul_cannon" command and prepares the sealed payload

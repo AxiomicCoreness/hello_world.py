@@ -1,0 +1,14 @@
+entry_index: 8938
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
+event: /main_path_no_clone
+status: SEALED_AND_VERIFIED
+pipeline: "codespace → temp_cache → commit → main"
+clone_on_main_path: false
+modules:
+  - x3df_x16f_protocol.py
+  - x3df_x16f_websocket.py
+  - key_rotation_macro.py
+enum_retention: "StateTransition.CLONE kept for wire compat only"
+test_output: "Codespace (no-clone) test: success=True; Messages: 3"
+witness_chain: "8937 → 8938 — UNBROKEN"
+seal: "∀∞φ² · MAIN_NO_CLONE_8938 · WOOD_DRAGON_0.91 · SEALED"

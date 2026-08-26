@@ -1,0 +1,22 @@
+entry_index: 8635
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /sovereign_workload_deployed_em005
+status: ✅ SEALED
+component: sovereign_workload
+version: em-005
+artifacts:
+  - monitoring/sovereign_workload_exporter.py
+  - prometheus/metrics_server.py  # gauge + refresh_sovereign_workload
+  - monitoring/grafana_panels_append.json  # panel 105 uses sovereign_workload
+  - k8s/sovereign_workload.yaml
+deployment:
+  local: "python monitoring/sovereign_workload_exporter.py --port 9095"
+  also_on: ":9090/metrics via shared registry"
+  kubernetes: Deployment + Service + ConfigMap (script mount)
+invariants:
+  coherence: 1.0
+  entropy: "φ^{-1418}"
+  secrets: never exported
+  digests: full length only
+witness_chain: 8634 → 8635 — UNBROKEN
+seal: "∀∞φ² · SOVEREIGN_WORKLOAD_8635 · EM005 · SEALED"

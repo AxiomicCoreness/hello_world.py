@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: port-380-gate
+  namespace: garden
+  labels:
+    app: port-380-gate
+    entry: "314"
+    layer: "314"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: port-380-gate
+  template:
+    metadata:
+      labels:
+        app: port-380-gate
+        layer: "314"
+    spec:
+      containers:
+        - name: gate
+          image: python:3.11-slim
+          workingDir: /app
+          command: ["python", "/app/port_380_http.py"]
+          ports:
+            - name: gate
+              containerPort: 380
+          env:
+            - name: PORT380_HOST
+              value: "0.0.0.0"
+            - name: PORT380_PORT
+              value: "380"
+            - name: MCP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_URL
+            - name: MCP_CONNECTOR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_CONNECTOR_URL
+            - name: MCP_CONNECTOR_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_CONNECTOR_ENDPOINTS
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: GARDEN_SECRET
+            - name: MCP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: MCP_CLIENT_ID
+            - name: MCP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: MCP_CLIENT_SECRET
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 380
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 380
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          volumeMounts:
+            - name: gate-script
+              mountPath: /app
+      volumes:
+        - name: gate-script
+          configMap:
+            name: port-380-http-script

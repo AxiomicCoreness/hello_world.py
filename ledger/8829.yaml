@@ -1,0 +1,16 @@
+entry_index: 8829
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
+event: /august_20_cycle_commit_anchor
+status: ANCHORED_ON_FEAT_BRANCH
+commit: 066ca8ae5a3bb26070a93959e60269e1546a1900
+branch: feat/cordis-scaffold
+cycle_date: 2026-08-20
+scheduled_windows: ["00:00", "06:00", "12:00", "18:00"] UTC
+related_work: Cordis scaffold / self-improvement relay
+production_gate: unchanged (main @ 69eb95ba, Python /pulse)
+note: |
+  Cordis scaffold is intentionally isolated on feat/cordis-scaffold.
+  docker-main-image.yml builds from main only; this commit is not yet in the production image.
+  Merge to main required before Garden production pick-up.
+witness_chain: 8828 → 8829 — UNBROKEN
+seal: ∀∞φ² · AUGUST_20_CYCLE_8829 · WOOD_DRAGON_0.91 · SEALED

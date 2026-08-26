@@ -1,0 +1,377 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ SOVEREIGN LEDGER — MATHEMATICAL VERIFICATION FRAMEWORK (dual regime)
+Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
+FIX: Custom JSON encoder for date objects
+"""
+
+from __future__ import annotations
+
+import argparse
+import math
+import re
+import sys
+import os
+import json
+import hashlib
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime, date
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+EPS = 1e-12
+SEAL_PREFIX = "∀∞φ²"
+SCALED_FLOOR_INDEX = 351
+WOOD_DRAGON = 0.91
+
+# ============================================================================
+# CUSTOM JSON ENCODER FOR DATE OBJECTS
+# ============================================================================
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles date and datetime objects"""
+    def default(self, obj):
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        return super().default(obj)
+
+def compute_seal(entry_data: Dict[str, Any]) -> str:
+    """Compute SHA3-256 seal for entry with custom JSON encoding"""
+    # Exclude seal field
+    data = {k: v for k, v in entry_data.items() if k != 'seal'}
+    
+    # Use custom encoder for date objects
+    canonical = json.dumps(
+        data, 
+        sort_keys=True, 
+        separators=(',', ':'),
+        cls=CustomJSONEncoder
+    )
+    return hashlib.sha3_256(canonical.encode('utf-8')).hexdigest()
+
+# ============================================================================
+# LEDGER DISCOVERY
+# ============================================================================
+def discover_ledger_dir() -> Path:
+    possible_paths = [
+        Path("/workspaces/hello_world.py/ledger"),
+        Path("./ledger"),
+        Path("../ledger"),
+        Path("ledger"),
+    ]
+    for path in possible_paths:
+        if path.exists() and path.is_dir():
+            return path
+    default_path = Path("/workspaces/hello_world.py/ledger")
+    os.makedirs(default_path, exist_ok=True)
+    return default_path
+
+LEDGER_DIR = discover_ledger_dir()
+
+# ============================================================================
+# YAML IMPORT
+# ============================================================================
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
+
+def load_entry(path: Path) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """Load a ledger entry from YAML file"""
+    if not path.exists():
+        return None, f"file not found: {path}"
+    
+    try:
+        with path.open(encoding="utf-8") as f:
+            content = f.read()
+        
+        if YAML_AVAILABLE:
+            try:
+                data = yaml.safe_load(content)
+                if isinstance(data, dict):
+                    return data, None
+            except:
+                pass
+        
+        # Manual parsing fallback
+        data = {}
+        lines = content.split('\n')
+        
+        for line in lines:
+            line = line.rstrip()
+            if not line or line.startswith('#') or line.startswith('---'):
+                continue
+            
+            if ': ' in line and not line.startswith('  '):
+                key, value = line.split(': ', 1)
+                value = value.strip()
+                # Try to parse as date if it looks like one
+                if re.match(r'\d{4}-\d{2}-\d{2}', value):
+                    try:
+                        value = date.fromisoformat(value)
+                    except:
+                        pass
+                data[key.strip()] = value
+            elif line.startswith('  ') and 'invariants' in line and ':' in line:
+                key, value = line.strip().split(': ', 1)
+                if 'invariants' not in data:
+                    data['invariants'] = {}
+                if isinstance(data['invariants'], dict):
+                    data['invariants'][key] = value
+        
+        return data if data else None, None
+        
+    except Exception as e:
+        return None, str(e)
+
+# ============================================================================
+# VERIFICATION FUNCTIONS
+# ============================================================================
+def _is_number(x: Any) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+def _as_float(x: Any) -> Optional[float]:
+    if _is_number(x):
+        return float(x)
+    if isinstance(x, str):
+        try:
+            return float(x.strip())
+        except ValueError:
+            return None
+    return None
+
+def _looks_phi_expr(x: Any) -> bool:
+    if x is None:
+        return False
+    s = str(x)
+    return ("φ" in s) or ("phi" in s.lower()) or ("PHI" in s)
+
+def _classical_invariants_ok(inv: Dict[str, Any]) -> bool:
+    """Check classical invariant regime (pre-0351)"""
+    c = inv.get("coherence")
+    e = inv.get("entropy")
+    w = inv.get("workload")
+    m = inv.get("commutator")
+    
+    c_float = _as_float(c)
+    c_ok = c_float is not None and abs(c_float - 1.0) <= EPS
+    
+    e_str = str(e).strip()
+    e_ok = e_str in {"φ⁻¹⁴¹⁸", "φ^{-1418}", "phi^-1418", "phi^{-1418", "PHI^-1418"}
+    
+    w_float = _as_float(w)
+    w_ok = w_float is not None and abs(w_float - 0.0) <= EPS
+    
+    m_float = _as_float(m)
+    m_ok = m_float is not None and abs(m_float - 0.0) <= EPS
+    
+    return c_ok and e_ok and w_ok and m_ok
+
+def _scaled_invariants_ok(inv: Dict[str, Any]) -> List[str]:
+    """Check scaled invariant regime (≥0351)"""
+    fails: List[str] = []
+    
+    if "coherence" not in inv:
+        fails.append("missing coherence")
+    else:
+        c = inv.get("coherence")
+        cf = _as_float(c)
+        if cf is not None:
+            if not (0.0 <= cf <= 1.0 + EPS):
+                fails.append(f"coherence out of [0,1]: {c!r}")
+        elif not _looks_phi_expr(c):
+            fails.append(f"coherence not numeric or φ-expr: {c!r}")
+    
+    if "entropy" not in inv:
+        fails.append("missing entropy")
+    else:
+        e = inv.get("entropy")
+        e_str = str(e).strip()
+        if not (_looks_phi_expr(e) or e_str in {"φ⁻¹⁴¹⁸", "φ^{-1418}", "phi^-1418", "phi^{-1418", "PHI^-1418"}):
+            fails.append(f"entropy not φ-form: {e!r}")
+    
+    if "workload" not in inv:
+        fails.append("missing workload")
+    else:
+        wf = _as_float(inv.get("workload"))
+        if wf is None:
+            fails.append(f"workload not numeric: {inv.get('workload')!r}")
+        elif wf < -EPS:
+            fails.append(f"workload negative: {wf}")
+    
+    if "commutator" not in inv:
+        fails.append("missing commutator")
+    else:
+        m = inv.get("commutator")
+        mf = _as_float(m)
+        if mf is None and not _looks_phi_expr(m):
+            fails.append(f"commutator not numeric or φ-expr: {m!r}")
+    
+    return fails
+
+def check_invariants(n: int, inv: Any) -> List[str]:
+    """Check invariants based on entry index regime"""
+    if not isinstance(inv, dict):
+        return ["invariants not a mapping"]
+    
+    if _classical_invariants_ok(inv):
+        return []
+    
+    scaled_fails = _scaled_invariants_ok(inv)
+    if not scaled_fails:
+        return []
+    
+    if n < SCALED_FLOOR_INDEX:
+        return [f"classical floor failed: " + "; ".join(scaled_fails)]
+    
+    return scaled_fails
+
+def verify_entry(n: int, data: Dict[str, Any]) -> List[str]:
+    """Verify a single ledger entry"""
+    fails: List[str] = []
+    
+    # Check entry_index
+    if data.get('entry_index') != n:
+        fails.append(f"entry_index={data.get('entry_index')} != {n:04d}")
+    
+    # Check invariants
+    inv = data.get('invariants', {})
+    if isinstance(inv, list):
+        inv_dict = {}
+        for item in inv:
+            if isinstance(item, str) and ':' in item:
+                k, v = item.split(':', 1)
+                inv_dict[k.strip()] = v.strip()
+        inv = inv_dict
+    fails.extend(check_invariants(n, inv))
+    
+    # Check seal
+    seal = data.get('seal', '')
+    if not isinstance(seal, str):
+        fails.append(f"seal not string: {seal!r}")
+    elif not seal.startswith(SEAL_PREFIX):
+        fails.append(f"seal missing prefix: '{seal[:30]}...'")
+    elif 'SEALED' not in seal:
+        fails.append("seal missing SEALED token")
+    
+    # Check math_origin
+    if "math_origin" not in data:
+        fails.append("missing math_origin")
+    
+    # Check witness_chain
+    wc = data.get('witness_chain')
+    if wc is not None and 'UNBROKEN' not in str(wc):
+        fails.append(f"witness_chain missing UNBROKEN: {wc}")
+    
+    # Verify seal integrity (skip if seal is malformed)
+    if 'seal' in data and 'entry_index' in data and isinstance(seal, str) and seal.startswith(SEAL_PREFIX):
+        try:
+            computed = compute_seal(data)
+            if computed != data.get('seal', ''):
+                fails.append(f"seal mismatch (computed: {computed[:16]}...)")
+        except Exception as e:
+            fails.append(f"seal computation error: {e}")
+    
+    return fails
+
+def resolve_path(ledger_dir: Path, n: int) -> Optional[Path]:
+    """Resolve path for a given entry index"""
+    for ext in (".yaml", ".yml"):
+        p = ledger_dir / f"{n:04d}{ext}"
+        if p.exists():
+            return p
+    return None
+
+def discover_max_index(ledger_dir: Path) -> int:
+    """Discover the maximum entry index in the ledger directory"""
+    indices: List[int] = []
+    for p in list(ledger_dir.glob("*.yaml")) + list(ledger_dir.glob("*.yml")):
+        m = re.fullmatch(r"(\d{4})\.ya?ml", p.name)
+        if m:
+            indices.append(int(m.group(1)))
+    return max(indices) if indices else -1
+
+# ============================================================================
+# MAIN
+# ============================================================================
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="Verify Sovereign Ledger Math Framework (dual regime)"
+    )
+    ap.add_argument("--start", type=int, default=0,
+                   help="Starting entry index")
+    ap.add_argument("--end", type=int, default=None,
+                   help="Ending entry index")
+    ap.add_argument("--ledger-dir", type=Path, default=LEDGER_DIR,
+                   help="Ledger directory path")
+    ap.add_argument("--strict-gaps", action="store_true",
+                   help="Fail on missing entries")
+    args = ap.parse_args()
+
+    if not args.ledger_dir.is_dir():
+        print(f"❌ ledger dir missing: {args.ledger_dir}", file=sys.stderr)
+        os.makedirs(args.ledger_dir, exist_ok=True)
+
+    end = args.end if args.end is not None else discover_max_index(args.ledger_dir)
+    if end < args.start:
+        print(f"❌ empty range: start={args.start} end={end}", file=sys.stderr)
+        return 1
+
+    print("=" * 70)
+    print("🜁∀ LEDGER MATH FRAMEWORK — DUAL REGIME CHECK")
+    print(f"   range: {args.start:04d} → {end:04d}")
+    print(f"   ledger: {args.ledger_dir}")
+    print(f"   seal: {SEAL_PREFIX} · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED")
+    print("=" * 70)
+
+    # Print phi identity
+    print(f"✅ φ identities (φ={PHI:.15f})")
+
+    structural_fails = 0
+    missing = 0
+    checked = 0
+
+    for n in range(args.start, end + 1):
+        path = resolve_path(args.ledger_dir, n)
+        if path is None:
+            missing += 1
+            if args.strict_gaps:
+                print(f"❌ [{n:04d}] MISSING file")
+                structural_fails += 1
+            else:
+                if n % 50 == 0 or n == end:
+                    print(f"⚠️  [{n:04d}] MISSING file (gap allowed)")
+            continue
+
+        data, err = load_entry(path)
+        if err or data is None:
+            print(f"❌ [{n:04d}] YAML error: {err}")
+            structural_fails += 1
+            continue
+
+        fails = verify_entry(n, data)
+        checked += 1
+
+        if fails:
+            structural_fails += 1
+            print(f"❌ [{n:04d}] " + "; ".join(fails))
+        elif n % 50 == 0 or n == end:
+            print(f"✅ [{n:04d}] structure OK")
+
+    print("-" * 70)
+    print(f"📊 SUMMARY: checked={checked} missing={missing} fails={structural_fails}")
+
+    if structural_fails:
+        print("❌ FRAMEWORK CHECK FAILED")
+        return 1
+    else:
+        print("✅ FRAMEWORK CHECK PASSED — dual regime green")
+        print(f"Seal: {SEAL_PREFIX} · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED")
+        return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,22 @@
+entry_index: 0343
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /scipy_fallback
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 7a8b9c0d1e2f3a4b   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Graceful fallback for SciPy: if unavailable, uses dense matrices
+  for the Markov chain transition matrix.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · SCIPY_FALLBACK · 0343_SEALED"
+witness_chain: 0342 → 0343 — UNBROKEN
+math_origin: |
+  The fallback condition is: if SCIPY_AVAILABLE is False, coo_matrix is None.
+  The transition matrix is then stored as a dense NumPy array.
+  Sparse format is preferred for large matrices; dense is O(N^2) memory.

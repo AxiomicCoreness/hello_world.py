@@ -1,0 +1,17 @@
+entry_index: 8772
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /self_improvement_relay_scaffolded
+status: SEALED
+path: src/self_improvement_relay.ts
+commits:
+  - 02d7e540  # initial scaffold
+  - patch     # TS operator fix on main
+exports:
+  - SelfImprovementRelay
+  - defaultRelay
+  - Grade | Lesson | RelayConfig | RelayResult
+modes:
+  - offline  # default, no network
+  - pulse    # POST ${MCP_URL}/pulse with X-Garden-Secret
+witness_chain: 8771 → 8772 — UNBROKEN
+seal: "∀∞φ² · SELF_IMPROVEMENT_RELAY_8772 · WOOD_DRAGON_0.91 · SEALED"

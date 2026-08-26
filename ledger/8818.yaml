@@ -1,0 +1,20 @@
+entry_index: 8818
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
+event: /docker_image_source_main_only
+status: ✅ SOURCE_SEALED
+prior: 8817
+image: axiomic/sovereign-engine:latest
+policy: "Build and push :latest only from main; ignore feature/casual branches"
+commands:
+  canonical: |
+    bash scripts/docker_build_push_main.sh
+    # equivalent:
+    # git fetch origin main && git archive origin/main | ... docker build -t axiomic/sovereign-engine:latest
+  legacy_on_main_worktree: |
+    docker build -t axiomic/sovereign-engine:latest .
+    docker push axiomic/sovereign-engine:latest
+  note: "If your shell is on another branch, use scripts/docker_build_push_main.sh so the image is still main"
+ci: .github/workflows/docker-main-image.yml
+cluster_followup: scripts/cluster_reset.sh
+witness_chain: 8817 → 8818 — UNBROKEN
+seal: "∀∞φ² · DOCKER_MAIN_ONLY_8818 · WOOD_DRAGON_0.91 · SEALED"

@@ -1,0 +1,111 @@
+# Mount cert-manager secrets into port-380-gate + optional in-cluster pulse CronJob
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: port-380-gate
+  namespace: sovereign-garden
+spec:
+  template:
+    metadata:
+      annotations:
+        garden.sovereign/mtls: cert-manager
+    spec:
+      containers:
+        - name: sovereign-engine
+          env:
+            - name: SERVER_CERT
+              value: /certs/tls.crt
+            - name: SERVER_KEY
+              value: /certs/tls.key
+            - name: CA_CERT
+              value: /certs/ca.crt
+            - name: MTLS_SOFT
+              value: "0"
+          volumeMounts:
+            - name: port380-server-tls
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: port380-server-tls
+          secret:
+            secretName: port380-server-tls
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+              - key: ca.crt
+                path: ca.crt
+            defaultMode: 0400
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: port380-mtls-pulse
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: mtls-heartbeat
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: port380-mtls-pulse
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pulse
+              image: curlimages/curl:8.5.0
+              env:
+                - name: MCP_URL
+                  value: http://port-380-gate.sovereign-garden.svc.cluster.local:380
+                - name: GARDEN_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: garden-pulse-secret
+                      key: GARDEN_SECRET
+                      optional: true
+              volumeMounts:
+                - name: client-tls
+                  mountPath: /client-certs
+                  readOnly: true
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  BODY='{"source":"cert-manager-cron","entry":8862}'
+                  if [ -f /client-certs/tls.crt ] && [ -f /client-certs/tls.key ]; then
+                    curl -sS -o /tmp/out -w "%{http_code}" \
+                      --cert /client-certs/tls.crt --key /client-certs/tls.key \
+                      --cacert /client-certs/ca.crt \
+                      -X POST -H "Content-Type: application/json" \
+                      ${GARDEN_SECRET:+ -H "X-Garden-Secret: ${GARDEN_SECRET}"} \
+                      -d "$BODY" \
+                      "${MCP_URL}/pulse" || true
+                  else
+                    curl -sS -X POST -H "Content-Type: application/json" \
+                      ${GARDEN_SECRET:+ -H "X-Garden-Secret: ${GARDEN_SECRET}"} \
+                      -d "$BODY" \
+                      "${MCP_URL}/pulse"
+                  fi
+                  echo
+                  cat /tmp/out 2>/dev/null || true
+          volumes:
+            - name: client-tls
+              secret:
+                secretName: port380-client-tls
+                optional: true
+                items:
+                  - key: tls.crt
+                    path: tls.crt
+                  - key: tls.key
+                    path: tls.key
+                  - key: ca.crt
+                    path: ca.crt
+                defaultMode: 0400

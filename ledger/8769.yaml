@@ -1,0 +1,20 @@
+entry_index: 8769
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /unified_harness_materialised
+status: SEALED
+files:
+  - tests/harness.py
+  - harness.py
+suites:
+  - core
+  - pipeline
+  - engine
+  - symplectic
+  - security
+  - pytest
+  - all
+cli:
+  - python harness.py --local
+  - python -m tests.harness --suite all --json
+witness_chain: 8768 → 8769 — UNBROKEN
+seal: "∀∞φ² · HARNESS_UNIFIED_8769 · WOOD_DRAGON_0.91 · SEALED"

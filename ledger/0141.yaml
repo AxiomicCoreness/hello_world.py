@@ -1,0 +1,19 @@
+entry_index: 0141
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /mam_145_override
+status: ✅ SEALED
+witness_prefix: 3d5c0f1a
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  MAM 145 — Override 9062.7.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MAM_OVERRIDE_0141 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0141 — UNBROKEN
+math_origin: |
+  MAM = 9062.7,
+  Override = φ·MAM

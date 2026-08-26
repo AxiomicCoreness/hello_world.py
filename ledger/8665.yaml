@@ -1,0 +1,31 @@
+entry_index: 8665
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /mcp_oidc_pauli_capabilities_append
+status: ✅ SEALED
+policy:
+  truncate: false
+  subtract_wiring: false
+  oidc_digest: full_64_char_sha256
+  hmac_sig: full_64_hex
+worker: clarke_yoursa_tee_worker@1.2.0
+appended_routes:
+  - GET /capabilities
+  - GET /pauli
+  - GET /systems_go
+appended_metrics:
+  - worker_pauli_trace
+  - worker_pauli_verified
+  - worker_systems_go
+appended_mcp_tools:
+  - get_pauli_status
+  - get_systems_go
+  - list_capabilities
+oidc_handover_subjects:
+  - orchestrator
+  - clarke_yoursa_tee_worker
+  - grafana
+  - prometheus
+  - pauli_phi_hamiltonian
+prometheus_grafana: fidelity_structure prometheus_grafana_default
+witness_chain: 8664 → 8665 — UNBROKEN
+seal: "∀∞φ² · MCP_OIDC_PAULI_CAPABILITIES_8665 · SEALED"

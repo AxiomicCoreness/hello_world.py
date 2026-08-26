@@ -1,0 +1,24 @@
+entry_index: 0321
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
+event: /bayesian_prior_application
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 5c6d7e8f9a0b1c2d   # placeholder
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  apply_bayesian_prior scales transition probabilities by φ^phi_power
+  and renormalises. This encodes a prior over token sequences.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · BAYESIAN_PRIOR · 0321_SEALED"
+witness_chain: 0320 → 0321 — UNBROKEN
+math_origin: |
+  Original transition matrix M. Prior scaling: M' = M · φ^k, where k = phi_power.
+  Renormalisation: M'_row = M'_row / Σ M'_row.
+  This is equivalent to applying a Dirichlet prior with concentration
+  parameters α = 1 + φ^k · count(c,w). The posterior mean is:
+  P(w|c) = (φ^k · count(c,w) + 1) / (φ^k · Σ count(c,w') + |V|).

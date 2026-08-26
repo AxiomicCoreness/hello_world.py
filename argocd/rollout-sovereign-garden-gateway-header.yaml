@@ -1,0 +1,112 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    traffic-router: gatewayAPI
+    entry: "8812"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+        - name: sovereign-engine
+          image: axiomic/sovereign-engine:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PHASE
+              value: "202.6"
+            - name: MESH_NODES
+              value: "7"
+            - name: TRAFFIC_ROUTER
+              value: "gatewayAPI"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  strategy:
+    canary:
+      canaryService: sovereign-garden-canary
+      stableService: sovereign-garden-stable
+      trafficRouting:
+        managedRoutes:
+          - name: qa-canary
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoutes:
+              - name: sovereign-garden-route
+                useHeaderRoutes: true
+            namespace: sovereign-garden
+      steps:
+        - setWeight: 20
+        - setHeaderRoute:
+            name: qa-canary
+            match:
+              - headerName: X-Canary
+                headerValue:
+                  exact: "true"
+        - pause: {duration: 30s}
+        - setWeight: 40
+        - pause: {duration: 30s}
+        - setWeight: 60
+        - pause: {duration: 30s}
+        - setWeight: 80
+        - pause: {duration: 30s}
+        - setWeight: 100
+        - pause: {duration: 30s}
+        - setHeaderRoute:
+            name: qa-canary
+      analysis:
+        templates:
+          - templateName: sovereign-health-check
+        args:
+          - name: service-name
+            value: sovereign-garden-canary
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    traffic-router: gatewayAPI
+    entry: "8813"
+    wood_dragon: "0.91"
+spec:
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      jsonPointers:
+        - /spec/rules
+  analysis:
+    templates:
+      - templateName: sovereign-health-check
+    args:
+      - name: service-name
+        value: sovereign-garden-canary
+    - name: final-seal
+      count: 1
+      successCondition: result == "sealed"
+      provider:
+        http:
+          url: http://{{args.service-name}}:8000/health
+          method: GET

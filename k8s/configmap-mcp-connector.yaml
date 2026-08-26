@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-connector-config
+  namespace: garden
+  labels:
+    app: port-380-gate
+    layer: "314"
+data:
+  MCP_URL: "http://port-380-gate.garden.svc.cluster.local:380"
+  MCP_CONNECTOR_URL: "http://port-380-gate.garden.svc.cluster.local:380"
+  MCP_CONNECTOR_ENDPOINTS: |
+    {
+      "token": "/oauth/token",
+      "authorize": "/oauth/authorize",
+      "introspect": "/oauth/introspect",
+      "revoke": "/oauth/revoke",
+      "health": "/health",
+      "sign": "/oauth/sign"
+    }

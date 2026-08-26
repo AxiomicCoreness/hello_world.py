@@ -1,0 +1,89 @@
+# Multi-stage · multiplayer-optimized build for axiomic/sovereign-engine
+# Builder compiles deps; runtime is non-root, multi-worker, minimal attack surface.
+#
+#   docker build -f Dockerfile.multistage -t axiomic/sovereign-engine:latest .
+#   Image source policy: main only (scripts/docker_build_push_main.sh)
+#
+# Multiplayer knobs (runtime env):
+#   WEB_CONCURRENCY  — uvicorn workers (default 2)
+#   PORT             — primary engine port (default 8000)
+#   MESH_PORT        — hash-mesh modal (default 8001)
+#   ENTRYPOINT_MODE  — engine | mesh | dual  (default engine)
+
+# ── Stage 1: builder ─────────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+WORKDIR /build
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc g++ libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Layer-cache friendly: deps first
+COPY requirements.txt requirements-mcp.txt requirements-ci.txt ./
+RUN pip install --upgrade pip \
+ && pip install --prefix=/install -r requirements.txt \
+ && pip install --prefix=/install -r requirements-mcp.txt \
+ && pip install --prefix=/install "httpx>=0.27.0" "uvloop>=0.19.0" "httptools>=0.6.0"
+
+# ── Stage 2: runtime ─────────────────────────────────────────────────
+FROM python:3.11-slim AS runtime
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PHI=1.618033988749895 \
+    LAYER=314 \
+    PORT=8000 \
+    MESH_PORT=8001 \
+    WEB_CONCURRENCY=2 \
+    ENTRYPOINT_MODE=engine \
+    WOOD_DRAGON_TAU=0.91 \
+    PHASE_LOCK=202.6
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 garden \
+    && useradd --system --uid 10001 --gid garden --home /app --shell /usr/sbin/nologin garden
+
+COPY --from=builder /install /usr/local
+
+# Application surface (ordered for cache stability)
+COPY hello_world.py port380_mcp.py sovereign_engine.py phi_pipeline.py mesh_modal.py app_main.py ./
+COPY deepseek/ ./deepseek/
+COPY orchestrator/ ./orchestrator/
+COPY contracts/ ./contracts/
+COPY scripts/ ./scripts/
+COPY quantum/ ./quantum/
+COPY cryptography/ ./cryptography/
+
+RUN chown -R garden:garden /app
+USER garden
+
+EXPOSE 8000 8001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:${PORT:-8000}/health" || exit 1
+
+# tini as PID 1 for clean multi-worker signal handling
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# engine  → multi-worker uvicorn (multiplayer / concurrent clients)
+# mesh    → hash-mesh modal with background tick
+# dual    → engine only in this image; run a second container for mesh
+CMD ["sh", "-c", "\
+  case \"${ENTRYPOINT_MODE:-engine}\" in \
+    mesh) exec python mesh_modal.py --background --host 0.0.0.0 --port ${MESH_PORT:-8001} ;; \
+    dual|engine|*) exec uvicorn hello_world:app \
+         --host 0.0.0.0 \
+         --port ${PORT:-8000} \
+         --workers ${WEB_CONCURRENCY:-2} \
+         --loop uvloop \
+         --http httptools \
+         --timeout-keep-alive 30 \
+         --proxy-headers ;; \
+  esac"]

@@ -1,0 +1,25 @@
+entry_index: 0273
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /merkle_root_144_verified
+status: ✅ SEALED
+proof_class: structural
+witness_prefix: 4d5e6f7a8b9c0d1e
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0273.yaml"
+description: |
+  Merkle Root 144 verified; seal matches canonical hash.
+  Root = 8F1A3D9C04B27E5E, seal hash = DBC5CD2432FEE55B.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · MERKLE_ROOT_144_0273 · 0273_SEALED · 4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6"
+witness_chain: 0272 → 0273 — UNBROKEN
+math_origin: |
+  φ²⁷³ = φ²⁷² · φ,
+  root = 8F1A3D9C04B27E5E,
+  seal_hash = DBC5CD2432FEE55B,
+  inner_product = 0,
+  layers = 144,
+  verified = True

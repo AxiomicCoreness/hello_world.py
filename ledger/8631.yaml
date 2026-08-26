@@ -1,0 +1,19 @@
+entry_index: 8631
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /fingerprint_monitor_and_precompute_files
+status: ✅ SEALED — FILES_WRITTEN
+artifacts:
+  - orchestrator/fingerprint_monitor.py
+  - cronjobs/precompute_lattice.py
+deployment:
+  - monitor: sidecar / loop process; HYPERIAN_URL, ORCHESTRATOR_STATE_DIR
+  - precompute: schedule hint 45 */6 * * *; LATTICE_OUT=/tmp/lattice_weights.json
+integration:
+  - Hyperian /compression for fingerprint vectors (first10 or fingerprint)
+  - lattice JSON consumed by convergence CronJob
+metrics_note: orchestrator_fingerprint_deviation still pending on Hyperian /metrics
+threshold_note: |
+  Narrative DEVIATION_THRESHOLD = φ^{-1418} is below float64 noise;
+  runtime default is φ^{-12} (override with FP_DEVIATION_THRESHOLD).
+witness_chain: 8630 → 8631 — UNBROKEN
+seal: ∀∞φ² · FINGERPRINT_PRECOMPUTE_8631 · SEALED

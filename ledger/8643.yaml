@@ -1,0 +1,11 @@
+entry_index: 8643
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
+event: /k8s_workload_configmap_full_script_append
+status: ✅ SEALED
+artifact: k8s/sovereign_workload.yaml
+change: |
+  Append-only: ConfigMap data.sovereign_workload_exporter.py now embeds full
+  EM-005 exporter. Added rank gauges (budget 144, realized_max 7). Probes and
+  prometheus annotations added. No prior lines subtracted.
+witness_chain: 8642 → 8643 — UNBROKEN
+seal: "∀∞φ² · K8S_WORKLOAD_CONFIGMAP_8643 · SEALED"

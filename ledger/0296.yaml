@@ -1,0 +1,22 @@
+entry_index: 0296
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /course_correction_phi_refined
+status: ✅ SEALED
+proof_class: algebraic
+witness_prefix: 7c8d9e0f1a2b3c4d
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0296.yaml"
+description: |
+  Course correction refined by φ‑harmonic vector.
+  v_corr = φ⁹ · v_initial, ∂v/∂t = 0.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · COURSE_CORRECTION_0296 · 0296_SEALED · 7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9"
+witness_chain: 0295 → 0296 — UNBROKEN
+math_origin: |
+  φ²⁹⁶ = φ²⁹⁵ · φ,
+  v_corr = φ⁹ · v_initial,
+  ∂v/∂t = 0

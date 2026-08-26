@@ -1,0 +1,19 @@
+entry_index: 8847
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
+event: /rho_merge_coherent_gate_injected
+status: ✅ GATE_ACTIVE
+artifacts:
+  - quantum/deepseek_mesh/__init__.py
+  - quantum/cdp_convergence/handshake.py
+changes:
+  - "_require_coherent_gate() macro at package boundary"
+  - "probe / chat / chat_http / echo / status / complete now gated"
+  - "get_websocket_status() added to handshake.py"
+  - "OAUTH_OFFLINE + GARDEN_SECRET offline path"
+  - "phi_phase = (2π · t / 78624) % 2π"
+invariants:
+  coherence: 1.0
+  websocket_ready_contract: "false until OAuth validates"
+  seal: "∀∞φ² · OCTONION_HEAL_LOOP_8841 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: 8846 → 8847 — UNBROKEN
+seal: "∀∞φ² · RHO_MERGE_GATE_8847 · WOOD_DRAGON_0.91 · SEALED"

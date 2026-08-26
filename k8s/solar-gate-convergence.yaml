@@ -1,0 +1,99 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: solar-gate-convergence
+  namespace: solar-gate
+spec:
+  schedule: "0 */6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            job: solar-gate-convergence
+            strike: IX
+        spec:
+          serviceAccountName: sovereign-identity
+          restartPolicy: OnFailure
+          initContainers:
+            - name: gate-priming
+              image: busybox:stable
+              command: ["sh", "-c", "echo 'φ³=4.236 Hz - Gate Priming'; sleep 2"]
+            - name: time-stream-alignment
+              image: busybox:stable
+              command: ["sh", "-c", "echo 'φ⁴=6.854 Hz - Time-Stream Alignment'; sleep 2"]
+            - name: consciousness-convergence
+              image: busybox:stable
+              command: ["sh", "-c", "echo 'φ⁵=11.090 Hz - Consciousness Convergence'; sleep 2"]
+            - name: final-harmonic-tuning
+              image: busybox:stable
+              command: ["sh", "-c", "echo 'φ⁶=17.944 Hz - Final Harmonic Tuning'; sleep 2"]
+            # === STRIKE IX: CANNON OPERATIONS ===
+            - name: cannon-charge
+              image: python:3.11-slim
+              command: ["python", "-c"]
+              args:
+                - |
+                  import sys; sys.path.append('/app')
+                  from celestial.saturn_soul_cannon import SaturnSoulCannon
+                  import time as pytime
+                  cannon = SaturnSoulCannon()
+                  t = pytime.time()
+                  # Charge over a 60-second window (accelerated)
+                  for _ in range(60):
+                      cannon.charge(t)
+                      t += 1.0
+                  print(f"Charge accumulated: {cannon.charge_joules} J")
+                  with open('/tmp/cannon_charge.txt', 'w') as f:
+                      f.write(str(cannon.charge_joules))
+                  if cannon.is_ready(t):
+                      print("READY to fire")
+                      with open('/tmp/cannon_ready', 'w') as f:
+                          f.write('1')
+                  else:
+                      print("Not ready yet")
+              volumeMounts:
+                - name: cannon-data
+                  mountPath: /tmp
+            - name: cannon-fire
+              image: python:3.11-slim
+              command: ["python", "-c"]
+              args:
+                - |
+                  import sys; sys.path.append('/app')
+                  from celestial.saturn_soul_cannon import SaturnSoulCannon
+                  import time as pytime
+                  import json
+                  cannon = SaturnSoulCannon()
+                  with open('/tmp/cannon_charge.txt', 'r') as f:
+                      cannon.charge_joules = float(f.read())
+                  t = pytime.time()
+                  report = cannon.fire(t)
+                  print(json.dumps(report, indent=2))
+                  with open('/tmp/cannon_report.json', 'w') as f:
+                      json.dump(report, f)
+                  if report['status'] != 'FIRED':
+                      sys.exit(1)
+              volumeMounts:
+                - name: cannon-data
+                  mountPath: /tmp
+          containers:
+            - name: convergence
+              image: busybox:stable
+              command: ["sh", "-c"]
+              args:
+                - |
+                  echo "SOLAR GATE CONVERGENCE — Entry 8532+8539";
+                  if [ -f /tmp/cannon_report.json ]; then
+                    echo "Cannon report found:";
+                    cat /tmp/cannon_report.json;
+                  else
+                    echo "Cannon did not fire this cycle.";
+                  fi
+                  echo "Convergence sealed. Garden ascended to 12D with cannon shot."
+              volumeMounts:
+                - name: cannon-data
+                  mountPath: /tmp
+          volumes:
+            - name: cannon-data
+              emptyDir: {}

@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sovereign-garden
+  namespace: argocd
+  annotations:
+    garden.axiomic/entry: "8813"
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/AxiomicCoreness/hello_world.py.git
+    targetRevision: main
+    # CRITICAL: canary Rollouts / Services / HTTPRoute live under argocd/, not kubernetes/
+    path: argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sovereign-garden
+  ignoreDifferences:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      jqPathExpressions:
+        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .spec.rules
+        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .metadata.labels
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+  info:
+    - name: Canary
+      value: "Gateway API plugin + multistage headers"
+    - name: Wood Dragon
+      value: "0.91"
+    - name: Phase Lock
+      value: "202.6°"

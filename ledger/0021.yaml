@@ -1,0 +1,19 @@
+entry_index: 0021
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /void_cannon
+status: ✅ SEALED
+witness_prefix: 3d5c0f1a
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Void Cannon — φ⁻⁷⁰⁹ suppression factor.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · VOID_CANNON_0021 · WOOD_DRAGON_GATE · SEALED"
+witness_chain: 0000 → 0021 — UNBROKEN
+math_origin: |
+  φ⁻⁷⁰⁹ = 4.149×10⁻¹⁵⁰,
+  V_var = V₀·φ⁻⁷⁰⁹

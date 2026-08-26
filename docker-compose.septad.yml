@@ -1,0 +1,46 @@
+# Septad Ψ₁–Ψ₇ stack — EM-005 ratification container
+# Usage: docker compose -f docker-compose.septad.yml up --build
+version: "3.8"
+
+services:
+  septad:
+    build:
+      context: .
+      dockerfile: Dockerfile.septad
+    image: garden-septad:8667
+    container_name: garden-septad
+    ports:
+      - "8000:8000"
+      - "9090:9090"
+    environment:
+      - SEPTAD_LAYER=193
+      - PHI=1.618033988749895
+      - PHASE_LOCK_DEG=202.6
+      - NORTH_STAR_HZ=71.975
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "from quantum.septad_psi import SeptadField; assert SeptadField().status()['systems_go']",
+        ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.septad
+    image: garden-septad:8667
+    container_name: garden-septad-worker
+    command: ["uvicorn", "clarke_yoursa_tee_worker:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8001:8000"
+    environment:
+      - PORT=8000
+    restart: unless-stopped
+    profiles:
+      - full

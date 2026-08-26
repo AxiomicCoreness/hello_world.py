@@ -1,0 +1,3 @@
+# HELP chiron_heal_phase Chiron heal phase (0.0–1.0) toward 4086-04-18
+# TYPE chiron_heal_phase gauge
+chiron_heal_phase{epoch="4086-04-18"} 0.0

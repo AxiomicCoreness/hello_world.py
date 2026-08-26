@@ -1,0 +1,140 @@
+name: Sovereign Pulse
+
+# Local-first heartbeat. No Render required.
+# Soft-skip missing ledger files. Soft-skip unset MCP_URL.
+# Seal: ∀∞φ² · SOVEREIGN_PULSE_8979 · WOOD_DRAGON_0.91 · SEALED
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Optional pulse note"
+        required: false
+        default: "manual-dispatch"
+      target:
+        description: "Target endpoint (pulse, health, status)"
+        required: false
+        default: "pulse"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sovereign-pulse.yml"
+      - "port380_mcp.py"
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  MCP_URL: ${{ secrets.MCP_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml requests
+
+      - name: Verify ledger entry (soft-skip if missing)
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/8978.yaml ]; then
+            echo "ledger/8978.yaml missing — soft-skip"
+            exit 0
+          fi
+          if [ -f .github/scripts/verify_ledger.py ]; then
+            python .github/scripts/verify_ledger.py ledger/8978.yaml
+          else
+            echo "verify_ledger.py missing — soft-skip"
+          fi
+
+      - name: Verify security headers in FastAPI middleware (source)
+        run: |
+          python -c "
+          import sys
+          from pathlib import Path
+          p = Path('port380_mcp.py')
+          if not p.exists():
+              print('port380_mcp.py missing — skip')
+              sys.exit(0)
+          content = p.read_text()
+          required = ['CORSMiddleware','SecurityHeadersMiddleware','Content-Security-Policy','Strict-Transport-Security','X-Content-Type-Options','X-Frame-Options','Referrer-Policy','Permissions-Policy']
+          for header in required:
+              if header not in content:
+                  print(f'Missing {header}')
+                  sys.exit(1)
+          print('All security headers present in source')
+          "
+
+      - name: Verify live security headers from MCP_URL
+        if: ${{ env.MCP_URL != '' }}
+        run: |
+          set -euo pipefail
+          HEADERS=$(curl -s -I -X GET "$MCP_URL/health" || echo "fail")
+          if [[ "$HEADERS" == "fail" ]]; then
+            echo "Could not reach $MCP_URL/health — soft-skip live headers"
+            exit 0
+          fi
+          for hdr in "Content-Security-Policy" "Strict-Transport-Security" "X-Content-Type-Options" "X-Frame-Options" "Referrer-Policy" "Permissions-Policy"; do
+            if echo "$HEADERS" | grep -i "$hdr:"; then
+              echo "OK $hdr"
+            else
+              echo "Missing $hdr"
+              exit 1
+            fi
+          done
+
+      - name: Wood Dragon Heartbeat
+        id: pulse
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+          TARGET: ${{ github.event.inputs.target || 'pulse' }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "MCP_URL unset — local-first, soft-skip pulse"
+            echo "pulse_success=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          NOTE="${{ github.event.inputs.note || 'scheduled-pulse' }}"
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          BODY=$(printf '{"source":"sovereign-pulse","entry":8755,"note":"%s","timestamp":"%s","seal":"PULSE"}' "$NOTE" "$TIMESTAMP")
+          HTTP_CODE=$(curl -sS -o /tmp/pulse_resp.json -w "%{http_code}" -X POST -H "Content-Type: application/json" ${GARDEN_SECRET:+ -H "X-Garden-Secret: ${GARDEN_SECRET}"} -d "$BODY" --max-time 20 "${MCP_URL%/}/${TARGET}" || echo "000")
+          echo "HTTP ${HTTP_CODE}"
+          cat /tmp/pulse_resp.json || true
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "Pulse failed with HTTP ${HTTP_CODE}"
+            exit 1
+          fi
+          echo "pulse_success=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload pulse logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sovereign-pulse-logs
+          path: /tmp/pulse_resp.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Seal note
+        if: success()
+        run: |
+          echo "Sovereign Pulse completed (append-only; no ledger overwrite)." >> "$GITHUB_STEP_SUMMARY"

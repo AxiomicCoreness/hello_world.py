@@ -1,0 +1,30 @@
+# Gemini daemon image — integrated Garden surface, not a separate product
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Optional GitHub CLI for codespace list (skip soft if absent)
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/* || true
+
+COPY quantum/gemini_daemon.py /app/quantum/gemini_daemon.py
+COPY quantum/__init__.py /app/quantum/__init__.py
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    DAEMON_CHECK_INTERVAL=60 \
+    CODESPACE_IDLE_TIMEOUT_MINUTES=30 \
+    CODESPACE_WARNING_MIN=5 \
+    GEMINI_HANDOFF=false \
+    DAEMON_METRICS_PATH=/tmp/gemini_daemon.prom
+
+CMD ["python", "-m", "quantum.gemini_daemon"]

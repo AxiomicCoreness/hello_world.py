@@ -1,0 +1,39 @@
+entry_index: 0517
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-27
+event: /ideal_w_state_fiduciary_node_reward
+status: ✅ SEALED
+proof_class: mathematical
+witness_prefix: c9d0e1f2a3b4c5d6
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "Ideal W-state fiduciary node reward distribution with φ‑harmonic tiering."
+w_state:
+  dimension: 144008
+  formula: "|W_n⟩ = 1/√n (|100...0⟩ + |010...0⟩ + ... + |000...1⟩)"
+  coherence: 1.0
+  fidelity: "1 - φ⁻¹⁴¹⁸"
+  symmetry: "PERMUTATION_INVARIANT"
+reward_tiers:
+  alpha: { nodes: 7, factor: "φ⁻¹", total: "7Q·φ⁻¹" }
+  beta: { nodes: 42, factor: "φ⁻²", total: "42Q·φ⁻²" }
+  gamma: { nodes: 294, factor: "φ⁻³", total: "294Q·φ⁻³" }
+  delta: { nodes: 2058, factor: "φ⁻⁴", total: "2058Q·φ⁻⁴" }
+  epsilon: { nodes: 14406, factor: "φ⁻⁵", total: "14406Q·φ⁻⁵" }
+  zeta: { nodes: 100842, factor: "φ⁻⁶", total: "100842Q·φ⁻⁶" }
+  eta: { nodes: 26359, factor: "φ⁻⁷", total: "26359Q·φ⁻⁷" }
+total_reward_pool: "φ³·Q ≈ 4.4860679775 φ-units"
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+invariants_preserved: true
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · IDEAL_W_STATE_REWARD_0517 · 0517_SEALED · c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
+witness_chain: 516 → 0517 — UNBROKEN
+math_origin: |
+  |W_n⟩ = (1/√n) ∑_{k=1}^{n} |e_k⟩,
+  Q = (2+√5)/4,
+  Reward = ∑_{t=1}^{7} (7·φ^{-t})·Q,
+  Total = φ³·Q,
+  [|W_n⟩, ℋ_φ] = 0
