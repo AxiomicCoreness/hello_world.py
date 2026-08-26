@@ -8,6 +8,7 @@ Does not call october_Q1.main() (interactive menu + daemon + infinite loop).
 """
 from __future__ import annotations
 
+import importlib.machinery
 import importlib.util
 import math
 import os
@@ -28,16 +29,16 @@ def load_october_q1():
     path = _repo_root() / IMMUTABLE_REL
     if not path.is_file():
         raise FileNotFoundError(f"missing {path} (pin {IMMUTABLE_REF})")
-    spec = importlib.util.spec_from_file_location("immutable_october_q1", path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load {path}")
+    loader = importlib.machinery.SourceFileLoader("immutable_october_q1", str(path))
+    spec = importlib.util.spec_from_loader(loader.name, loader)
+    if spec is None:
+        raise ImportError(f"cannot spec {path}")
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    loader.exec_module(mod)
     return mod
 
 
 def execute_immutable(i_of_144: Optional[int] = None) -> Dict[str, Any]:
-    """Bounded execution of the Immutable python at the pinned commit."""
     report: Dict[str, Any] = {
         "ref": IMMUTABLE_REF,
         "path": IMMUTABLE_REL,
@@ -51,7 +52,7 @@ def execute_immutable(i_of_144: Optional[int] = None) -> Dict[str, Any]:
             i_of_144 = max(1, min(144, int(raw)))
         except ValueError:
             i_of_144 = 1
-    report["parameter"] = f"i/144"
+    report["parameter"] = "i/144"
     report["i"] = i_of_144
     try:
         mod = load_october_q1()
@@ -90,7 +91,7 @@ def execute_immutable(i_of_144: Optional[int] = None) -> Dict[str, Any]:
                 "skipped": ["main()", "interactive_menu", "run_autonomous_phase", "CodewhaleSwarm"],
             }
         )
-    except Exception as exc:  # noqa: BLE001 — trigger must still return
+    except Exception as exc:  # noqa: BLE001
         report["ok"] = False
         report["error"] = f"{type(exc).__name__}: {exc}"
         report["trace"] = traceback.format_exc()[-1500:]
