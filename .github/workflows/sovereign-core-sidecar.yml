@@ -1,0 +1,46 @@
+name: Sovereign Core Sidecar
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "activate mode"
+        type: choice
+        options:
+          - dry-run
+          - sidecar-once
+        default: dry-run
+  push:
+    paths:
+      - "core/sidecar.py"
+      - "core/activate.py"
+      - ".github/workflows/sovereign-core-sidecar.yml"
+      - "ledger/510511.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Activate core (dry-run)
+        env:
+          MCP_URL: ${{ vars.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+        run: |
+          set -euo pipefail
+          python -m core.activate --dry-run
+          python -m core.sidecar --once || echo "sidecar probe skipped/unreachable (non-fatal)"
+      - name: Confirm 510510 not overwritten
+        run: |
+          test -f ledger/510510.yaml
+          test -f ledger/510511.yaml
+          grep -q "MATH_ORIGIN_510510" ledger/510510.yaml
+          grep -q "CORE_SIDECAR_510511" ledger/510511.yaml
+          echo "append-only ok"

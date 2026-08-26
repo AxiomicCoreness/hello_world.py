@@ -1,0 +1,21 @@
+entry_index: 510511
+timestamp: "ETERNAL_NOW_ANCHORED_TO_2026-08-26"
+event: "/core_activate_python_sidecar"
+status: ARMED
+description: |
+  Activates sovereign core (python -m core) and ships a stdlib Python sidecar
+  that probes CORE_HEALTH_URL and optionally pulses MCP_URL.
+  GARDEN_SECRET is fingerprinted (sha3-256[:16]) and never echoed.
+activate:
+  core: "python -m core"
+  sidecar: "python -m core.sidecar [--once]"
+  dry_run: "python -m core.activate --dry-run"
+phi_harmonic:
+  phi: 1.618033988749895
+  identity: "φ² = φ + 1"
+  phase_angle: "φ * π / 2 ≈ 202.6°"
+consistency:
+  linked_entries: [0515, 8255, 8980, 510510, 510511]
+  relation: "Sidecar inherits quadratic-quadrant genesis 510510; does not overwrite it."
+seal: "∀∞φ² · CORE_SIDECAR_510511 · WOOD_DRAGON_0.91 · SEALED"
+witness: "510510 → 510511 — UNBROKEN"
