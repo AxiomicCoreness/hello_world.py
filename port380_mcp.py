@@ -1,14 +1,112 @@
-# DEPRECATED - Entry 8845
-# Moved to: quantum/deepseek_mesh/endpoint.py
+"""
+Port 380 MCP Gateway — FastAPI surface.
+Validates X-Garden-Secret, proxies OAuth via quantum.mcp_connector.
 
-import warnings
+Seal: ∀∞φ² · PORT380_MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
+"""
+
+from __future__ import annotations
+
+import hmac
 import os
-from fastapi import Header, HTTPException
-warnings.warn("port380_mcp.py is deprecated. Use quantum/deepseek_mesh/endpoint.py", DeprecationWarning)
-from quantum.deepseek_mesh.endpoint import *
-GARDEN_SECRET = os.environ.get("GARDEN_SECRET")
+from typing import Any, Dict, Optional
+
+from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+from quantum.mcp_connector import MCPConnector, health_check, introspect_token
+
+GARDEN_SECRET = os.getenv("GARDEN_SECRET")
+MCP_URL = os.getenv("MCP_URL", "https://api.sovereign.garden/380")
+
+connector = MCPConnector()
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response: Response = await call_next(request)
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        return response
+
+
+app = FastAPI(title="Port 380 MCP Gateway")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "https://api.sovereign.garden").split(","),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type", "X-Garden-Secret"],
+)
+app.add_middleware(SecurityHeadersMiddleware)
+
+
+def validate_secret(x_garden_secret: str = Header(..., alias="X-Garden-Secret")) -> bool:
+    if not GARDEN_SECRET:
+        raise HTTPException(status_code=500, detail="GARDEN_SECRET not configured")
+    if not hmac.compare_digest(x_garden_secret.encode("utf-8"), GARDEN_SECRET.encode("utf-8")):
+        raise HTTPException(status_code=401, detail="Invalid secret")
+    return True
+
+
+@app.get("/health")
+async def health() -> Dict[str, Any]:
+    return {
+        "status": "ok",
+        "connector": health_check(),
+        "mcp_url": MCP_URL,
+        "seal": "∀∞φ² · PORT380_HEALTH · SEALED",
+    }
+
 
 @app.post("/pulse")
-async def pulse(payload: dict, x_garden_secret: str = Header(...)):
-    if GARDEN_SECRET and x_garden_secret != GARDEN_SECRET:
-        raise HTTPException(status_code=401, detail="Invalid secret")
+async def pulse(
+    payload: Optional[Dict[str, Any]] = None,
+    _: bool = Depends(validate_secret),
+) -> Dict[str, Any]:
+    return {
+        "message": "Pulse received",
+        "source": (payload or {}).get("source", "unknown"),
+        "seal": "∀∞φ² · PULSE_ACCEPTED",
+    }
+
+
+@app.post("/oauth/token")
+async def oauth_token(body: Dict[str, Any]) -> Dict[str, Any]:
+    client_id = str(body.get("client_id", ""))
+    client_secret = str(body.get("client_secret", ""))
+    scope = str(body.get("scope", ""))
+    if not client_id or not client_secret:
+        raise HTTPException(status_code=400, detail="client_id and client_secret required")
+    ok = connector.authenticate(client_id, client_secret, scope)
+    if not ok:
+        raise HTTPException(status_code=401, detail="connector authentication failed")
+    return {"authenticated": True, "token_present": bool(connector.token)}
+
+
+@app.post("/oauth/introspect")
+async def oauth_introspect(
+    body: Dict[str, Any],
+    _: bool = Depends(validate_secret),
+) -> Dict[str, Any]:
+    token = str(body.get("token") or connector.token or "")
+    if not token:
+        raise HTTPException(status_code=400, detail="token required")
+    return introspect_token(token)
+
+
+@app.post("/oauth/sign")
+async def oauth_sign(
+    payload: Dict[str, Any],
+    _: bool = Depends(validate_secret),
+) -> Dict[str, Any]:
+    signed = connector.sign(payload)
+    if signed is None:
+        raise HTTPException(status_code=401, detail="connector not authenticated")
+    return signed

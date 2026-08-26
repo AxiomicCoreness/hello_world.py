@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: port-380-gate
+  namespace: garden
   labels:
     app: port-380-gate
     entry: "314"
@@ -30,6 +31,33 @@ spec:
               value: "0.0.0.0"
             - name: PORT380_PORT
               value: "380"
+            - name: MCP_URL
+              value: "https://api.sovereign.garden/380"
+            - name: MCP_CONNECTOR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_CONNECTOR_URL
+            - name: MCP_CONNECTOR_ENDPOINTS
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_CONNECTOR_ENDPOINTS
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: GARDEN_SECRET
+            - name: MCP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: MCP_CLIENT_ID
+            - name: MCP_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: MCP_CLIENT_SECRET
           readinessProbe:
             httpGet:
               path: /health
