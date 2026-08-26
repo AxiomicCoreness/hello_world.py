@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Port 380 MCP Gateway — Sovereign Pulse Endpoint
+Port 380 MCP Gateway — local-first sovereign pulse (no Render).
 Seal: ∀∞φ² · PORT380_MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
@@ -9,6 +9,13 @@ import hmac
 import os
 from typing import Any, Dict, Optional
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,10 +23,12 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from quantum.mcp_connector import MCPConnector, health_check, introspect_token
+from quantum.provider_httpx import chat as provider_chat
+from quantum.provider_httpx import provider_status
 
 GARDEN_SECRET = os.getenv("GARDEN_SECRET", "")
-MCP_URL = os.getenv("MCP_URL", "https://api.sovereign.garden/380")
-MCP_CONNECTOR_URL = os.getenv("MCP_CONNECTOR_URL", "http://localhost:8089")
+MCP_URL = os.getenv("MCP_URL", "http://127.0.0.1:380")
+MCP_CONNECTOR_URL = os.getenv("MCP_CONNECTOR_URL", "http://127.0.0.1:8089")
 
 connector = MCPConnector(base_url=MCP_CONNECTOR_URL)
 
@@ -36,10 +45,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-app = FastAPI(title="Port 380 MCP Gateway", version="1.0")
+app = FastAPI(title="Port 380 MCP Gateway", version="1.1")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "https://api.sovereign.garden").split(","),
+    allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "http://127.0.0.1:380").split(","),
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type", "X-Garden-Secret"],
 )
@@ -63,6 +72,7 @@ async def health() -> Dict[str, Any]:
         "connector": health_check(),
         "mcp_url": MCP_URL,
         "mcp_connector_url": MCP_CONNECTOR_URL,
+        "providers": provider_status(),
         "seal": "∀∞φ² · PORT380_HEALTH · SEALED",
     }
 
@@ -81,6 +91,18 @@ async def pulse(
         "note": body.get("note", "scheduled-pulse"),
         "seal": "∀∞φ² · PULSE_ACCEPTED",
     }
+
+
+@app.post("/llm/chat")
+async def llm_chat(
+    body: Dict[str, Any],
+    _: bool = Depends(verify_garden_secret),
+) -> Dict[str, Any]:
+    provider = str(body.get("provider", "deepseek"))
+    messages = body.get("messages") or [{"role": "user", "content": str(body.get("prompt", ""))}]
+    if not isinstance(messages, list):
+        raise HTTPException(status_code=400, detail="messages must be a list")
+    return provider_chat(provider, messages, body.get("model"))
 
 
 @app.post("/oauth/token")
@@ -121,3 +143,14 @@ async def oauth_sign(
 @app.get("/qiskit/health")
 async def qiskit_health() -> Dict[str, Any]:
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "port380_mcp:app",
+        host=os.getenv("PORT380_HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT380_PORT", "380")),
+        reload=False,
+    )

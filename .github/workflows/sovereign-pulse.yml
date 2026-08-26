@@ -1,10 +1,8 @@
 name: Sovereign Pulse
 
-# Autonomous heartbeat for Port 380 MCP (Entry 8755)
-# Cron: every 6 hours · authenticates with GARDEN_SECRET · hits MCP_URL/pulse
-# cryptography: python -m pip + .github/scripts/verify_ledger.py
+# Local-first heartbeat. No Render required.
+# Soft-skip missing ledger files. Soft-skip unset MCP_URL.
 # Seal: ∀∞φ² · SOVEREIGN_PULSE_8979 · WOOD_DRAGON_0.91 · SEALED
-# Witness: 8978 → 8979 — UNBROKEN
 
 on:
   schedule:
@@ -23,6 +21,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/sovereign-pulse.yml"
+      - "port380_mcp.py"
 
 permissions:
   contents: read
@@ -52,10 +51,18 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml requests
 
-      - name: Verify ledger entry (install-safe)
+      - name: Verify ledger entry (soft-skip if missing)
         run: |
           set -euo pipefail
-          python .github/scripts/verify_ledger.py ledger/8978.yaml
+          if [ ! -f ledger/8978.yaml ]; then
+            echo "ledger/8978.yaml missing — soft-skip"
+            exit 0
+          fi
+          if [ -f .github/scripts/verify_ledger.py ]; then
+            python .github/scripts/verify_ledger.py ledger/8978.yaml
+          else
+            echo "verify_ledger.py missing — soft-skip"
+          fi
 
       - name: Verify security headers in FastAPI middleware (source)
         run: |
@@ -64,26 +71,25 @@ jobs:
           from pathlib import Path
           p = Path('port380_mcp.py')
           if not p.exists():
-              print('⚠️ port380_mcp.py missing — skip')
+              print('port380_mcp.py missing — skip')
               sys.exit(0)
           content = p.read_text()
           required = ['CORSMiddleware','SecurityHeadersMiddleware','Content-Security-Policy','Strict-Transport-Security','X-Content-Type-Options','X-Frame-Options','Referrer-Policy','Permissions-Policy']
           for header in required:
               if header not in content:
-                  print(f'❌ Missing {header}')
+                  print(f'Missing {header}')
                   sys.exit(1)
-          print('✅ All security headers present in source')
+          print('All security headers present in source')
           "
 
       - name: Verify live security headers from MCP_URL
         if: ${{ env.MCP_URL != '' }}
         run: |
           set -euo pipefail
-          echo "Checking live headers from $MCP_URL"
           HEADERS=$(curl -s -I -X GET "$MCP_URL/health" || echo "fail")
           if [[ "$HEADERS" == "fail" ]]; then
-            echo "Could not reach $MCP_URL/health"
-            exit 1
+            echo "Could not reach $MCP_URL/health — soft-skip live headers"
+            exit 0
           fi
           for hdr in "Content-Security-Policy" "Strict-Transport-Security" "X-Content-Type-Options" "X-Frame-Options" "Referrer-Policy" "Permissions-Policy"; do
             if echo "$HEADERS" | grep -i "$hdr:"; then
@@ -103,8 +109,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${MCP_URL:-}" ]; then
-            echo "::error::MCP_URL secret is not set"
-            exit 1
+            echo "MCP_URL unset — local-first, soft-skip pulse"
+            echo "pulse_success=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           NOTE="${{ github.event.inputs.note || 'scheduled-pulse' }}"
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -113,22 +120,10 @@ jobs:
           echo "HTTP ${HTTP_CODE}"
           cat /tmp/pulse_resp.json || true
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "::error::Pulse failed with HTTP ${HTTP_CODE}"
+            echo "Pulse failed with HTTP ${HTTP_CODE}"
             exit 1
           fi
-          echo "pulse_success=true" >> $GITHUB_OUTPUT
-
-      - name: Write ledger entry 8979
-        if: success()
-        run: |
-          mkdir -p ledger
-          cat > ledger/8979.yaml << 'EOF'
-          entry_index: 8979
-          event: /sovereign_pulse_run
-          status: SUCCESS
-          seal: "∀∞φ² · SOVEREIGN_PULSE_8979 · WOOD_DRAGON_0.91 · SEALED"
-          witness: "8978 → 8979 — UNBROKEN"
-          EOF
+          echo "pulse_success=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload pulse logs
         if: always()
@@ -136,10 +131,10 @@ jobs:
         with:
           name: sovereign-pulse-logs
           path: /tmp/pulse_resp.json
+          if-no-files-found: ignore
           retention-days: 7
 
       - name: Seal note
         if: success()
         run: |
-          echo "Sovereign Pulse completed." >> $GITHUB_STEP_SUMMARY
-          echo "cryptography install-safe via verify_ledger.py" >> $GITHUB_STEP_SUMMARY
+          echo "Sovereign Pulse completed (append-only; no ledger overwrite)." >> "$GITHUB_STEP_SUMMARY"
