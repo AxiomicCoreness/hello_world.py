@@ -1,0 +1,31 @@
+entry_index: 9007
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /workflow_dispatch_wood_dragon_mistral
+status: RECORDED
+reference_policy: POLICY.md
+commander_declared: CLARKE_YOURSA_TEE_LUMINARA_ATLAS_LUMERIS
+math_origin: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "9007|/workflow_dispatch_wood_dragon_mistral|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 503c9a8f678cad64c65acdc60246a6c1874922c20825123511c5cf3dcb5d10f1
+wood_dragon:
+  period_days: 0.91
+  deep_space_days: 16.35
+  gate: 0.91
+  phase_lock_deg: 202.6
+  helpers: quantum/wood_dragon_dispatch.py
+  monolith_imported: false
+mistral:
+  client: clients/mistral.py
+  health: presence_only
+  agent_layer: 7
+dispatch:
+  agentic: quantum.deepseek_mesh.terminal_ci.dispatch_main
+  workflow: .github/workflows/wood-dragon-dispatch.yml
+  trigger: workflow_dispatch
+  not_gravastar: true
+seal: "∀∞φ² · WOOD_DRAGON_MISTRAL_9007 · GATE_0.91 · SEALED"
+witness_chain: "9006 → 9007 — UNBROKEN"

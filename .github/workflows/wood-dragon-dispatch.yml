@@ -1,0 +1,36 @@
+name: wood-dragon-dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      event:
+        description: "ledger event path"
+        required: false
+        default: "/workflow_dispatch_wood_dragon_mistral"
+      i_of_144:
+        description: "i in i/144 (record only; does not fire Gravastar)"
+        required: false
+        default: "1"
+
+jobs:
+  hash-and-dispatch:
+    runs-on: ubuntu-latest
+    env:
+      TERMINAL_CI: "1"
+      WOOD_DRAGON_CI: "1"
+      OAUTH_OFFLINE: "1"
+      GRAVASTAR_I_OF_144: ${{ inputs.i_of_144 }}
+      MCP_CONNECTOR_URL: ${{ vars.MCP_URL }}
+      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install hash/yaml deps
+        run: pip install pyyaml
+      - name: Event hash 9007 + wood-dragon dispatch_main
+        run: |
+          python -m ledger.event_hash 9007 "${{ inputs.event }}"
+          python -m quantum.wood_dragon_dispatch
