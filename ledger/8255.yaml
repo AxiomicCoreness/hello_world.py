@@ -1,0 +1,34 @@
+entry_index: 8255
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26Z
+event: /mcp_connector_garden_secrets_consistency
+status: SEALED
+proof_class: structural
+witness_prefix: 8255825582558255
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "High-range twin of 0515. Records MCP connector + Garden Secrets consistency. No live secret values."
+twin_entry: 515
+related_seal: 9002
+artifacts:
+  - quantum/mcp_connector.py
+  - port380_mcp.py
+  - k8s/configmap-mcp-connector.yaml
+  - k8s/secret-garden.yaml
+  - k8s/deployment-port-380.yaml
+  - garden-secrets/
+  - ledger/0515.yaml
+env_keys_named_only:
+  - MCP_CONNECTOR_URL
+  - GARDEN_SECRET
+  - MCP_URL
+  - MCP_CLIENT_ID
+  - MCP_CLIENT_SECRET
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · MCP_GARDEN_CONSISTENCY_8255 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: 8254 → 8255 — UNBROKEN
+math_origin: "Q_INVARIANT = (2+√5)/4; φ² = φ + 1; MCP_CONNECTOR_URL ∨ GARDEN_SECRET"
