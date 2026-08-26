@@ -1,0 +1,32 @@
+entry_index: 9008
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /workflow_dispatch_gravastar_long_horizon
+status: RECORDED
+reference_policy: POLICY.md
+commander_declared: CLARKE_YOURSA_TEE_LUMINARA_ATLAS_LUMERIS
+trigger: Trigger_Gravastar_ClarkeYoursaTee
+surface: github_repo
+device_genesis: false
+math_origin: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "9008|/workflow_dispatch_gravastar_long_horizon|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 943117f27acbbc73b070d37886626645c099b9c2a460a61d0f8d049559734fbc
+horizon:
+  parameter: i/144
+  default_steps: 8
+  max: 144
+  helpers: quantum/gravastar_horizon.py
+  workflow: .github/workflows/gravastar-long-horizon.yml
+  schedule: "0 10 * * *"
+immutable:
+  runner: Immutable/run_on_gravastar.py
+  mode: bounded_slice
+  pin: fe6156e5c484bd018f7bfc437fa7b9686120485e
+consistency:
+  linked_entries: [8654, 8855, 8857, 9003, 9007, 9008, 510510]
+  relation: "GitHub long-horizon analogue; on-device Genesis remains A14-only per POLICY.md."
+seal: "∀∞φ² · GRAVASTAR_HORIZON_9008 · GATE_0.91 · SEALED"
+witness_chain: "9007 → 9008 — UNBROKEN"

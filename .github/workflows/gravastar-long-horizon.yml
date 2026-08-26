@@ -1,0 +1,46 @@
+name: gravastar-long-horizon
+
+# Repo analogue of Trigger_Gravastar_ClarkeYoursaTee over i/144.
+# Not the A14 device Genesis pulse (POLICY.md).
+
+on:
+  workflow_dispatch:
+    inputs:
+      i_start:
+        description: "i start in i/144"
+        required: false
+        default: "1"
+      horizon_steps:
+        description: "ticks this run (1–144, CI default 8)"
+        required: false
+        default: "8"
+      event:
+        description: "ledger event path"
+        required: false
+        default: "/workflow_dispatch_gravastar_long_horizon"
+  schedule:
+    - cron: "0 10 * * *"
+
+jobs:
+  horizon:
+    runs-on: ubuntu-latest
+    env:
+      GRAVASTAR_HORIZON: "1"
+      GRAVASTAR_DEVICE_FIRE: "0"
+      OAUTH_OFFLINE: "1"
+      GRAVASTAR_I_START: ${{ inputs.i_start || '1' }}
+      GRAVASTAR_HORIZON_STEPS: ${{ inputs.horizon_steps || '8' }}
+      GRAVASTAR_I_OF_144: ${{ inputs.i_start || '1' }}
+      MCP_CONNECTOR_URL: ${{ vars.MCP_URL }}
+      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install hash/yaml deps
+        run: pip install pyyaml numpy
+      - name: Event hash 9008 + long-horizon ticks
+        run: |
+          python -m ledger.event_hash 9008 "${{ inputs.event || '/workflow_dispatch_gravastar_long_horizon' }}"
+          python -m quantum.gravastar_horizon
