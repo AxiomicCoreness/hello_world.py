@@ -3,12 +3,13 @@ name: Sovereign Python Package
 # Builds and tests the Python package, then hands over to MCP and deploys.
 # Includes Ed25519 signature verification + CORS/CSP/HSTS checks (source + live).
 # Integrates DeepSeek MCP and OIDC cloud federation.
+# Adds Grok, Mistral, DeepSeek API smoke tests (conditional on keys).
 # Seal: ∀∞φ² · SOVEREIGN_PACKAGE_8980 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8979 → 8980 — UNBROKEN
 
 on:
   push:
-    branches: [main, master, deepseek]
+    branches: [main, master, deepseek, grok, mistral]
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -29,8 +30,9 @@ permissions:
   id-token: write
 
 env:
-  MCP_URL: ${{ secrets.MCP_URL }}
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  MCP_URL: ${{ vars.MCP_URL }}          # repository variable
+  MCP_CONNECTOR_URL: ${{ vars.MCP_CONNECTOR_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}   # secret
 
 jobs:
   verify-integrity:
@@ -103,6 +105,46 @@ jobs:
           fi
           echo "✅ All live security headers verified."
 
+  # ── Conditional API smoke tests (Grok, Mistral, DeepSeek) ──────────
+  api-smoke:
+    runs-on: ubuntu-latest
+    needs: verify-integrity
+    if: ${{ secrets.GROK_API_KEY != '' || secrets.MISTRAL_API_KEY != '' || secrets.DEEPSEEK_API_KEY != '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [grok, mistral, deepseek]
+    env:
+      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install --quiet requests
+      - name: Smoke test ${{ matrix.provider }} API
+        run: |
+          set -euo pipefail
+          case "${{ matrix.provider }}" in
+            grok)
+              if [ -z "${GROK_API_KEY:-}" ]; then echo "⏭️ Grok key not set — skipping"; exit 0; fi
+              curl -s -o /dev/null -w "Grok HTTP %{http_code}\n" -H "Authorization: Bearer $GROK_API_KEY" https://api.x.ai/v1/models || echo "⚠️ Grok test failed (non-fatal)"
+              ;;
+            mistral)
+              if [ -z "${MISTRAL_API_KEY:-}" ]; then echo "⏭️ Mistral key not set — skipping"; exit 0; fi
+              curl -s -o /dev/null -w "Mistral HTTP %{http_code}\n" -H "Authorization: Bearer $MISTRAL_API_KEY" https://api.mistral.ai/v1/models || echo "⚠️ Mistral test failed (non-fatal)"
+              ;;
+            deepseek)
+              if [ -z "${DEEPSEEK_API_KEY:-}" ]; then echo "⏭️ DeepSeek key not set — skipping"; exit 0; fi
+              curl -s -o /dev/null -w "DeepSeek HTTP %{http_code}\n" -H "Authorization: Bearer $DEEPSEEK_API_KEY" https://api.deepseek.com/v1/models || echo "⚠️ DeepSeek test failed (non-fatal)"
+              ;;
+          esac
+          # For real smoke you might call a minimal completion; this is a network check.
+
   build:
     runs-on: ubuntu-latest
     needs: verify-integrity
@@ -138,7 +180,10 @@ jobs:
               sleep $delay
             done
           }
-          retry bash -c "python -m pip install --upgrade pip && if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && pip install flake8 pytest build twine"
+          retry bash -c "python -m pip install --upgrade pip && \
+            if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi && \
+            if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && \
+            pip install flake8 pytest build twine"
 
       - name: Lint with flake8 (report strict; non-blocking)
         run: |
@@ -218,6 +263,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - uses: actions/checkout@v4
       - name: Call OIDC cloud providers workflow
@@ -231,14 +278,14 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
-      - name: Port 380 MCP handover
+      - name: Port 380 MCP handover (skip if no API)
         env:
-          MCP_URL: ${{ secrets.MCP_URL }}
+          MCP_URL: ${{ vars.MCP_URL }}          # variable
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
-          if [ -z "${MCP_URL:-}" ]; then
-            echo "MCP_URL empty — MCP handover skipped"
+          if [ -z "${MCP_URL:-}" ] || [ -z "${GARDEN_SECRET:-}" ]; then
+            echo "MCP_URL or GARDEN_SECRET missing — MCP handover skipped"
             exit 0
           fi
           TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -269,14 +316,14 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
-      - name: Restart uvicorn on Port 380 MCP gate
+      - name: Restart uvicorn on Port 380 MCP gate (skip if no API)
         env:
-          MCP_URL: ${{ secrets.MCP_URL }}
+          MCP_URL: ${{ vars.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
-          if [ -z "${MCP_URL:-}" ]; then
-            echo "MCP_URL not set — uvicorn restart skipped"
+          if [ -z "${MCP_URL:-}" ] || [ -z "${GARDEN_SECRET:-}" ]; then
+            echo "MCP_URL or GARDEN_SECRET missing — uvicorn restart skipped"
             exit 0
           fi
           echo "Requesting uvicorn restart at $MCP_URL/restart"
@@ -313,11 +360,14 @@ jobs:
           timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
           python_versions: ["3.10", "3.11"]
           oidc_federation: ${{ github.event.inputs.oidc_provider || 'offline' }}
-          mcp_handover: ${{ env.MCP_URL != '' && 'SENT' || 'SKIPPED' }}
-          deploy_restart: ${{ env.MCP_URL != '' && 'REQUESTED' || 'SKIPPED' }}
+          mcp_handover: ${{ env.MCP_URL != '' && env.GARDEN_SECRET != '' && 'SENT' || 'SKIPPED' }}
+          deploy_restart: ${{ env.MCP_URL != '' && env.GARDEN_SECRET != '' && 'REQUESTED' || 'SKIPPED' }}
           security_headers_source: VERIFIED
           security_headers_live: ${{ env.MCP_URL != '' && 'VERIFIED' || 'SKIPPED' }}
           ed25519_signatures: VERIFIED
+          grok_smoke: ${{ secrets.GROK_API_KEY != '' && 'RUN' || 'SKIPPED' }}
+          mistral_smoke: ${{ secrets.MISTRAL_API_KEY != '' && 'RUN' || 'SKIPPED' }}
+          deepseek_smoke: ${{ secrets.DEEPSEEK_API_KEY != '' && 'RUN' || 'SKIPPED' }}
           seal: "∀∞φ² · SOVEREIGN_PACKAGE_8980 · WOOD_DRAGON_0.91 · SEALED"
           witness: "8979 → 8980 — UNBROKEN"
           EOF
@@ -331,5 +381,5 @@ jobs:
           echo "🔐 Ed25519 signatures verified" >> $GITHUB_STEP_SUMMARY
           echo "🛡️ Security headers verified (source + live if MCP_URL set)" >> $GITHUB_STEP_SUMMARY
           echo "☁️ OIDC federation: ${{ github.event.inputs.oidc_provider || 'offline' }}" >> $GITHUB_STEP_SUMMARY
-          echo "🌀 MCP handover: ${{ env.MCP_URL != '' && 'SENT' || 'SKIPPED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "🌀 MCP handover: ${{ env.MCP_URL != '' && env.GARDEN_SECRET != '' && 'SENT' || 'SKIPPED' }}" >> $GITHUB_STEP_SUMMARY
           echo "🔗 Witness: 8979 → 8980 — UNBROKEN" >> $GITHUB_STEP_SUMMARY
