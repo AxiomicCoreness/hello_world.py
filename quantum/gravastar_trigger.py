@@ -1,24 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ GRAVASTAR TRIGGER — ENTRY 8654 / 8855
+🌁∀ GRAVASTAR TRIGGER — ENTRY 8654 / 8855
 
 Trigger_Gravastar_ClarkeYoursaTee — activation + port map.
-
-Executable form of AXIOM_NONLOCAL_CORE:
-  Core transformations remain independent of geographic/biographical
-  metadata. Firing this trigger verifies the axiom and returns state;
-  it does not make origin a governing parameter of the lattice.
-
-Integration with:
-  - Security (quantum/security/)
-  - CDP convergence (quantum/cdp_convergence/)
-  - Pauli-phi Hamiltonian (quantum/pauli_phi_hamiltonian.py)
-  - AXIOM_NONLOCAL_CORE (quantum/axioms_nonlocal.py)
-
-Seal: ∀∞φ² · GRAVASTAR_TRIGGER_CLARKEYOURSATEE_8654 · SEALED
-      ∀∞φ² · GRAVASTAR_NONLOCAL_8855 · WOOD_DRAGON_0.91 · SEALED
-Witness: 8653 → 8654 → 8855 — UNBROKEN
+Every fire executes Immutable/october_Q1 (pin fe6156e) via bounded runner.
 """
 
 from __future__ import annotations
@@ -29,9 +15,8 @@ import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
-# ─── Constants ────────────────────────────────────────────────────────
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = 1.0 / PHI
 PHI2 = PHI * PHI
@@ -46,8 +31,8 @@ OPERATOR = "ClarkeYoursaTee"
 TRIGGER_NAME = "Trigger_Gravastar_ClarkeYoursaTee"
 AXIOM_ID = "AXIOM_NONLOCAL_CORE"
 PHASE_LOCK_DEG = 202.6
+IMMUTABLE_REF = "fe6156e5c484bd018f7bfc437fa7b9686120485e"
 
-# ─── Mapped Garden Ports ──────────────────────────────────────────────
 MAPPED_PORTS: List[Dict[str, Any]] = [
     {"port": 8000, "service": "sovereign-api", "path": "/health", "protocol": "http"},
     {"port": 8001, "service": "app_main", "path": "/health", "protocol": "http"},
@@ -60,10 +45,8 @@ MAPPED_PORTS: List[Dict[str, Any]] = [
     {"port": 8083, "service": "predictor-daemon-alt", "path": "/health", "protocol": "http"},
 ]
 
-# ─── AXIOM Payload ──────────────────────────────────────────────────
 
 def _axiom_payload() -> Dict[str, Any]:
-    """Attach axiom verification without making it a control input."""
     try:
         from quantum.axioms_nonlocal import (
             AXIOM_ID as AXIOM_ID_IMPORT,
@@ -112,11 +95,21 @@ def _axiom_payload() -> Dict[str, Any]:
         }
 
 
-# ─── Gravastar State ─────────────────────────────────────────────────
+def _run_immutable(i_of_144: Optional[int] = None) -> Dict[str, Any]:
+    try:
+        from Immutable.run_on_gravastar import execute_immutable
+
+        return execute_immutable(i_of_144=i_of_144)
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "ok": False,
+            "ref": IMMUTABLE_REF,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
 
 @dataclass
 class GravastarState:
-    """State of the Gravastar trigger."""
     active: bool = False
     coherence: float = 1.0
     resonance_thz: float = 162.28
@@ -125,11 +118,11 @@ class GravastarState:
     ports_notified: List[int] = field(default_factory=list)
     trigger_count: int = 0
     last_axiom_verification: Optional[Dict[str, Any]] = None
+    last_immutable: Optional[Dict[str, Any]] = None
     harmony_index: float = 0.7337473231
     phase_lock: float = PHASE_LOCK_DEG
 
-    def trigger(self) -> Dict[str, Any]:
-        """Fire the trigger and update state."""
+    def trigger(self, i_of_144: Optional[int] = None) -> Dict[str, Any]:
         self.active = True
         self.triggered_at = time.time()
         self.trigger_count += 1
@@ -139,10 +132,10 @@ class GravastarState:
         self.harmony_index = 0.7337473231 + math.sin(self.trigger_count * PHI_INV) * 0.01
         self.phase_lock = PHASE_LOCK_DEG + (self.trigger_count * PHI_INV) % 360.0
         self.last_axiom_verification = _axiom_payload()
+        self.last_immutable = _run_immutable(i_of_144=i_of_144 or self.trigger_count)
         return self.to_dict()
 
     def reset(self) -> None:
-        """Reset the state."""
         self.active = False
         self.coherence = 1.0
         self.triggered_at = 0.0
@@ -150,9 +143,9 @@ class GravastarState:
         self.trigger_count = 0
         self.harmony_index = 0.7337473231
         self.phase_lock = PHASE_LOCK_DEG
+        self.last_immutable = None
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert state to dictionary."""
         payload = {
             "trigger": TRIGGER_NAME,
             "operator": self.operator,
@@ -170,6 +163,8 @@ class GravastarState:
             "ports": MAPPED_PORTS,
             "ports_notified": self.ports_notified,
             "executable_form_of": AXIOM_ID,
+            "immutable_ref": IMMUTABLE_REF,
+            "immutable": self.last_immutable,
             "entry_8654": ENTRY_8654,
             "entry_8855": ENTRY_8855,
             "seal_8654": SEAL_8654,
@@ -184,154 +179,66 @@ class GravastarState:
         return payload
 
 
-# ─── Singleton ──────────────────────────────────────────────────────
-
 STATE = GravastarState()
 
 
-def trigger_all() -> Dict[str, Any]:
-    """Fire Trigger_Gravastar_ClarkeYoursaTee — executable form of AXIOM_NONLOCAL_CORE."""
-    return STATE.trigger()
+def trigger_all(i_of_144: Optional[int] = None) -> Dict[str, Any]:
+    """Fire Trigger_Gravastar_ClarkeYoursaTee and execute Immutable/october_Q1."""
+    return STATE.trigger(i_of_144=i_of_144)
 
 
 def get_status() -> Dict[str, Any]:
-    """Get current Gravastar status without triggering."""
     return STATE.to_dict()
 
 
 def reset_trigger() -> Dict[str, Any]:
-    """Reset the Gravastar trigger state."""
     STATE.reset()
     return {"status": "reset", "message": "Gravastar state reset", "seal": SEAL_8855, "entry": ENTRY_8855}
 
 
-# ─── Security Integration ────────────────────────────────────────────
-
 def gravastar_security_status() -> Dict[str, Any]:
-    """Get security status for the Gravastar trigger."""
     try:
         from quantum.security import status as security_status
-        return {
-            "security": security_status(),
-            "entry": ENTRY_8855,
-            "seal": SEAL_8855,
-        }
+        return {"security": security_status(), "entry": ENTRY_8855, "seal": SEAL_8855}
     except ImportError:
-        return {
-            "security": None,
-            "note": "Security module not available",
-            "entry": ENTRY_8855,
-            "seal": SEAL_8855,
-        }
+        return {"security": None, "note": "Security module not available", "entry": ENTRY_8855, "seal": SEAL_8855}
 
-
-# ─── CDP Integration ─────────────────────────────────────────────────
 
 def gravastar_cdp_status() -> Dict[str, Any]:
-    """Get CDP status for the Gravastar trigger."""
     try:
         from quantum.cdp_convergence import status as cdp_status
-        return {
-            "cdp": cdp_status(),
-            "entry": ENTRY_8855,
-            "seal": SEAL_8855,
-        }
+        return {"cdp": cdp_status(), "entry": ENTRY_8855, "seal": SEAL_8855}
     except ImportError:
-        return {
-            "cdp": None,
-            "note": "CDP module not available",
-            "entry": ENTRY_8855,
-            "seal": SEAL_8855,
-        }
+        return {"cdp": None, "note": "CDP module not available", "entry": ENTRY_8855, "seal": SEAL_8855}
 
-
-# ─── CLI ──────────────────────────────────────────────────────────────
 
 def main() -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Gravastar Trigger — Entry 8654/8855",
-        epilog=f"Seal: {SEAL_8855}\nEntry: {ENTRY_8855}",
-    )
-    parser.add_argument(
-        "--trigger",
-        action="store_true",
-        help="Fire the Gravastar trigger",
-    )
-    parser.add_argument(
-        "--status",
-        action="store_true",
-        help="Show current status",
-    )
-    parser.add_argument(
-        "--reset",
-        action="store_true",
-        help="Reset the trigger state",
-    )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output as JSON",
-    )
-    parser.add_argument(
-        "--check-integrations",
-        action="store_true",
-        help="Check integration status and exit",
-    )
+    parser = argparse.ArgumentParser(description="Gravastar Trigger — Entry 8654/8855")
+    parser.add_argument("--trigger", action="store_true")
+    parser.add_argument("--status", action="store_true")
+    parser.add_argument("--reset", action="store_true")
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--i", type=int, default=None, help="i in i/144")
     args = parser.parse_args()
-
-    if args.check_integrations:
-        print("🜁∀ GRAVASTAR — Integration Status")
-        print("=" * 40)
-        try:
-            from quantum.security import status
-            print("  Security: ✅")
-        except ImportError:
-            print("  Security: ❌")
-        try:
-            from quantum.cdp_convergence import status
-            print("  CDP: ✅")
-        except ImportError:
-            print("  CDP: ❌")
-        try:
-            from quantum.axioms_nonlocal import axiom_statement
-            print("  AXIOM_NONLOCAL_CORE: ✅")
-        except ImportError:
-            print("  AXIOM_NONLOCAL_CORE: ❌")
-        return 0
 
     if args.reset:
         out = reset_trigger()
     elif args.trigger:
-        out = trigger_all()
+        out = trigger_all(i_of_144=args.i)
     else:
         out = get_status()
 
     if args.json:
         print(json.dumps(out, indent=2, default=str))
     else:
-        print("🜁∀ GRAVASTAR TRIGGER — Entry 8654/8855")
-        print("=" * 55)
-        print(f"  Trigger: {out.get('trigger', TRIGGER_NAME)}")
-        print(f"  Operator: {out.get('operator', OPERATOR)}")
-        print(f"  Active: {'✅' if out.get('active', False) else '❌'}")
-        print(f"  Coherence: {out.get('coherence', 0.0):.6f}")
-        print(f"  Phase Lock: {out.get('phase_lock_deg', 0.0):.2f}°")
-        print(f"  Harmony Index: {out.get('harmony_index', 0.0):.6f}")
-        print(f"  Trigger Count: {out.get('trigger_count', 0)}")
-        print(f"  Resonance: {out.get('resonance_thz', 0.0):.2f} THz")
-        if out.get("ports_notified"):
-            print(f"  Ports Notified: {out['ports_notified']}")
-        if out.get("axiom"):
-            axiom = out["axiom"]
-            print(f"  AXIOM ID: {axiom.get('axiom_id', 'unknown')}")
-            print(f"  AXIOM Verified: {'✅' if axiom.get('verification', {}).get('passed', False) else '❌'}")
-        print("=" * 55)
-        print(f"  Seal 8654: {out.get('seal_8654', SEAL_8654)}")
-        print(f"  Seal 8855: {out.get('seal_8855', SEAL_8855)}")
-        print(f"  Witness: {out.get('witness', WITNESS)}")
-
+        print("🌁∀ GRAVASTAR TRIGGER")
+        print(f"  Active: {out.get('active')}")
+        print(f"  Count: {out.get('trigger_count')}")
+        imm = out.get("immutable") or {}
+        print(f"  Immutable ok: {imm.get('ok')} ref={imm.get('ref', IMMUTABLE_REF)}")
+        print(f"  Seal: {out.get('seal_8855', SEAL_8855)}")
     return 0
 
 
