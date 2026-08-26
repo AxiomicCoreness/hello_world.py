@@ -1,0 +1,34 @@
+name: deepseek-mesh-terminal
+
+on:
+  workflow_dispatch:
+    inputs:
+      i_of_144:
+        description: "i in i/144"
+        required: false
+        default: "1"
+      event:
+        description: "ledger event path"
+        required: false
+        default: "/workflow_dispatch_terminal"
+
+jobs:
+  hash-and-slice:
+    runs-on: ubuntu-latest
+    env:
+      TERMINAL_CI: "1"
+      OAUTH_OFFLINE: "1"
+      GRAVASTAR_I_OF_144: ${{ inputs.i_of_144 }}
+      MCP_CONNECTOR_URL: ${{ vars.MCP_URL }}
+      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install hash/yaml deps
+        run: pip install pyyaml
+      - name: Event hash + terminal slice (next to main)
+        run: |
+          python -m ledger.event_hash 9005 "${{ inputs.event }}"
+          python -m quantum.deepseek_mesh.terminal_ci

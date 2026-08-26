@@ -11,5 +11,11 @@ immutable:
   runner: Immutable/run_on_gravastar.py
   mode: bounded_slice
   skipped: [main, interactive_menu, run_autonomous_phase, CodewhaleSwarm]
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "9004|/immutable_october_q1_bound_to_gravastar|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: d0170b3c42ce352ffe5649536198ad8d840260a88187aea77607a08647a29b8e
 seal: "∀∞φ² · IMMUTABLE_ON_GRAVASTAR_9004 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "9003 → 9004 — UNBROKEN"

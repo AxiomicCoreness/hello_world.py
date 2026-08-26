@@ -1,0 +1,19 @@
+entry_index: 9005
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /deepseek_mesh_terminal_env
+status: CONFIGURED
+reference_policy: POLICY.md
+file: quantum/deepseek_mesh/terminal.py
+env_module: quantum/deepseek_mesh/env.py
+ci_entry: quantum/deepseek_mesh/terminal_ci.py
+workflow: .github/workflows/deepseek-mesh-terminal.yml
+note: "workflow_dispatch hashes with hashlib.sha3_256 adjacent to terminal.main; does not invoke interactive main()"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "9005|/deepseek_mesh_terminal_env|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 82845b0a6bcc753f287eb3968d2c70a5001d32cbe61b2488cf2c98eb3e4c9b8c
+math_origin: "Δ = b² − 4ac ∧ θ = φ·π/2 ∧ H = SHA3-256"
+seal: "∀∞φ² · TERMINAL_ENV_9005 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: "9004 → 9005 — UNBROKEN"
