@@ -5,6 +5,8 @@ name: Sovereign CI/CD
 # Integrates DeepSeek MCP and OIDC cloud federation.
 # Seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8976 → 8977 — UNBROKEN
+# Node-20 deprecated – all actions use Node-20 compatible versions (checkout@v4, setup-python@v5, upload-artifact@v4)
+# No external retry action – inline bash retry used throughout.
 
 on:
   push:
@@ -13,14 +15,12 @@ on:
       - "**.py"
       - "requirements*.txt"
       - ".github/workflows/sovereign_cicd.yml"
-      - ".github/workflows/pytest.yml"          # <-- added
   pull_request:
     branches: [main]
     paths:
       - "**.py"
       - "requirements*.txt"
       - ".github/workflows/sovereign_cicd.yml"
-      - ".github/workflows/pytest.yml"          # <-- added
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -138,6 +138,7 @@ jobs:
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
       OIDC_CLIENT_SECRET: "ci_dummy_secret_32chars_minimum_xx"
+      # Optional DeepSeek — empty keeps offline; never required for green CI
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL || 'https://api.deepseek.com' }}
       DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL || 'deepseek-chat' }}
@@ -152,7 +153,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies (with inline retry)
+      - name: Install dependencies (with inline bash retry)
         run: |
           retry() {
             local n=1
@@ -170,6 +171,7 @@ jobs:
             if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi && \
             pip install cryptography pyyaml requests flake8 pytest || true"
 
+      # ─── DeepSeek MCP pulse (if MCP_URL set) ───
       - name: MCP pulse (if MCP_URL set)
         if: ${{ env.MCP_URL != '' }}
         run: |
@@ -180,21 +182,25 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"source":"sovereign-cicd","note":"test pulse"}' || echo "⚠️ MCP pulse failed (non-fatal)"
 
+      # ─── Linting ────────────────────────────────────────────────
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
 
+      # ─── Pytest ────────────────────────────────────────────────
       - name: Run pytest
         id: pytest
         run: |
           pytest -q --tb=line || pytest tests -q --tb=line
           echo "pytest_passed=true" >> $GITHUB_OUTPUT
 
+      # ─── Import checks ──────────────────────────────────────────
       - name: Import check (hello_world + routes)
         run: |
           python -c "from hello_world import app; print('✅ hello_world import OK, routes:', len(app.routes))" || echo "⚠️ hello_world import soft-fail"
 
+      # ─── test_all.py ────────────────────────────────────────────
       - name: Run test_all.py (single-pass Garden verification)
         run: |
           if [ -f test_all.py ]; then
@@ -205,6 +211,7 @@ jobs:
             echo "test_all.py not found — skipping"
           fi
 
+      # ─── DeepSeek adapter offline smoke ─────────────────────────
       - name: DeepSeek adapter offline smoke
         run: |
           PYTHONPATH=. python -c "
@@ -215,6 +222,7 @@ jobs:
           print('✅ DeepSeek offline smoke passed:', p.get('modes'), r.mode)
           "
 
+      # ─── Upload logs ────────────────────────────────────────────
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v4
