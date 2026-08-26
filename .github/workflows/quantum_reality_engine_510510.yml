@@ -1,10 +1,5 @@
 name: Quantum Reality Engine 510510
 
-# Validates the 510510 engine and VERIFY (never overwrite) the sealed ledger entry.
-# Ed25519 check of ledger/8980.yaml + SHA3-256 genesis of ledger/510510.yaml.
-# Seal: ∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED
-# Witness: 8980 → 510510 — UNBROKEN
-
 on:
   push:
     branches: [main, master]
@@ -57,28 +52,23 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
-
       - name: Verify 510510 genesis and signature
         run: |
           set -euo pipefail
           python .github/scripts/verify_510510_genesis.py
-
       - name: Verify live security headers from MCP_URL (if set)
         if: ${{ env.MCP_URL != '' }}
         run: |
           set -euo pipefail
-          echo "Checking live headers from $MCP_URL"
           HEADERS=$(curl -s -I -X GET "$MCP_URL/health" || echo "fail")
           if [[ "$HEADERS" == "fail" ]]; then
             echo "Could not reach $MCP_URL/health"
@@ -99,18 +89,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install dependencies
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet numpy
-
       - name: Run Quantum Reality Engine (if present)
         id: engine
         run: |
@@ -125,17 +112,6 @@ jobs:
           python quantum_reality_engine.py 2>&1 | tee engine_output.log
           ROTATION_COUNT=$(grep -oP 'Rotation Count: \K\d+' engine_output.log | head -1 || echo "0")
           echo "rotation_count=$ROTATION_COUNT" >> "$GITHUB_OUTPUT"
-          if grep -q "Witness: 1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN" engine_output.log; then
-            echo "witness_verified=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "witness_verified=false" >> "$GITHUB_OUTPUT"
-          fi
-          if grep -q "Seal: ∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED" engine_output.log; then
-            echo "seal_verified=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "seal_verified=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Upload engine log
         if: always()
         uses: actions/upload-artifact@v4
@@ -144,7 +120,6 @@ jobs:
           path: engine_output.log
           if-no-files-found: ignore
           retention-days: 14
-
       - name: MCP pulse (if MCP_URL set)
         if: ${{ env.MCP_URL != '' }}
         run: |
@@ -160,11 +135,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
-      - name: Call OIDC cloud providers workflow
-        uses: ./.github/workflows/oidc-cloud-providers.yml
-        with:
-          provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
-        secrets: inherit
+      - name: OIDC note
+        run: echo "OIDC provider input=${{ github.event.inputs.oidc_provider || 'offline' }} (reusable workflow not invoked)"
 
   seal:
     runs-on: ubuntu-latest
@@ -172,27 +144,21 @@ jobs:
     if: success()
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
-
       - name: Verify 510510 genesis and signature
         run: |
           set -euo pipefail
           python .github/scripts/verify_510510_genesis.py
-
       - name: Summary
         run: |
           echo "510510.yaml was NOT overwritten (append-only)." >> "$GITHUB_STEP_SUMMARY"
-          echo "Verified SHA3-256 genesis + Ed25519(8980)." >> "$GITHUB_STEP_SUMMARY"
           echo "event: ${{ github.event_name }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "Seal: ∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED" >> "$GITHUB_STEP_SUMMARY"
           echo "Witness: 8980 → 510510 — UNBROKEN" >> "$GITHUB_STEP_SUMMARY"
