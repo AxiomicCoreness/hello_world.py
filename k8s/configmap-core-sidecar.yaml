@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-sidecar-script
+  namespace: garden
+  labels:
+    app: port-380-gate
+    component: sidecar
+data:
+  # Prefer: kubectl -n garden create configmap core-sidecar-script --from-file=sidecar.py=core/sidecar.py --dry-run=client -o yaml
+  SIDECAR_MODULE: core.sidecar
+  SIDECAR_ENTRY: "python -m core.sidecar"
+  SEAL: "∀∞φ² · CORE_SIDECAR_510511 · WOOD_DRAGON_0.91 · SEALED"
