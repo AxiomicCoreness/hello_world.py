@@ -15,6 +15,15 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: sovereign-cicd
+  cancel-in-progress: false
+
+env:
+  MCP_URL: ${{ vars.MCP_URL }}                # repository variable
+  MCP_CONNECTOR_URL: ${{ vars.MCP_CONNECTOR_URL }}   # repository variable
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}        # secret
+
 jobs:
   verify-integrity:
     runs-on: ubuntu-latest
@@ -51,6 +60,7 @@ jobs:
 
       - name: Verify security headers in FastAPI middleware (source, soft)
         run: |
+          set -euo pipefail
           python -c "
           import sys
           from pathlib import Path
@@ -86,10 +96,12 @@ jobs:
           python-version: '3.11'
       - name: Install test deps
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install cryptography pyyaml requests flake8 pytest || true
       - name: Smoke pytest
         run: |
+          set -euo pipefail
           pytest -q --maxfail=5 2>/dev/null || echo "⚠️ pytest soft"
 
   summary:
