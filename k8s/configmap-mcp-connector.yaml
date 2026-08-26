@@ -7,13 +7,14 @@ metadata:
     app: port-380-gate
     layer: "314"
 data:
-  MCP_CONNECTOR_URL: "http://mcp-connector.garden.svc.cluster.local:8089"
+  MCP_URL: "http://port-380-gate.garden.svc.cluster.local:380"
+  MCP_CONNECTOR_URL: "http://port-380-gate.garden.svc.cluster.local:380"
   MCP_CONNECTOR_ENDPOINTS: |
     {
       "token": "/oauth/token",
       "authorize": "/oauth/authorize",
       "introspect": "/oauth/introspect",
       "revoke": "/oauth/revoke",
-      "health": "/oauth/health",
-      "sign": "/sign"
+      "health": "/health",
+      "sign": "/oauth/sign"
     }

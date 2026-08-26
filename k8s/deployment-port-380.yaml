@@ -32,7 +32,10 @@ spec:
             - name: PORT380_PORT
               value: "380"
             - name: MCP_URL
-              value: "https://api.sovereign.garden/380"
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_URL
             - name: MCP_CONNECTOR_URL
               valueFrom:
                 configMapKeyRef:

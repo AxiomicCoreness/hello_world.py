@@ -1,8 +1,6 @@
 """
 MCP Connector Client — OAuth 2.0 endpoints client.
-Uses environment variable MCP_CONNECTOR_URL as base.
-Robust: retries, timeouts, and fallback to localhost:8089.
-
+Uses MCP_CONNECTOR_URL (default local Port 380). No GARDEN_SECRETS env name.
 Never logs client secrets or tokens.
 Seal: ∀∞φ² · MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
 """
@@ -16,7 +14,7 @@ from urllib.parse import urljoin
 
 import requests
 
-BASE_URL = os.getenv("MCP_CONNECTOR_URL", "http://localhost:8089")
+BASE_URL = os.getenv("MCP_CONNECTOR_URL", "http://127.0.0.1:380")
 TIMEOUT = float(os.getenv("MCP_CONNECTOR_TIMEOUT", "5.0"))
 MAX_RETRIES = int(os.getenv("MCP_CONNECTOR_RETRIES", "3"))
 
@@ -25,8 +23,8 @@ _DEFAULT_ENDPOINTS = {
     "authorize": "/oauth/authorize",
     "introspect": "/oauth/introspect",
     "revoke": "/oauth/revoke",
-    "health": "/oauth/health",
-    "sign": "/sign",
+    "health": "/health",
+    "sign": "/oauth/sign",
 }
 
 
@@ -97,7 +95,6 @@ def introspect_token(token: str) -> Dict[str, Any]:
 def revoke_token(token: str) -> bool:
     resp = _request("POST", ENDPOINTS["revoke"], data={"token": token})
     return bool(resp.get("revoked", False))
-
 
 def health_check() -> bool:
     try:
