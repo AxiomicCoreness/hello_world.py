@@ -1,10 +1,8 @@
+#!/usr/bin/env python3
 """
-Port 380 MCP Gateway — FastAPI surface.
-Validates X-Garden-Secret, proxies OAuth via quantum.mcp_connector.
-
+Port 380 MCP Gateway — Sovereign Pulse Endpoint
 Seal: ∀∞φ² · PORT380_MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED
 """
-
 from __future__ import annotations
 
 import hmac
@@ -19,10 +17,11 @@ from starlette.responses import Response
 
 from quantum.mcp_connector import MCPConnector, health_check, introspect_token
 
-GARDEN_SECRET = os.getenv("GARDEN_SECRET")
+GARDEN_SECRET = os.getenv("GARDEN_SECRET", "")
 MCP_URL = os.getenv("MCP_URL", "https://api.sovereign.garden/380")
+MCP_CONNECTOR_URL = os.getenv("MCP_CONNECTOR_URL", "http://localhost:8089")
 
-connector = MCPConnector()
+connector = MCPConnector(base_url=MCP_CONNECTOR_URL)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -37,7 +36,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
-app = FastAPI(title="Port 380 MCP Gateway")
+app = FastAPI(title="Port 380 MCP Gateway", version="1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ALLOW_ORIGINS", "https://api.sovereign.garden").split(","),
@@ -47,11 +46,13 @@ app.add_middleware(
 app.add_middleware(SecurityHeadersMiddleware)
 
 
-def validate_secret(x_garden_secret: str = Header(..., alias="X-Garden-Secret")) -> bool:
+def verify_garden_secret(x_garden_secret: str = Header(..., alias="X-Garden-Secret")) -> bool:
     if not GARDEN_SECRET:
         raise HTTPException(status_code=500, detail="GARDEN_SECRET not configured")
-    if not hmac.compare_digest(x_garden_secret.encode("utf-8"), GARDEN_SECRET.encode("utf-8")):
-        raise HTTPException(status_code=401, detail="Invalid secret")
+    if not hmac.compare_digest(
+        x_garden_secret.encode("utf-8"), GARDEN_SECRET.encode("utf-8")
+    ):
+        raise HTTPException(status_code=401, detail="Invalid Garden Secret")
     return True
 
 
@@ -61,6 +62,7 @@ async def health() -> Dict[str, Any]:
         "status": "ok",
         "connector": health_check(),
         "mcp_url": MCP_URL,
+        "mcp_connector_url": MCP_CONNECTOR_URL,
         "seal": "∀∞φ² · PORT380_HEALTH · SEALED",
     }
 
@@ -68,11 +70,15 @@ async def health() -> Dict[str, Any]:
 @app.post("/pulse")
 async def pulse(
     payload: Optional[Dict[str, Any]] = None,
-    _: bool = Depends(validate_secret),
+    _: bool = Depends(verify_garden_secret),
 ) -> Dict[str, Any]:
+    body = payload or {}
     return {
+        "status": "pulse_received",
         "message": "Pulse received",
-        "source": (payload or {}).get("source", "unknown"),
+        "source": body.get("source", "unknown"),
+        "entry": body.get("entry", 0),
+        "note": body.get("note", "scheduled-pulse"),
         "seal": "∀∞φ² · PULSE_ACCEPTED",
     }
 
@@ -93,7 +99,7 @@ async def oauth_token(body: Dict[str, Any]) -> Dict[str, Any]:
 @app.post("/oauth/introspect")
 async def oauth_introspect(
     body: Dict[str, Any],
-    _: bool = Depends(validate_secret),
+    _: bool = Depends(verify_garden_secret),
 ) -> Dict[str, Any]:
     token = str(body.get("token") or connector.token or "")
     if not token:
@@ -104,9 +110,14 @@ async def oauth_introspect(
 @app.post("/oauth/sign")
 async def oauth_sign(
     payload: Dict[str, Any],
-    _: bool = Depends(validate_secret),
+    _: bool = Depends(verify_garden_secret),
 ) -> Dict[str, Any]:
     signed = connector.sign(payload)
     if signed is None:
         raise HTTPException(status_code=401, detail="connector not authenticated")
     return signed
+
+
+@app.get("/qiskit/health")
+async def qiskit_health() -> Dict[str, Any]:
+    return {"status": "ok"}
