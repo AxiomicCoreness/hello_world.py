@@ -83,7 +83,43 @@ spec:
           volumeMounts:
             - name: gate-script
               mountPath: /app
+            - name: sidecar-script
+              mountPath: /sidecar
+              readOnly: true
+        - name: core-sidecar
+          image: python:3.11-slim
+          workingDir: /sidecar
+          command: ["python", "/sidecar/sidecar.py", "--interval", "30"]
+          env:
+            - name: CORE_HEALTH_URL
+              value: "http://127.0.0.1:380/health"
+            - name: SIDECAR_INTERVAL
+              value: "30"
+            - name: MCP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-connector-config
+                  key: MCP_URL
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garden-secrets
+                  key: GARDEN_SECRET
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          volumeMounts:
+            - name: sidecar-script
+              mountPath: /sidecar
+              readOnly: true
       volumes:
         - name: gate-script
           configMap:
             name: port-380-http-script
+        - name: sidecar-script
+          configMap:
+            name: core-sidecar-script
