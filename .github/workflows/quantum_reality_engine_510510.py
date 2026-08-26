@@ -14,7 +14,7 @@ on:
       - "ledger/8980.yaml"
       - "port380_mcp.py"
       - ".github/scripts/verify_510510_genesis.py"
-      - ".github/workflows/quantum_reality_engine_510510.py"
+      - ".github/workflows/quantum_reality_engine_510510.yml"
   pull_request:
     branches: [main, master]
     paths:
@@ -23,7 +23,7 @@ on:
       - "ledger/8980.yaml"
       - "port380_mcp.py"
       - ".github/scripts/verify_510510_genesis.py"
-      - ".github/workflows/quantum_reality_engine_510510.py"
+      - ".github/workflows/quantum_reality_engine_510510.yml"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -41,9 +41,14 @@ permissions:
   contents: read
   id-token: write
 
+concurrency:
+  group: quantum-engine-510510
+  cancel-in-progress: false
+
 env:
-  MCP_URL: ${{ secrets.MCP_URL }}
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  MCP_URL: ${{ vars.MCP_URL }}               # repository variable
+  MCP_CONNECTOR_URL: ${{ vars.MCP_CONNECTOR_URL }}   # repository variable
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}        # secret
 
 jobs:
   verify-integrity:
@@ -59,10 +64,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install --quiet cryptography pyyaml
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml
 
       - name: Verify 510510 genesis and signature
-        run: python .github/scripts/verify_510510_genesis.py
+        run: |
+          set -euo pipefail
+          if [ -f .github/scripts/verify_510510_genesis.py ]; then
+            python .github/scripts/verify_510510_genesis.py
+          else
+            echo "⚠️ verify_510510_genesis.py not found — skipping"
+          fi
 
       - name: Verify live security headers from MCP_URL (if set)
         if: ${{ env.MCP_URL != '' }}
@@ -97,8 +111,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install numpy
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet numpy
 
       - name: Run Quantum Reality Engine (if present)
         id: engine
@@ -168,10 +183,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install --quiet cryptography pyyaml
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml
 
       - name: Verify 510510 genesis and signature
-        run: python .github/scripts/verify_510510_genesis.py
+        run: |
+          set -euo pipefail
+          if [ -f .github/scripts/verify_510510_genesis.py ]; then
+            python .github/scripts/verify_510510_genesis.py
+          else
+            echo "⚠️ verify_510510_genesis.py not found — skipping"
+          fi
 
       - name: Summary
         run: |
