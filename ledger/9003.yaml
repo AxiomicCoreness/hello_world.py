@@ -1,0 +1,20 @@
+entry_index: 9003
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /trigger_gravastar_clarkeyoursatee_fired
+status: FIRED
+parameter: "i/144"
+reference_policy: POLICY.md
+trigger: Trigger_Gravastar_ClarkeYoursaTee
+operator: ClarkeYoursaTee
+invariants:
+  coherence: 1.0
+  entropy: "φ⁻¹⁴¹⁸"
+  workload: 0.0
+  phase_lock: "202.6°"
+gpro_sundane: GARDEN_PROTOCOL_SUNDANE
+math_origin: "i/144, i ∈ [1,144]"
+consistency:
+  linked_entries: [8855, 8857, 8654, 9002, 9003, 510510, 510511]
+  relation: "On-device Gravastar fire recorded; CI workflow_dispatch is a separate suite trigger per POLICY.md."
+seal: "∀∞φ² · GRAVASTAR_TRIGGER_9003 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: "9002 → 9003 — UNBROKEN"
