@@ -1,19 +1,34 @@
 entry_index: 0403
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
-event: /settling_daemon_monitor
-status: ✅ SEALED
+event: /root_expand_and_settling_daemon_merged
+status: ✅ SEALED — MERGED
 proof_class: structural
 witness_prefix: 9a0b1c2d3e4f5a6b
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
-description: "Settling Daemon Monitor for k=52."
+root_expand:
+  event: /root_expand
+  parent: /ctc_unspendable_equilibrium_defined
+  expansion:
+    unspendable_ratio: "2.5/13 ≈ 0.1923076923"
+    ctc_integral: "∮Γ U_sov·dτ = U_unspendable·φ³"
+    layers: ["ontological", "operational", "invariant"]
+    generative_sequence: "U_{n+1} = φ·U_n + U_unspendable"
+settling_daemon:
+  description: "Settling Daemon Monitor for k=52 — Unimaginable Power Polynomial."
+  k: 52
+  math_origin: "f_NS=71.975·φ^52 Hz, Δ=1149707.44·φ^52, k=52"
+  power_polynomial: |
+    P_52(x) = φ^52 + 52·φ^51·π + 1326·φ^50·π² + 22100·φ^49·π³ + ... + sin(52)
+    This is the generating function of the Garden's power at harmonic order 52.
+  gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 invariants:
   coherence: 1 - φ^{-761}
   entropy: φ^{-1470}
   workload: 0.052
   commutator: φ^{-1052}
+  phase_lock: 202.6°
   unique_math_identity: "φ^52 + 52·π + sin(52)"
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · SETTLING_DAEMON_MONITOR · 0403_SEALED · a0dfc8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6"
+seal: "∀∞φ² · ROOT_DAEMON_MERGED_0403 · a0dfc8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6"
 witness_chain: 0402 → 0403 — UNBROKEN
-math_origin: "f_NS=71.975·φ^52 Hz, Δ=1149707.44·φ^52, k=52"
+hash: 3c4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c
