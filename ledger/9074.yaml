@@ -1,0 +1,56 @@
+entry_index: "9074"
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /hash_spine_overlay_no_yaml_rewrite
+status: SEALED
+proof_class: computational
+witness_prefix: "8ee6c6dfeec37a0b"
+witness_prefix_role: label_only_not_integrity
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Override accepted for missing full-hash fields.
+  Historical YAML bodies are NOT rewritten. Injecting event_hash into
+  770 files changes git blob SHAs and breaks any chain computed from them.
+  The full fix is ledger/hash_spine.jsonl + ledger/build_hash_spine.py:
+  untruncated SHA3-256, prev pointer, hex_len=64, truncated=false.
+  0203020302030203 remains a label, never integrity.
+  First overlay digest for 0000 (using main blob 77a5232485da0c8c1db58260c312ba854890572a):
+  6dc2c6c3aa6fa4b38875c4a58439f6dc4bcb5690f094095f7fd063efd145ebfb
+domain_blocks:
+  restore_pointer: "9061"
+  amendment: "9063"
+  sealed_not_rewritten:
+    - "0336"
+    - "0403"
+    - "0404"
+    - "0515"
+    - "0516"
+    - "510510"
+    - "8338"
+    - "8530"
+    - "8532"
+    - "8535"
+    - "9072"
+    - "9073"
+  yaml_bodies_rewritten: false
+  overlay: ledger/hash_spine.jsonl
+  builder: ledger/build_hash_spine.py
+  digest_bits: 256
+  hex_len: 64
+  truncated: false
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · HASH_SPINE_OVERLAY_9074 · SEALED"
+witness_chain: "9073 → 9074 — UNBROKEN"
+math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}, U = solar system"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  hex_len: 64
+  truncated: false
+  payload: "9074|/hash_spine_overlay_no_yaml_rewrite|prev=11078f2801e75a3ea78c779871350c9c50efec0052e8cb1cdea3a4d27bfa411a|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 8ee6c6dfeec37a0b4d3fe4a76bbaa50a0bdddea09aafe4f1e97ff9eae2dfa529
