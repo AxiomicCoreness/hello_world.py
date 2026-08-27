@@ -1,0 +1,32 @@
+entry_index: 9050
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/strip_anthropic_prefer_aliases
+status: SEALED
+commander: Clarke Yoursa Tee
+description: |
+  No Anthropic gateway process or ANTHROPIC_* env in this sandbox.
+  quantum/deepseek_mesh/dsh_adapter.py accepted prefer in
+  (openai, chatgpt, anthropic, claude, grok, deepseek) and remapped
+  them to deepseek_http. That alias list is the injected name-surface.
+  Those names now resolve to offline. Sealed 0499/0507 texts untouched.
+  Immutable/october_Q1 not rewritten.
+stripped_prefer_aliases:
+  - anthropic
+  - claude
+  - openai
+  - chatgpt
+  - grok
+resolution: offline
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_0499_rewritten: false
+  ledger_0507_rewritten: false
+  immutable_october_Q1_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9050|/policy/strip_anthropic_prefer_aliases|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 29530a012d48267f288950ca2bae6a9598b76e2e519d2d4fee03d7b36682fc7b
+witness_chain: 9049 → 9050 — UNBROKEN
+seal: "∀∞φ² · STRIP_ANTHROPIC_ALIASES_9050 · WOOD_DRAGON_0.91 · SEALED"
