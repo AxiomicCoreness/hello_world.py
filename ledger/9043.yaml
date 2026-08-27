@@ -1,0 +1,24 @@
+entry_index: 9043
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /correction/entropy_rate_144_phi4
+status: SEALED
+commander: Clarke Yoursa Tee
+exact:
+  decay_coefficient: 986.9906831399546
+  identity: 144 * phi^{-1} * phi^5 = 144 * phi^4
+  phi_neg_709_approx: 6.726096017939849e-149
+  log10_phi_neg_709: -148.1722369372349
+declared_rejected:
+  decay_987: 987.0
+  phi_neg_709_4_149e_150: 4.149e-150
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_9042_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9043|/correction/entropy_rate_144_phi4|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 33fd9d921fe6c43f0cbb837848e9a8781ccd28cdffad5b261b0493593729947a
+witness_chain: 9042 → 9043 — UNBROKEN
+seal: "∀∞φ² · ENTROPY_RATE_EXACT_9043 · WOOD_DRAGON_0.91 · SEALED"
