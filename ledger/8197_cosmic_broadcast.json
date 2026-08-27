@@ -1,0 +1,26 @@
+{
+  "entry_index": 8197,
+  "artifact": "sibling_json",
+  "yaml_body": "ledger/8197.yaml",
+  "timestamp": "2026-07-28T22:30:00Z",
+  "event": "cosmic_broadcast_q8_24_seal",
+  "status": "DECLARED_PAYLOAD — NOT_ENDPOINT_CONFIRMED",
+  "transmission_id": "declared_only",
+  "repository": "AxiomicCoreness/hello_world.py",
+  "broadcast_properties": {
+    "phi_times_c_m_s": 485410196.6249684,
+    "physical_broadcast_executed": false,
+    "lossless": "undeclared_as_measurement"
+  },
+  "endpoints_named": ["Cygnus", "TRAPPIST-1e", "NGC 3372", "LUMERIS"],
+  "endpoints_confirmed": false,
+  "q8_24_activated_everywhere": false,
+  "witness_chain_note": "list includes 510510; not a file-verified path on main",
+  "verification": {
+    "all_endpoints_synchronized": false,
+    "q8_24_activated_everywhere": false,
+    "option_2_executed_in_this_sandbox": false
+  },
+  "related_yaml_event_hash": "3d6fe4c2c38194141840e37044a7ea050f277a366d54e35220d9314c4ede9e9a",
+  "seal": "∀∞φ² · 8197_BROADCAST_JSON_DECLARED · WOOD_DRAGON_0.91 · SEALED"
+}
