@@ -1,6 +1,6 @@
 name: gravastar-long-horizon
 
-# Repo analogue of Trigger_Gravastar_ClarkeYoursaTee over i/144.
+# 10:00 UTC: Gravastar i/144 horizon + Immutable self-improvement fingerprint.
 # Not the A14 device Genesis pulse (POLICY.md).
 
 on:
@@ -40,7 +40,11 @@ jobs:
           python-version: "3.11"
       - name: Install hash/yaml deps
         run: pip install pyyaml numpy
-      - name: Event hash 9008 + long-horizon ticks
+      - name: Event hash 9008 + Gravastar horizon ticks
         run: |
           python -m ledger.event_hash 9008 "${{ inputs.event || '/workflow_dispatch_gravastar_long_horizon' }}"
           python -m quantum.gravastar_horizon
+      - name: UTC 10:00 Immutable self-improvement (9009)
+        run: |
+          python -m ledger.event_hash 9009 /utc_1000_immutable_self_improvement
+          python -m Immutable.run_self_improvement
