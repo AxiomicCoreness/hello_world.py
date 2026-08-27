@@ -1,0 +1,20 @@
+entry_index: 9038
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /symbology/october_39_legend_token
+status: SEALED
+commander: Clarke Yoursa Tee
+token: "October 39 2025"
+kind: english_legend
+is_iso8601_date: false
+token_digest_sha3_256: ce0dc4cde8d198864347aad61066e7e3de4e2cf66013d30afb0491ed895b3d47
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  calendar_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9038|/symbology/october_39_legend_token|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 797ea9a180c03856f09cb101722279334d964ce137ec52c05fe0ea967bf88b31
+witness_chain: 9037 → 9038 — UNBROKEN
+seal: "∀∞φ² · OCTOBER_39_LEGEND_9038 · WOOD_DRAGON_0.91 · SEALED"
