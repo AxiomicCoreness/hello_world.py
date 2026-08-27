@@ -1,0 +1,22 @@
+entry_index: 9048
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /harness/deepseek_learning_rate_idle
+status: SEALED
+commander: Clarke Yoursa Tee
+rates:
+  alpha_active: 0.23606797749978967
+  identity: phi^{-3}
+  alpha_eff_runtime: 0.0
+  floor_named_phi_neg_709: 6.726096017939849e-149
+  learning_now: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  deepseek_runtime: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9048|/harness/deepseek_learning_rate_idle|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 8b570d6d1b7aac2f8e97fb6f7c480efbff1c0929c9783f92acfddc6f8f208ccc
+witness_chain: 9047 → 9048 — UNBROKEN
+seal: "∀∞φ² · DEEPSEEK_RATE_IDLE_9048 · WOOD_DRAGON_0.91 · SEALED"
