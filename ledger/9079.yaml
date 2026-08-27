@@ -1,0 +1,40 @@
+entry_index: 9079
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /asgi/dual_target_hash_duality
+status: SEALED
+commander: Clarke Yoursa Tee
+python_ide_coding: true
+future_workload: two_asgi_targets
+asgi_targets:
+  garden:
+    target: app:app_main
+    file: app.py
+    hash_name: learner_sha3_256
+    domain: GARDEN.LEARNER.v1
+    includes_timestamp: false
+    stable: true
+  flywheel:
+    target: fastapi_flywheel_gearbox:app
+    file: fastapi_flywheel_gearbox.py
+    hash_name: learner_hash
+    domain_field: GARDEN.LEARNER.v1
+    includes_timestamp: true
+    stable: false
+bind: 127.0.0.1:8024
+run_policy: one_listener_at_a_time_until_port_split
+hash_duality: |
+  Garden digest = SHA3-256(domain || canonical_json(obj)).
+  Flywheel digest = SHA3-256(canonical_json({domain, text, timestamp})).
+  Both emit 64 lowercase hex. They are not interchangeable.
+ledger_9077_rewritten: false
+ledger_9078_rewritten: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9079|/asgi/dual_target_hash_duality|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 3baf85ea86d9551a9807b645aceaac6ba1e1f23b28e2ca748fbfee914d86af3d
+witness_chain: 9078 → 9079 — UNBROKEN
+seal: "∀∞φ² · ASGI_HASH_DUALITY_9079 · WOOD_DRAGON_0.91 · SEALED"
