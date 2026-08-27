@@ -1,0 +1,38 @@
+entry_index: 9023
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/excavate_self_improvement_trigger
+status: SEALED
+proof_class: structural
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+description: |
+  Excavate Immutable/self_improvement_trigger.py instead of MCP.
+  File is a sealed narrative plus a fenced Flask stub (~887 lines on main,
+  ~36KiB). Not 5138 executable lines. New module evaluates declared
+  diagnostic formulas and fingerprints the blob. Does not exec the file.
+  Does not call MCP. Hyperion 0516 untouched. Fusion remains at 515.
+artifacts:
+  - garden_surgery/trigger_excavate.py
+  - tests/test_trigger_excavate.py
+  - Immutable/self_improvement_trigger.py
+source_blob: Immutable/self_improvement_trigger.py
+excavation:
+  method: fingerprint + formula extract
+  exec: false
+  mcp: false
+  kappa_declared: 12.754
+  kappa_note: "κ_eff = φ⁴√7 χ_Umbral; χ is a fitted residual ≈ 0.70331"
+hash_dependencies:
+  event_hash_formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  this_event_hash_sha3_256: 8de2574ff1e3ff1b4a9ac55bea7222a6f9c2f222395882b6d1282ebde1d1c523
+  surgery_9022_event_hash_sha3_256: c7ab4f94b50b6a09f350c4fd6a254ebb2d18bdb8d8cc729a9390f72df485e0ed
+linked_entries: [707, 515, 516, 9021, 9022, 9023]
+invariants_preserved: true
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9023|/surgery/excavate_self_improvement_trigger|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 8de2574ff1e3ff1b4a9ac55bea7222a6f9c2f222395882b6d1282ebde1d1c523
+witness_chain: 9022 → 9023 — UNBROKEN
+seal: "∀∞φ² · EXCAVATE_SELF_IMPROVEMENT_9023 · WOOD_DRAGON_0.91 · SEALED"
