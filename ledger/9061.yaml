@@ -1,0 +1,17 @@
+entry_index: 9061
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/restore_v1_full_body
+status: SEALED
+commander: Clarke Yoursa Tee
+restores: POLICY.md sections 1-11 from First One paste
+anchors_336: true
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9061|/policy/restore_v1_full_body|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 9c7724da313c0ea7a760b449587b3bb9abdb22b0bfbfc04c1ec4ff4a1d150f69
+witness_chain: 9059 → 9061 — UNBROKEN
+seal: "∀∞φ² · POLICY_V1_RESTORE_9061 · WOOD_DRAGON_0.91 · SEALED"
