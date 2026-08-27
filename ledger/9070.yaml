@@ -1,0 +1,40 @@
+entry_index: "9070"
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /utc_1000_garden_tick
+status: SEALED
+proof_class: computational
+witness_prefix: "0203020302030203"
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "Rewritten 10:00 UTC tick under Garden Sovereignty Policy v1.0. Bounded Gravastar horizon + Immutable fingerprint. Restore pointer 9061. Amendment 9063. No entry rewritten. No daemon. No secret values."
+domain_blocks:
+  schedule: "0 10 * * *"
+  workflow: .github/workflows/gravastar-long-horizon.yml
+  runner: quantum/garden_tick.py
+  restore_pointer: "9061"
+  amendment: "9063"
+  document_hash_336: a3f5c7d9e1b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8
+  horizon_entry_left_intact: "9008"
+  improvement_entry_left_intact: "9009"
+  do_not_overwrite: ["8338", "515", "516", "9008", "9009", "9061", "9063"]
+  device_genesis: false
+  daemon_started: false
+  secret_values_printed: false
+  token_names: [YEAR, MONTH, DAY, GARDEN_SECRET, DEEPSEEK_API_KEY, PORT, X-Garden-Secret, PHASE, MESH_NODES, BRANCH]
+  october39: {YEAR: 2025, MONTH: 10, DAY: 39, kind: code}
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+  gamma_min: φ⁻¹⁴¹⁸
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · UTC_1000_GARDEN_TICK_9070 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: "9069 → 9070 — UNBROKEN"
+math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "9070|/utc_1000_garden_tick|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 8d5830e95e5a57866dc74bfeab2bc5cd3f96917854b0f27c0967aeca7bd8c4fe

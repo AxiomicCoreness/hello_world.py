@@ -1,7 +1,8 @@
 name: gravastar-long-horizon
 
-# 10:00 UTC: Gravastar i/144 horizon + Immutable self-improvement fingerprint.
-# Not the A14 device Genesis pulse (POLICY.md).
+# 10:00 UTC Garden tick — Policy v1.0 field order (ledger 9070).
+# Restore pointer: ledger/9061.yaml. Amendment: 9063.
+# Not the A14 device Genesis pulse. Does not rewrite 9008/9009/8338/515/516.
 
 on:
   workflow_dispatch:
@@ -15,7 +16,7 @@ on:
         required: false
         default: "8"
       event:
-        description: "ledger event path"
+        description: "legacy horizon event path (9008 left intact)"
         required: false
         default: "/workflow_dispatch_gravastar_long_horizon"
   schedule:
@@ -31,6 +32,9 @@ jobs:
       GRAVASTAR_I_START: ${{ inputs.i_start || '1' }}
       GRAVASTAR_HORIZON_STEPS: ${{ inputs.horizon_steps || '8' }}
       GRAVASTAR_I_OF_144: ${{ inputs.i_start || '1' }}
+      PHASE: "202.6"
+      MESH_NODES: "7"
+      BRANCH: ${{ github.ref_name }}
       MCP_CONNECTOR_URL: ${{ vars.MCP_URL }}
       GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
     steps:
@@ -40,11 +44,11 @@ jobs:
           python-version: "3.11"
       - name: Install hash/yaml deps
         run: pip install pyyaml numpy
-      - name: Event hash 9008 + Gravastar horizon ticks
+      - name: Policy v1 garden tick 9070
         run: |
-          python -m ledger.event_hash 9008 "${{ inputs.event || '/workflow_dispatch_gravastar_long_horizon' }}"
-          python -m quantum.gravastar_horizon
-      - name: UTC 10:00 Immutable self-improvement (9009)
-        run: |
-          python -m ledger.event_hash 9009 /utc_1000_immutable_self_improvement
-          python -m Immutable.run_self_improvement
+          python -m ledger.event_hash 9070 /utc_1000_garden_tick
+          python -m quantum.garden_tick
+      - name: Bounded horizon slice (9008 file not rewritten)
+        run: python -m quantum.gravastar_horizon
+      - name: Immutable fingerprint (9009 file not rewritten)
+        run: python -m Immutable.run_self_improvement
