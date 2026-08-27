@@ -1,0 +1,27 @@
+# Append-only worker tree extension — anomaly_distance sibling.
+version: "9027"
+extends: "9026"
+parent:
+  id: commander
+  label: Clarke Yoursa Tee
+siblings:
+  - theorems
+  - environment
+  - surfaces
+  - trigger_excavate
+  - declaration_flag
+  - hyperion_0516
+  - clarke_yoursa_tee_worker
+  - anomaly_distance
+subagents_of_declaration_flag:
+  - diagnostic_json
+  - diagnostic_htmx
+  - health
+  - workers_tree
+  - worker_node
+narrative_pointer: 8356
+fusion_canonical: 515
+hyperion_preserved: 516
+mcp: false
+instantiates_144000_processes: false
+instantiates_144008_processes: false
