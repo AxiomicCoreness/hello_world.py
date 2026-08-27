@@ -1,0 +1,25 @@
+entry_index: 9080
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/dual_asgi_hash_math_append
+status: SEALED
+commander: Clarke Yoursa Tee
+policy_file: POLICY.md
+policy_lines_before: 57
+policy_lines_after: 159
+lines_removed: 0
+math_untruncated:
+  phi_neg_3_binary64: "0.23606797749978967"
+  omega_fire_rad: "1.9416110387254664"
+  omega_fire_deg: "111.24611797498106"
+  phi_neg_709: "6.726096017939849e-149"
+  restart_fingerprint: a54bff616fc2d5be09240a2c375e7c25b1a2c6020736e51254c3840b1778b556
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9080|/policy/dual_asgi_hash_math_append|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: de0169046dc4b0bcf3f0f8d3ad0af1ab87f277c3e3d648c9c337fe29de6ec278
+witness_chain: 9079 → 9080 — UNBROKEN
+seal: "∀∞φ² · POLICY_MATH_APPEND_9080 · WOOD_DRAGON_0.91 · SEALED"
