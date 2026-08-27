@@ -13,7 +13,11 @@ def default_status_path() -> Path:
     return Path(__file__).resolve().parent.parent / "symplectic_status.agent.jsonl"
 
 def default_config_path() -> Path:
-    return Path(__file__).resolve().parent.parent / "contracts" / "orchestrator_config.example.json"
+    root = Path(__file__).resolve().parent.parent / "contracts"
+    preferred = root / "mcp_orchestrator_config.json"
+    if preferred.is_file():
+        return preferred
+    return root / "orchestrator_config.example.json"
 
 def load_config(path: Optional[Path] = None) -> Dict[str, Any]:
     p = path or default_config_path()
@@ -81,9 +85,19 @@ def weave(actual=None, status_path=None, config_path=None, write=True):
             fh.write(json.dumps(event, sort_keys=True) + "\n")
     return {"source": line, "scored": scored, "written": event, "mcp_live": False, "oidc_used": False, "fusion_canonical": 515, "hyperion_preserved": 516}
 
+def dry_run(actual=12.5, status_path=None, config_path=None):
+    cfg = load_config(config_path)
+    legend = cfg.get("legend_thresholds") or {}
+    result = weave(actual=actual, status_path=status_path, config_path=config_path, write=True)
+    result["dry_run"] = True
+    result["october39_silent"] = bool(legend.get("october39_silent", True))
+    result["pulse_scheduled"] = bool(legend.get("pulse_scheduled", False))
+    result["mcp_live"] = False
+    return result
+
 def main() -> int:
-    result = weave()
-    print(json.dumps({"command": result["written"]["command"], "qed": True}))
+    result = dry_run()
+    print(json.dumps({"command": result["written"]["command"], "dry_run": True, "qed": True}))
     return 0
 
 if __name__ == "__main__":
