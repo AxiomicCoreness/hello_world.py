@@ -1,0 +1,20 @@
+entry_index: 9042
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /split/vision_code_frequency_fleck
+status: SEALED
+commander: Clarke Yoursa Tee
+description: |
+  Vision / unported code / frequency split. 9040 remains October-39.
+  144 φ⁴ ≈ 986.9907 not 987. φ^{-709} log10 ≈ -148.172 not 4.149e-150.
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_9040_rewritten: false
+  dirac_runtime: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9042|/split/vision_code_frequency_fleck|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 5a8628c000aa11482dedb301ecb38a50670af994ca56f67119e68745149324ff
+witness_chain: 9041 → 9042 — UNBROKEN
+seal: "∀∞φ² · FLECK_SPLIT_9042 · WOOD_DRAGON_0.91 · SEALED"
