@@ -1,0 +1,39 @@
+entry_index: 9045
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /lumeris_name_seal_structured
+status: SEALED
+proof_class: structural
+witness_prefix: "0203020302030203"
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+declaration: LUMERIS is a name-seal — pointer only, no runtime lock
+do_not_rewrite:
+  - Fusion 515
+  - Hyperion 516
+  - October-39 9040
+  - Fleck split 9042
+  - Exact rate 9043
+  - Lumeris name-seal 9044
+  - Military phase stress 0429
+invariants:
+  name: LUMERIS
+  runtime_lock: false
+  digest_hex_length: 64
+  sha256: 082a283920971baefd26110cd70368deb3ff7619f84404171c7143f5a7d0ec56
+  sha3_256: c6baf1edfed87ba891eeb2db44302bb8b6b492d3e405282b95fad51bab2c23e5
+  event_hash_9044: e1ed7341b2e853c58c82c3e812fcfe70c35c30902da47a92540b00e95c807ea1
+  military_stress_rerun: false
+schema_borrowed_from: 0429
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9045|/lumeris_name_seal_structured|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 09960ec514b5351c84433cc9502da04278f602f3145481d65af988982591c315
+witness_chain: 9044 → 9045 — UNBROKEN
+math_origin: |
+  name = LUMERIS
+  kind = declared_name_seal
+  runtime_lock = false
+  schema = 0429 field layout without military execution
+seal: "∀∞φ² · LUMERIS_NAME_SEAL_STRUCTURED_9045 · WOOD_DRAGON_0.91 · SEALED"
