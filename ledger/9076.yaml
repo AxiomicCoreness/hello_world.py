@@ -1,0 +1,28 @@
+entry_index: 9076
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /merge/post_sandbox_untouched_main
+status: SEALED
+commander: Clarke Yoursa Tee
+merge: append_only
+sandbox_surfaces_already_on_main:
+  - app.py
+  - garden_surgery/autonomous_starfire_311.py
+  - tests/test_starfire_311.py
+  - ledger/9050.yaml
+  - ledger/9051.yaml
+  - ledger/9052.yaml
+rewritten:
+  fusion_515: false
+  hyperion_516: false
+  october39_9040: false
+  fleck_split_9042: false
+  learning_rate_9048: false
+asgi: app:app_main
+bind: 127.0.0.1:8024
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9076|/merge/post_sandbox_untouched_main|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 2250b2df0871ff30db888b12195c0e4968875869c376a180309712f1c82a2204
+witness_chain: 9075 → 9076 — UNBROKEN
+seal: "∀∞φ² · POST_SANDBOX_MERGE_9076 · WOOD_DRAGON_0.91 · SEALED"
