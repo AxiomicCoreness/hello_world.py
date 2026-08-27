@@ -1,12 +1,22 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "worker_url": "http://port-380-gate.sovereign-garden.svc.cluster.local:380/mcp",
+  "worker_url": "http://127.0.0.1:8024/worker/score",
   "oidc_issuer": "https://token.actions.githubusercontent.com",
-  "oidc_client_id": "your-client-id",
-  "oidc_client_secret": "",
+  "oidc_client_id": "presence-only",
+  "oidc_client_secret_present": false,
+  "mcp_live": false,
+  "dry_run_only": true,
   "thresholds": {
     "coherence_fire": 0.8,
     "coherence_nudge": 0.6,
     "error_tolerance": 0.5
+  },
+  "legend_thresholds": {
+    "october39_token": "October 39 2025",
+    "october39_silent": true,
+    "is_iso8601_date": false,
+    "pulse_name": "legend_pulse",
+    "pulse_interval_hours_declared": 6,
+    "pulse_scheduled": false,
+    "operational_cannon": false
   }
 }

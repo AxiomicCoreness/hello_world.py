@@ -7,6 +7,8 @@
     "oidc_issuer": {"type": "string"},
     "oidc_client_id": {"type": "string"},
     "oidc_client_secret_present": {"type": "boolean"},
+    "mcp_live": {"type": "boolean"},
+    "dry_run_only": {"type": "boolean"},
     "thresholds": {
       "type": "object",
       "required": ["coherence_fire", "coherence_nudge", "error_tolerance"],
@@ -14,6 +16,19 @@
         "coherence_fire": {"type": "number", "minimum": 0, "maximum": 1},
         "coherence_nudge": {"type": "number", "minimum": 0, "maximum": 1},
         "error_tolerance": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "legend_thresholds": {
+      "type": "object",
+      "properties": {
+        "october39_token": {"type": "string"},
+        "october39_silent": {"type": "boolean"},
+        "is_iso8601_date": {"type": "boolean"},
+        "pulse_name": {"type": "string"},
+        "pulse_interval_hours_declared": {"type": "number"},
+        "pulse_scheduled": {"type": "boolean"},
+        "operational_cannon": {"type": "boolean"}
       },
       "additionalProperties": false
     }
