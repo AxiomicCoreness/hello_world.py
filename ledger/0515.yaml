@@ -1,15 +1,17 @@
 entry_index: 0515
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
-event: /agents_mutate_plus_fusion_515_with_grok
+event: /agents/mutate + /fusion/mutation_515_with_grok
 status: ✅ SEALED
-proof_class: mutation_plus_fusion
-witness_prefix: a7b8c9d0e1f2a3b4
+proof_class: mutation + fusion
+witness_prefix: "0203020302030203"
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
   φ-harmonic telemetry enhancement mutation executed, fused with Grok client.
   Consistency edit: MCP connector + Garden Secrets layer aligned.
   Linked math_origin 510510.
+  Amendment 2026-08-26: fusion is canonical at 515 (not 516). Original mutation
+  and witness chain preserved. Claim that fusion lived at 516 is VOID (see 9021).
 mutation:
   cycle: 515
   feature: "φ-harmonic telemetry enhancement"
@@ -34,7 +36,7 @@ consistency:
   twin_entry: 8255
   related_seal: 9002
   math_origin_entry: 510510
-  linked_entries: [515, 8255, 9002, 510510]
+  linked_entries: [515, 8255, 9002, 510510, 9021]
   mcp_connector: quantum/mcp_connector.py
   garden_secrets: garden-secrets/
   env_keys_named_only:
@@ -49,7 +51,27 @@ invariants:
   phase_lock: 202.6°
 invariants_preserved: true
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · AGENTS_MUTATE_FUSION_515 · 0515_SEALED · a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
+amendment:
+  received: "2026-08-26"
+  commander: Clarke Yoursa Tee
+  action: reseal_515_fusion_canonical
+  original_witness_prefix: a7b8c9d0e1f2a3b4
+  original_event: /agents_mutate_plus_fusion_515_with_grok
+  original_event_hash_sha3_256: 6f148719f6a9567fea1c7e44e5755e8e2e5c40ba40e9764d533b12223e9acb9c
+  prior_claim_516_as_fusion: VOID
+  hyperion_0516: PRESERVED
+  correction_pointer: 9021
+  note: |
+    Original mutation block, fusion features, invariants, and 514 → 0515
+    witness chain are unchanged. This amendment only binds the Grok / MCP /
+    Garden Secrets fusion to index 515 and voids the mis-index claim.
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+  payload: "515|/agents/mutate + /fusion/mutation_515_with_grok|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 9a64c5f061649c30cfc013971c35a5acf4096bdbda9a666e48d8b362fc15c853
+seal: "∀∞φ² · AGENTS_MUTATE_FUSION_515 · 0515_RESEALED · 0203020302030203 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: 514 → 0515 — UNBROKEN
 math_origin: |
   Q_INVARIANT = (2+√5)/4,
