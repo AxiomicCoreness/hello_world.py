@@ -1,9 +1,9 @@
 # Garden Sovereignty Policy v1.0
 
-Sealed at Entry 336. Seal: POLICY_GARDEN_336.
-Witness: 1 → 336.
+order:
+entry_index → timestamp → event → status → proof_class → witness_prefix → commander → source_table → description → domain blocks → invariants → gpro_sundane → seal → witness_chain → math_origin.
 Restore pointer: ledger 9061.
-Event hash 9c7724da313c0ea7a760b449587b3bb9abdb22b0bfbfc04c1ec4ff4a1d150f69
+Event hash information technology math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}"
 Document hash recorded on 336: a3f5c7d9e1b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8
 
 ## 1. Governance
