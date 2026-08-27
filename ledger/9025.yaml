@@ -1,0 +1,40 @@
+entry_index: 9025
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/worker_subagent_tree_parent_sibling
+status: SEALED
+proof_class: structural
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+description: |
+  Extend configuration with a worker sub-agent tree (parent/sibling).
+  Config graph only — does not spawn 144,008 processes.
+  Parent: commander. Surgery modules are siblings.
+  Hyperion 0516 is a preserved sibling. Fusion remains 515.
+  FastAPI routes: GET /workers/tree and GET /workers/{id}.
+artifacts:
+  - garden_surgery/worker_tree.py
+  - garden_surgery/declaration_flag.py
+  - contracts/worker_tree.yaml
+  - tests/test_worker_tree.py
+tree:
+  parent: commander
+  siblings: [theorems, environment, surfaces, trigger_excavate, declaration_flag, hyperion_0516, clarke_yoursa_tee_worker]
+  subagents_of_declaration_flag: [diagnostic_json, diagnostic_htmx, health]
+constraints:
+  instantiates_144008_processes: false
+  mcp: false
+  fusion_canonical: 515
+  hyperion_preserved: 516
+hash_dependencies:
+  this_event_hash_sha3_256: 97c661a020538096c3fa83656c11735dcd647f39f1a727e7dcf2d9095a0a138f
+  declaration_9024_event_hash_sha3_256: dc14ba0899202b6b7b4f6e92413efa89c06c33dbc0e654bbb7f76483905d630c
+linked_entries: [515, 516, 9022, 9023, 9024, 9025]
+invariants_preserved: true
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9025|/surgery/worker_subagent_tree_parent_sibling|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 97c661a020538096c3fa83656c11735dcd647f39f1a727e7dcf2d9095a0a138f
+witness_chain: 9024 → 9025 — UNBROKEN
+seal: "∀∞φ² · WORKER_TREE_9025 · WOOD_DRAGON_0.91 · SEALED"

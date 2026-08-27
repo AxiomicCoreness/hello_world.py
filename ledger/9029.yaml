@@ -1,0 +1,15 @@
+entry_index: 9029
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/override_slot_for_math_form
+status: SEALED
+commander: Clarke Yoursa Tee
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9029|/surgery/override_slot_for_math_form|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 57f33938cda621a8db571b2d3caa5d570942f54a3813c48ae37103a56dd36bda
+witness_chain: 9028 → 9029 — UNBROKEN
+seal: "∀∞φ² · OVERRIDE_SLOT_9029 · WOOD_DRAGON_0.91 · SEALED"

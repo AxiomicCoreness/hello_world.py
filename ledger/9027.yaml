@@ -1,0 +1,24 @@
+entry_index: 9027
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/anomaly_distance_metric_8356_pointer
+status: SEALED
+proof_class: annotation
+commander: Clarke Yoursa Tee
+flag: _HISTOGRAM_SUM_FLAGGED
+metric: "d_i = ||x_i - x_expected||_2"
+narrative_entry: 8356
+audit:
+  claimed_n: 144000
+  claimed_histogram_sum: 147600
+  histogram_sum_matches_n: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  instantiates_144000_processes: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9027|/surgery/anomaly_distance_metric_8356_pointer|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 0e1bd921c73088bbf37e3d5e37ecdb5410cc9dadc152d7319d2e5df00956edd0
+witness_chain: 9026 → 9027 — UNBROKEN
+seal: "∀∞φ² · ANOMALY_DISTANCE_9027 · WOOD_DRAGON_0.91 · SEALED"

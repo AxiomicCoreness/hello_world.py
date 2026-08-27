@@ -1,0 +1,22 @@
+entry_index: 9030
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /math_form_appended_to_override
+status: APPENDED_AND_SEALED
+commander: Clarke Yoursa Tee
+target_entry: 9029
+sovereign_override: true
+constraints_status_declared: ignored
+constraints_enforced:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9030|/math_form_appended_to_override|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: f3424a6bd265795d05e0da69df764c803eeb82dc762f6db4ba3a9904e3363ee9
+witness_chain: 9029 → 9030 — UNBROKEN
+seal: "∀∞φ² · MATH_FORM_ADDED_9030 · WOOD_DRAGON_GATE · SEALED"
+math_form:
+  expected: "x_expected = (1/N)Σx_i"
+  distance: "d_i = ||x_i − x_expected||_2"
+  zero_distance: "d_i = 0 iff agent is centroid"

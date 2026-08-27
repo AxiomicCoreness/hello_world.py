@@ -1,0 +1,19 @@
+entry_index: 9031
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/qed_sandbox_to_main
+status: SEALED
+commander: Clarke Yoursa Tee
+qed: "quod erat demonstrandum"
+target_repo: AxiomicCoreness/hello_world.py
+target_branch: main
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  instantiates_144000_processes: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9031|/surgery/qed_sandbox_to_main|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: d7cae5430fd53a17bd22ef39eb6c51ec18b46e5f2c6bcab979e1ff55f8a0e0f2
+witness_chain: 9030 → 9031 — UNBROKEN
+seal: "∀∞φ² · QED_SANDBOX_TO_MAIN_9031 · WOOD_DRAGON_0.91 · SEALED"

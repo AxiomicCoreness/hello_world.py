@@ -1,0 +1,27 @@
+entry_index: 9026
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/worker_tree_config_parent_sibling_extend
+status: SEALED
+proof_class: structural
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+description: |
+  Extend 9025 worker-tree configuration with explicit parent / sibling /
+  children edges. 9025 body is not rewritten.
+constraints:
+  instantiates_144008_processes: false
+  mcp: false
+  fusion_canonical: 515
+  hyperion_preserved: 516
+hash_dependencies:
+  this_event_hash_sha3_256: 149825c85f12930c014d9ad7141e4baa7e625e75304275ab9083cbb8014d4ff7
+linked_entries: [515, 516, 9025, 9026]
+invariants_preserved: true
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9026|/surgery/worker_tree_config_parent_sibling_extend|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 149825c85f12930c014d9ad7141e4baa7e625e75304275ab9083cbb8014d4ff7
+witness_chain: 9025 → 9026 — UNBROKEN
+seal: "∀∞φ² · WORKER_TREE_9026 · WOOD_DRAGON_0.91 · SEALED"

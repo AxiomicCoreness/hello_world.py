@@ -1,0 +1,20 @@
+entry_index: 9028
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/anomaly_math_form_extract
+status: SEALED
+commander: Clarke Yoursa Tee
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9028|/surgery/anomaly_math_form_extract|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: b276f2a5150b16b430cd3c6312ebdda24c47ebccc194b650b5fa10c56c0b4254
+witness_chain: 9027 → 9028 — UNBROKEN
+seal: "∀∞φ² · ANOMALY_MATH_FORM_9028 · WOOD_DRAGON_0.91 · SEALED"
+math_form:
+  ascii:
+    - "x_expected = (1/N) * sum_{i=1..N} x_i"
+    - "d_i = ||x_i - x_expected||_2"
+    - "d_i = 0  <=>  x_i is exactly the centroid"
