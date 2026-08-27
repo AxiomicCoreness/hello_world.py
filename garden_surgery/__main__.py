@@ -37,5 +37,12 @@ def main(argv=None) -> int:
     return 0 if theorems.ok() else 1
 
 
+def before_main() -> dict:
+    from garden_surgery.learner_hash import restart_fingerprint
+
+    return restart_fingerprint()
+
+
 if __name__ == "__main__":
+    print(before_main())
     sys.exit(main())
