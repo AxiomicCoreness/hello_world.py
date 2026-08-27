@@ -1,0 +1,26 @@
+entry_index: 9032
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /system_verification_report
+status: SEALED
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+description: |
+  System verification pointer. Written product φ·φ⁻¹·½ = ½, not declared Q=0.202254.
+  α_total and coherence=1 are not axioms.
+declared:
+  Q: 0.202254
+  W: 3.41967
+audit:
+  formula_Q_phi_phiinv_half: 0.5
+  declared_Q_matches_written_formula: false
+  W_of_declared_Q: 3.419869908460016
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9032|/system_verification_report|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 65a3d9e93e4d59ff63ac489436d3dc5b60918fd6fc94a7d191f73ebca0122ed5
+witness_chain: 9031 → 9032 — UNBROKEN
+seal: "∀∞φ² · SYSTEM_VERIFICATION_9032 · WOOD_DRAGON_0.91 · SEALED"

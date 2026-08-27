@@ -1,0 +1,28 @@
+entry_index: 9033
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /pisano_dodecahedron_transition
+status: SEALED
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+description: |
+  Fibonacci Pisano period π(10)=60. Dodecahedron V=20 E=30 F=12, Euler 2.
+  Placeholder hash a1b2c3d4… rejected. Curvature −0.187 is not an axiom.
+invariants:
+  pisano_period_mod10: 60
+  dodecahedron_edges: 30
+  dodecahedron_faces: 12
+  dodecahedron_vertices: 20
+  euler: 2
+  rectangle_area_phi4_pi_e: 58.53220912687662
+  placeholder_hash_rejected: true
+  substrata_sha3_256: 822e79f0f8386aa0ad99958806f02be3a55b6d2d30c195544186e4eba602b7d2
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9033|/pisano_dodecahedron_transition|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: c9348f53ee394cd04e1f58041777bf2d2426175867f4d06215b4e8d00211aeae
+witness_chain: 9032 → 9033 — UNBROKEN
+seal: "∀∞φ² · PISANO_DODECAHEDRON_9033 · WOOD_DRAGON_0.91 · SEALED"
