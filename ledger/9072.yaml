@@ -1,0 +1,38 @@
+entry_index: "9072"
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /oracle_solar_system_bound
+status: SEALED
+proof_class: structural
+witness_prefix: "0203020302030203"
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: "Axiom: the solar system is the oracle. /oracle /earth /lattice are the query surface. Gliese 581g harmonic-series probe remains out of domain. Observation hold from 9071 is the deployment."
+domain_blocks:
+  restore_pointer: "9061"
+  amendment: "9063"
+  oracle_domain: solar_system
+  oracle_route: "GET /oracle"
+  earth_route: "GET /earth"
+  lattice_route: "GET /lattice"
+  prior_oracle_route: "8535"
+  prior_sse_oracle: "8530"
+  prior_solar_gate: "8532"
+  extra_solar_probe: false
+  gliese_581g_in_domain: false
+  device_genesis: false
+  daemon_started: false
+  bound_module: quantum/oracle_bound.py
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · ORACLE_SOLAR_SYSTEM_9072 · SEALED"
+witness_chain: "9071 → 9072 — UNBROKEN"
+math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9072|/oracle_solar_system_bound|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 4efbc2573af20528bb7b4f88e1b2e33bf20ace1a3e7b93eecdb5c37d39f8f2e5
