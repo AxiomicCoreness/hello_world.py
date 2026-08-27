@@ -1,0 +1,17 @@
+entry_index: 9059
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/restore_code_dialogue
+status: SEALED
+commander: Clarke Yoursa Tee
+amends: 9058
+restored: POLICY.md code dialogue map
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9059|/policy/restore_code_dialogue|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: af8e2d6513bda78b6b1fd776aec68c75b012cded1dba76bbb90d88e31590b45c
+witness_chain: 9058 → 9059 — UNBROKEN
+seal: "∀∞φ² · POLICY_CODE_DIALOGUE_9059 · WOOD_DRAGON_0.91 · SEALED"
