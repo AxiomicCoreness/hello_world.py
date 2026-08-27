@@ -1,28 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["timestamp", "phi_phase", "coherence", "seal"],
+  "required": ["role", "event", "timestamp", "coherence", "phi_phase"],
   "properties": {
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "description": "ISO 8601 UTC timestamp of the override request"
-    },
-    "phi_phase": {
-      "type": "number",
-      "description": "FRB phase (in seconds) at the moment of sealing"
-    },
-    "coherence": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 1,
-      "description": "System coherence at sealing time"
-    },
-    "seal": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}$",
-      "description": "HMAC-SHA256(timestamp + phi_phase + coherence + secret)"
-    }
+    "role": {"type": "string", "enum": ["system", "lattice", "pod", "frb_bridge", "orchestrator", "worker", "validator"]},
+    "event": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "coherence": {"type": "number", "minimum": 0, "maximum": 1},
+    "phi_phase": {"type": "number"},
+    "entropy": {"type": "number", "minimum": 0},
+    "predicted_score": {"type": "number"},
+    "prediction_error": {"type": "number"},
+    "command": {"type": "string", "enum": ["wait", "nudge_cronjob", "record_only"]}
   },
   "additionalProperties": false
 }

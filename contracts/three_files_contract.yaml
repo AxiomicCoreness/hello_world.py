@@ -1,0 +1,12 @@
+version: "9035"
+description: Three-file contract — schemas only, no live MCP, no secret values.
+rules:
+  oidc_secret_in_repo: false
+  hash_truncation: false
+  seal_hex_length: 64
+  github_actions_oidc_is_not_client_credentials: true
+  bind_public_0_0_0_0: false
+  fire_soul_cannon_operational: false
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  mcp_live: false

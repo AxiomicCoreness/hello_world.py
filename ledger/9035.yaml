@@ -1,0 +1,22 @@
+entry_index: 9035
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /surgery/three_file_contract_worker_score
+status: SEALED
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+description: |
+  Three-file contract + narrow φ-score. GitHub OIDC is not client_credentials.
+  Secrets presence-only. Seal hex length 64. sovereign_engine.py not rewritten.
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  mcp_live: false
+  oidc_secret_in_repo: false
+  hash_truncation: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9035|/surgery/three_file_contract_worker_score|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 7eed0aa281c1484090ce8358e520bd02d6984f801617baff856c1f09e1a8d2ed
+witness_chain: 9034 → 9035 — UNBROKEN
+seal: "∀∞φ² · THREE_FILE_CONTRACT_9035 · WOOD_DRAGON_0.91 · SEALED"

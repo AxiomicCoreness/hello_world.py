@@ -1,0 +1,11 @@
+{
+  "worker_url": "http://127.0.0.1:8024/worker/score",
+  "oidc_issuer": "https://token.actions.githubusercontent.com",
+  "oidc_client_id": "presence-only",
+  "oidc_client_secret_present": false,
+  "thresholds": {
+    "coherence_fire": 0.8,
+    "coherence_nudge": 0.6,
+    "error_tolerance": 0.5
+  }
+}
