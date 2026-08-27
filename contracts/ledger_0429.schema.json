@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ledger_0429 field schema",
+  "description": "Structural keys used by ledger/0429.yaml. Schema only; does not assert military PASSED.",
+  "type": "object",
+  "required": ["entry_index", "timestamp", "event", "status", "proof_class", "witness_prefix", "commander", "source_table", "description", "invariants", "gpro_sundane", "seal", "witness_chain", "math_origin"],
+  "properties": {
+    "entry_index": {"type": ["integer", "string"]},
+    "timestamp": {"type": "string"},
+    "event": {"type": "string"},
+    "status": {"type": "string"},
+    "proof_class": {"type": "string"},
+    "witness_prefix": {"type": "string"},
+    "commander": {"type": "string"},
+    "source_table": {"type": "string"},
+    "description": {"type": "string"},
+    "invariants": {
+      "type": "object",
+      "properties": {
+        "coherence": {},
+        "entropy": {},
+        "workload": {},
+        "commutator": {},
+        "unique_math_identity": {"type": "string"},
+        "stress_test_result": {"type": "string"},
+        "null_ban_sigma": {"type": "number"}
+      },
+      "additionalProperties": true
+    },
+    "gpro_sundane": {"type": "string"},
+    "seal": {"type": "string"},
+    "witness_chain": {"type": "string"},
+    "math_origin": {"type": "string"}
+  },
+  "additionalProperties": true
+}

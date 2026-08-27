@@ -1,0 +1,21 @@
+entry_index: 9046
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /schema/ledger_0429_fields
+status: SEALED
+commander: Clarke Yoursa Tee
+schema_of: 0429
+asserts_military_passed: false
+artifacts:
+  - contracts/ledger_0429.schema.json
+  - contracts/ledger_0429.schema.yaml
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_0429_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9046|/schema/ledger_0429_fields|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 7c2e9eac499d0ee3a91329543d10b4805bd15b7538f22b6cda3bb06e301a1e5e
+witness_chain: 9045 → 9046 — UNBROKEN
+seal: "∀∞φ² · LEDGER_0429_SCHEMA_9046 · WOOD_DRAGON_0.91 · SEALED"

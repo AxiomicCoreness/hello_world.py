@@ -1,0 +1,28 @@
+id: ledger_0429
+source: ledger/0429.yaml
+event: /military_phase_stress
+fields:
+  - entry_index
+  - timestamp
+  - event
+  - status
+  - proof_class
+  - witness_prefix
+  - commander
+  - source_table
+  - description
+  - invariants
+  - gpro_sundane
+  - seal
+  - witness_chain
+  - math_origin
+invariants_keys:
+  - coherence
+  - entropy
+  - workload
+  - commutator
+  - unique_math_identity
+  - stress_test_result
+  - null_ban_sigma
+asserts_military_passed: false
+borrowed_by: 9045
