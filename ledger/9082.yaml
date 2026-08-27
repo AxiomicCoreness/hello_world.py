@@ -1,0 +1,32 @@
+entry_index: 9082
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /deepseek/name_seal_no_runtime_daemon
+status: SEALED
+commander: Clarke Yoursa Tee
+name: DeepSeek 2.2.2(4)
+asgi_alias: deepseek_app_main:app
+alias_of: fastapi_flywheel_gearbox:app
+live_api_daemon: false
+handoff_default: false
+secrets_in_git: false
+rewritten:
+  quantum/gemini_daemon.py: false
+  ledger/8953.yaml: false
+  docker-compose.yml: false
+  Dockerfile.daemon: false
+files_added:
+  - deepseek_app_main.py
+  - quantum/deepseek_daemon.py
+  - docker-compose.deepseek.yml
+alpha_eff: 0.0
+training: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9082|/deepseek/name_seal_no_runtime_daemon|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 1049cb1ad9f054306af87da8dfd1b312b6008dc96fd74e34662b75e5e9cea5b4
+witness_chain: 9081 → 9082 — UNBROKEN
+seal: "∀∞φ² · DEEPSEEK_NAME_SEAL_9082 · WOOD_DRAGON_0.91 · SEALED"

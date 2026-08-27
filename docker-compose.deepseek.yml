@@ -1,0 +1,18 @@
+# Optional name-seal compose. Handoff false. No secrets in file.
+# Does not replace docker-compose.yml gemini-daemon service.
+# Does not start unless you pass this file explicitly.
+version: "3.8"
+services:
+  deepseek-name-seal:
+    image: python:3.12-slim
+    working_dir: /app
+    command: ["python", "quantum/deepseek_daemon.py"]
+    environment:
+      DEEPSEEK_HANDOFF: "false"
+      DEEPSEEK_DAEMON_LOOP: "false"
+      DEEPSEEK_MODEL: "deepseek-chat"
+    volumes:
+      - .:/app
+    restart: "no"
+    profiles:
+      - deepseek-name
