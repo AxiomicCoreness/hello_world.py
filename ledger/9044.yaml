@@ -1,0 +1,23 @@
+entry_index: 9044
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /lumeris_seal_declared
+status: SEALED
+commander: Clarke Yoursa Tee
+name: LUMERIS
+kind: declared_name_seal
+runtime_lock: false
+digests:
+  sha256: 082a283920971baefd26110cd70368deb3ff7619f84404171c7143f5a7d0ec56
+  sha3_256: c6baf1edfed87ba891eeb2db44302bb8b6b492d3e405282b95fad51bab2c23e5
+  hex_length: 64
+  truncated: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9044|/lumeris_seal_declared|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: e1ed7341b2e853c58c82c3e812fcfe70c35c30902da47a92540b00e95c807ea1
+witness_chain: 9043 → 9044 — UNBROKEN
+seal: "∀∞φ² · LUMERIS_SEAL_DECLARED_9044 · WOOD_DRAGON_0.91 · SEALED"
