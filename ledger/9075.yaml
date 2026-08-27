@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /pythonide_a14_bionic_spine
 status: SEALED
 proof_class: computational
-witness_prefix: "c3a8"
+witness_prefix: "110596e3"
 witness_prefix_role: label_only_not_integrity
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
@@ -34,4 +34,4 @@ event_hash:
   hex_len: 64
   truncated: false
   payload: "9075|/pythonide_a14_bionic_spine|prev=8ee6c6dfeec37a0b4d3fe4a76bbaa50a0bdddea09aafe4f1e97ff9eae2dfa529|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: PLACEHOLDER
+  hex: 110596e3a86815a8ff384fb86014ec3023456b076c567860adb775d489786505
