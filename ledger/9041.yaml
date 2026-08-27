@@ -1,0 +1,19 @@
+entry_index: 9041
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /anchor/first_one_seed_8338_f0724e3
+status: SEALED
+commander: Clarke Yoursa Tee
+declared_commit_full: f0724e36561047bd2f96a24062611396eaaa2ad6
+current_8338_on_head: /github_deployment_complete
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_8338_rewritten: false
+  hash_truncation: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9041|/anchor/first_one_seed_8338_f0724e3|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: efbc76474fa2e7dbcdd5ff2e37d5b1159b158efeffb350f4463f3db801cd0163
+witness_chain: 9040 → 9041 — UNBROKEN
+seal: "∀∞φ² · TEMPORAL_ANCHOR_9041 · WOOD_DRAGON_0.91 · SEALED"
