@@ -1,0 +1,27 @@
+entry_index: 9058
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/unbundle_lead_checks
+status: SEALED
+commander: Clarke Yoursa Tee
+four_ban_refrain: false
+logarithm_means: restriction
+named_logarithm: null
+channels_available:
+  - oidc_client_credentials
+  - cron_6h
+  - restart_asyncio
+launched: false
+idle_math:
+  alpha_symbolic: phi^{-3}
+  effective_step: 0.0
+  training: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9058|/policy/unbundle_lead_checks|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: dc73102470479354233666d1fdee22e40c06138c4f620b47a43dcc8d5d8411e0
+witness_chain: 9057 → 9058 — UNBROKEN
+seal: "∀∞φ² · UNBUNDLE_LEAD_9058 · WOOD_DRAGON_0.91 · SEALED"

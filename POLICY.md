@@ -1,33 +1,14 @@
-# Garden Sovereignty Policy v1.1 — lead diagnostic
+# Garden Sovereignty Policy v1.2
 
-Sealed 9055 (v1.0). Amendment 9056.
-Witness 9055 → 9056.
+Amendment 9058. Witness 9057 → 9058.
 
-## Lead diagnostic (always on the page — not an offline fold)
+Do not recite a four-ban block.
+"Logarithm" here means a restriction you can name one at a time.
 
-| Check | Value |
-|---|---|
-| OIDC `client_credentials` | forbidden |
-| 6-hour Cron | not scheduled |
-| `/restart` from this session | not issued |
-| α_eff | 0 |
+Idle math (not a slogan): DeepSeek slot φ^{-3}; effective step 0 while not training.
 
-These four are the achievement monitor. They are not appendix text.
-
-Probe: `garden_surgery/lead_diagnostic.py` → `probe()`.
-
-## Also held
+OIDC client_credentials, 6-hour Cron, and /restart are available channels.
+None of them is launched by this file. Activate one by name if needed.
+Restart, when required, may use asyncio scheduling — not issued in 9058.
 
 Append-only. Fusion 515 and Hyperion 516 are not rewritten.
-October 39, 2025 is code (`year=2025`, `month=10`, `day=39`).
-No secret echo. Hashes 64 hex.
-DeepSeek not training. startup-secrets-rotator: presence only.
-
-## Dependency wire
-
-`contracts/policy_v1.yaml` depends on:
-- POLICY.md (this file)
-- ledger/9055.yaml
-- ledger/9056.yaml
-- garden_surgery/lead_diagnostic.py
-- contracts/three_files_contract.yaml

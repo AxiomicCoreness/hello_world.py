@@ -1,22 +1,12 @@
 id: garden_sovereignty_policy_v1
-version: "1.1"
-ledger_base: ledger/9055.yaml
-ledger_amendment: ledger/9056.yaml
+version: "1.2"
+ledger_amendment: ledger/9058.yaml
 policy_md: POLICY.md
-lead_diagnostic: garden_surgery/lead_diagnostic.py
+logarithm: restriction_named_singly
+four_ban_refrain: false
 depends_on:
   - POLICY.md
   - ledger/9055.yaml
   - ledger/9056.yaml
+  - ledger/9058.yaml
   - garden_surgery/lead_diagnostic.py
-  - contracts/three_files_contract.yaml
-lead_checks:
-  oidc_client_credentials: false
-  cron_6h: false
-  restart_from_here: false
-  alpha_eff: 0.0
-  folded_offline: false
-binding:
-  fusion_canonical: 515
-  hyperion_preserved: 516
-  secret_echo: false
