@@ -2,6 +2,7 @@
 
 order:
 entry_index → timestamp → event → status → proof_class → witness_prefix → commander → source_table → description → domain blocks → invariants → gpro_sundane → seal → witness_chain → math_origin.
+
 Restore pointer: ledger 9061.
 Event hash information technology math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}"
 Document hash recorded on 336: a3f5c7d9e1b2c4d6e8f0a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8b0c2d4e6f8
@@ -94,9 +95,7 @@ contracts/policy_v1.yaml
 φ^{-3}=2φ-3 is the DeepSeek slot. Effective step 0 while not training.
 
 ## 12. Token arrangement
-
 Tokens are names only. Arrangement:
-
 - YEAR, MONTH, DAY = 2025, 10, 39
 - GARDEN_SECRET (name)
 - DEEPSEEK_API_KEY (name)
@@ -105,9 +104,7 @@ Tokens are names only. Arrangement:
 - PHASE=202.6
 - MESH_NODES=7
 - BRANCH
-
 Values of secrets are not written here.
-
 Amendment: ledger 9063.
 
 No entry is rewritten when tested. No daemon is run at testing. No secret is printed before demonstratign synthesis.
