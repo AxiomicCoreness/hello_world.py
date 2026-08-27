@@ -1,0 +1,46 @@
+entry_index: 9024
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /surgery/declaration_flagged_kappa_chi
+status: SEALED
+proof_class: annotation
+commander: Clarke Yoursa Tee
+witness_prefix: "0203020302030203"
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+flag: _DECLARATION_FLAGGED
+description: |
+  Annotate the κ/χ discrepancy excavated from
+  Immutable/self_improvement_trigger.py. The immutable blob is unchanged.
+  Declared κ_eff = φ⁴√7 χ_Umbral = 12.754 overstates χ as an axiom.
+  Honest split: φ⁴√7 ≈ 18.13425; χ_Umbral is a fitted residual ≈ 0.70331.
+  Diagnostic scalars W=6.491 and fidelity 98.4% still replay.
+  FastAPI/HTMX diagnostic is feasibility-only (JSON + fragment). No MCP.
+artifacts:
+  - garden_surgery/declaration_flag.py
+  - tests/test_declaration_flag.py
+discrepancy:
+  declared_kappa: 12.754
+  phi4_sqrt7: 18.134249263375494
+  chi_umbral_fitted: 0.7033100634476434
+  chi_is_axiom: false
+  declaration_overstated: true
+surfaces:
+  json: GET /diagnostic
+  htmx: GET /diagnostic/htmx
+  health: GET /health
+constraints:
+  immutable_rewritten: false
+  mcp: false
+  fusion_canonical: 515
+  hyperion_preserved: 516
+hash_dependencies:
+  this_event_hash_sha3_256: dc14ba0899202b6b7b4f6e92413efa89c06c33dbc0e654bbb7f76483905d630c
+  excavate_9023_event_hash_sha3_256: 8de2574ff1e3ff1b4a9ac55bea7222a6f9c2f222395882b6d1282ebde1d1c523
+linked_entries: [707, 515, 516, 9022, 9023, 9024]
+invariants_preserved: true
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9024|/surgery/declaration_flagged_kappa_chi|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: dc14ba0899202b6b7b4f6e92413efa89c06c33dbc0e654bbb7f76483905d630c
+witness_chain: 9023 → 9024 — UNBROKEN
+seal: "∀∞φ² · DECLARATION_FLAGGED_9024 · WOOD_DRAGON_0.91 · SEALED"
