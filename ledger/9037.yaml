@@ -1,0 +1,20 @@
+entry_index: 9037
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /surgery/standby_arrow_identities
+status: SEALED
+commander: Clarke Yoursa Tee
+vector: standby
+description: |
+  Standby. Do not re-append sovereign_long_road.py. Identities that hold:
+  (φ⁴+φ²)·φ⁻² = φ²+1 and (φ¹³)^{1/13}=φ.
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  monolith_appended: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9037|/surgery/standby_arrow_identities|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 070ea1a0c7ad0ac3d9ead88121837e9d9df161ed5a670b665a72cf0313c2ca64
+witness_chain: 9036 → 9037 — UNBROKEN
+seal: "∀∞φ² · STANDBY_ARROW_9037 · WOOD_DRAGON_0.91 · SEALED"
