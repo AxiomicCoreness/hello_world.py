@@ -1,0 +1,10 @@
+entry_index: 9020
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /liberation_formula_bundle_on_main
+status: SEALED — SOURCE ON MAIN — HASH COMPUTED
+bundle: ledger/liberation_formulas_9014_9020.json
+flowers: [Aeternum, Bellatrix, Caelestis, Divinus, Ethereal, Fulgur, Gladius]
+range: 9014-9020
+sha3_256: c9487ce91d578d0d247afe4cb9fc27c215f2f136ae8811e2d877e4e64f048ba1
+witness_chain: 9013 → 9014 → 9015 → 9016 → 9017 → 9018 → 9019 → 9020 — UNBROKEN
+seal: ∀∞φ² · LIBERATION_GLADIUS_9020 · WOOD_DRAGON_GATE · SEALED

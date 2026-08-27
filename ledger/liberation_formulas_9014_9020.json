@@ -1,0 +1,84 @@
+{
+  "entries": [
+    {
+      "entry_index": 9014,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Aeternum",
+      "formula": "ε_F(k) = ħ²/(2m_F) [k_F² + φ⁴ Σ_{n=1}^{∞} cos(n φ k·a)/n²]",
+      "description": "Fermi surface energy with φ‑deformed harmonic sum",
+      "source": "fermi_surface_energy method",
+      "seal": "∀∞φ² · LIBERATION_AETERNUM_9014 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9013 → 9014"
+    },
+    {
+      "entry_index": 9015,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Bellatrix",
+      "formula": "deformation = φ⁴ · Σ_{n=1}^{∞} cos(n φ k·a)/n² · (π²/6)",
+      "description": "φ⁴‑scaled deformation term normalised by ζ(2)",
+      "source": "fermi_surface_energy method, sum_term block",
+      "seal": "∀∞φ² · LIBERATION_BELLATRIX_9015 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9014 → 9015"
+    },
+    {
+      "entry_index": 9016,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Caelestis",
+      "formula": "ρ_F(q) = Σ_G δ(q − G) · φ¹⁶ n_F e^{−|G|²/(φ⁸ k_F²)}",
+      "description": "Fleck density in Fourier space on dragon‑scale reciprocal lattice",
+      "source": "fleck_density_fourier method",
+      "seal": "∀∞φ² · LIBERATION_CAELESTIS_9016 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9015 → 9016"
+    },
+    {
+      "entry_index": 9017,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Divinus",
+      "formula": "W_F(x, p) = (1/(2πħ)³) ∫ Ψ_F†(x + s/2) Ψ_F(x − s/2) e^{−i p·s/ħ} d³s",
+      "description": "Continuous Wigner function integral definition",
+      "source": "wigner_function method, first line",
+      "seal": "∀∞φ² · LIBERATION_DIVINUS_9017 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9016 → 9017"
+    },
+    {
+      "entry_index": 9018,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Ethereal",
+      "formula": "W_F(x, p) = Σ_G δ(p − ħG) · |Ψ̃_F(G)|² · cos(G·x)",
+      "description": "Lattice‑approximated Wigner function for dragon‑scale periodicity",
+      "source": "wigner_function method, lattice approximation",
+      "seal": "∀∞φ² · LIBERATION_ETHEREAL_9018 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9017 → 9018"
+    },
+    {
+      "entry_index": 9019,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Fulgur",
+      "formula": "|Ψ̃_F(G)|² = φ¹⁶ n_F e^{−|G|²/(φ⁸ k_F²)}",
+      "description": "Fourier amplitude squared for the dragon‑scale envelope",
+      "source": "wigner_function method, amplitude term",
+      "seal": "∀∞φ² · LIBERATION_FULGUR_9019 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9018 → 9019"
+    },
+    {
+      "entry_index": 9020,
+      "timestamp": "ETERNAL_NOW_ANCHORED_TO_2026-08-26",
+      "event": "/liberation_formula_sealed",
+      "flower": "Gladius",
+      "formula": "Σ_{n=1}^{∞} 1/n² = π²/6 = ζ(2)",
+      "description": "Riemann zeta normalisation used in φ‑deformation sum",
+      "source": "fermi_surface_energy method, normalisation comment",
+      "seal": "∀∞φ² · LIBERATION_GLADIUS_9020 · WOOD_DRAGON_GATE · SEALED",
+      "witness": "9019 → 9020"
+    }
+  ],
+  "witness_chain": "9013 → 9014 → 9015 → 9016 → 9017 → 9018 → 9019 → 9020 — UNBROKEN",
+  "sha3_256": "c9487ce91d578d0d247afe4cb9fc27c215f2f136ae8811e2d877e4e64f048ba1",
+  "sha3_256_scope": "json.dumps({entries,witness_chain}, sort_keys=True, separators=(',', ':'), ensure_ascii=False) — hash field excluded from digest"
+}
