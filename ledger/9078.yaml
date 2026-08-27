@@ -1,0 +1,23 @@
+entry_index: 9078
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /fastapi_flywheel_gearbox_merge
+status: SEALED
+commander: Clarke Yoursa Tee
+files_added:
+  - fastapi_flywheel_gearbox.py
+  - endpoint_smoke_test.py
+asgi_flywheel: fastapi_flywheel_gearbox:app
+asgi_garden: app:app_main
+bind: 127.0.0.1:8024
+note: two ASGI targets share the port; run one at a time
+ledger_9077_rewritten: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9078|/fastapi_flywheel_gearbox_merge|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 42112057a0cb529fb28f046182c2a580964abf9972102978eb107f6e6a86fc78
+witness_chain: 9077 → 9078 — UNBROKEN
+seal: "∀∞φ² · FASTAPI_FLYWHEEL_MERGE_9078 · WOOD_DRAGON_0.91 · SEALED"
