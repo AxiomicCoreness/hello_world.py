@@ -1,0 +1,11 @@
+id: conversation_tree_merge
+extends: worker_tree_9027
+ledger: ledger/9057.yaml
+depends_on:
+  - garden_surgery/conversation_tree.py
+  - garden_surgery/worker_tree.py
+  - garden_surgery/lead_diagnostic.py
+  - contracts/policy_v1.yaml
+  - POLICY.md
+parent: commander
+folded_offline: false

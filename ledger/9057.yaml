@@ -1,0 +1,24 @@
+entry_index: 9057
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /merge/conversation_tree
+status: SEALED
+commander: Clarke Yoursa Tee
+extends: worker_tree_9027
+parent: commander
+folded_offline: false
+lead:
+  oidc_client_credentials: false
+  cron_6h: false
+  restart_from_here: false
+  alpha_eff: 0.0
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  worker_tree_9027_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9057|/merge/conversation_tree|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 925fd47a4f015d8d8d8351634f177772fac60ab1821f310f5348604905f1825a
+witness_chain: 9056 → 9057 — UNBROKEN
+seal: "∀∞φ² · CONVERSATION_TREE_MERGE_9057 · WOOD_DRAGON_0.91 · SEALED"
