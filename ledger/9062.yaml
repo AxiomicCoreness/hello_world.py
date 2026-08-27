@@ -1,0 +1,23 @@
+entry_index: 9062
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/v1_section_test
+status: SEALED
+commander: Clarke Yoursa Tee
+full_pass: 10
+partial_pass: 1
+open_item: entropy_floor_phi_neg_1418_vs_0403_phi_neg_1470
+adjudicated: false
+close:
+  - No entry is rewritten when tested.
+  - No daemon is run at testing.
+  - No secret is printed before demonstrating synthesis.
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9062|/policy/v1_section_test|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: edfe4aaec000a7f1f0818fbc63b0baeaff2b9b3ca9cc13e0dd7d2f5b3c9c2f5e
+witness_chain: 9061 → 9062 — UNBROKEN
+seal: "∀∞φ² · POLICY_V1_SECTION_TEST_9062 · WOOD_DRAGON_0.91 · SEALED"
