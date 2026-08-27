@@ -1,0 +1,35 @@
+entry_index: 9083
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /deepseek/proposal_accept_reject
+status: SEALED
+commander: Clarke Yoursa Tee
+proposal: vision DeepSeek name-seal files
+accepted:
+  - name DeepSeek 2.2.2(4)
+  - ASGI alias deepseek_app_main:app = fastapi_flywheel_gearbox:app
+  - one-shot status printer quantum/deepseek_daemon.py
+  - compose profile deepseek-name restart no handoff false
+  - no keys in git
+  - no rewrite of ledger/8953.yaml docker-compose.yml Dockerfile.daemon quantum/gemini_daemon.py
+rejected:
+  - duplicate route body inside deepseek_app_main.py (would drift from flywheel)
+  - build Dockerfile.daemon for a DeepSeek service (that image copies gemini_daemon.py)
+  - GH_TOKEN in compose even empty-by-default
+  - external garden_network requirement
+  - live API handoff
+  - while-True loop
+held_on_main_from_9082:
+  - deepseek_app_main.py
+  - quantum/deepseek_daemon.py
+  - docker-compose.deepseek.yml
+alpha_eff: 0.0
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9083|/deepseek/proposal_accept_reject|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: efa58f7bcea39ea2f4c4767bafc157dd56faed57520f51551cc597ae1ba2aeb1
+witness_chain: 9082 → 9083 — UNBROKEN
+seal: "∀∞φ² · DEEPSEEK_PROPOSAL_REVIEW_9083 · WOOD_DRAGON_0.91 · SEALED"
