@@ -1,0 +1,32 @@
+entry_index: 9055
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /garden_sovereignty_policy_v1_sealed
+status: SEALED
+proof_class: policy
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+policy_version: "1.0"
+artifacts:
+  - POLICY.md
+  - contracts/policy_v1.yaml
+description: Garden Sovereignty Policy v1.0. Section 11 dry-run overrides 6h Cron and OIDC client_credentials. Secrets never echoed.
+secrets_rotator:
+  skill: startup-secrets-rotator
+  echo_values: false
+  check: presence_only
+invariants:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  alpha_eff: 0.0
+witness_prefix: "0203020302030203"
+hash:
+  algo: sha3-256
+  domain: GARDEN.POLICY.v1
+  hex: 3c3c58a82d1a6386fedc8a5d7523b21a1562f5415de289d06848d637160685b9
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9055|/garden_sovereignty_policy_v1_sealed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 14490f5f93401410a90e4a177671a27b250210357f621f7c7758a26fcea30f64
+witness_chain: 9054 → 9055 — UNBROKEN
+seal: "∀∞φ² · GARDEN_SOVEREIGNTY_POLICY_V1 · 9055_SEALED"

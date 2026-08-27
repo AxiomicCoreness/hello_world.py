@@ -1,0 +1,18 @@
+id: garden_sovereignty_policy_v1
+version: "1.0"
+ledger: ledger/9055.yaml
+policy_md: POLICY.md
+depends_on:
+  - POLICY.md
+  - ledger/9055.yaml
+  - contracts/three_files_contract.yaml
+binding:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  dry_run_only: true
+  oidc_client_credentials: false
+  cron_6h: false
+  secret_echo: false
+secrets_rotator:
+  skill: startup-secrets-rotator
+  mode: presence_only
