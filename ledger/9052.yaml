@@ -1,33 +1,28 @@
 entry_index: 9052
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
-event: /audit/q8_24_ctc_8197_claim
+event: /autonomous_starfire_311_symbolic
 status: SEALED
 commander: Clarke Yoursa Tee
-claimed_entry: 8197
-claimed_entry_on_main: false
-holds:
-  q8_24_scale: 16777216
-  q8_24_ulp: 5.960464477539063e-8
-  unspendable_2_5_over_13: 0.19230769230769232
-rejects:
-  patterned_hash: 4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c
-  q8_24_floor_of_phi_neg_1418_is_nonzero: false
-  q8_24_preserves_all_invariants: false
-  repository_finalized: false
-  oidc_6h_ci_started: false
-  p52_is_a_polynomial_in_x: false
-notes: |
-  floor(phi^{-1418} * 2^24) = 0 in binary64, so C_q8 collapses to 1.
-  P_52 as written is (phi+pi)^52-like plus sin(52), not P(x).
-  ledger/8197.yaml is not on main. Do not invent 20-file finalize.
+asgi: app:app_main
+bind: 127.0.0.1:8024
+omega_fire: pi/phi
+omega_fire_deg: 111.24611797498106
+fire_status: SYMBOLIC_ONLY
+daemon: false
+mcp_live: false
+routes:
+  - GET /starfire/legend
+  - GET /starfire/311
+  - GET /harness/deepseek
+  - GET /health
+  - GET /worker/score
 constraints:
   fusion_canonical: 515
   hyperion_preserved: 516
-  ledger_8197_created: false
 event_hash:
   algo: sha3-256
   domain: GARDEN.EVENT.v1
-  payload: "9052|/audit/q8_24_ctc_8197_claim|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: f4d2f68a6a93828e6ac86b73de79b40d37b426660048de91c7726e434453b172
+  payload: "9052|/autonomous_starfire_311_symbolic|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 942ce2f4da0c7f60103130c773eda6fce300585437e5c8641d44f9ddd2d5347b
 witness_chain: 9051 → 9052 — UNBROKEN
-seal: "∀∞φ² · Q8_24_8197_AUDIT_9052 · WOOD_DRAGON_0.91 · SEALED"
+seal: "∀∞φ² · STARFIRE_311_APP_9052 · WOOD_DRAGON_0.91 · SEALED"
