@@ -92,3 +92,22 @@ contracts/three_files_contract.yaml
 contracts/policy_v1.yaml
 
 φ^{-3}=2φ-3 is the DeepSeek slot. Effective step 0 while not training.
+
+## 12. Token arrangement
+
+Tokens are names only. Arrangement:
+
+- YEAR, MONTH, DAY = 2025, 10, 39
+- GARDEN_SECRET (name)
+- DEEPSEEK_API_KEY (name)
+- PORT
+- X-Garden-Secret
+- PHASE=202.6
+- MESH_NODES=7
+- BRANCH
+
+Values of secrets are not written here.
+
+Amendment: ledger 9063.
+
+No entry is rewritten when tested. No daemon is run at testing. No secret is printed before demonstratign synthesis.
