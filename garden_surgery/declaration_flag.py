@@ -1,13 +1,7 @@
-"""HTMX + FastAPI diagnostic for the flagged κ/χ declaration.
-
-Does not rewrite Immutable/self_improvement_trigger.py.
-Does not call MCP. Does not print secrets.
-"""
+"""HTMX + FastAPI diagnostic. Does not rewrite Immutable/. Does not print secrets."""
 
 from __future__ import annotations
-
 from typing import Any, Dict
-
 from garden_surgery.trigger_excavate import (
     KAPPA_DECLARED,
     diagnostic_scalars,
@@ -28,7 +22,6 @@ def declaration_payload() -> Dict[str, Any]:
         "event": EVENT,
         "entry": 9024,
         "declaration_overstated": overstated,
-        "stated_as_axiom": "kappa_eff = phi^4 * sqrt(7) * chi_Umbral = 12.754",
         "honest_split": {
             "phi4_sqrt7": kappa["phi4_sqrt7"],
             "chi_umbral_fitted": kappa["chi_umbral_fitted"],
@@ -37,7 +30,6 @@ def declaration_payload() -> Dict[str, Any]:
         },
         "diagnostic": diag,
         "omega_demo": golden_hash(str(diag["W"])),
-        "immutable_file": "Immutable/self_improvement_trigger.py",
         "immutable_rewritten": False,
         "mcp": False,
         "fusion_canonical": 515,
@@ -50,28 +42,31 @@ def htmx_fragment() -> str:
     h = p["honest_split"]
     d = p["diagnostic"]
     return (
-        '<div id="declaration-flag" class="space-y-3">'
-        f'<p class="font-mono text-amber-400">{FLAG}</p>'
-        f'<p>declaration_overstated: <b>{str(p["declaration_overstated"]).lower()}</b></p>'
-        f'<p>φ⁴√7 = {h["phi4_sqrt7"]:.12f}</p>'
-        f'<p>χ_Umbral fitted = {h["chi_umbral_fitted"]:.12f} (not an axiom)</p>'
-        f'<p>κ declared = {h["kappa_declared"]}</p>'
-        f'<p>W = {d["W"]:.3f} · fidelity = {d["fidelity_pct"]:.1f}%</p>'
-        f'<p class="text-xs">Ω-demo {p["omega_demo"]} · no MCP · 0516 untouched</p>'
+        '<div id="declaration-flag">'
+        f'<p>{FLAG}</p>'
+        f'<p>overstated: {str(p["declaration_overstated"]).lower()}</p>'
+        f'<p>W = {d["W"]:.3f}</p>'
         "</div>"
     )
 
 
 def build_app():
-    """Optional FastAPI app. Import fails only if fastapi is absent."""
     from fastapi import FastAPI
     from fastapi.responses import HTMLResponse, JSONResponse
 
-    app = FastAPI(title="Garden declaration flag", version="9024")
+    app = FastAPI(title="Garden declaration flag", version="9031")
+
+    @app.middleware("http")
+    async def garden_headers(request, call_next):
+        from garden_surgery.anomaly_distance import response_headers
+        response = await call_next(request)
+        for k, v in response_headers().items():
+            response.headers[k] = v
+        return response
 
     @app.get("/health")
     def health():
-        return {"ok": True, "flag": FLAG, "mcp": False}
+        return {"ok": True, "flag": FLAG, "mcp": False, "tree": "9031", "qed": True}
 
     @app.get("/diagnostic")
     def diagnostic_json():
@@ -81,8 +76,35 @@ def build_app():
     def diagnostic_htmx():
         return HTMLResponse(htmx_fragment())
 
-    return app
+    @app.get("/workers/tree")
+    def workers_tree():
+        from garden_surgery.worker_tree import tree_payload
+        return JSONResponse(tree_payload())
 
+    @app.get("/workers/{worker_id}")
+    def worker_node(worker_id: str):
+        from garden_surgery.worker_tree import children_of, lineage, node, parent_of, siblings_of
+        n = node(worker_id)
+        if n is None:
+            return JSONResponse({"ok": False, "id": worker_id}, status_code=404)
+        return JSONResponse({"ok": True, "node": n, "parent": parent_of(worker_id), "siblings": siblings_of(worker_id), "children": children_of(worker_id), "lineage": lineage(worker_id)})
+
+    @app.get("/anomaly")
+    def anomaly_json():
+        from garden_surgery.anomaly_distance import payload as anomaly_payload
+        return JSONResponse(anomaly_payload())
+
+    @app.get("/anomaly/math")
+    def anomaly_math():
+        from garden_surgery.anomaly_distance import math_form
+        return JSONResponse(math_form())
+
+    @app.get("/override")
+    def override_json():
+        from garden_surgery.anomaly_distance import override_payload
+        return JSONResponse(override_payload())
+
+    return app
 
 app = None
 try:
