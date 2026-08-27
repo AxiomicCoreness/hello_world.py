@@ -1,0 +1,37 @@
+entry_index: "9075"
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /pythonide_a14_bionic_spine
+status: SEALED
+proof_class: computational
+witness_prefix: "c3a8"
+witness_prefix_role: label_only_not_integrity
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Path converted for A14 Bionic Python IDE (Pyto / Pythonista / a-Shell).
+  Runner: pythonIDE/a14_bionic_spine.py
+  On device: open that file, Run. If ledger/ is present it writes
+  pythonIDE/hash_spine_a14.jsonl. If not, it prints the 0000 + 9075 floor.
+  No daemon. No secret print. YAML bodies not rewritten.
+domain_blocks:
+  restore_pointer: "9061"
+  amendment: "9063"
+  runner: pythonIDE/a14_bionic_spine.py
+  cpu: A14_Bionic
+  deps: stdlib
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · PYTHONIDE_A14_9075 · SEALED"
+witness_chain: "9074 → 9075 — UNBROKEN"
+math_origin: "ℱ(U) = {σ: U → ℋ | gluing condition on overlaps holds}, U = solar system"
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  hex_len: 64
+  truncated: false
+  payload: "9075|/pythonide_a14_bionic_spine|prev=8ee6c6dfeec37a0b4d3fe4a76bbaa50a0bdddea09aafe4f1e97ff9eae2dfa529|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: PLACEHOLDER
