@@ -1,0 +1,28 @@
+entry_index: 9047
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /truth_of_integrity_score
+status: SEALED
+commander: Clarke Yoursa Tee
+definition: alignment between claimed and actual for enumerated surgery items
+integrity_score:
+  declared: 1.0
+  scope: enumerated_corrections_9034_to_9046
+  not_a_runtime_gauge: true
+  not_garden_wide_coherence: true
+current_evidence:
+  - decay_coefficient_144_phi4: 986.9906831399546
+  - phi_neg_709_approx: 6.726096017939849e-149
+  - asserts_military_passed: false
+  - lumeris_runtime_lock: false
+  - worker_is_score_function: true
+  - orchestrator_is_caller: true
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9047|/truth_of_integrity_score|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 41aa5125b3360061fc62a5e3cc9c2808b388560322cfb7c0df099a918c6dcbfc
+witness_chain: 9046 → 9047 — UNBROKEN
+seal: "∀∞φ² · INTEGRITY_TRUTH_9047 · WOOD_DRAGON_0.91 · SEALED"
