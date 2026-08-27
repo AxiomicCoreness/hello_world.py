@@ -1,0 +1,22 @@
+entry_index: 9051
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /learning_rate_correction
+status: SEALED
+commander: Clarke Yoursa Tee
+points_at: 9048
+active_symbolic_weight: "phi^{-3} = 2*phi-3 = phi^{-1}*phi^{-2} = 0.23606797749978967"
+effective_learning_rate: 0.0
+deepseek_training: false
+phi_minus709_role: named_floor_not_step_size
+phi_neg_709_approx: 6.726096017939849e-149
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  ledger_9048_rewritten: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9051|/learning_rate_correction|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: e5d7a7c12b60233c5b918a3a5168049c22b6080dd9fedca3a1dd61fc476dfa73
+witness_chain: 9050 → 9051 — UNBROKEN
+seal: "∀∞φ² · LEARNING_RATE_CORRECTION_9051 · WOOD_DRAGON_0.91 · SEALED"
