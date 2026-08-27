@@ -1,0 +1,20 @@
+entry_index: 9013
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
+event: /simplified_lindblad_closed_on_main
+status: SEALED — CANONICAL INSTANCE ON MAIN — NO EXECUTION CLAIMED
+master_equation_full: "dρ/dt = -i[H,ρ] + ∑_k (L_k ρ L_k† - 1/2 {L_k† L_k, ρ})"
+simplification:
+  L_k: 0
+  for_all_k: true
+  reduced: "dρ/dt = -i[H,ρ]"
+terminal_claim: "ρ(t_f) = |φ_0⟩⟨φ_0|"
+hamiltonian_declared: "H Hermitian; optional κ_eff ∑_i (σ_i ⊗ σ_i) with κ_eff=12.754"
+instances:
+  canonical_module: quantum/simplified_lindblad.py
+  historical_left_intact:
+    - ledger/8824.yaml
+    - wood_dragon_technique.py
+    - Immutable/october_Q1
+policy: append-only — new instance, no subtraction of prior Lindblad text
+witness: 9012 → 9013 — UNBROKEN
+seal: ∀∞φ² · SIMPLIFIED_LINDBLAD_9013 · WOOD_DRAGON_GATE · SEALED
