@@ -110,4 +110,4 @@ Tokens are names only. Arrangement:
 Values of secrets are not written here.
 Amendment: ledger 9063.
 
-No entry is rewritten when tested. No daemon is run at testing. No secret is printed before demonstratign synthesis.
+No entry is rewritten when tested. No daemon is run at testing. No secret is printed before demonstrating synthesis.
