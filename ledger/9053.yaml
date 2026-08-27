@@ -1,0 +1,18 @@
+entry_index: 9053
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /follow/pasted_8197_patch
+status: SEALED
+commander: Clarke Yoursa Tee
+applied: ledger/8197.yaml
+8197_event_hash: 3d6fe4c2c38194141840e37044a7ea050f277a366d54e35220d9314c4ede9e9a
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  oidc_6h_ci: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9053|/follow/pasted_8197_patch|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: PLACEHOLDER
+witness_chain: 9052 → 9053 — UNBROKEN
+seal: "∀∞φ² · FOLLOW_8197_PATCH_9053 · WOOD_DRAGON_0.91 · SEALED"

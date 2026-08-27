@@ -1,0 +1,34 @@
+entry_index: 8197
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /q8_24_ctc_polynomial_merge
+status: DOCUMENTED — NOT_REPOSITORY_FINALIZED
+repository: AxiomicCoreness/hello_world.py
+commander: Clarke Yoursa Tee
+source: pasted_patch_followed
+q8_24_properties:
+  format: Q8.24
+  scale: 16777216
+  ulp: 5.960464477539063e-8
+  deterministic: true
+merged_math:
+  unspendable_ratio: 0.19230769230769232
+  unspendable_exact: 5/26
+  q8_24_floor_phi_neg_1418: 0
+  C_q8_collapses_to: 1.0
+  p52_note: binomial_phi_plus_pi_plus_sin52_not_P_of_x
+verification:
+  q8_24_circuit: false
+  repository_finalized: false
+  oidc_6h_ci: false
+  patterned_hash_rejected: 4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  twenty_files_invented: false
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "8197|/q8_24_ctc_polynomial_merge|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 3d6fe4c2c38194141840e37044a7ea050f277a366d54e35220d9314c4ede9e9a
+witness_note: 8196 file absent on main; live chain pointer is 9052/9053
+seal: "∀∞φ² · Q8_24_CTC_POLY_MERGE_8197 · WOOD_DRAGON_0.91 · SEALED"
