@@ -67,8 +67,8 @@ Head = latest sequential ledger on the live spine.
 C_ctx declared at 336 as 1-φ^{-709}.
 
 ## 10. Evolution
-Amendments are new ledger entries.
-
+October 39, 2025 = code, not datetime.
+er-row fields: file_sha3_256, function_sha3_256, function_yielded, hash_source, index_sha3_256, missing_sha3_256_field, missing_event_hash_field, embedded_event_hash_hex, function_matches_embedded. entry_index is a decimal digit string (YAML 1.1 0NNN octal is not used)
 ## 11. Surgery map
 Append-only. Fusion 515, Hyperion 516 not rewritten.
 October 39, 2025 = year 2025, month 10, day 39 (code, not datetime).
@@ -97,8 +97,8 @@ contracts/policy_v1.yaml
 ## 12. Token arrangement
 Tokens are names only. Arrangement:
 - YEAR, MONTH, DAY = 2025, 10, 39
-- GARDEN_SECRET (name)
-- DEEPSEEK_API_KEY (name)
+- GARDEN_SECRET (auto)
+- DEEPSEEK_API_KEY (auto)
 - PORT
 - X-Garden-Secret
 - PHASE=202.6
