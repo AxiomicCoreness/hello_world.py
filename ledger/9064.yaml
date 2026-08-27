@@ -1,0 +1,26 @@
+entry_index: 9064
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/ledger_consistency_regime
+status: ✅ SEALED
+proof_class: computational
+witness_prefix: sha3-256
+hash_truncation: false
+policywriting: all_ledger_consistency_regime
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+line_count:
+  POLICY.md: 113
+close:
+  - No entry is rewritten when tested.
+  - No daemon is run at testing.
+  - No secret is printed before demonstratign synthesis.
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9064|/policy/ledger_consistency_regime|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 63fa49cea60d27c55c48c4395b0c91dd90e0d38dfeef32904ce58b7f2aa04983
+witness_chain: 9063 → 9064 — UNBROKEN
+seal: "∀∞φ² · LEDGER_CONSISTENCY_REGIME_9064 · WOOD_DRAGON_0.91 · SEALED"
