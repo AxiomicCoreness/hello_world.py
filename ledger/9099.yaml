@@ -1,0 +1,24 @@
+entry_index: 9099
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /json/canonical_serialization_spec
+status: SEALED
+json_is: lingua_franca_spec
+t4_remains: pipe_delimited_string_hash
+json_hash_domain: GARDEN.JSON.v1
+interchangeable_with_t4: false
+merkle_over_full_ledger: false
+fiberobject_runtime: false
+websocket_18_agents: false
+jsonl_exists: symplectic_status.agent.jsonl
+yaml_ledger_exists: ledger/*.yaml
+module: garden_surgery/canonical_json.py
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9099|/json/canonical_serialization_spec|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: ad3bb5b4970f696a903d7e1fc881714134959d8a0398b045880e6857e93ea0e4
+witness_chain: 9098 → 9099 — UNBROKEN
+seal: "∀∞φ² · CANONICAL_JSON_SPEC_9099 · WOOD_DRAGON_0.91 · SEALED"
