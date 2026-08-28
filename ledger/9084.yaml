@@ -1,0 +1,27 @@
+entry_index: 9084
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/legendary_tokens_hash_duality_confirmed
+status: SEALED
+commander: Clarke Yoursa Tee
+policy_file: POLICY.md
+policy_lines_before: 159
+policy_lines_after: 197
+lines_removed: 0
+placement:
+  hash_duality_confirmed: after directory rows 9078-9079
+  legendary_tokens: after hash duality confirmed
+  test_path: after legendary tokens
+pi_n: Delta_x_N * Delta_p_N -> 1/2
+hbar_units: 1
+gaussian_floor: 0.5
+not_018: true
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9084|/policy/legendary_tokens_hash_duality_confirmed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 9a6e7ad9233125d06fd0df48edbb3b6dc783a0a2ed48681b510beead1dc30bec
+witness_chain: 9083 → 9084 — UNBROKEN
+seal: "∀∞φ² · POLICY_LEGEND_PI_N_9084 · WOOD_DRAGON_0.91 · SEALED"
