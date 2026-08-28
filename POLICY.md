@@ -1,5 +1,5 @@
 # Garden surgery policy map
-
+origin 0000.yaml to 9117.yaml are not rewritten
 Append-only. Fusion 515 and Hyperion 516 are not rewritten.
 October 39 2025 is a silent English legend token, not an ISO date.
 S_x = np.array([
