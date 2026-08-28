@@ -1,0 +1,24 @@
+entry_index: 9097
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /success_state/ket_refactored
+status: SEALED
+ket: "|success>"
+hash_auditable: true
+qec_runtime: false
+qec_meaning: T1-T4 invariants not a decoder
+on_chain: false
+module: garden_surgery/success_state.py
+checked:
+  - 9094
+  - 9095
+  - 9096
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9097|/success_state/ket_refactored|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 129524ec6513b841e90927d3e75234e428e721ec6c943ed3ea24c2cbf41d5d0e
+witness_chain: 9096 → 9097 — UNBROKEN
+seal: "∀∞φ² · SUCCESS_STATE_9097 · WOOD_DRAGON_0.91 · SEALED"
