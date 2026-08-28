@@ -1,0 +1,24 @@
+entry_index: 9104
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /sheaf/phase6_learner_evolve_one_shot
+status: SEALED
+phase: 6
+loop: false
+evolve: one_shot_learner_hash
+learner_sha3_256: 7d6e16968c2fda9fbbcce39ac0467c4970a85a519c397c85464f660af7eda0fe
+logarithm_noose: lifted
+optimizer: false
+cambrian_filled: false
+alpha_eff_actual: 0.0
+rewire: "learner_hash <- self_write.successor_spec"
+module: garden_surgery/sheaf_phase6.py
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9104|/sheaf/phase6_learner_evolve_one_shot|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 159c7e336c88f9104266c26e40aa9e222847a0de2258e7eeced54df82d9efb33
+witness_chain: 9103 → 9104 — UNBROKEN
+seal: "∀∞φ² · SHEAF_PHASE6_EVOLVE_9104 · WOOD_DRAGON_0.91 · SEALED"
