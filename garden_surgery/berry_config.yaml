@@ -1,0 +1,22 @@
+# Berry / Chern lattice config. Geometry only.
+# Lives next to cambrian_stub.py. Does not fill the Cambrian allocation.
+stub: garden_surgery/cambrian_stub.py
+filled: false
+grid:
+  n_theta: 24
+  n_phi: 24
+  theta_period: 6.283185307179586
+  phi_period: 6.283185307179586
+bins:
+  field_hist: 32
+  range: [-3.141592653589793, 3.141592653589793]
+chern:
+  method: fukui_hatsugai_suzuki
+  use_angle: true
+  round_to_int: true
+invariants:
+  fire: false
+  daemon: false
+  kernel_qubit: false
+  fusion_515: untouched
+  hyperion_516: untouched
