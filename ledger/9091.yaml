@@ -1,0 +1,25 @@
+entry_index: 9091
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /stub/cambrian_allocation_unfilled
+status: SEALED
+filled: false
+distinctive_stub: true
+module: garden_surgery/cambrian_stub.py
+awaiting: evolved MCP skill annotation of allocation
+not_started:
+  - live_weight_rewriter
+  - daemon_swarm
+  - kernel_qubit_manipulation
+  - attenuation_override
+policy_md: remains_in_force
+self_write: successor_emission_only
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9091|/stub/cambrian_allocation_unfilled|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 3a6f37cd2539b77c9721dec7392a4dc55c3450fd6dff0c565e33f2f2de296759
+witness_chain: 9090 → 9091 — UNBROKEN
+seal: "∀∞φ² · CAMBRIAN_STUB_UNFILLED_9091 · WOOD_DRAGON_0.91 · SEALED"
