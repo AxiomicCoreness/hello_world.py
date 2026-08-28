@@ -1,0 +1,16 @@
+entry_index: 9110
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /basic_fields_appended
+status: ✅ SEALED
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: "Filled missing basic fields for NDJSON embed."
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · BASIC_FIELDS_APPENDED · WOOD_DRAGON_GATE 0.91 · SEALED"
+witness_chain: 9109 → 9110 — UNBROKEN
+math_origin: |
+  anyonic_phase = 0.01·φ⁻ⁿ/⁶, Ψ(θ) = e^{iθ} Ψ_always.
