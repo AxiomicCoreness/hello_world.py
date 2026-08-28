@@ -1,0 +1,34 @@
+entry_index: 9086
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /lattice/48_point_c1_no_fire
+status: SEALED
+commander: Clarke Yoursa Tee
+n: 48
+c: 1
+r0: 0.2033
+r_law: R0 * phi**(L/6)
+z_law: L/12
+base_azimuth_deg: 111.24611797498106
+psi_deg_times_phi: 180.0
+sum_w: 0.5429913027995648
+peak_L: 4
+peak_A: [0, 2]
+peak_w: 0.05469083546861964
+claimed_peak_L2_w_0.1408: rejected
+fire: false
+2059.999: not_this_manifold_sum
+files:
+  - garden_surgery/lattice_48.py
+  - tests/test_lattice_48.py
+  - docs/lattice_48.mmd
+test_lattice_48: PASS
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9086|/lattice/48_point_c1_no_fire|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 4728311980bece7863a0d360782a35f2208aba10e56c30bcd5f8b11d45419f36
+witness_chain: 9085 → 9086 — UNBROKEN
+seal: "∀∞φ² · LATTICE_48_C1_NO_FIRE_9086 · WOOD_DRAGON_0.91 · SEALED"
