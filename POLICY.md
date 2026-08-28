@@ -2,7 +2,12 @@
 
 Append-only. Fusion 515 and Hyperion 516 are not rewritten.
 October 39 2025 is a silent English legend token, not an ISO date.
-
+S_x = np.array([
+            [0, np.sqrt(3)/2, 0, 0],
+            [np.sqrt(3)/2, 0, 2, 0],
+            [0, 2, 0, np.sqrt(3)/2],
+            [0, 0, np.sqrt(3)/2, 0]
+        ]) * ħ}")
 ## Live directory (sandbox + main)
 
 Q.E.D. ■ MAP INVARIANTS HELD · OFFLINE TESTS PASSED ■
