@@ -1,0 +1,20 @@
+entry_index: 9103
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /policy/pisano_split_ack_append
+status: SEALED
+policy_md: append_only
+sheaf_phase_6: spec_only
+dual_icosahedral: "I=60, 2I=120"
+dual_delta: "Pi_N -> 1/2"
+cluster_verification: false
+reference_9102: e5c8e7a23db2bdf96d8330a07245a1b5c5780291b10c293ae2bfbcaa6f5c1dcf
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9103|/policy/pisano_split_ack_append|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: d737b5503416b1a99dcfecaf51d45a258fa8ce2af4b51ae9c6c1c644427cffd4
+witness_chain: 9102 → 9103 — UNBROKEN
+seal: "∀∞φ² · POLICY_PISANO_ACK_9103 · WOOD_DRAGON_0.91 · SEALED"
