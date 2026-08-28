@@ -1,0 +1,21 @@
+entry_index: 9085
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /policy/legendary_tokens_latex_append
+status: SEALED
+commander: Clarke Yoursa Tee
+policy_file: POLICY.md
+policy_lines_before: 197
+policy_lines_after: 235
+lines_removed: 0
+placement: after Test Path (Proper Two-Layer)
+note: ASCII legendary tokens retained; LaTeX appended; Garden hash keeps domain prefix D
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9085|/policy/legendary_tokens_latex_append|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 724a305ab5e2c70209a59e263dfcc5bddb326a793c52bf0a54ef56718e2c6718
+witness_chain: 9084 → 9085 — UNBROKEN
+seal: "∀∞φ² · POLICY_LEGEND_LATEX_9085 · WOOD_DRAGON_0.91 · SEALED"
