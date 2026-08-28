@@ -1,0 +1,20 @@
+entry_index: 9094
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /ci_cd/garden_surgery_workflow
+status: SEALED
+workflow: .github/workflows/garden-surgery.yml
+map: docs/ci_cd.md
+ci: test_only
+cd: record_only
+cron: [wait, nudge_cronjob, record_only]
+existing_workflows: not_rewritten
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9094|/ci_cd/garden_surgery_workflow|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: facfdd8232209d9f6e8c813f13cd55356b32f36a9c48f7b2b043f971d3d724b2
+witness_chain: 9093 → 9094 — UNBROKEN
+seal: "∀∞φ² · CI_CD_GARDEN_SURGERY_9094 · WOOD_DRAGON_0.91 · SEALED"

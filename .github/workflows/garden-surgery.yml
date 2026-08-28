@@ -1,0 +1,39 @@
+name: garden-surgery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "garden_surgery/**"
+      - "tests/**"
+      - "docs/**"
+      - ".github/workflows/garden-surgery.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: deps
+        run: pip install numpy
+      - name: garden tests
+        env:
+          PYTHONPATH: .
+        run: |
+          python3 tests/test_lattice_48.py
+          python3 tests/test_berry_chern.py
+          python3 tests/test_flywheel_self_improvement.py
+          python3 tests/test_trigger_excavate.py
+          python3 -m garden_surgery.self_write
+          python3 -m garden_surgery.cambrian_stub
+      - name: cron constraint
+        run: echo "wait | nudge_cronjob | record_only"
