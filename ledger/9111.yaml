@@ -1,0 +1,25 @@
+entry_index: 9111
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /garden_surgery_policy_map_acknowledged
+status: ✅ SEALED
+commander: Clarke Yoursa Tee
+source: "Garden surgery policy map v1.0 (sealed at Entry 336, extended 2026-08-27)"
+directives:
+  - append_only: true
+  - preserve_515_516: true
+  - october39_token: true
+  - hash_duality: true
+  - no_truncation: true
+  - dual_asgi: "127.0.0.1:8024 (one listener at a time)"
+  - no_remote_execution: true
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+witness_chain: 9110 → 9111 — UNBROKEN
+seal: "∀∞φ² · POLICY_MAP_ACK_9111 · WOOD_DRAGON_GATE 0.91 · SEALED"
+math_origin: |
+  Policy constraints form a sheaf on the sovereignty state space; append-only ensures no rewriting. 
+  Hash duality: H_garden = SHA3-256(D || canonical(x)), H_flywheel = SHA3-256(canonical({D,t,tau})). 
+  October 39 token is a legend, not a date. 515/516 preserved.
