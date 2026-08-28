@@ -1,0 +1,24 @@
+entry_index: 9101
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /2I/pisano_divides_order_inverse_not_integer
+status: SEALED
+math_form:
+  pisano: "pi(10) = 60"
+  order: "|2I| = 120"
+  divides: "60 | 120 , quotient = 2 in Z"
+  inverse_order: "1/|2I| = 1/120 not in Z"
+  circle_pi: "pi does not divide 120 in Z"
+  order_over_pi: "120/pi ≈ 38.197186342054884 not in Z"
+  pi_over_order: "pi/120 ≈ 0.02617993877991494 not in Z"
+note: "Pisano pi(n) is not the circle constant pi"
+module: garden_surgery/poincare_pisano.py
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9101|/2I/pisano_divides_order_inverse_not_integer|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 09c2cc67925bb25fa4d8b84e316d6304a5664355c899922bce9bbcba3b44df7f
+witness_chain: 9100 → 9101 — UNBROKEN
+seal: "∀∞φ² · TWO_I_ORDER_INVERSE_9101 · WOOD_DRAGON_0.91 · SEALED"
