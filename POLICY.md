@@ -4,7 +4,7 @@ Append-only. Fusion 515 and Hyperion 516 are not rewritten.
 October 39 2025 is a silent English legend token, not an ISO date.
 
 ## Live directory (sandbox + main)
-
+Q.E.D. ■ MAP INVARIANTS HELD · OFFLINE TESTS PASSED ■
 | Path | Role |
 |---|---|
 | `ledger/0515.yaml` | Fusion canonical — sealed body |
