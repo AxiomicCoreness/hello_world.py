@@ -1,0 +1,33 @@
+entry_index: 9100
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /pisano/dodecahedral_flux_cutoff_phase
+status: SEALED
+frb_name_seal: bound_no_socket
+public_bind: false
+port_5000: not_bound
+config_and_binary_same_folder: garden_surgery/
+math_form:
+  phi: "phi = (1+sqrt(5))/2"
+  psi_rad: "psi = pi/phi"
+  psi_deg: "psi_deg = 180/phi = 111.24611797498106"
+  identity: "psi_deg * phi = 180"
+  phase_lock_deg: 202.6
+  pisano: "pi(10) = 60"
+  binary_icosahedral_order: 120
+  poincare: "S^3 / 2I , H_1 = 0"
+  flux_cutoff: "Lambda = phi^{-12} (named, not a lab cutoff)"
+  evolution: "Poincare label -> Pisano period as discrete cycle"
+anomaly_correction:
+  pasted_suite: "def body was not indented; repaired in garden_surgery/poincare_pisano.py"
+module: garden_surgery/poincare_pisano.py
+ndjson: poincare_dodecahedral_state.ndjson
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9100|/pisano/dodecahedral_flux_cutoff_phase|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: d12277743c6ea6176932bd32576271aab628fecd74a3324cd414077bc06d5279
+witness_chain: 9099 → 9100 — UNBROKEN
+seal: "∀∞φ² · PISANO_DODECA_FLUX_9100 · WOOD_DRAGON_0.91 · SEALED"
