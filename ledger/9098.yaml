@@ -1,0 +1,41 @@
+entry_index: 9098
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /septad/audit_correction_layer_pair
+status: SEALED
+corrections:
+  9094_event_hash: facfdd8232209d9f6e8c813f13cd55356b32f36a9c48f7b2b043f971d3d724b2
+  9095_event_hash: a03a9be816df14db73e54a12a59477de448c009be6ede205c6fdccefedf214b0
+  9096_event_hash: dbf719cc61930be6d7d4e55d6c1d27f207ece9edc37e4725bb7610e527904cb3
+  9097_event_hash: 129524ec6513b841e90927d3e75234e428e721ec6c943ed3ea24c2cbf41d5d0e
+  9097_git_head: d57501e2d4325a169a86e866a154f5cb40ceb0ea
+note: git head is not the event hash
+layer:
+  id: "01E79BFF1BEF845D48142E73905C6874•E2C07C1332672A425D776E644100507C"
+  left_hex: 01e79bff1bef845d48142e73905c6874
+  right_hex: e2c07c1332672a425d776e644100507c
+  bits_each: 128
+  kind: token_pair
+  not_sha3_256: true
+  on_chain: false
+  genome_autology: false
+theorems_actual:
+  T1: "phi^2 = phi + 1"
+  T2: "phi^-1 + phi^-2 = 1"
+  T3: "Q = (2+sqrt(5))/4"
+  T4: "SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload)"
+rejected:
+  - live_cron_0_star_slash_6
+  - live_oidc
+  - direct_ipc_pipe_bound
+  - t4_on_chain
+module: garden_surgery/septad_audit.py
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9098|/septad/audit_correction_layer_pair|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: fa2055f0238f9fae6312c396211610ff7893de2ee66e312259f37c6be52a4aca
+witness_chain: 9097 → 9098 — UNBROKEN
+seal: "∀∞φ² · SEPTAD_AUDIT_CORRECTION_9098 · WOOD_DRAGON_0.91 · SEALED"
