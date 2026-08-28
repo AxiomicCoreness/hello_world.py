@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+WORKDIR /app
+RUN pip install --no-cache-dir numpy
+COPY garden_surgery /app/garden_surgery
+COPY tests /app/tests
+COPY docs /app/docs
+RUN find /app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+CMD ["python3", "tests/test_lattice_48.py"]
