@@ -1,0 +1,26 @@
+entry_index: 9087
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
+event: /lattice/48_refactor_estate_ceiling
+status: SEALED
+commander: Clarke Yoursa Tee
+refactor: helpers radius depth azimuth peak_cells as_csv
+numbers_unchanged: true
+sum_w: 0.5429913027995648
+peak_L: 4
+peak_A: [0, 2]
+peak_w: 0.05469083546861964
+estate_label: 25
+visibility_ceiling: 34
+visibility_meaning: F_9 index cap not spatial axes
+fire: false
+test_lattice_48: PASS
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9087|/lattice/48_refactor_estate_ceiling|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: d49ead0b0b128c22b92269b247ef1f73c26ea0d1b7a4c95abc3bcb183ef0e8ad
+witness_chain: 9086 → 9087 — UNBROKEN
+seal: "∀∞φ² · LATTICE_48_REFACTOR_9087 · WOOD_DRAGON_0.91 · SEALED"

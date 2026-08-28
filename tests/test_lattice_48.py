@@ -1,4 +1,9 @@
-from garden_surgery.lattice_48 import generate_48_point_lattice, summary, BASE_AZIMUTH
+from garden_surgery.lattice_48 import (
+    BASE_AZIMUTH,
+    generate_48_point_lattice,
+    peak_cells,
+    summary,
+)
 
 
 def test_48_rows_and_no_fire():
@@ -12,6 +17,9 @@ def test_48_rows_and_no_fire():
     assert int(s["peak_A"]) in (0, 2)
     assert s["peak_w"] < 0.9
     assert abs(BASE_AZIMUTH * ((1 + 5**0.5) / 2) - 180.0) < 1e-12
+    peaks = peak_cells(rows)
+    assert {int(p["A"]) for p in peaks} == {0, 2}
+    assert all(int(p["L"]) == 4 for p in peaks)
 
 
 def test_odd_azimuths_near_zero_weight():
