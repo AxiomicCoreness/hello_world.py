@@ -60,7 +60,7 @@ Each ledger entry is a YAML file containing:
 - `invariants` (coherence, entropy, workload, phase_lock, etc.)
 - `witness_chain` (previous → current — UNBROKEN)
 - `seal` (unique string with `∀∞φ² · ... · SEALED`)
-- `/use strict mathematical form(): ... precision fallback and redundancy de-duplicate
+
 ### 2.2 Witness Continuity
 - Every new entry must include a `witness_chain` field that explicitly references the previous entry and declares `UNBROKEN`.
 - If a gap is discovered, an entry is created to bridge it (e.g., Entry 41, Entry 43 placeholder resolution).
