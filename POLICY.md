@@ -7,7 +7,9 @@ S_x = np.array([
             [np.sqrt(3)/2, 0, 2, 0],
             [0, 2, 0, np.sqrt(3)/2],
             [0, 0, np.sqrt(3)/2, 0]
-        ]) * ħ}")ℛ_total = 37.062, GC-LC-001-Ωξ_F*10 f of x
+        ]) * ħ}")ℛ_total = 37.062, GC-LC-001-Ωξ_F*10 f of x8502 → 8503 → 8515 → 8516 → 8517
+  ↓        ↓        ↓        ↓        ↓
+SUPERSEDED PATCHED SEALED   SEALED   OPERATIONAL
 ## Live directory (sandbox + main)
 
 Q.E.D. ■ MAP INVARIANTS HELD · OFFLINE TESTS PASSED ■
