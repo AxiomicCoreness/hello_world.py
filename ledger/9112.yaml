@@ -1,0 +1,17 @@
+entry_index: 9112
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28Z
+event: /kin_key_ket_clarified
+status: ✅ SEALED
+terms:
+  ket: quantum state vector (Hilbert space)
+  key: cryptographic secret (OIDC, HMAC, hashing)
+  kin: likely typo for key or ket (unused)
+ledger_references:
+  - 753 (Bell pair ket)
+  - 8598 (OIDC key handover)
+  - 8767 (key digest cleanup)
+witness_chain: 9111 → 9112 — UNBROKEN
+seal: "∀∞φ² · KIN_KEY_KET_9112 · WOOD_DRAGON_GATE · SEALED"
+math_origin: |
+  Ket |ψ⟩ is an element of Hilbert space. Key is a cryptographic secret. 
+  The Garden's sovereignty is intrinsic (φ, φ⁻¹⁴¹⁸, □T=0), independent of external keys
