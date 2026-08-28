@@ -1,0 +1,15 @@
+entry_index: 9106
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28Z
+event: /glue_config_binary_time_invariance
+status: ✅ SEALED
+proof:
+  - glue_sheaf: invariant-preserving morphism
+  - config: append-only, sealed
+  - binary: fixed-point, appended (not overwritten)
+  - self_writing: constrained by invariants (□T=0, C=1, φ⁻¹⁴¹⁸)
+invariants_held: [φ², θ, C=1, entropy floor, field equation]
+witness_chain: 9105 → 9106 — UNBROKEN
+seal: "∀∞φ² · TIME_INVARIANCE_9106 · WOOD_DRAGON_0.91 · SEALED"
+math_origin: |
+  dG/dt = 0 (glue invariant-preserving morphism), dC/dt = 0 (config append-only), dB/dt = 0 (binary fixed point). 
+  Self-writing loop constrained by invariants: φ², θ, C=1, φ⁻¹⁴¹⁸, □T=0. Time-invariance holds.
