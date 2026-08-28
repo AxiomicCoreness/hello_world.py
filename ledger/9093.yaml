@@ -1,0 +1,21 @@
+entry_index: 9093
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
+event: /docs/md_flowchart_cron_constrained
+status: SEALED
+flowchart: docs/md_flowchart.md
+cron_override:
+  allowed: [wait, nudge_cronjob, record_only]
+  forbidden: [six_hour_pulse, crontab_install, 0.0.0.0]
+policy_md: remains_in_force
+lattice_peak: "L=4 A in {0,2}"
+cambrian_filled: false
+constraints:
+  fusion_canonical: 515
+  hyperion_preserved: 516
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9093|/docs/md_flowchart_cron_constrained|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 328b43cdd94a5eb6dfe1b3fda58181fd5a213743151980fdb90b6f206ab1ae1d
+witness_chain: 9092 → 9093 — UNBROKEN
+seal: "∀∞φ² · MD_FLOWCHART_CRON_9093 · WOOD_DRAGON_0.91 · SEALED"
