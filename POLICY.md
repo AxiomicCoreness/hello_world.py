@@ -69,56 +69,30 @@ Two ASGI targets are the future Python-IDE workload. They are not a defect.
 
 Let
 
-\\
-\\varphi=\\frac{1+\\sqrt{5}}{2},\\qquad
-\\varphi^{2}=\\varphi+1,\\qquad
-\\varphi^{-1}=\\varphi-1,\\qquad
-\\varphi^{-2}=2-\\varphi,\\qquad
-\\varphi^{-3}=2\\varphi-3.
-\\
+phi = (1+sqrt(5))/2, phi^2 = phi+1, phi^{-1}=phi-1, phi^{-2}=2-phi, phi^{-3}=2phi-3.
 
-Exact decimal for the third weight (first 66 digits after the point, no ellipsis):
+Exact decimal for the third weight (binary64): 0.23606797749978967
 
-\\varphi^{-3} = 0.236067977499789696409173668731276235440618359611525724270897245575
+Named floor from 9043 (not an optimizer step): phi^{-709} ≈ 6.726096017939849e-149
 
-IEEE-754 binary64 stores `0.23606797749978967`.
+Entropy pairing: (phi^{-709})^2 = phi^{-1418}
 
-Named floor from 9043 (not an optimizer step):
+Firing phase: omega_fire = pi/phi ≈ 1.9416110387254664 rad = 111.24611797498106 deg
 
-\\varphi^{-709} \\approx 6.726096017939849 \\times 10^{-149}.
-
-Entropy pairing (exponents, not a float64 evaluation of the tiny value):
-
-(\\varphi^{-709})^{2} = \\varphi^{-1418}.
-
-Firing phase (geometry, not a weapon):
-
-\\omega_{fire} = \\pi/\\varphi \\approx 1.9416110387254664 rad = 111.24611797498106 degrees.
-
-The flywheel status field firing_phase_deg = 111.246 is a three-decimal cut of that degree value. The untruncated value is 111.24611797498106.
+The flywheel status field firing_phase_deg = 111.246 is a three-decimal cut. Untruncated: 111.24611797498106
 
 Learner hashes — both emit 64 lowercase hex; they are not interchangeable.
 
-Garden (stable):
+Garden (stable): H_garden(x) = SHA3-256(D || canonical(x)), D = GARDEN.LEARNER.v1 || 0x00.
+canonical is json.dumps(..., sort_keys=True, separators=(",", ":"), ensure_ascii=True) UTF-8. No timestamp.
 
-H_garden(x) = SHA3-256( D || canonical(x) ), D = GARDEN.LEARNER.v1 || 0x00.
+Flywheel (not stable): H_flywheel(t) = SHA3-256(canonical({D, t, tau})), tau = time.time().
 
-canonical is json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True) encoded UTF-8. No timestamp.
-
-Flywheel (not stable across calls):
-
-H_flywheel(t) = SHA3-256( canonical({D, t, tau}) ), tau = time.time().
-
-Restart fingerprint (stable, 64 hex, from restart_fingerprint() without a clock):
-
+Restart fingerprint (stable, 64 hex):
 a54bff616fc2d5be09240a2c375e7c25b1a2c6020736e51254c3840b1778b556
 
-Ledger event hashes remain:
-
-H_event(n,e) = SHA3-256( GARDEN.EVENT.v1 || 0x00 || payload(n,e) )
-
-with
-
+Ledger event hashes:
+H_event(n,e) = SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload(n,e))
 payload(n,e) = n|e|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
 
 Do not truncate those 64-hex digests in POLICY, ledger YAML, or learner output.
@@ -137,3 +111,41 @@ Do not truncate those 64-hex digests in POLICY, ledger YAML, or learner output.
 | `ledger/9077.yaml` | Restart sequence + learner hash (sealed) |
 | `ledger/9078.yaml` | Flywheel merge (sealed) |
 | `ledger/9079.yaml` | Dual ASGI + hash duality (sealed) |
+
+## Hash Duality – Confirmed
+
+- Garden: stable, no clock. `H_garden(x) = SHA3-256(D || canonical(x))` with `D = GARDEN.LEARNER.v1 || 0x00`.
+- Flywheel: includes `time.time()`, not stable. `H_flywheel(t) = SHA3-256(canonical({D, t, tau}))`.
+- Both emit 64 lowercase hex. They are not interchangeable.
+- Restart fingerprint (stable, no clock): `a54bff616fc2d5be09240a2c375e7c25b1a2c6020736e51254c3840b1778b556`
+
+## Legendary Tokens
+
+October 39, 2025 is a silent English token (`year=2025, month=10, day=39`), not an ISO date.
+
+Uncertainty product (hbar = 1, Gaussian ensemble):
+
+    Pi_N = Delta x_N * Delta p_N
+
+    Delta x_N = RMS of {x_1, ..., x_N}
+    Delta p_N = RMS of p_n = (x_n - x_{n-1}) / dt
+    Pi_N -> 1/2
+
+The arrow is convergence of that statistic. It is not a port, not a hash, and not the vision row 0.018.
+
+## Test Path (Proper Two-Layer)
+
+Offline evolution (both PASS):
+
+    PYTHONPATH=. python3 tests/test_trigger_excavate.py
+    PYTHONPATH=. python3 tests/test_flywheel_self_improvement.py
+
+Live flywheel (needs FastAPI on host; one listener on 127.0.0.1:8024):
+
+    uvicorn fastapi_flywheel_gearbox:app --host 127.0.0.1 --port 8024
+    python3 endpoint_smoke_test.py
+
+In-process via TestClient if FastAPI is installed — no public bind.
+
+Do not exec Immutable/self_improvement_trigger.py.
+Do not use trigger_excavate.golden_hash (SHA-256 hex[:16]) as a learner digest.
