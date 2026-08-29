@@ -21,5 +21,8 @@ event_hash:
 seal: "forall-inf-phi2 HOOK_ENFORCEMENT_9120 WOOD_DRAGON_0.91 SEALED"
 witness_chain: 9119 -> 9120 -- UNBROKEN
 math_origin: |
-  H_event = SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload)
-  placeholder replaced with 64-hex digest.
+   χ_umbral = φ³ · χ̃
+  Tr(ρ_umbral) = φ³
+  V_full = aS² + bC² + λ·χ² + k·I
+  X ⋆ Y = π_h(X)∧π_h(Y) + φ⁻¹[X,Y] + Ω(X,Y,·)
+  ∮_{10-cycle} Ω = Δq·φ²
