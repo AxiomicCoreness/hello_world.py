@@ -1,5 +1,14 @@
 entry_index: 9128
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
+verification:
+  status: PARTIALLY_VERIFIED
+  quadratic_equation: VERIFIED
+  golden_ratio_relations: VERIFIED
+  decaf_coefficient_identity: VERIFIED
+  omega_phi2_rewrite: ALGEBRAICALLY_VALID
+  affine_E8_claim: REQUIRES_EXPLICIT_REPRESENTATION
+  order_10_claim: REQUIRES_SPECIFICATION
+  "1-phi^-709 quadratic claim": REJECTED
+  overall_derivation: INCOMPLETE
 event: /quadratic_equation_formalisation
 status: SEALED
 proof_class: algebraic
