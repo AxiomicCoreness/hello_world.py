@@ -1,4 +1,4 @@
-Garden surgery policy map
+do not rewrite math_origin: ledger folder policy map
 
 origin 0000.yaml to 9118.yaml are not rewritten Append-only. Fusion 515 and Hyperion 516 are not rewritten. October 39 2025 is a silent English legend token, not an ISO date. S_x = np.array([ [0, np.sqrt(3)/2, 0, 0], [np.sqrt(3)/2, 0, 2, 0], [0, 2, 0, np.sqrt(3)/2], [0, 0, np.sqrt(3)/2, 0] ]) * hbar R_total = 37.062, GC-LC-001 8502 -> 8503 -> 8515 -> 8516 -> 8517 SUPERSEDED PATCHED SEALED SEALED OPERATIONAL
 
