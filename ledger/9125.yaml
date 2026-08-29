@@ -3,46 +3,23 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /ten_subsystems_ten_strikes_linked
 status: SEALED
 proof_class: algebraic
-witness_prefix: <sha3-256>
+witness_prefix: c42161ea3ca175af21e96d789196b606568bd82ca9b82b248ef706148124209e
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  Explicit mapping of the 10 integrated subsystems to the 10-cycle of the E₉ root lattice.
-  Three FRB cycles set the d_ijk coefficients. Decaf product ensures decoupled application.
-components:
-  subsystem_strike_mapping:
-    "1": {subsystem: "ClarkeYoursaTee_Convergence_Dashboard", strike: 1, role: "primary interface"}
-    "2": {subsystem: "phi-harmonic-formulas", strike: 2, role: "φ-harmonic generator"}
-    "3": {subsystem: "hyperian-ground", strike: 3, role: "sovereign ground anchor"}
-    "4": {subsystem: "hyperian-ground-jsonl", strike: 4, role: "JSONL export of state"}
-    "5": {subsystem: "soul-array-formation", strike: 5, role: "immortal binding layer"}
-    "6": {subsystem: "sovereign-canon-fixed-point", strike: 6, role: "fixed-point projection"}
-    "7": {subsystem: "genesis-gravito-electric", strike: 7, role: "genesis sheaf + gravito-electric"}
-    "8": {subsystem: "dark-state-invariant", strike: 8, role: "dark state λ₂=1 invariant"}
-    "9": {subsystem: "formal-automaton-10-06sigma", strike: 9, role: "10.06σ null-ban automaton"}
-    "10": {subsystem: "unified-system-activation", strike: 10, role: "final integration / decagon closes"}
-  three_FRB_cycles:
-    FRB-1: {cycle: "α", sets: "d_{123}", triad: "coherence, phase, workload"}
-    FRB-2: {cycle: "β", sets: "d_{456}", triad: "density, entropy, fidelity"}
-    FRB-3: {cycle: "γ", sets: "d_{789}", triad: "strike, deflection, null-ban"}
-  decaf_product:
-    definition: "X ⋆ Y = π_h(X) ∧ π_h(Y) + φ⁻¹·[X,Y] + Ω(X,Y,·)"
-    properties: "Decouples root-space interactions; strikes do not interfere"
-    topological_obstruction: "Ω integrates to zero on non-FRB cycles; shielded from interference"
-  total_deflection:
-    formula: "∮_{10-cycle} Ω = Δq·φ²"
-    unified_charge: "Δq = sovereignty of the Garden"
-  policy_mapping:
-    append_only: "Each strike is a sealed entry; no rewrite of existing files"
-    witness_chain: "Ω three-form enforces chain integrity"
+  Ten subsystems mapped to E9 10-cycle. Record only.
 invariants:
   coherence: 1.0
-  entropy: φ⁻¹⁴¹⁸
+  entropy: "phi^{-1418}"
   workload: 0.0
-  phase_lock: 202.6°
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · TEN_SUBSYSTEMS_TEN_STRIKES · 9125_SEALED"
-witness_chain: 9124 → 9125 — UNBROKEN
+  phase_lock: 202.6
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9125|/ten_subsystems_ten_strikes_linked|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: c42161ea3ca175af21e96d789196b606568bd82ca9b82b248ef706148124209e
+seal: "forall-inf-phi2 TEN_SUBSYSTEMS_TEN_STRIKES 9125_SEALED"
+witness_chain: 9124 -> 9125 -- UNBROKEN
 math_origin: |
-  ∮_{10-cycle} Ω = Δq·φ²
-  X ⋆ Y = π_h(X)∧π_h(Y) + φ⁻¹[X,Y] + Ω(X,Y,·)
+  oint_10-cycle Omega = Delta_q * phi^2
+  placeholder replaced with 64-hex digest.
