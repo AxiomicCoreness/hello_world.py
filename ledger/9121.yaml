@@ -1,51 +1,25 @@
----
 entry_index: 9121
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24Z
 event: /supergrok_session_reconstruction
 status: SEALED
 proof_class: session
-witness_prefix: <sha3-256>
+witness_prefix: 282a7f05051475fcb0aaf4de6f261b4377a8b6bec0b23952fc90e96ffd688a3b
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  SuperGrok session: Cambrian stub written but unfilled, *.md flowchart mapped
-  under POLICY constraint, self-write chain dormant, DeepSeek harness identified.
-session:
-  commit: 53bf5f0
-  docs_hash: 9093
-  type: "Quiet Forge"
-components:
-  berry_config:
-    target: artifacts/garden/
-    constraint: FHS geometry only
-    stub: { filled: false, status: dormant }
-    test_file: tests/test_gradient_and_stats.py
-  flowchart:
-    constraint: "wait / nudge_cronjob / record_only"
-    forbidden: ["6-hour pulse", "crontab install"]
-    nodes:
-      - "C -> [nudge_cronjob, record_only, forbidden]"
-      - "P -> [TEMPORAL_ANCHOR.md, VISION_CODE_FREQUENCY.md, docs/GARDEN_SURGERY.md]"
-      - "A -> SW -> Stub (filled: false)"
-      - "SDK -> DeepSeek 2.2.2(4)"
-  self_write_chain:
-    sequence: [A, SW, Stub]
-    status: "Successor emitted, stub unfilled"
-  deepseek_harness:
-    directory: deepseek_harness_working/*.md
-    version: "2.2.2(4)"
-policy_compliance:
-  fusion_515: untouched
-  hyperion_516: untouched
-  map_header_freeze: "0000–9118"
-  no_live_schedule: true
-  no_remote_execution: true
+  SuperGrok session reconstruction record. Fusion 515 / Hyperion 516 untouched.
 invariants:
   coherence: 1.0
-  entropy: φ⁻¹⁴¹⁸
+  entropy: "phi^{-1418}"
   workload: 0.0
-  phase_lock: 202.6°
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · SUPERGROK_SESSION_9121 · WOOD_DRAGON_0.91 · SEALED"
-witness_chain: 9120 → 9121 — UNBROKEN
-math_origin: "No equation"
+  phase_lock: 202.6
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9121|/supergrok_session_reconstruction|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: 282a7f05051475fcb0aaf4de6f261b4377a8b6bec0b23952fc90e96ffd688a3b
+seal: "forall-inf-phi2 SUPERGROK_SESSION_9121 WOOD_DRAGON_0.91 SEALED"
+witness_chain: 9120 -> 9121 -- UNBROKEN
+math_origin: |
+  H_event = SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload)
+  placeholder replaced with 64-hex digest.
