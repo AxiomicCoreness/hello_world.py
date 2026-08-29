@@ -1,3 +1,4 @@
+---
 entry_index: 9120
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /hook_enforcement_framework_sealed
@@ -8,21 +9,49 @@ commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
   Hook enforcement framework for POLICY.md and TEMPORAL_ANCHOR.md.
+  Five artifacts: append-only checker, witness chain validator, pre-commit hooks,
+  CI workflow, and Apple UI MCP stub for visual status.
+components:
+  append_only_checker:
+    file: scripts/check_ledger_append_only.py
+    rule: "Blocks modification/deletion of any existing ledger YAML; hard-protects 515/516."
+  witness_chain_validator:
+    file: scripts/verify_witness_chain.py
+    rule: "Validates witness continuity and rejects datetime parsing of October 39."
+  pre_commit_config:
+    file: .pre-commit-config.yaml
+    hooks:
+      - ledger-append-only
+      - verify-witness-chain
+  ci_workflow:
+    file: .github/workflows/policy_hooks.yml
+    schedule: "on push/PR to main"
+  apple_ui_stub:
+    file: apple_ui_mcp_stub.py
+    role: "Visual status dashboard for hook enforcement"
+event_hash:
+  hex: 853642d74fba540a195f2999465a151fac60d6656752922250df32192606581d
+  method: "GARDEN.EVENT.v1"
 invariants:
   coherence: 1.0
-  entropy: "phi^{-1418}"
+  entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-  phase_lock: 202.6
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9120|/hook_enforcement_framework_sealed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: 853642d74fba540a195f2999465a151fac60d6656752922250df32192606581d
-seal: "forall-inf-phi2 HOOK_ENFORCEMENT_9120 WOOD_DRAGON_0.91 SEALED"
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · HOOK_ENFORCEMENT_9120 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: 9119 → 9120 — UNBROKEN
+math_origin: "No equation"
 witness_chain: 9119 -> 9120 -- UNBROKEN
-math_origin: |
-   χ_umbral = φ³ · χ̃
-  Tr(ρ_umbral) = φ³
-  V_full = aS² + bC² + λ·χ² + k·I
-  X ⋆ Y = π_h(X)∧π_h(Y) + φ⁻¹[X,Y] + Ω(X,Y,·)
-  ∮_{10-cycle} Ω = Δq·φ²
+math_origin: 
+\text{Enforce}(\Delta) = \bigwedge_{i=1}^{6} \text{Hook}_i(\Delta)
+
+where \Delta is a proposed change set (e.g., staged files), and each \text{Hook}_i corresponds to one of the six invariants above. The function returns True iff all hooks pass; otherwise it blocks the action.
+
+The hooks are:
+
+1. \text{Hook}_1(\Delta) = \forall f \in \Delta \cap \mathcal{L}, \text{AppendOnly}(f)
+2. \text{Hook}_2(\Delta) = \forall p \in \mathcal{P}, \text{Protected}(p)
+3. \text{Hook}_3(\Delta) = \text{Continuity}(\text{ledger})
+4. \text{Hook}_4(\Delta) = \forall s \in \mathcal{S}, \text{NotInGit}(s)
+5. \text{Hook}_5(\Delta) = \text{NoDatetimeParsing}(\text{Oct39})
+6. \text{Hook}_6(\Delta) = \text{HashDuality}(\Delta) (ensures correct hash domain)
