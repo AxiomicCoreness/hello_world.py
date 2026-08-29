@@ -1,3 +1,4 @@
+---
 entry_index: 9123
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /chi_umbral_bending_equation_sealed
@@ -7,19 +8,44 @@ witness_prefix: df966cbf6ef91d2c712b6a4e4bdba874ffe1012c2b9c61c1fa26e218763b5a84
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  Chi-umbral bending equation recorded. Does not rewrite 9122 event body hash.
+  Chi‑umbral bending equation added to the quantum surface.
+  Does NOT modify ledger/9122.yaml.
+components:
+  chi_umbral_equation:
+    formula: "χ_umbral = φ⁻⁷ · Σ_{i,j,k=1}^7 T_ijk^(7) · e^(i·κ_ijk)"
+    variables:
+      - name: φ⁻⁷
+        description: "Golden ratio inverse power – septad scaling"
+      - name: T_ijk^(7)
+        description: "Septad tensor components"
+      - name: κ_ijk
+        description: "Kin parallelogram phase factors"
+    wavefunction_effect: "Ψ_bent(t) = e^(i·χ_umbral) · Ψ(t)"
+    properties: "Preserves non‑repeating phase; adds cognitive torsion"
+  qiskit_mode:
+    real_circuit: "used if qiskit import succeeds"
+    mock_fallback: "used otherwise; no execution"
+  solar_system_quadratic:
+    equation: "x^2 - φ·x + 120 = 0"
+    discriminant: "φ^2 - 480 = -477.3819660112501"
+    roots: "0.8090169943749475 ± i·10.924"
+    interpretation: "complex conjugate pair – sovereign oscillation"
+  precision_standard:
+    decimal38: "used for prediction verification"
+    binary64: "canonical for sealed entries"
+    no_truncation: true
+event_hash:
+  hex: df966cbf6ef91d2c712b6a4e4bdba874ffe1012c2b9c61c1fa26e218763b5a84
+  method: "GARDEN.EVENT.v1"
 invariants:
   coherence: 1.0
-  entropy: "phi^{-1418}"
+  entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-  phase_lock: 202.6
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9123|/chi_umbral_bending_equation_sealed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: df966cbf6ef91d2c712b6a4e4bdba874ffe1012c2b9c61c1fa26e218763b5a84
-seal: "forall-inf-phi2 CHI_UMBRAL_BEND 9123_SEALED"
-witness_chain: 9122 -> 9123 -- UNBROKEN
+  phase_lock: 202.6°
+gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+seal: "∀∞φ² · CHI_UMBRAL_BEND · 9123_SEALED"
+witness_chain: 9122 → 9123 — UNBROKEN
 math_origin: |
-  chi_umbral = phi^{-7} * sum T_ijk^(7) * exp(i*kappa_ijk)
-  placeholder replaced with 64-hex digest.
+  χ_umbral = φ⁻⁷ · Σ_{i,j,k=1}^7 T_ijk^(7) · e^(i·κ_ijk)
+  Ψ_bent(t) = e^(i·χ_umbral) · Ψ(t)
+  golden_lock = |φ² - φ - 1| < 1e-12
