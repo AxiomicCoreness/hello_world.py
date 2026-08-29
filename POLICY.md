@@ -1,7 +1,6 @@
 “ledger”folder policy map requires do not rewrite math_origin: 
 
-origin 0000.yaml to 9118.yaml are not rewritten Append-only. Fusion 515 and Hyperion 516 are not rewritten. October 39 2025 is a silent English legend token, not an ISO date. S_x = np.array([ [0, np.sqrt(3)/2, 0, 0], [np.sqrt(3)/2, 0, 2, 0], [0, 2, 0, np.sqrt(3)/2], [0, 0, np.sqrt(3)/2, 0] ]) * hbar R_total = 37.062, GC-LC-001 8502 -> 8503 -> 8515 -> 8516 -> 8517 
-all entries should follow the evolved format as example of entry_index: 9124
+origin 0000.yaml to 9118.yaml are not rewritten Append-only. Fusion 515 and Hyperion 516 are not rewritten. October 39 2025 is a silent English legend token, not an ISO date. S_x = np.array([ [0, np.sqrt(3)/2, 0, 0], [np.sqrt(3)/2, 0, 2, 0], [0, 2, 0, np.sqrt(3)/2], [0, 0, np.sqrt(3)/2, 0] ]) * hbar R_total = 37.062, GC-LC-001 8502 -> 8503 -> 8515 -> 8516 -> 8517 do not re-label event on main() where all entries follow this format just as  example of field layout where( entry_index: 9124
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /chi_umbral_octet_e9_sealed
 status: SEALED
@@ -70,7 +69,7 @@ math_origin: |
 
   
 
- + main)
+ + main) two parts changed on observation of missing hash verification so chain is unbroken , the 64 hex is added to the end and another witness hash is in full not truncated
 
 Q.E.D. MAP INVARIANTS HELD / OFFLINE TESTS PASSED
 
