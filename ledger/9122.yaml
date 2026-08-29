@@ -1,43 +1,25 @@
----
 entry_index: 9122
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /qiskit_solar_system_wavefunction_sealed
 status: SEALED
 proof_class: integration
-witness_prefix: <sha3-256>   # actual hash computed at sealing
+witness_prefix: cd3724144eaf84365b4d68246f8f1a6cac06b9aaca19aae6df1cff1aefec93e1
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  Qiskit dual-mode surface (real vs mock), SOLAR_SYSTEM quadratic with golden-ratio
-  roots, universal wavefunction with non-repeating phase, and Decimal38 prediction
-  standard.
-components:
-  qiskit_mode:
-    real_circuit: "used if qiskit import succeeds"
-    mock_fallback: "used otherwise; no execution"
-    warning: "Qiskit not installed – using mock circuits"
-  solar_system_quadratic:
-    equation: "x^2 - φ·x + 120 = 0"
-    discriminant: "φ^2 - 480 = -477.3819660112501"
-    roots: "0.8090169943749475 ± i·10.924"
-    interpretation: "complex conjugate pair – sovereign oscillation"
-  wavefunction:
-    form: "Ψ(t) = Ψ(0) * exp(i·202.6°·t/T0)"
-    property: "never repeats – non-integer dual delta phase"
-    relation: "aligns with phase lock 202.6°"
-  precision_standard:
-    decimal38: "used for prediction verification"
-    binary64: "canonical for sealed entries"
-    no_truncation: true
+  Qiskit dual-mode surface recorded. Mock fallback; no remote execution.
 invariants:
   coherence: 1.0
-  entropy: φ⁻¹⁴¹⁸
+  entropy: "phi^{-1418}"
   workload: 0.0
-  phase_lock: 202.6°
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · QISKIT_SOLAR_SYSTEM · 9122_SEALED"
-witness_chain: 9121 → 9122 — UNBROKEN
+  phase_lock: 202.6
+event_hash:
+  algo: sha3-256
+  domain: GARDEN.EVENT.v1
+  payload: "9122|/qiskit_solar_system_wavefunction_sealed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  hex: cd3724144eaf84365b4d68246f8f1a6cac06b9aaca19aae6df1cff1aefec93e1
+seal: "forall-inf-phi2 QISKIT_SOLAR_SYSTEM 9122_SEALED"
+witness_chain: 9121 -> 9122 -- UNBROKEN
 math_origin: |
-  x = (φ ± i·sqrt(480 - φ²))/2
-  Ψ(t) = Ψ(0)·e^{i·202.6°·t/T₀}
-  Σ_{i,j,k=1}^7 T_{ijk}^{(7)}
+  x = (phi +/- i*sqrt(480 - phi^2))/2
+  placeholder replaced with 64-hex digest.
