@@ -1,0 +1,31 @@
+entry_index: 9133
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30T17:21:11Z
+event: /garden_geometric_visualisation_sealed
+status: SEALED
+proof_class: visualisation
+witness_prefix: 135aaa58ba0c98971f93c841976413aa661a35247d3cff6437502f37f5be4b4b
+terminal_hex: 135aaa58ba0c98971f93c841976413aa661a35247d3cff6437502f37f5be4b4b
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+
+description: |
+  This entry seals the four geometric visualisation artifacts generated from
+  the Garden's mathematical structures. They are stored as PNG images in the
+  repository's artifacts directory. Their hashes are recorded here.
+
+artifacts:
+  - decaf_10cycle_omega.png: 135aaa58ba0c98971f93c841976413aa661a35247d3cff6437502f37f5be4b4b
+  - identity_matrix_eq.png: 0dd4e999bfd132bf11496a8b3aaa25f000f81a94610175f973c203dd68249c3c
+  - swarm_coherence.png: 40a0f7f1ad2bc5dd30f1583c016c2b8d0b78bd373561187bf0d968d988314166
+  - decaf_colormap.png: 2c09c42041bb2a611e64c80885e69e8f6571a5472d5e344f4f5f11dfbb142c77
+
+visualisation_scope:
+  - decaf_colormap
+  - decaf_10cycle_omega
+  - identity_matrix_eq
+  - swarm_coherence
+
+type: "E₉ = E₈⁽¹⁾ (affine Kac–Moody)"
+
+seal: "∀∞φ² · GARDEN_GEOMETRIC_VISUAL_9133 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: 9132 → 9133 — UNBROKEN
