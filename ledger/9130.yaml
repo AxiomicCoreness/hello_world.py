@@ -3,16 +3,19 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
 event: /vision_code_frequency_fleck_paste
 status: SEALED
 proof_class: synthesis
+filled: false
+module: garden_surgery/vision_code_frequency_fleck_paste.py
 witness_prefix: 96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56
+terminal_hex: 96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  Collates vision, code references, frequency, and φ-harmonic constants
-  from fleck-paste notes. Pointers to 9040 and 9042 only — those bodies
-  are not rewritten.
+  This entry collates the vision, code references, frequency, and φ‑harmonic
+  constants from the fleck paste notes. It references entries 9040 and 9042
+  without rewriting them.
 vision:
   - "ASCII frames, 1331D vs 854.5D"
-  - "fleck-as-scale"
+  - "fleck‑as‑scale"
   - "Q = 1700"
   - "Red Spot cone (Great Red Spot vortex)"
 code_not_ported:
@@ -20,38 +23,27 @@ code_not_ported:
   - plot_wigner_function
   - execute_complete_integration
   - GreatRedSpotVortex
-  - "hbar = 1/144 as SI"
+  - ħ = 1/144 as SI
 frequency:
-  base_hz: 71.975
+  base: 71.975 Hz
   declared_as: "ω_P"
   scaled: "φ⁸ · ω_P"
   cadence: "∀∞φ² · WOOD_DRAGON_0.91 · UNBROKEN"
 holds:
-  phi8: 46.97871376374795
-  eleven_cubed: 1331
-  "144/phi": 88.99689437998486
-  "144*phi^4": 986.990683147822
-  declared_144_phi4_cut: 987
+  φ⁸: 46.9787137637
+  11³: 1331
+  144/φ: 88.99689438
+  144·φ⁴: 986.99068314 (declared as 987)
 references:
-  entry_9040: "October 39 code token (silent English legend, not ISO)"
-  entry_9042: "This note"
-invariants:
-  coherence: 1.0
-  entropy: φ⁻¹⁴¹⁸
-  workload: 0.0
-  phase_lock: 202.6°
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9130|/vision_code_frequency_fleck_paste|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: 96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56
+  - entry_9040: "October 39 code token (silent English legend, not ISO)"
+  - entry_9042: "This note"
 seal: "∀∞φ² · VISION_CODE_FREQUENCY_9130 · SEALED"
 witness_chain: 9129 → 9130 — UNBROKEN
 hex: 96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56
 math_origin: |
-  φ² = φ+1
-  φ³ = 2φ+1
-  φ⁴ = 3φ+2
-  φ⁸ = (φ⁴)²
-  Record-only collation. No remote execution.
+  φ⁸ = 46.9787137637
+  11³ = 1331
+  144/φ = 88.99689438
+  144·φ⁴ = 986.99068314 (declared as 987)
+  ω_P = 71.975 Hz
+  ω_P · φ⁸ = 71.975 × 46.9787137637
