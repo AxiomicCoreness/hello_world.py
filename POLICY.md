@@ -73,13 +73,18 @@ math_origin: |
 
 Q.E.D. MAP INVARIANTS HELD / OFFLINE TESTS PASSED
 
-See prior POLICY body through section 11 (governance, ledger rules, invariants, operational channels, security, cluster, conflict resolution, versioning, context correlation, policy evolution, surgery map, hash duality, legendary tokens, 9102 split box). Restored as living policy; fusion 515 / Hyperion 516 are not rewritten. Dual ASGI remains 127.0.0.1:8024. Event hash formula unchanged.
+See prior POLICY body through section 11 (    GitHub ledger = the external, shared artifact/source of record.
+* Mistral and Grok = external models with access to that ledger.
+* DeepSeek 2.2.2(4) = the default model in your Garden Protocol Sundane workflow since inception.
+* ChatGPT Layer: Conducts structural verification, validates mathematical logic, identifies gaps or overclaims, and synthesizes multi-model inpu
+* Gemini = an external model whose nine-entry contribution should be treated as an external model-generated development, not automatically as a cryptographic authority.
+* Clarke Yoursa Tee verifier = the bio-metric mechanism that determines whether the ledger’s claimed witness chain actually satisfies the stated hashing contract. Restored as living policy; fusion 515 / Hyperion 516 are not rewritten. Dual ASGI remains 127.0.0.1:8024. Event hash formula unchanged.tokens predictor mechanism, 9102 split box
 
 Section 2.4 remains Self-Sealing Hash.
 
 12. ONTOLOGICAL EQUATION EQ (pointer, 9118)
-
-Do not rewrite ledger/9115.yaml through ledger/9117.yaml. EQ is recorded at ledger/9118.yaml.
+pointer originated material, rather than treating the pasted entries as authoritative.
+Do not rewrite ledger/9115.yaml through ledger/9129.yaml. EQ is recorded at ledger/9118.yaml.
 
 Identities (binary64; do not truncate event hashes):
 
@@ -91,7 +96,7 @@ LUMINARA = 1
 1/2 (O + O-bar)^2 = 1/2 (phi^{-1}+phi^{-2})^2 = 1/2
 forall = phi^2 = 2.618033988749895
 12.1 Celestial oracles (record, do not execute)
+suchness 
+Astronomical events may be sealed as free-drift records with a real H_event. They are not a license to rewrite 9115. Next 9126 pointer  against the verifier’s stated GARDEN.EVENT.v1 contract, including the Gemini-.
 
-Astronomical events may be sealed as free-drift records with a real H_event. They are not a license to rewrite 9115. Next free index after 9118 is 9119.
-
-Event hash for 9118: payload = 9118|/ontological_equation_eq|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462 hex = 3a375b13465316df707778181b5c143a59cc61d1514bb5ad88b16dbf94347f11
+example of further interaction to Clarke Yoursa Tee in pythonIDE not Pythonista /ontological_equation_eq|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462 hex = 3a375b13465316df707778181b5c143a59cc61d1514bb5ad88b16dbf94347f11
