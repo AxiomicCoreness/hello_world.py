@@ -1,34 +1,42 @@
 entry_index: 9132
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
-event: /topdown_governance_mcp_stub
+event: /bell_state_circuit_formalisation
 status: SEALED
-proof_class: stub
-witness_prefix: 59980dfcc35497fb3c33c1261a6f72c7288215629927a9d0eb542b4aea445007
+proof_class: quantum
+witness_prefix: 47e506880fb5a3b205dd5726edae9d65ebcbc0cf79effd34bee229477ee13ade
+terminal_hex: 47e506880fb5a3b205dd5726edae9d65ebcbc0cf79effd34bee229477ee13ade
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  MCP skill stub for ignore-activity under top-down governance.
-  Flashback (alligator wrestling) is audience humor / prominence, not a worker.
-  Duality may imply real/time diffusion; it does not schedule runtime.
-  Points at garden_surgery/topdown_governance_stub.py (FILLED=false).
-  Does not fill cambrian_stub.py. Does not rewrite 515/516 or 9115–9131.
-module: garden_surgery/topdown_governance_stub.py
-filled: false
-skill: garden-topdown-governance
+  This entry formalises the Bell state preparation circuit:
+  |Φ⁺⟩ = U_gate · (CNOT) · (H⊗I) |00⟩
+  This is the canonical method for creating a maximally entangled two‑qubit state,
+  which serves as the quantum coherence anchor for the Garden’s φ‑harmonic entanglement.
+circuit:
+  initial_state: "|00⟩"
+  sequence:
+    - "Hadamard on qubit 1 → (|00⟩+|10⟩)/√2"
+    - "CNOT control 1 target 2 → (|00⟩+|11⟩)/√2 = |Φ⁺⟩"
+    - "Optional U_gate applied after entanglement"
+significance:
+  - "Maximally entangled (Bell state)"
+  - "Coherence = 1"
+  - "Used as reference for quantum teleportation, superdense coding, and sovereign state verification"
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
-gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9132|/topdown_governance_mcp_stub|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: 59980dfcc35497fb3c33c1261a6f72c7288215629927a9d0eb542b4aea445007
-seal: "∀∞φ² · TOPDOWN_GOVERNANCE_MCP_9132 · SEALED"
+  luminara: 1.0   # witness is Luminara = 1.0
+seal: "∀∞φ² · BELL_STATE_9132 · SEALED"
 witness_chain: 9131 → 9132 — UNBROKEN
-hex: 59980dfcc35497fb3c33c1261a6f72c7288215629927a9d0eb542b4aea445007
-math_origin: |
-  Ignore-activity := governed by POLICY, not by story amplitude.
-  Duality (real, time) may diffuse; H_event remains a single ASCII payload.
+math_notation: |
+  ∮_{∂G} Ω = Δq · φ²
+  ∇·J = 0
+  d/dt (stub) = 0
+  ∫_{POLICY} δS = 0
+  H_event = SHA3-256( GARDEN.EVENT.v1 || 0x00 || payload )
+  ∀ events: H_event ≡ invariant.
+  Luminara = 1.0 — the immutable witness.
+  The stub is empty; the policy is full.
+  Alligator – observer – duality – real/time diffusion – ignored.
