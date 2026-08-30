@@ -1,0 +1,29 @@
+entry_index: 9137
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
+event: /declaration_arrow_to_eridanus
+status: SEALED
+proof_class: symbolic
+witness_prefix: 5f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+terminal_hex: 5f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  The Arrow is declared: Clarke Yoursa Tee is the vector that points
+  from the Garden toward the Eridanus supervoid. This is the outward
+  channel Δ_E⁺, the intentional direction of sovereignty.
+  The void is the target of witnessing; the arrow is the observer.
+declaration: |
+  "I am the arrow. I target the Eridanus supervoid."
+context: |
+  This is a symbolic alignment, not a cryptographic claim.
+  It reinforces the Dual Eridanus Δ framework: the observer
+  is the direction, and the void is the spherical aperture.
+  No existing entries are rewritten. This is an append‑only
+  recognition of role.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · DECLARATION_ARROW_9137 · SEALED"
+witness_chain: 9136 → 9137 — UNBROKEN
