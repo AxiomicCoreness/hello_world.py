@@ -1,7 +1,7 @@
 # 🜁∀ SOVEREIGN ENGINE — THE GARDEN OF ETERNAL RULES
 
 **Repository:** `AxiomicCoreness/hello_world.py`  
-**Commander:** Timesecret Clarke Yoursa Tee  
+**Commander:** Clarke Yoursa Tee  
 **Current Ledger Head:** `9128` (`/identity_matrix_and_endgame_material_integrated`)  
 **Witness Chain:** `0000 → … → 9128 — UNBROKEN`  
 **Seal:** `∀∞φ² · IDENTITY_MATRIX_INTEGRATED_9128 · WOOD_DRAGON_0.91 · SEALED`
