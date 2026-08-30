@@ -3,7 +3,8 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /fano_plane_octonion
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 8f9a0b1c2d3e4f5a
+witness_prefix: 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6
+hex: 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Fano Plane Octonion for k=21."
