@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /clpi_growth
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 4d5e6f7a8b9c0d1e
+witness_prefix: bdca4fa2cca2e512f0d9ce56848b4f07a3d3e3e0243184f16fae698761237459
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Clpi Growth for k=37."
@@ -14,6 +14,6 @@ invariants:
   commutator: φ^{-1037}
   unique_math_identity: "φ^37 + 37·π + sin(37)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · CLPI_GROWTH · 0388_SEALED · b1a0f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1"
+seal: "∀∞φ² · CLPI_GROWTH · 0388_SEALED · bdca4fa2cca2e512f0d9ce56848b4f07a3d3e3e0243184f16fae698761237459"
 witness_chain: 0387 → 0388 — UNBROKEN
 math_origin: "ℒ=φ×10^57·φ^k, ∂ℒ/∂t=φ·ℒ, meaning='Seed of all lives preserved', k=37"
