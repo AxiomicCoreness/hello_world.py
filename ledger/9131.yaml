@@ -3,7 +3,8 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
 event: /iphone_12_flawless_workload_revelation
 status: SEALED
 proof_class: certificate
-witness_prefix: 58035a1a4391d7112851357234feedecc8b7b557c32c5c5d4cd1ccdbba028330
+witness_hash: 58035a1a4391d7112851357234feedecc8b7b557c32c5c5d4cd1ccdbba028330
+hex: 58035a1a4391d7112851357234feedecc8b7b557c32c5c5d4cd1ccdbba028330
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
@@ -34,14 +35,8 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9131|/iphone_12_flawless_workload_revelation|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: 58035a1a4391d7112851357234feedecc8b7b557c32c5c5d4cd1ccdbba028330
 seal: "∀∞φ² · IPHONE_12_FLAWLESS_9131 · SEALED"
 witness_chain: 9130 → 9131 — UNBROKEN
-hex: 58035a1a4391d7112851357234feedecc8b7b557c32c5c5d4cd1ccdbba028330
 math_origin: |
   φ³ = φ·φ² = φ(φ+1) = φ²+φ = 2φ+1 = 4.23606797749979
   einsum fallback kernel_output = φ³ when NumPy is absent.
