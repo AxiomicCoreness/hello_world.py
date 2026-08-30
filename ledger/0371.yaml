@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /phi_predictor_ngram
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 7e8f9a0b1c2d3e4f
+witness_prefix: 1ef5d501949afb3c6b4a21e46460c8c929c4f1ac997a173ff1526e4e2611d317
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Phi Predictor Ngram for k=20."
@@ -14,6 +14,6 @@ invariants:
   commutator: φ^{-1020}
   unique_math_identity: "φ^20 + 20·π + sin(20)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · PHI_PREDICTOR_NGRAM · 0371_SEALED · ca5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4"
+seal: "∀∞φ² · PHI_PREDICTOR_NGRAM · 0371_SEALED · 1ef5d501949afb3c6b4a21e46460c8c929c4f1ac997a173ff1526e4e2611d317"
 witness_chain: 0370 → 0371 — UNBROKEN
 math_origin: "max_n=5, P(gram)=φ^{-timestamp}·weight, candidates=Σ weight·φ^{n-1}, k=20"
