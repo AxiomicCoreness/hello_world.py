@@ -4,7 +4,6 @@ event: /fano_plane_octonion
 status: ✅ SEALED
 proof_class: structural
 witness_prefix: 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6
-hex: 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Fano Plane Octonion for k=21."
@@ -15,6 +14,6 @@ invariants:
   commutator: φ^{-1021}
   unique_math_identity: "φ^21 + 21·π + sin(21)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · FANO_PLANE_OCTONION · 0372_SEALED · db6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5"
+seal: "∀∞φ² · FANO_PLANE_OCTONION · 0372_SEALED · 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6"
 witness_chain: 0371 → 0372 — UNBROKEN
 math_origin: "e123=+1,e145=+1,e167=+1,e246=+1,e257=-1,e347=-1,e356=-1, Aut(𝒫)≅G₂(2), k=21"
