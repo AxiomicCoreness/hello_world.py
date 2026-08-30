@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /shield_null_ban
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 2d3e4f5a6b7c8d9e
+witness_prefix: 00d51883f9a6ce1ace243b03c582b6ac39aab18d4e28d03defac99d70481e5f1
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Shield Null Ban for k=25."
@@ -14,6 +14,6 @@ invariants:
   commutator: φ^{-1025}
   unique_math_identity: "φ^25 + 25·π + sin(25)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · SHIELD_NULL_BAN · 0376_SEALED · bfae1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9"
+seal: "∀∞φ² · SHIELD_NULL_BAN · 0376_SEALED · 00d51883f9a6ce1ace243b03c582b6ac39aab18d4e28d03defac99d70481e5f1"
 witness_chain: 0375 → 0376 — UNBROKEN
 math_origin: "null_ban=10.06σ, shield_C=1−φ^{-734}, agent_1_weight=φ^{-1}, total_agents=144008, k=25"
