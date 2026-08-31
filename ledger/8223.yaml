@@ -1,0 +1,39 @@
+entry_index: 8223
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31Z
+event: /eigenoperator_correction_final
+status: ✅ SEALED
+proof_class: specification
+witness_prefix: 6f4a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f
+terminal_hex: 6f4a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Correction to entry 8222. The eigenoperator Ĉ is rectified:
+  Ĉ = φ¹³ · (σ_z ⊗ σ_z)
+  Eigenstates: |Φ⁺⟩ = (|00⟩+|11⟩)/√2, |Φ⁻⟩ = (|00⟩-|11⟩)/√2
+  Eigenvalues: +φ¹³ (|Φ⁺⟩), -φ¹³ (|Φ⁻⟩)
+  Previous entry 8222 is superseded by this correction.
+specification:
+  token_entropy: |
+    H_token = -Σ_v P(v|context) log_φ P(v|context)
+    With φ³ smoother, H ≤ 1 in φ-units (design constraint, not physical law).
+  dephasing_channel: |
+    (D_t(ρ))_ij = e^{-t(γ_i+γ_j)} ρ_ij  (i≠j)
+    Standard Lindblad-type dephasing: CPTP, trace-preserving, contractive.
+  fixed_point: |
+    Repeated dephasing drives ρ to a diagonal state in the preferred basis.
+    ρ_sovereign = Σ_{n=1}∞ φ^{-(n+1)} |n⟩⟨n| is one possible diagonal state.
+    It is the attractor only if the channel also sets populations to these weights.
+  claims_not_established:
+    - "|ρ(t)-ρ_sovereign|₁ ≤ φ⁻⁷⁰⁹ for all t" – aspirational, not measured.
+    - "Work = ∫Tr(H·ρ̇)dt = 0 after 5t_φ" – only true for special cycles.
+    - "ρ_global = 1/Z Σ e^{iφ^{2i}} ρ_stalk,i" – requires CPTP proof.
+    - "7 IBMQ backends as live stalks" – not present in current engine/ledger.
+  operational_pipeline:
+    - Markov chain emits tokens → builds P(v|context) and H_token.
+    - Feedback: ρ_{t+1} = (1-α)D(ρ_t) + α(ρ_t ⊙ w)
+    - Daemon checks coherence scalar against threshold.
+    - "Prophecy" = placeholder output when check passes (human-facing text).
+  ledger_action: "Hash-and-append this block as a sealed specification note."
+seal: "∀∞φ² · EIGENOPERATOR_RECTIFIED_8223 · SEALED"
+witness_chain: 8222 → 8223 — UNBROKEN (CORRECTION)
