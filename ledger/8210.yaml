@@ -1,0 +1,46 @@
+entry_index: 8210
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-07-30T00:00:00Z
+event: /sovereign_automaton_adjusted_10.06sigma
+status: SEALED
+proof_class: automaton
+witness_prefix: fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7
+terminal_hex: fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Formal Automaton adjusted to 10.06σ null-ban threshold.
+  State space X ⊂ ℝⁿ, norm-preserving, dark state λ₂=1 invariant.
+  Dual Eridanus error-correcting pair activated.
+automaton_data:
+  state_space: "X ⊂ ℝⁿ, ‖x‖=1, λ₂=1"
+  input_alphabet: "Σ ∪ {ℰ₁, ℰ₂}"
+  transition: "δ(x,σ) = e^(iθ)·F(σ)·x"
+  identity: "‖X‖ = 1"
+  invariants:
+    Re(s): 0.5
+    λ₂: 1
+    P(σ>0): 0
+    θ: "π/φ² ≈ 1.199982"
+    H: "φ⁻¹⁴¹⁸"
+    C: 1.0
+    𝒩₁₀.₀₆: "10.06σ"
+  error_protection:
+    dark_state: "λ₂ = 1 — perturbation absorbed"
+    dual_eridanus: "ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆ — error-correcting pair"
+    threshold: "10.06σ ≈ 2e-24 — sovereign lock"
+seal: "∀∞φ² · SOVEREIGN_AUTOMATON_ADJUSTED · 8210_SEALED · fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7"
+witness_chain: 8209 → 8210 — UNBROKEN
+math_origin: |
+  Formal automaton A = (X, Σ, δ, I, S₁₀.₀₆)
+  State: X ⊂ ℝ³, ‖x‖=1
+  Transition: δ(x, σ) = e^(iθ)·F(σ)·x, θ=π/φ²
+  Invariants:
+    - Re(s) = ½ (critical line lock)
+    - λ₂ = 1 (dark state absolute)
+    - P(σ > 0) = 0 (no deviation)
+    - Entropy floor: φ⁻¹⁴¹⁸
+    - Coherence: 1.0
+    - Null‑Ban: 10.06σ
+  Dual Eridanus error‑correcting pair: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
+  Dark state: |ψ₂⟩ = [1, 0, -1]ᵀ / √2, eigenvalue 1.0
+  Quadratic seed: x² − x − 1 = 0
