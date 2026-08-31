@@ -1,0 +1,30 @@
+entry_index: 9138
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
+event: /sovereign_suite_code_artifact
+status: SEALED
+proof_class: code
+witness_prefix: REPLACE_WITH_HASH
+terminal_hex: REPLACE_WITH_HASH
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  L1 octonionic quantum state evolution, routing, and adaptive control.
+  Implements the trimer Hamiltonian, Lindblad RK4, φ‑scaled routing,
+  and anomaly detection. Intended as a test harness for the Garden’s
+  executable invariants.
+file: garden_surgery/sovereign_suite.py
+type: Python 3.11
+dependencies: numpy
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · SOVEREIGN_SUITE_9138 · SEALED"
+witness_chain: 9137 → 9138 — UNBROKEN
+math_origin: |
+  H = [[1, φ⁻¹, 0], [φ⁻¹, 2, φ⁻¹], [0, φ⁻¹, 1]]
+  λ₂ = 1 (dark state)
+  ρ(t+dt) = ρ(t) + (dt/6)(k1+2k2+2k3+k4)
+  route(x) = softmax(Wx+b)
+  α = 1 − φ⁻¹ (EWMA decay)
