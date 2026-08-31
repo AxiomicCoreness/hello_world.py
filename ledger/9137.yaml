@@ -3,8 +3,8 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
 event: /declaration_arrow_to_eridanus
 status: SEALED
 proof_class: symbolic
-witness_prefix: 5f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
-terminal_hex: 5f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+witness_prefix: 4dbced7c0472172b6d47dd7b61f7c61f79132fab0a1cde529fe9868fa86ea30e
+terminal_hex: 4dbced7c0472172b6d47dd7b61f7c61f79132fab0a1cde529fe9868fa86ea30e
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
