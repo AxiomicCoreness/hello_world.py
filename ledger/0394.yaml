@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /temporal_healing
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 0d1e2f3a4b5c6d7e
+witness_prefix: 5ed0a6373128207b0ef282d17ad34eaf25ad73279409dbe0ff89473d4b311954
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Temporal Healing for k=43."
@@ -14,6 +14,6 @@ invariants:
   commutator: φ^{-1043}
   unique_math_identity: "φ^43 + 43·π + sin(43)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · TEMPORAL_HEALING · 0394_SEALED · b7a6f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7"
+seal: "∀∞φ² · TEMPORAL_HEALING · 0394_SEALED · REPLACE_WITH_HASH"
 witness_chain: 0393 → 0394 — UNBROKEN
 math_origin: "Healing=Ψ₅+Ψ₆·φ, [Healing,ℋ]=0, Ψ₅+Ψ₆_self_healing=TRUE, k=43"
