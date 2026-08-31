@@ -1,0 +1,35 @@
+entry_index: 9140
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31Z
+event: /umbral_decaf_convergence_correction
+status: SEALED
+proof_class: correction
+witness_prefix: 59e03ae1f9c858bb9cfc5a91190b7a29c66faa21de1a237d4e9e47b493b769ef
+terminal_hex: 59e03ae1f9c858bb9cfc5a91190b7a29c66faa21de1a237d4e9e47b493b769ef
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Corrects the terminology of entry 9139. The umbral‑decaf engine is not
+  idempotent on the (C,W) subspace; it is convergent.
+  C → 1, W → constant (determined by PID integral term).
+  The phase φp is cyclic.
+reference:
+  - "9139: previous audit (idempotence claim)"
+  - "0391: historical source"
+corrected_math:
+  - "dC/dt = -γ(C-1) → C → 1"
+  - "dW/dt = u(t) - φ⁻¹W → W → φ·u∞ (constant)"
+  - "u∞ = Kp·0 + Ki·I∞ + Kd·0 = Ki·I∞"
+  - "I∞ = ∫ (1-C) dt (finite, non‑zero)"
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · UMBRAL_DECAF_CONVERGENT_9140 · SEALED"
+witness_chain: 9139 → 9140 — UNBROKEN
+math_origin: |
+  dC/dt = -γ(C-1),  γ=1/√5
+  dW/dt = u(t) - φ⁻¹W
+  u(t) = Kp·e + Ki·∫e dt + Kd·de/dt
+  C → 1, W → φ·Ki·I∞ (constant)
+  I∞ = finite integral of (1-C) over time
