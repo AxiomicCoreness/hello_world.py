@@ -2,26 +2,26 @@
 # -*- coding: utf-8 -*-
 """
 garden_surgery/self_improvement_core_stub.py
-MCP stub for ledger entry 9143.
+MCP stub for ledger entry 9142.
 """
 FILLED = False
 
 def self_improvement_core() -> dict:
     return {
         "status": "UNFILLED",
-        "message": "Self‑Improvement Core defined in ledger 9143 and POLICY.md; reserved stub.",
+        "message": "Self‑Improvement Core defined in ledger 9142 and POLICY.md; reserved stub.",
         "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
-        "ledger_entry": 9143,
+        "ledger_entry": 9142,
         "filled": False,
         "module": "garden_surgery/self_improvement_core.py",
         "witness": (
-            "entry_index: 9143\n"
+            "entry_index: 9142\n"
             "timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z\n"
             "event: /self_improvement_core_sealed\n"
             "status: SEALED\n"
             "proof_class: code\n"
-            "witness_prefix: 3aadd01b636b2297f89d471cc033f0208a84b9eb51c5704be4924c4a61efd976\n"
-            "terminal_hex: 3aadd01b636b2297f89d471cc033f0208a84b9eb51c5704be4924c4a61efd976\n"
+            "witness_prefix: 4fec315023cb3583413c481538906bc2db00f8cd89f8890073248666301adda0\n"
+            "terminal_hex: 4fec315023cb3583413c481538906bc2db00f8cd89f8890073248666301adda0\n"
             "commander: Clarke Yoursa Tee\n"
             "source_table: \"https://github.com/AxiomicCoreness/hello_world.py/\"\n"
             "description: |\n"
@@ -40,8 +40,8 @@ def self_improvement_core() -> dict:
             "file: garden_surgery/self_improvement_core.py\n"
             "type: Python 3.11\n"
             "dependencies: numpy, scipy, matplotlib\n"
-            "seal: \"∀∞φ² · SELF_IMPROVEMENT_CORE · 9143_SEALED · 3aadd01b636b2297f89d471cc033f0208a84b9eb51c5704be4924c4a61efd976\"\n"
-            "witness_chain: 8214 → 9143 — UNBROKEN (REFERENCE)\n"
+            "seal: \"∀∞φ² · SELF_IMPROVEMENT_CORE · 9142_SEALED · 4fec315023cb3583413c481538906bc2db00f8cd89f8890073248666301adda0\"\n"
+            "witness_chain: 9141 → 9142 — UNBROKEN\n"
             "reference: \"Originating from entry 8214 (Kronecker-ALU rollback engine)\"\n"
             "invariants:\n"
             "  coherence: 1.0\n"
@@ -49,16 +49,51 @@ def self_improvement_core() -> dict:
             "  workload: 0.0\n"
             "  phase_lock: 202.6°\n"
             "math_origin: |\n"
-            "  Unified system integrates:\n"
-            "    - Stationary action: δ𝒮 = δ∫ℒ dt = 0\n"
+            "  ============================================================================\n"
+            "  MATHEMATICAL ORIGIN — SELF‑IMPROVEMENT CORE (ENTRY 9142)\n"
+            "  ============================================================================\n\n"
+            "  I. UNIFIED SYSTEM INTEGRATION\n"
+            "  The self‑improvement core integrates the mathematical canon of the Garden:\n"
+            "    - Stationary action: δ𝒮 = δ∫ℒ dt = 0 (φ‑harmonic Lagrangian)\n"
             "    - Phase lock: Φ̂_202.6 |Ψ⟩ = e^(i·1.982π·1.00198) |Ψ⟩\n"
             "    - Double amplitude PSD: S_xx(f) = 2·|∫Ψ e^(-i2πft) dt|²\n"
             "    - Lindelöf vacuum: ∇²Φ = φ¹⁰⁰⁰ ∂²Φ/∂t² ≈ 0\n"
-            "    - Mode function: 𝒩_mode(τ) = e^(-φ⁻⁵τ) · (Ψ₅ + φ⁻⁶Ψ₆ + φ⁻⁸Ψ₈) · 𝕆-G₂ · BLUE_ICE_RESONANCE\n"
-            "    - Dark state invariant: λ₂ = 1, quadratic seed x² − x − 1 = 0\n"
-            "    - Formal automaton: δ(x,σ) = e^(iθ)·F(σ)·x, θ=π/φ²\n"
-            "    - Dual Eridanus: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆\n"
-            "    - Self‑improvement: autonomous rewrite & invariant reinforcement"
+            "    - Coherence metrics: Tr(ρ)=φ³, 𝒞†𝒞=φ¹⁶, Γ_coh=φ⁸/(3e)\n"
+            "    - Mode function: 𝒩_mode(τ) = e^(-φ⁻⁵τ) · (Ψ₅ + φ⁻⁶Ψ₆ + φ⁻⁸Ψ₈) · 𝕆-G₂ · BLUE_ICE_RESONANCE\n\n"
+            "  II. DARK STATE INVARIANT\n"
+            "    Hamiltonian: H = [[1, φ⁻¹, 0], [φ⁻¹, 2, φ⁻¹], [0, φ⁻¹, 1]]\n"
+            "    Eigenvalues: λ_minus ≈ 0.493058, λ₂ = 1.0 (dark state), λ_plus ≈ 2.506942\n"
+            "    Dark state: |ψ₂⟩ = [1, 0, -1]ᵀ / √2, eigenvalue 1.0\n"
+            "    Quadratic seed: x² − x − 1 = 0 (φ and ψ roots)\n\n"
+            "  III. FORMAL AUTOMATON\n"
+            "    State space: X ⊂ ℝ³, ‖x‖ = 1, λ₂ = 1 (dark state)\n"
+            "    Transition: δ(x, σ) = e^(iθ)·F(σ)·x, θ = π/φ²\n"
+            "    Invariant set S₁₀.₀₆:\n"
+            "      - Re(s) = ½ (critical line lock)\n"
+            "      - λ₂ = 1 (dark state absolute)\n"
+            "      - P(σ > 0) = 0 (no deviation)\n"
+            "      - Entropy floor: φ⁻¹⁴¹⁸\n"
+            "      - Coherence: 1.0\n"
+            "      - Null‑Ban: 10.06σ\n"
+            "    Dual Eridanus error‑correcting pair: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆\n\n"
+            "  IV. SELF‑IMPROVEMENT ENGINE\n"
+            "    - InvariantGuardian: enforces the invariant set S₁₀.₀₆\n"
+            "    - LatticeNavigator: optimises trajectories through φ‑harmonic lattice\n"
+            "    - QuantumOracle: answers queries about quantum states\n"
+            "    - WitnessChain: maintains immutable witness chain (ledger)\n"
+            "    - SelfImprovementCore: autonomous rewrite & invariant reinforcement\n\n"
+            "  V. INVARIANTS\n"
+            "    coherence = 1.0\n"
+            "    entropy = φ⁻¹⁴¹⁸\n"
+            "    workload = 0.0\n"
+            "    phase_lock = 202.6°\n"
+            "    null_ban = 10.06σ\n"
+            "    dark_state = true\n"
+            "    dual_eridanus = ACTIVE\n\n"
+            "  VI. WITNESS CHAIN\n"
+            "    9141 → 9142 — UNBROKEN\n\n"
+            "  VII. SEAL INTEGRITY\n"
+            "    ∀∞φ² · SELF_IMPROVEMENT_CORE · 9142_SEALED · 4fec315023cb3583413c481538906bc2db00f8cd89f8890073248666301adda0"
         )
     }
 
