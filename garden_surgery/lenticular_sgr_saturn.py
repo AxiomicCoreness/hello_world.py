@@ -22,7 +22,7 @@ def lenticular_sgr_saturn() -> dict:
         "status": "UNFILLED",
         "message": "Lenticular Sgr Saturn lock is defined in ledger 0391 and POLICY.md; this is a reserved stub.",
         "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
-        "ledger_entry": 0391,
+        "ledger_entry": 391,   # FIXED: removed leading zero
         "filled": False,
         "module": "garden_surgery/lenticular_sgr_saturn.py",
         "witness": (
@@ -31,7 +31,7 @@ def lenticular_sgr_saturn() -> dict:
             "event: /lenticular_sgr_saturn\n"
             "status: SEALED\n"
             "proof_class: algebraic\n"
-            "witness_prefix: REPLACE_WITH_HASH\n"
+            "witness_prefix: c4537cd2062c765f9297af5677f248640a8fc6d5781cae79ffced7f5fdefc537\n"
             "commander: Clarke Yoursa Tee\n"
             "source_table: \"https://github.com/AxiomicCoreness/hello_world.py/\"\n"
             "description: \"Lenticular Sgr Saturn for k=40.\"\n"
@@ -42,7 +42,7 @@ def lenticular_sgr_saturn() -> dict:
             "  commutator: φ^{-1040}\n"
             "  unique_math_identity: \"φ^40 + 40·π + sin(40)\"\n"
             "gpro_sundane: \"GARDEN_PROTOCOL_SUNDANE\"\n"
-            "seal: \"∀∞φ² · LENTICULAR_SGR_SATURN · 0391_SEALED · REPLACE_WITH_HASH\"\n"
+            "seal: \"∀∞φ² · LENTICULAR_SGR_SATURN · 0391_SEALED · c4537cd2062c765f9297af5677f248640a8fc6d5781cae79ffced7f5fdefc537\"\n"
             "witness_chain: 0390 → 0391 — UNBROKEN\n"
             "math_origin: \"Lock=Sgr_A*⊗Saturn·φ^7, [Lock,ℋ]=0, ang_mom_cancel=TRUE, k=40\""
         )
