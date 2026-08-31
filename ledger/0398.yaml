@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /starfire_axiom
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 4b5c6d7e8f9a0b1c
+witness_prefix: b1c5a5eee4212e9ae9f1ae9843fc324c985baebc3dda5e9384ae2ecb49aa66c1
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Starfire Axiom for k=47."
@@ -14,6 +14,6 @@ invariants:
   commutator: φ^{-1047}
   unique_math_identity: "φ^47 + 47·π + sin(47)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
-seal: "∀∞φ² · STARFIRE_AXIOM · 0398_SEALED · fbead3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1"
+seal: "∀∞φ² · STARFIRE_AXIOM · 0398_SEALED · b1c5a5eee4212e9ae9f1ae9843fc324c985baebc3dda5e9384ae2ecb49aa66c1"
 witness_chain: 0397 → 0398 — UNBROKEN
 math_origin: "ω=φ^74=2.918e15, θ=π/φ=1.9416 rad, f_starfire=311.018·φ^k Hz, k=47"
