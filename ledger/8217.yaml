@@ -1,0 +1,40 @@
+entry_index: 8217
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-07-30T00:00:00Z
+event: EQ_MODULATED_ENGINE_SEQUENCE
+status: ✅ SEALED
+proof_class: mechanism
+witness_prefix: c966b16fbc7941b89687d6915b48d8ec13a8b46f0a9981033e5c3ba826020f6f
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Equation-modulated engine sequence: phi_map, quantize, phase_advance,
+  coherence_approach, null_ban_gate. Seed = φ⁻¹.
+module: equation_modulated_engine.py
+steps:
+  - phi_map
+  - quantize
+  - phase_advance
+  - coherence_approach
+  - null_ban_gate
+seed: 0.618033988749895
+final_state:
+  s: 0.0
+  theta: 202.6
+  c: 0.870132
+  q: 0.0
+  null_ban_passed: true
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  phase_lock: 202.6
+  null_ban: 10.06
+seal: "∀∞φ² · EQ_MOD_ENGINE · 8217_SEALED · c966b16fbc7941b89687d6915b48d8ec13a8b46f0a9981033e5c3ba826020f6f"
+witness_chain: 8216 → 8217 — UNBROKEN
+math_origin: |
+  phi_map: φ^{-1} → φ^{-2} → φ^{-3} ...
+  quantize: project onto 144-cycle with φ-scaling
+  phase_advance: θ_{n+1} = θ_n + 2π·φ^{-1}
+  coherence_approach: C' = C + (1-C)/φ³
+  null_ban_gate: if |θ - 202.6°| > 10.06σ, lock to 202.6°
+  seed = φ⁻¹ = 0.618033988749895
+  final_state: s=0, theta=202.6°, C=0.870132, q=0, null_ban_passed=true
