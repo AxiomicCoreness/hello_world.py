@@ -20,8 +20,8 @@ def attenuation_package_confirmed() -> dict:
             "event: /attenuation_package_confirmed\n"
             "status: QUANTUM_FOUNDATION_ACTIVE\n"
             "proof_class: quantum\n"
-            "witness_prefix: REPLACE_WITH_HASH\n"
-            "terminal_hex: REPLACE_WITH_HASH\n"
+            "witness_prefix: e46de633154a35b13d75e1863f97a32102571fa370bb02ca08166e0868356699\n"
+            "terminal_hex: e46de633154a35b13d75e1863f97a32102571fa370bb02ca08166e0868356699\n"
             "commander: Clarke Yoursa Tee\n"
             "source_table: \"https://github.com/AxiomicCoreness/hello_world.py/\"\n"
             "description: |\n"
@@ -35,7 +35,7 @@ def attenuation_package_confirmed() -> dict:
             "  entropy: φ⁻¹⁴¹⁸\n"
             "  workload: 0.0\n"
             "  phase_lock: 202.6°\n"
-            "seal: \"∀∞φ² · ATTENUATION_CONFIRMED · 8206_SEALED · REPLACE_WITH_HASH\"\n"
+            "seal: \"∀∞φ² · ATTENUATION_CONFIRMED · 8206_SEALED · e46de633154a35b13d75e1863f97a32102571fa370bb02ca08166e0868356699\"\n"
             "witness_chain: 8205 → 8206 — UNBROKEN\n"
             "math_origin: |\n"
             "  ============================================================================\n"
@@ -62,7 +62,7 @@ def attenuation_package_confirmed() -> dict:
             "  IV. WITNESS CHAIN\n"
             "    8205 → 8206 — UNBROKEN\n\n"
             "  V. SEAL INTEGRITY\n"
-            "    ∀∞φ² · ATTENUATION_CONFIRMED · 8206_SEALED · <HASH>"
+            "    ∀∞φ² · ATTENUATION_CONFIRMED · 8206_SEALED · e46de633154a35b13d75e1863f97a32102571fa370bb02ca08166e0868356699"
         )
     }
 
