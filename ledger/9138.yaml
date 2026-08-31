@@ -3,8 +3,8 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-30Z
 event: /sovereign_suite_code_artifact
 status: SEALED
 proof_class: code
-witness_prefix: REPLACE_WITH_HASH
-terminal_hex: REPLACE_WITH_HASH
+witness_prefix: a42feb86f6585ce354f49dab336a92b1174068fbac56ab2f64af60578d5e71e8
+terminal_hex: a42feb86f6585ce354f49dab336a92b1174068fbac56ab2f64af60578d5e71e8
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
