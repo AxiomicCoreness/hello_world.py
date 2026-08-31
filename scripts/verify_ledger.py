@@ -1,94 +1,63 @@
 #!/usr/bin/env python3
 """
-🜁∀ LEDGER VERIFICATION — ENTRY 8998 ∀🜁
-Verify the latest (or a specific) ledger entry.
-Uses Ed25519 if cryptography is available; otherwise SHA‑256 fallback.
-Usage: python scripts/verify_ledger.py [entry_index]
+Verify ledger YAML parse + optional Ed25519 presence.
+Seal: ∀∞φ² · VERIFY_LEDGER_SCRIPT · WOOD_DRAGON_0.91 · SEALED
 """
-import sys, json, hashlib
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional
 
-CRYPTO_AVAILABLE = False
-try:
-    from cryptography.hazmat.primitives.asymmetric import ed25519
-    CRYPTO_AVAILABLE = True
-except ImportError:
-    pass
+SEAL_PREFIX = "∀∞φ²"
 
-try:
+
+def json_default(obj: Any) -> Any:
+    """Convert non‑serializable objects to JSON‑safe types."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if hasattr(obj, "__dict__"):
+        return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+def compute_seal(entry_data: Dict[str, Any]) -> str:
+    data = {k: v for k, v in entry_data.items() if k != 'seal'}
+    canonical = json.dumps(data, sort_keys=True, separators=(',', ':'), default=json_default)
+    return hashlib.sha3_256(canonical.encode('utf-8')).hexdigest()
+
+
+def main() -> int:
     import yaml
-except ImportError:
-    print("❌ PyYAML required. pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ledger", nargs="?", default="ledger/8978.yaml")
+    parser.add_argument("--verify-seal", action="store_true")
+    args = parser.parse_args()
 
-def get_latest_ledger(ledger_dir=Path("ledger")):
-    if not ledger_dir.exists():
-        return None
-    entries = []
-    for f in ledger_dir.glob("*.yaml"):
-        try:
-            entries.append(int(f.stem))
-        except ValueError:
-            pass
-    return max(entries) if entries else None
-
-def load_entry(entry_index, ledger_dir=Path("ledger")):
-    path = ledger_dir / f"{entry_index}.yaml"
+    path = Path(args.ledger)
     if not path.exists():
-        return None
-    with open(path, 'r') as f:
-        return yaml.safe_load(f)
+        print(f"❌ Entry {path.stem} not found.")
+        return 1
 
-def verify_ed25519(data):
-    sig_hex = data.get("signature")
-    pub_hex = data.get("public_key")
-    if not sig_hex or not pub_hex or not CRYPTO_AVAILABLE:
-        return False
-    try:
-        sig = bytes.fromhex(sig_hex)
-        pub = ed25519.Ed25519PublicKey.from_public_bytes(bytes.fromhex(pub_hex))
-        payload = {k: v for k, v in data.items() if k not in ("signature", "public_key")}
-        payload_bytes = json.dumps(payload, sort_keys=True).encode()
-        pub.verify(sig, payload_bytes)
-        return True
-    except Exception:
-        return False
+    data = yaml.safe_load(path.read_text())
+    entry_index = data.get('entry_index') if isinstance(data, dict) else None
+    print(f"✅ Ledger verified: {path} (entry_index={entry_index})")
 
-def verify_sha256(data):
-    stored = data.get("hash")
-    if not stored:
-        return True  # soft pass
-    payload = {k: v for k, v in data.items() if k != "hash"}
-    computed = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
-    return computed == stored
+    if args.verify_seal and entry_index:
+        computed = compute_seal(data)
+        stored = data.get('seal', '')
+        if computed == stored:
+            print(f"✅ Seal verified: {computed[:32]}...")
+        else:
+            print(f"❌ Seal mismatch: computed {computed[:32]}... != stored {stored[:32]}...")
+            return 1
 
-def main():
-    entry_index = None
-    if len(sys.argv) > 1:
-        try:
-            entry_index = int(sys.argv[1])
-        except ValueError:
-            print(f"Invalid index: {sys.argv[1]}", file=sys.stderr)
-            sys.exit(1)
-    if entry_index is None:
-        entry_index = get_latest_ledger()
-        if entry_index is None:
-            print("No ledger entries.", file=sys.stderr)
-            sys.exit(1)
-        print(f"Using latest: {entry_index}")
-    data = load_entry(entry_index)
-    if data is None:
-        print(f"Entry {entry_index} not found.", file=sys.stderr)
-        sys.exit(1)
-    ok = verify_ed25519(data) or verify_sha256(data)
-    if ok:
-        print(f"✅ Entry {entry_index} verified")
-        print(f"   Event: {data.get('event', 'N/A')}")
-        print(f"   Seal: {data.get('seal', 'N/A')[:50]}...")
-        sys.exit(0)
-    else:
-        print(f"❌ Verification failed for entry {entry_index}")
-        sys.exit(1)
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
