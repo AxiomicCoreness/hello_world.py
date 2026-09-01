@@ -14,21 +14,26 @@ Seal: ∀∞φ² · QUANTUM_INIT_8947 · WOOD_DRAGON_0.91 · SEALED
 
 from __future__ import annotations
 
+__all__ = []  # will be extended later
+
 # ─── CDP Convergence ──────────────────────────────────────────────────
 try:
     from .cdp_convergence import *
+    __all__ += ["cdp_convergence"]
 except ImportError:
     pass
 
 # ─── DeepSeek Mesh ────────────────────────────────────────────────────
 try:
     from .deepseek_mesh import *
+    __all__ += ["deepseek_mesh"]
 except ImportError:
     pass
 
 # ─── Security Helpers ─────────────────────────────────────────────────
 try:
     from .security import *
+    __all__ += ["security"]
 except ImportError:
     pass
 
@@ -39,7 +44,6 @@ try:
         hamiltonian_trace,
         verify_trace_identity,
     )
-
     __all__ += ["PauliPhiHamiltonian", "hamiltonian_trace", "verify_trace_identity"]
 except ImportError:
     # Pauli‑phi Hamiltonian module not yet present — soft failure
