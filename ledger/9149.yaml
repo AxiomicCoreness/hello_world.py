@@ -1,0 +1,33 @@
+entry_index: 9149
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
+event: /fixed_point_projection_step_corrected
+status: SEALED
+proof_class: correction
+witness_prefix: 77d5fde74bf632fc6fd5a4064e56d113897615fb7e7470ad2a0cbff37f01648f
+terminal_hex: 77d5fde74bf632fc6fd5a4064e56d113897615fb7e7470ad2a0cbff37f01648f
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Correction entry for ledger/0401.yaml. The original placeholder hash
+  is superseded by this entry, which provides the canonical SHA3‑256 hash
+  for the fixed_point_projection_step event.
+original_entry: 0401
+original_event: /fixed_point_projection_step
+original_math_origin: "x_{n+1}=x_n+φ⁻¹·(2026.5-x_n), err=0.000615·φ^50, k=50"
+shellcheck_integration: |
+  This entry is accompanied by the thricegreatmore shellcheck replacement
+  (scripts/shellcheck_thricegreatmore.py), which can be used to verify
+  that no placeholder hashes remain in the ledger.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · FIXED_POINT_PROJECTION_CORRECTED · 9149_SEALED · 77d5fde74bf632fc6fd5a4064e56d113897615fb7e7470ad2a0cbff37f01648f"
+witness_chain: 9148 → 9149 — UNBROKEN
+math_origin: |
+  The original entry 0401 used a placeholder hash. This entry provides
+  the correct hash computed from:
+    GARDEN.EVENT.v1 || 0x00 || "0401|/fixed_point_projection_step|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  The correct hex is 77d5fde74bf632fc6fd5a4064e56d113897615fb7e7470ad2a0cbff37f01648f.
+  The witness chain is extended; entry 0401 remains untouched.
