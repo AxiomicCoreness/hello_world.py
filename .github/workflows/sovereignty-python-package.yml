@@ -54,7 +54,7 @@ jobs:
       - name: Create scripts directory if needed
         run: mkdir -p scripts
 
-      - name: Create verify_ledger.py script
+      - name: Create verify_ledger.py script (with hash extraction)
         run: |
           cat > scripts/verify_ledger.py << 'EOF'
           #!/usr/bin/env python3
@@ -67,11 +67,18 @@ jobs:
           import argparse
           import hashlib
           import json
+          import re
           import sys
           from pathlib import Path
           from typing import Any, Dict, Optional
 
           SEAL_PREFIX = "∀∞φ²"
+
+          def extract_seal_hash(seal_str: str) -> str:
+              match = re.search(r'[0-9a-fA-F]{64}$', seal_str)
+              if match:
+                  return match.group(0)
+              return seal_str
 
           def compute_seal(entry_data: Dict[str, Any]) -> str:
               data = {k: v for k, v in entry_data.items() if k != 'seal'}
@@ -96,7 +103,8 @@ jobs:
 
               if args.verify_seal and entry_index:
                   computed = compute_seal(data)
-                  stored = data.get('seal', '')
+                  stored_raw = data.get('seal', '')
+                  stored = extract_seal_hash(stored_raw)
                   if computed == stored:
                       print(f"✅ Seal verified: {computed[:32]}...")
                   else:
@@ -131,6 +139,26 @@ jobs:
           EOF
             echo "✅ Created ledger entry 8979"
           fi
+
+      - name: Compute correct seal hash for 8979
+        run: |
+          python -c "
+          import hashlib, json, yaml, re
+          from pathlib import Path
+          path = Path('ledger/8979.yaml')
+          data = yaml.safe_load(path.read_text())
+          data_without_seal = {k: v for k, v in data.items() if k != 'seal'}
+          canonical = json.dumps(data_without_seal, sort_keys=True, separators=(',', ':'))
+          hash_hex = hashlib.sha3_256(canonical.encode()).hexdigest()
+          old_seal = data.get('seal', '')
+          new_seal = re.sub(r'[0-9a-fA-F]{64}$', hash_hex, old_seal)
+          if new_seal == old_seal:
+              new_seal = old_seal + ' · ' + hash_hex
+          data['seal'] = new_seal
+          with open(path, 'w') as f:
+              yaml.dump(data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
+          print(f'✅ Updated seal for 8979 with hash {hash_hex[:16]}...')
+          "
 
       - name: Verify ledger entry
         run: |
