@@ -1,4 +1,4 @@
-"""Symbolic Starfire 311 sequence. No daemon. No secret echo."""
+"""Starfire 311 sequence. No daemon. No secret echo."""
 
 from __future__ import annotations
 
