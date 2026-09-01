@@ -74,12 +74,10 @@ async def pulse_endpoint(
     """
     Sovereign pulse endpoint (Entry 8755). Authenticates with GARDEN_SECRET.
     """
-    # Validate secret if set
     if GARDEN_SECRET:
         if x_garden_secret is None or x_garden_secret != GARDEN_SECRET:
             raise HTTPException(status_code=401, detail="Invalid or missing GARDEN_SECRET")
 
-    # Log the pulse
     _deepseek_warning(
         f"Pulse received: source={payload.source}, note={payload.note}, entry={payload.entry}"
     )
@@ -93,6 +91,7 @@ async def pulse_endpoint(
         "seal": "WOOD_DRAGON_HEARTBEAT_ACK · Entry 8755 · SEALED",
         "phi_phase": payload.phi_phase,
     }
+
 class CompleteRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=8000)
     max_tokens: int = Field(256, ge=1, le=4096)
@@ -192,7 +191,6 @@ async def deepseek_stream(body: CompleteRequest) -> StreamingResponse:
         try:
             client = get_client()
             async for chunk in client.stream(body.prompt, max_tokens=body.max_tokens):
-                # SSE frame
                 yield f"data: {chunk}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
@@ -216,10 +214,8 @@ async def convergence_step(body: StepRequest) -> Dict[str, Any]:
         W = body.workload
         dt = body.dt
         e = 1.0 - C
-        # free drift toward unity coherence (γ = 1/√5)
         gamma = 1.0 / math.sqrt(5.0)
         C_next = 1.0 - (1.0 - C) * math.exp(-gamma * dt)
-        # phase attraction k = 1/φ³
         k = 1.0 / (PHI ** 3)
         phi_next = phi_p + k * (PHASE_TARGET - phi_p)
         W_next = W * math.exp(-gamma * dt)
@@ -269,7 +265,6 @@ async def mesh_build(body: MeshRequest) -> Dict[str, Any]:
         phases: List[float] = []
         freqs: List[float] = []
         for i in range(n):
-            # golden-angle spacing around seed
             ang = (body.seed_phase + i * 360.0 / (PHI * PHI)) % 360.0
             phases.append(ang)
             freqs.append(6.49 * (PHI ** (i % 12)))
