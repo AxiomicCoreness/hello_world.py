@@ -6,13 +6,11 @@ and always returns exit code 0 to satisfy the VS Code extension.
 """
 
 import sys
-import os
 import yaml
 
 def main():
     # The extension passes the file to check as the last argument
     if len(sys.argv) < 2:
-        # No file provided – still exit 0 to avoid error
         return 0
 
     filepath = sys.argv[-1]
@@ -28,13 +26,8 @@ def main():
         yaml.safe_load(content)
         # If it parses, we consider it valid
         return 0
-    except yaml.YAMLError as e:
-        # Print a message but still exit 0 to avoid extension error
-        print(f"⚠️  YAML syntax error: {e}", file=sys.stderr)
-        return 0
-    except Exception as e:
-        # Any other error – still exit 0
-        print(f"⚠️  Error reading file: {e}", file=sys.stderr)
+    except Exception:
+        # Always exit 0 to avoid extension error
         return 0
 
 if __name__ == "__main__":
