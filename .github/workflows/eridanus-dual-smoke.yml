@@ -1,0 +1,33 @@
+name: Eridanus Dual smoke (8226)
+
+on:
+  push:
+    paths:
+      - "canvases/agentic-tilelang-eridanus-dual/**"
+      - "tests/test_eridanus_dual.py"
+      - ".github/workflows/eridanus-dual-smoke.yml"
+  pull_request:
+    paths:
+      - "canvases/agentic-tilelang-eridanus-dual/**"
+      - "tests/test_eridanus_dual.py"
+      - ".github/workflows/eridanus-dual-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile engine
+        run: python -m py_compile canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py
+      - name: Unit smoke
+        run: python tests/test_eridanus_dual.py
+      - name: Demo
+        run: python canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py
