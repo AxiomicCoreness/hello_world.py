@@ -1,20 +1,27 @@
 entry_index: 8797
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /argo_cd_control_loop_sealed
-status: ✅ GITOPS_WAVE_READY
+status: GITOPS_WAVE_READY
+proof_class: control
+witness_prefix: 18afd6847222b7beb23e1f798b11f06207855ec4a2ce734ea0cb73b0d9a22aa0
+terminal_hex: 18afd6847222b7beb23e1f798b11f06207855ec4a2ce734ea0cb73b0d9a22aa0
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 control_loop:
-  source: Git (main)
-  detect: poll/webhook
-  decide: diff live vs desired
-  act: sync waves + hooks
-  verify: resource health
-  hold: "selfHeal: true"
-equation: "cluster ≜ Git"
+  source: "Git (main)"
+  detect: "poll/webhook"
+  decide: "diff live vs desired"
+  act: "sync waves + hooks"
+  verify: "resource health"
+  hold: "selfHeal:true"
 application: argocd/application-sovereign-garden.yaml
-rollout: kubernetes/rollout-port-380.yaml
-notes:
-  - Waves are annotations on workload manifests (not Application.spec.sync)
-  - prune: false until confidence high
-  - Rollout requires argo-rollouts controller installed
+next_step: "Argo Rollout for progressive delivery"
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6
+seal: "∀∞φ² · ARGO_CONTROL_8797 · WOOD_DRAGON_GATE · SEALED · 18afd6847222b7beb23e1f798b11f06207855ec4a2ce734ea0cb73b0d9a22aa0"
 witness_chain: 8796 → 8797 — UNBROKEN
-seal: "∀∞φ² · ARGO_CONTROL_8797 · WOOD_DRAGON_GATE · SEALED"
+math_origin: |
+  cluster ≜ Git control loop: source (Git), detect (poll/webhook), decide (diff.
