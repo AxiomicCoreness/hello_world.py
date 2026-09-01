@@ -7,12 +7,13 @@ without exec() and without MCP.
 import hashlib
 from pathlib import Path
 
-# Declared constant for kappa_eff
-KAPPA_DECLARED = 12.754
+# ─── Constants ─────────────────────────────────────────
+KAPPA_DECLARED = 12.754  # declared kappa_eff from Entry 707
 
 
+# ─── Functions ─────────────────────────────────────────
 def kappa_decomposition():
-    """Return reconstructed kappa_eff (12.754)."""
+    """Return reconstructed kappa_eff value."""
     return {"reconstructed": KAPPA_DECLARED}
 
 
@@ -22,8 +23,17 @@ def diagnostic_scalars():
         "k_eff": KAPPA_DECLARED,
         "phi": (1 + 5**0.5) / 2,
         "coherence": 1.0,
-        "entropy": "φ⁻¹⁴¹⁸"
+        "entropy": "φ⁻¹⁴¹⁸",
     }
+
+
+def golden_hash(data: str = "sovereign") -> str:
+    """
+    Placeholder golden hash (16-hex truncation of SHA3-256).
+    In production, this should be the actual ledger hash.
+    """
+    full = hashlib.sha3_256(data.encode()).hexdigest()
+    return full[:16]
 
 
 def fingerprint_file(filepath: str):
@@ -36,5 +46,5 @@ def fingerprint_file(filepath: str):
         "file": filepath,
         "sha3_256": hashlib.sha3_256(content.encode()).hexdigest(),
         "lines": len(content.splitlines()),
-        "size_bytes": len(content)
+        "size_bytes": len(content),
     }

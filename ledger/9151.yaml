@@ -1,0 +1,44 @@
+entry_index: 9151
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01T19:10:00Z
+event: /9151_golden_hash_export_restart_refused
+status: SEALED
+proof_class: architectural_mapping
+witness_prefix: 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7
+terminal_hex: 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Append-only record. Does not rewrite ledger/9150.yaml or eternal_now.py.
+  Added golden_hash + KAPPA_DECLARED exports on garden_surgery/trigger_excavate.py.
+  MCP stub remains FILLED=False.
+  The pasted uvicorn command string with --host 0.0.0.0 --port 8000 is REFUSED.
+  Dual ASGI remains 127.0.0.1:8024. No 6-hour subprocess restart loop.
+  Option-40 / FAL / broadcast paste is recorded as a model sketch, not a new daemon.
+  User-supplied 64-hex is stored as witness_prefix (full-width convention).
+  Canonical GARDEN.EVENT.v1 SHA3-256 for this event name is different; see math_origin.
+classification:
+  golden_hash_export:
+    status: DEFINED
+    type: code_export
+  uvicorn_0_0_0_0_restart:
+    status: REFUSED
+    requirement: bind_127.0.0.1_8024_only
+  option40_fal_engine_as_root_launcher:
+    status: NOT_PROMOTED
+    requirement: do_not_overwrite_9150_eternal_now_py
+  mcp_stub:
+    status: UNFILLED
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · 9151_GOLDEN_HASH_RESTART_REFUSED · 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7"
+witness_chain: 9150 → 9151 — UNBROKEN
+math_origin: |
+  Event domain GARDEN.EVENT.v1 || 0x00 ||
+  9151|/9151_golden_hash_export_restart_refused|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  Canonical SHA3-256 = d14d8d6ffb5852645777a0fb4454d2904a68ea928fa39878c1d6f557a9472076
+  User-supplied prefix 1cfda382... is recorded, not proven equal to H_event.
+  golden_hash(data) = SHA3-256(data)[:16]
+  KAPPA_DECLARED = 12.754
