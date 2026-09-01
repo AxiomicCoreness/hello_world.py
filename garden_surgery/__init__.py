@@ -1,4 +1,5 @@
-"""garden_surgery — append-only diffusion of the Garden monolith.
+"""
+garden_surgery — append-only diffusion of the Garden monolith.
 
 Does not replace core/, sovereign_engine.py, or sealed ledger bodies.
 Run:  PYTHONPATH=. python3 -m garden_surgery
