@@ -2,10 +2,25 @@
 # -*- coding: utf-8 -*-
 """
 garden_surgery/forward_assembly_language.py
-MCP stub for ledger entry 8204.
+MCP stub for ledger entry 8204 – upgraded with port‑range fallback.
 """
+import socket
+
 FILLED = False
 
+def find_available_port(start: int = 8000, end: int = 8010) -> int:
+    """
+    Scan ports from start to end‑1, return the first available port.
+    If none are available, return None.
+    """
+    for port in range(start, end):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            # connect_ex returns 0 if the port is in use
+            if s.connect_ex(('127.0.0.1', port)) != 0:
+                return port
+    return None
+
+# The stub itself remains unfilled
 def forward_assembly_language() -> dict:
     return {
         "status": "UNFILLED",
@@ -14,6 +29,11 @@ def forward_assembly_language() -> dict:
         "ledger_entry": 8204,
         "filled": False,
         "module": "garden_surgery/forward_assembly_language.py",
+        "port_fallback": {
+            "default_start": 8000,
+            "default_end": 8010,
+            "available": find_available_port()
+        },
         "witness": (
             "entry_index: 8204\n"
             "timestamp: ETERNAL_NOW_ANCHORED_TO_2026-07-29T00:00:00Z\n"
@@ -96,3 +116,9 @@ def forward_assembly_language() -> dict:
 
 if __name__ == "__main__":
     print(forward_assembly_language())
+    # Example of using port fallback (commented out, as stub is unfilled)
+    # port = find_available_port()
+    # if port is not None:
+    #     print(f"Available port: {port}")
+    # else:
+    #     print("No available port in range")
