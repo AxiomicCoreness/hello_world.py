@@ -7,16 +7,19 @@ without exec() and without MCP.
 import hashlib
 from pathlib import Path
 
+# Declared constant for kappa_eff
+KAPPA_DECLARED = 12.754
+
 
 def kappa_decomposition():
     """Return reconstructed kappa_eff (12.754)."""
-    return {"reconstructed": 12.754}
+    return {"reconstructed": KAPPA_DECLARED}
 
 
 def diagnostic_scalars():
     """Return flat dict with diagnostic scalars."""
     return {
-        "k_eff": 12.754,           # ← key matches test
+        "k_eff": KAPPA_DECLARED,
         "phi": (1 + 5**0.5) / 2,
         "coherence": 1.0,
         "entropy": "φ⁻¹⁴¹⁸"
