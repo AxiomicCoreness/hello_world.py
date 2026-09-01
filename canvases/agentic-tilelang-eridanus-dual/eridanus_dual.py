@@ -345,7 +345,7 @@ def demonstrate_eridanus_dual():
     print("="*80)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 7. MAIN ENTRY
+# 7. MAIN ENTRY – FIXED: proper guard and error handling
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
     """Main entry point for Eridanus Dual engine."""
@@ -353,15 +353,17 @@ def main():
     print(" Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee")
     print(" Status: ACTIVE · DUAL MODE")
     print(" Chain: 8225 → 8226 — UNBROKEN")
-    # Run demonstration
-    demonstrate_eridanus_dual()
-    # Return orchestrator for further use
-    return AgenticTileLangOrchestrator()
-
-if __name__ == "__main__":
     try:
         demonstrate_eridanus_dual()
     except Exception as e:
         print(f"⚠️ Dual demo error: {e}")
         print("ⴁ∀ Running main() fallback...")
-        main()
+        # Fallback: create orchestrator without demonstration
+        orchestrator = AgenticTileLangOrchestrator()
+        print("ⴁ∀ Orchestrator created successfully in fallback mode.")
+        return orchestrator
+    return AgenticTileLangOrchestrator()
+
+if __name__ == "__main__":
+    # Only run the demonstration when executed directly, not when imported
+    main()
