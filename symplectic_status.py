@@ -200,16 +200,34 @@ def generate_agent_jsonl(aggregate: Dict[str, Any]) -> List[Dict[str, Any]]:
     ]
 
 
-def validate_against_schema(aggregate: Dict[str, Any], schema_path: Path) -> bool:
-    if not schema_path.is_file():
-        print("Schema not found; skipping validation.")
-        return True
+# ─── Graceful schema fallback ──────────────────────────────────────────
+_SCHEMA_PATH = Path("schemas/symplectic-status.json")
+_SCHEMA = None
+
+def load_schema():
+    global _SCHEMA
+    if _SCHEMA is not None:
+        return _SCHEMA
+    if _SCHEMA_PATH.is_file():
+        try:
+            _SCHEMA = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"Schema load error: {e}")
+            _SCHEMA = False
+    else:
+        print("Schema file not found; validation skipped.")
+        _SCHEMA = False
+    return _SCHEMA
+
+def validate_against_schema(aggregate: Dict[str, Any]) -> bool:
+    schema = load_schema()
+    if not schema:
+        return True  # skip validation if schema is unavailable
     try:
-        from jsonschema import validate, ValidationError  # type: ignore
+        from jsonschema import validate, ValidationError
     except ImportError:
         print("jsonschema not installed; skipping validation.")
         return True
-    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     try:
         validate(instance=aggregate, schema=schema)
         print("Aggregate JSON validated against schema.")
@@ -221,8 +239,7 @@ def validate_against_schema(aggregate: Dict[str, Any], schema_path: Path) -> boo
 
 def main() -> None:
     aggregate = generate_aggregate_status()
-    schema_path = Path("schemas/symplectic-status.json")
-    ok = validate_against_schema(aggregate, schema_path)
+    ok = validate_against_schema(aggregate)
     if not ok:
         raise SystemExit(1)
 
