@@ -15,7 +15,7 @@ def eternal_now() -> dict:
         "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
         "ledger_entry": 9150,
         "filled": False,
-        "module": "eternal_now.py",
+        "module": "scripts/eternal_now.py",  # updated path
         "witness": (
             "entry_index: 9150\n"
             "timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z\n"
