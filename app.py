@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """ASGI target: uvicorn app:app_main --host 127.0.0.1 --port 8024"""
 
 from __future__ import annotations
