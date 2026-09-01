@@ -20,7 +20,7 @@ def diagnostic_scalars():
     Returns a flat dict with diagnostic scalars.
     """
     return {
-        "kappa_eff": 12.754,
+        "k_eff": 12.754,           # ← FIXED: key is now "k_eff" (matches test)
         "phi": (1 + 5**0.5) / 2,
         "coherence": 1.0,
         "entropy": "φ⁻¹⁴¹⁸"
