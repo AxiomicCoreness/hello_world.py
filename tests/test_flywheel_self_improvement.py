@@ -35,10 +35,8 @@ SMOKE_CMD = "python3 endpoint_smoke_test.py"
 def test_self_improvement_is_excavation_not_exec():
     d = diagnostic_scalars()
     k = kappa_decomposition()
-    # The diagnostic_scalars() dictionary contains a 'declared' sub‑dict
-    # with 'kappa_eff_declared' key.
-    declared = d.get("declared", {})
-    k_eff = declared.get("kappa_eff_declared", 0.0)
+    # diagnostic_scalars() returns a flat dict with top‑level "kappa_eff"
+    k_eff = d.get("kappa_eff", 0.0)
     assert k_eff > 0, f"Expected k_eff > 0, got {k_eff}"
     assert abs(k["reconstructed"] - 12.754) < 1e-12
 
