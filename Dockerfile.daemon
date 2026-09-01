@@ -27,4 +27,8 @@ ENV PYTHONUNBUFFERED=1 \
     GEMINI_HANDOFF=false \
     DAEMON_METRICS_PATH=/tmp/gemini_daemon.prom
 
+# Healthcheck (Python-native, no curl)
+HEALTHCHECK --interval=60s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9096/health')" || exit 1
+
 CMD ["python", "-m", "quantum.gemini_daemon"]
