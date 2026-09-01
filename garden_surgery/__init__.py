@@ -16,6 +16,7 @@ from garden_surgery.trigger_excavate import (
 )
 from garden_surgery.anomaly_distance import payload as anomaly_payload, math_form, override_payload, response_headers
 from garden_surgery.worker_tree import tree_payload, node, parent_of, siblings_of, children_of, lineage
+from garden_surgery.excavate_immutable import excavate, ExcavateReport, golden_hash as excavate_golden_hash
 
 __all__ = [
     "TheoremReport",
@@ -39,6 +40,9 @@ __all__ = [
     "siblings_of",
     "children_of",
     "lineage",
+    "excavate",
+    "ExcavateReport",
+    "excavate_golden_hash",
 ]
 
 
