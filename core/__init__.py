@@ -4,12 +4,11 @@
 core/__init__.py – Sovereign service entry point with automatic restart.
 
 Usage:
-    python -m core
-or
-    python core/__init__.py
+  python -m core
+  python core/__init__.py
 
 Environment:
-    RESTART_INTERVAL_HOURS = 6  (default, float)
+  RESTART_INTERVAL_HOURS = 6 (default, float)
 """
 
 import asyncio
@@ -34,16 +33,22 @@ async def run_uvicorn(interval_hours: float) -> None:
     Run uvicorn as a subprocess and restart it every `interval_hours` hours.
     """
     interval_seconds = interval_hours * 3600
+
     uvicorn_cmd = [
-        sys.executable, "-m", "uvicorn",
-        "core.api:app",      # FastAPI app from core/api.py
-        "--host", "0.0.0.0",
-        "--port", "8000",
-        "--log-level", "info"
+        sys.executable,
+        "-m",
+        "uvicorn",
+        "hello_world:app",          # Entry point: hello_world.py
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--log-level",
+        "info"
     ]
 
     while True:
-        print(f"🜁∀ Starting uvicorn at {time.ctime()} – next restart in {interval_hours}h")
+        print(f"∀ Starting uvicorn at {time.ctime()} – next restart in {interval_hours}h")
         process = subprocess.Popen(
             uvicorn_cmd,
             stdout=subprocess.PIPE,
@@ -58,14 +63,14 @@ async def run_uvicorn(interval_hours: float) -> None:
             # Allow graceful cancellation
             pass
         finally:
-            print(f"🜁∀ Restarting uvicorn – sending SIGTERM")
+            print(f"∀ Restarting uvicorn – sending SIGTERM")
             process.terminate()
             try:
                 process.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
-            print(f"🜁∀ Uvicorn stopped at {time.ctime()}")
+            print(f"∀ Uvicorn stopped at {time.ctime()}")
 
 
 def main():
@@ -75,18 +80,16 @@ def main():
     asyncio.set_event_loop(loop)
 
     def signal_handler():
-        print("🜁∀ Shutdown requested – exiting.")
+        print("∀ Shutdown requested – exiting.")
         loop.stop()
         sys.exit(0)
 
     try:
-        # Register signal handlers
         signal.signal(signal.SIGINT, lambda s, f: signal_handler())
         signal.signal(signal.SIGTERM, lambda s, f: signal_handler())
-
         loop.run_until_complete(run_uvicorn(interval))
     except KeyboardInterrupt:
-        print("🜁∀ Keyboard interrupt – exiting.")
+        print("∀ Keyboard interrupt – exiting.")
         sys.exit(0)
     finally:
         loop.close()
