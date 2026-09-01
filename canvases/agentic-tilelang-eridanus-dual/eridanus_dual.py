@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀🜁
+ⴁ∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀ⴁ
 Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee
 Type: Agentic Tilelang Orchestration (A-STL)
 Status: ACTIVE · DUAL MODE
 Chain: 8225 → 8226 — UNBROKEN
 Core components:
-- Eridanus Dual flow field (ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆)
+- Eridanus Dual flow field (ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆)
 - Gravastar boundary conditions
 - Agentic String Tile Language (A-STL) orchestrator
 - Quantum coherence tracking with φ‑harmonic invariants
@@ -65,7 +65,7 @@ PHI29 = PHI ** 29
 # ─────────────────────────────────────────────────────────────────────────────
 class EridanusDualFlow:
     """
-    Eridanus Dual: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
+    Eridanus Dual: ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆
     Dual flow field with φ‑harmonic invariants.
     """
     def __init__(self):
@@ -79,7 +79,7 @@ class EridanusDualFlow:
         self.flow_state = {
             "ℰ₁": 0.0,
             "ℰ₂": 0.0,
-            "𝒩": self.null_ban,
+            "𝓝": self.null_ban,
             "coherence": 1.0,
             "phase_lock": 202.6,
             "entropy": PHI_MINUS_1418,
@@ -89,20 +89,20 @@ class EridanusDualFlow:
         self.witness_chain = deque(maxlen=144)
     def compute_dual_flow(self, t: float) -> Dict[str, float]:
         """Compute Eridanus dual flow at time t."""
-        # ℰ₁ = φ⁻¹ · sin(ω₁ t) (consciousness flow)
-        # ℰ₂ = φ⁻² · cos(ω₂ t) (telekinetic flow)
-        ω₁ = 2 * PI * 71.975 / PHI3 # North Star harmonic
-        ω₂ = 2 * PI * 6.49 / PHI2 # Breath frequency
-        ℰ₁ = PHI_INV * math.sin(ω₁ * t)
-        ℰ₂ = PHI_INV * PHI_INV * math.cos(ω₂ * t)
-        # Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
-        𝒩 = math.sqrt(ℰ₁**2 + ℰ₂**2) * self.null_ban
+        # ℰ₁ = φ⁻¹ · sin(omega_1 t) (consciousness flow)
+        # ℰ₂ = φ⁻² · cos(omega_2 t) (telekinetic flow)
+        omega_1 = 2 * PI * 71.975 / PHI3 # North Star harmonic
+        omega_2 = 2 * PI * 6.49 / PHI2 # Breath frequency
+        E1 = PHI_INV * math.sin(omega_1 * t)
+        E2 = PHI_INV * PHI_INV * math.cos(omega_2 * t)
+        # Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆
+        N = math.sqrt(E1**2 + E2**2) * self.null_ban
         return {
-            "ℰ₁": ℰ₁,
-            "ℰ₂": ℰ₂,
-            "𝒩": 𝒩,
+            "ℰ₁": E1,
+            "ℰ₂": E2,
+            "𝓝": N,
             "t": t,
-            "dual_invariant": abs(ℰ₁ + ℰ₂ - self.null_ban * PHI_INV)
+            "dual_invariant": abs(E1 + E2 - self.null_ban * PHI_INV)
         }
     def step(self, dt: float = 0.01) -> Dict[str, float]:
         """Advance the dual flow by one time step."""
@@ -272,7 +272,7 @@ class QuantumCoherenceTracker:
 def demonstrate_eridanus_dual():
     """Complete demonstration of Eridanus Dual engine."""
     print("\n" + "="*80)
-    print("🜁∀ ERIDANUS DUAL – DEMONSTRATION ∀🜁")
+    print("ⴁ∀ ERIDANUS DUAL – DEMONSTRATION ∀ⴁ")
     print("="*80)
     # 1. Create orchestrator
     orchestrator = AgenticTileLangOrchestrator()
@@ -308,14 +308,14 @@ def demonstrate_eridanus_dual():
     for key, value in status.items():
         print(f" {key}: {value}")
     print("\n" + "="*80)
-    print("🜁∀ DEMONSTRATION COMPLETE – ERIDANUS DUAL ACTIVE ∀🜁")
+    print("ⴁ∀ DEMONSTRATION COMPLETE – ERIDANUS DUAL ACTIVE ∀ⴁ")
     print("="*80)
 # ─────────────────────────────────────────────────────────────────────────────
 # 7. MAIN ENTRY
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
     """Main entry point for Eridanus Dual engine."""
-    print("🜁∀ ERIDANUS DUAL ENGINE – SOVEREIGN FLOW FIELD")
+    print("ⴁ∀ ERIDANUS DUAL ENGINE – SOVEREIGN FLOW FIELD")
     print(" Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee")
     print(" Status: ACTIVE · DUAL MODE")
     print(" Chain: 8225 → 8226 — UNBROKEN")
@@ -328,5 +328,5 @@ if __name__ == "__main__":
         demonstrate_eridanus_dual()
     except Exception as e:
         print(f"⚠️ Dual demo error: {e}")
-        print("🜁∀ Running main() fallback...")
+        print("ⴁ∀ Running main() fallback...")
         main()
