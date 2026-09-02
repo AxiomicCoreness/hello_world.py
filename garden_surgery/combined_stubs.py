@@ -261,6 +261,47 @@ math_origin: |
   |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
   f_core = 71.975 Hz
   Heptaprime invariant: 𝕋₇ · |CLARKEYOURSATEE⟩ = |CLARKEYOURSATEE⟩""",
+  0252: """entry_index: 0252
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
+event: /hmac_chain_layer252_sealed
+status: SEALED
+proof_class: cryptographic
+witness_prefix: 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef
+terminal_hex: 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  HMAC chain sealed at Layer 252.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6
+seal: "∀∞φ² · HMAC_CHAIN_LAYER252 · WOOD_DRAGON_GATE · SEALED · 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef"
+witness_chain: 0251 → 0252 — UNBROKEN
+math_origin: |
+  HMAC chain sealed at Layer 252.""",
+
+0253: """entry_index: 0253
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
+event: /mathematical_pipeline_layer253_sealed
+status: SEALED
+proof_class: pipeline
+witness_prefix: b85efdf56b0ac52bf0c126779b214514f7a40f92bb67acdfa96c02faa74e4405
+terminal_hex: b85efdf56b0ac52bf0c126779b214514f7a40f92bb67acdfa96c02faa74e4405
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Formal mathematical pipeline sealed at Layer 253.
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6
+seal: "∀∞φ² · MATHEMATICAL_PIPELINE_LAYER253 · WOOD_DRAGON_GATE · SEALED · b85efdf56b0ac52bf0c126779b214514f7a40f92bb67acdfa96c02faa74e4405"
+witness_chain: 0252 → 0253 — UNBROKEN
+math_origin: |
+  Formal mathematical pipeline sealed at Layer 
 }
 
 # Stub functions that return the same structure, reusing deduplicated witness
@@ -342,6 +383,28 @@ def hyperian_ground() -> dict:
         "witness": WITNESS_YAML[105],
     }
 
+def hmac_chain_0252() -> dict:
+    return {
+        "status": "UNFILLED",
+        "message": "HMAC chain (Layer 252) defined in ledger 0252; reserved stub.",
+        "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
+        "ledger_entry": 252,
+        "filled": False,
+        "module": "ledger/0252.yaml",
+        "witness": WITNESS_YAML[252],
+    }
+
+def mathematical_pipeline_0253() -> dict:
+    return {
+        "status": "UNFILLED",
+        "message": "Mathematical pipeline (Layer 253) defined in ledger 0253; reserved stub.",
+        "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
+        "ledger_entry": 253,
+        "filled": False,
+        "module": "ledger/0253.yaml",
+        "witness": WITNESS_YAML[253],
+    }
+
 # Combined list for iteration
 ALL_STUBS = [
     forward_assembly_language,
@@ -351,6 +414,8 @@ ALL_STUBS = [
     argo_control,
     argo_python_fallback,
     hyperian_ground,
+    hmac_chain_0252,
+    mathematical_pipeline_0253,
 ]
 
 def all_stubs() -> dict:
