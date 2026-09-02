@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-api
+  labels:
+    app: sovereign-garden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+      - name: api
+        image: axiomic/sovereign-engine:latest
+        imagePullPolicy: IfNotPresent
+        command: ["uvicorn"]
+        args: ["app:app_main", "--host", "0.0.0.0", "--port", "8024"]
+        ports:
+        - name: http
+          containerPort: 8024
+          protocol: TCP
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
