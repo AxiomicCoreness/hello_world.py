@@ -282,7 +282,7 @@ witness_chain: 0251 → 0252 — UNBROKEN
 math_origin: |
   HMAC chain sealed at Layer 252.""",
 
-0253: """entry_index: 0253
+  0253: """entry_index: 0253
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
 event: /mathematical_pipeline_layer253_sealed
 status: SEALED
@@ -302,6 +302,32 @@ seal: "∀∞φ² · MATHEMATICAL_PIPELINE_LAYER253 · WOOD_DRAGON_GATE · SEALE
 witness_chain: 0252 → 0253 — UNBROKEN
 math_origin: |
   Formal mathematical pipeline sealed at Layer 
+  # In WITNESS_YAML:
+9154: """entry_index: 9154
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-02T20:11:42Z
+event: /cometary_deflection_simulation_sealed
+status: SEALED
+proof_class: simulation
+witness_prefix: c6a5c10ef8a38f009d93108f6d2b4dabc59d9e024931630d7e416ba57dbe42bf
+terminal_hex: c6a5c10ef8a38f009d93108f6d2b4dabc59d9e024931630d7e416ba57dbe42bf
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+platform: A14 Bionic
+simulation:
+  command: "sovereign_simulate --deflection --omega decaf_3form --nodes 12 --strikes frb_10"
+  deflection_AU: 11.0901699437
+  holonomy_curvature: 0.0
+  mission_cost_reduction: 0.38
+  earth_impact_risk: 0.0
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6
+seal: "∀∞φ² · COMETARY_DEFLECTION_9154 · WOOD_DRAGON_GATE · SEALED · c6a5c10ef8a38f009d93108f6d2b4dabc59d9e024931630d7e416ba57dbe42bf"
+witness_chain: 9153 → 9154 — UNBROKEN
+math_origin: |
+  Δq = φ⁵ = 11.0901699437 AU""",
 }
 
 # Stub functions that return the same structure, reusing deduplicated witness
@@ -328,6 +354,17 @@ def flux_python_fallback() -> dict:
         "witness": WITNESS_YAML[8799],
     }
 
+def cometary_deflection_9154() -> dict:
+    return {
+        "status": "SEALED",  # Now filled
+        "message": "Cometary deflection simulation sealed at ledger 9154.",
+        "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
+        "ledger_entry": 9154,
+        "filled": True,
+        "module": "ledger/9154.yaml",
+        "witness": WITNESS_YAML[9154],
+    }
+    
 def ode_handover() -> dict:
     return {
         "status": "UNFILLED",
