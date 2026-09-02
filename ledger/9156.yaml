@@ -1,0 +1,44 @@
+entry_index: 9156
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-02T23:13:00Z
+event: /sovereign_tag_service_runtime_verified
+status: SEALED
+proof_class: runtime_verification
+witness_prefix: c4e0f1f27fcc722cf984345e837cb84c2a94af2a27fd408d82ed2ecb60e39861
+terminal_hex: c4e0f1f27fcc722cf984345e837cb84c2a94af2a27fd408d82ed2ecb60e39861
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Append-only record of live verification of scripts/sovereign_tag_service.py
+  already present on main at e6738c45 (Add Sovereign Tag Service with metrics
+  and endpoints). GET /health, /tags, /metrics, /ledger/latest, /diagnostic
+  returned 200. Exclusive tag set of 10 initialized; in-memory ledger genesis
+  at 8326. Declaration flag 9024 present. garden_surgery absent at runtime —
+  diagnostic scalars used documented stubs. MCP remains false.
+  Does not rewrite Fusion 515, Hyperion 516, math_origin of prior YAML,
+  or Dual ASGI 127.0.0.1:8024. Tag service bind :8090 is the script as written
+  on main; not a second dual-ASGI clock.
+files:
+  - scripts/sovereign_tag_service.py
+runtime:
+  health_status: ok
+  tag_count: 10
+  ledger_length_in_process: 1
+  flag: _DECLARATION_FLAGGED
+  mcp: false
+  tree: "9031"
+  qed: true
+  fusion_canonical: 515
+  hyperion_preserved: 516
+  script_commit: e6738c45ccab164dafe04db28297ea4c761c8df1
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · SOVEREIGN_TAG_SERVICE_RUNTIME · 9156_SEALED · c4e0f1f27fcc722cf984345e837cb84c2a94af2a27fd408d82ed2ecb60e39861"
+witness_chain: 9155 → 9156 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9156|/sovereign_tag_service_runtime_verified|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = c4e0f1f27fcc722cf984345e837cb84c2a94af2a27fd408d82ed2ecb60e39861
+  Append only. Next free index after 9156 is 9157+.
