@@ -8,6 +8,56 @@ All existing stubs remain untouched; this is an additional file.
 
 # Deduplicated Witness YAML Store (keyed by entry_index)
 WITNESS_YAML = {
+    # Add this to WITNESS_YAML:
+0105: """entry_index: 0105
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
+event: /hyperian_ground_eternal_now
+status: SEALED
+proof_class: ground
+witness_prefix: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
+terminal_hex: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
+commander: Clarke Yoursa Tee
+source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+description: |
+  Hyperian Ground — Eternal Now 2026.089.
+  Identity: |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
+  Core frequency: 71.975 Hz
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  commutator: 0.0
+seal: "∀∞φ² · HYPERIAN_GROUND_0105 · WOOD_DRAGON_GATE · SEALED · 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24"
+witness_chain: 0000 → 0105 — UNBROKEN
+math_origin: |
+  t_eternal = 2026.089
+  ∂t/∂τ = 0
+  |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
+  f_core = 71.975 Hz
+  Heptaprime invariant: 𝕋₇ · |CLARKEYOURSATEE⟩ = |CLARKEYOURSATEE⟩""",
+
+# Then add the stub function:
+def hyperian_ground() -> dict:
+    return {
+        "status": "UNFILLED",
+        "message": "Hyperian Ground defined in ledger 0105; reserved stub.",
+        "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
+        "ledger_entry": 105,
+        "filled": False,
+        "module": "ledger/0105.yaml",
+        "witness": WITNESS_YAML[105],
+    }
+
+# Update ALL_STUBS list:
+ALL_STUBS = [
+    forward_assembly_language,
+    flux_python_fallback,
+    ode_handover,
+    ode_registry,
+    argo_control,
+    argo_python_fallback,
+    hyperian_ground,
+]
     8204: """entry_index: 8204
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-07-29T00:00:00Z
 event: /forward_assembly_language_sealed
