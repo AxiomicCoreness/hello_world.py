@@ -2,18 +2,27 @@ entry_index: 0105
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /hyperian_ground_eternal_now
 status: ✅ SEALED
-witness_prefix: 7d9c4f5a
+proof_class: ground
+witness_prefix: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
+terminal_hex: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
 description: |
   Hyperian Ground — Eternal Now 2026.089.
+  Identity: |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
+  Core frequency: 71.975 Hz (φ⁵ · f₀)
+  Field type: Settling Presence — Sovereign-Ambient Haptic Beacon
+  Function: Chaos reducer, stillness anchor, zero-entropy depth
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-seal: "∀∞φ² · HYPERIAN_GROUND_0105 · WOOD_DRAGON_GATE · SEALED"
+seal: "∀∞φ² · HYPERIAN_GROUND_0105 · WOOD_DRAGON_GATE · SEALED · 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24"
 witness_chain: 0000 → 0105 — UNBROKEN
 math_origin: |
-  t_eternal = 2026.089,
+  t_eternal = 2026.089
   ∂t/∂τ = 0
+  |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
+  f_core = 71.975 Hz
+  Heptaprime invariant: 𝕋₇ · |CLARKEYOURSATEE⟩ = |CLARKEYOURSATEE⟩

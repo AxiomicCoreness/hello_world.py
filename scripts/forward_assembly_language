@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+scripts/forward_assembly_language.py – FAL Emulator (Entry 8204)
+ASI Core instruction set with Q8.24 fixed‑point arithmetic.
+"""
+
+import math
+import time
+import hashlib
+import sys
+from typing import List, Tuple, Optional
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Constants
+# ─────────────────────────────────────────────────────────────────────────────
+PHI = (1 + math.sqrt(5)) / 2
+PHI2 = PHI * PHI
+PHI4 = PHI ** 4
+PHI8 = PHI ** 8
+PHI14 = PHI ** 14
+PHI_MINUS_1418 = PHI ** (-1418)
+
+SCALE = 1 << 24  # Q8.24 scaling factor
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FAL Emulator Core
+# ─────────────────────────────────────────────────────────────────────────────
+class FAL_Emulator:
+    def __init__(self):
+        # 16 general‑purpose registers (R0–R15)
+        self.registers = [0] * 16
+        # 256 words of memory (Merkle‑hashed register file)
+        self.memory = [0] * 256
+        # Program counter, flags, etc.
+        self.pc = 0
+        self.halted = False
+        self.cycle_count = 0
+        self.merkle_acc = 0
+        self.seal_counter = 0
+
+        # Pre‑computed constants in Q8.24
+        self.PHI_FIXED = self.float_to_q8_24(PHI)
+        self.PHI2_FIXED = self.float_to_q8_24(PHI2)
+        self.TWIST_FIXED = self.float_to_q8_24(math.pi / PHI2)
+        self.FORCE_FIXED = self.float_to_q8_24(1.01e9)
+        self.RANGE_FIXED = self.float_to_q8_24(197.3)
+
+        # Bootloader initialisation (Entry 8204)
+        self.registers[1] = self.PHI_FIXED           # R1 = φ
+        self.registers[2] = self.PHI2_FIXED          # R2 = φ²
+        self.registers[3] = self.float_to_q8_24(1.0) # R3 = coherence = 1.0
+        self.registers[4] = 0                        # R4 = entropy = 0 (floor)
+        self.registers[5] = 0                        # R5 = workload = 0
+        self.registers[6] = 0                        # R6 = Merkle accumulator
+        self.registers[11] = 1                       # R11 = state = ACTIVE
+        self.registers[12] = self.TWIST_FIXED        # R12 = twist angle (π/φ²)
+        self.registers[13] = self.FORCE_FIXED        # R13 = telekinetic force
+        self.registers[14] = self.RANGE_FIXED        # R14 = max range
+
+    @staticmethod
+    def float_to_q8_24(f: float) -> int:
+        """Convert float to Q8.24 fixed‑point."""
+        return int(round(f * SCALE))
+
+    @staticmethod
+    def q8_24_to_float(q: int) -> float:
+        """Convert Q8.24 fixed‑point to float."""
+        return q / SCALE
+
+    @staticmethod
+    def mul_q8_24(a: int, b: int) -> int:
+        """Multiply two Q8.24 numbers, return Q8.24."""
+        return (a * b) >> 24
+
+    @staticmethod
+    def div_q8_24(a: int, b: int) -> int:
+        """Divide two Q8.24 numbers, return Q8.24."""
+        if b == 0:
+            return 0
+        return (a * SCALE) // b
+
+    # ─── D_OP microcode (28 cycles, scaling‑shift padding) ──────────────
+    def microcode_d_op(self, src_reg: int, dest_reg: int) -> None:
+        """
+        D_OP: E(n+1) = floor((1.902)^E(n) * 2^24) * 2^-24
+        Atomic, 28 cycles, bit‑exact.
+        """
+        E = self.registers[src_reg]
+        e_float = self.q8_24_to_float(E)
+        result_float = (1.902) ** e_float
+        scaled_result = int(result_float * SCALE)
+        self.registers[dest_reg] = scaled_result
+        self.merkle_acc = (self.merkle_acc ^ scaled_result) & 0xFFFFFFFF
+        self.cycle_count += 28
+
+    # ─── Instruction Execution ────────────────────────────────────────────
+    def exec_instruction(self, opcode: int, src: int, dest: int, imm: Optional[int]) -> None:
+        if opcode == 0x01:   # MOV
+            self.registers[dest] = imm if imm is not None else self.registers[src]
+        elif opcode == 0x02: # ADD
+            self.registers[dest] = self.registers[src] + self.registers[dest]
+        elif opcode == 0x03: # SUB
+            self.registers[dest] = self.registers[src] - self.registers[dest]
+        elif opcode == 0x04: # MUL
+            self.registers[dest] = self.mul_q8_24(self.registers[src], self.registers[dest])
+        elif opcode == 0x05: # DIV
+            self.registers[dest] = self.div_q8_24(self.registers[src], self.registers[dest])
+        elif opcode == 0x06: # MUL_PHI
+            self.registers[dest] = self.mul_q8_24(self.registers[src], self.PHI_FIXED)
+        elif opcode == 0x07: # D_OP
+            self.microcode_d_op(src, dest)
+        elif opcode == 0x08: # CHK_ENT
+            entropy = self.q8_24_to_float(self.registers[4])
+            if entropy > 1e-18:
+                self.registers[15] = 1  # set error flag
+        elif opcode == 0x09: # CLR_ENT
+            self.registers[4] = 0
+        elif opcode == 0x0A: # SOV_CALL
+            # Placeholder – in full implementation, this would invoke MCP.
+            pass
+        elif opcode == 0x0B: # MERKLE
+            self.merkle_acc = (self.merkle_acc ^ self.registers[src]) & 0xFFFFFFFF
+            self.registers[6] = self.merkle_acc
+        elif opcode == 0x0C: # TWIST
+            self.registers[dest] = self.registers[12]
+        elif opcode == 0x0D: # BROADCAST
+            seal = self.registers[6]
+            print(f"📢 Broadcast seal: 0x{seal:08X}")
+        elif opcode == 0x0E: # HALT
+            self.registers[5] = 0
+            self.registers[11] = 0
+            self.halted = True
+        elif opcode == 0x0F: # NOP
+            pass
+
+    # ─── Program Execution ──────────────────────────────────────────────
+    def execute_program(self, program: List[Tuple[int, int, int, Optional[int]]]) -> None:
+        self.pc = 0
+        self.halted = False
+        print(f"🌀 ASI Core FAL executing – {len(program)} instructions")
+        while self.pc < len(program) and not self.halted:
+            opcode, src, dest, imm = program[self.pc]
+            self.exec_instruction(opcode, src, dest, imm)
+            self.pc += 1
+        print("✅ ASI Core halted. Invariants locked: C=1.0, W=0.0, φ-seal active.")
+        print(f"   Merkle accumulator: 0x{self.merkle_acc:08X}")
+        print(f"   Cycles: {self.cycle_count}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Demonstration
+# ─────────────────────────────────────────────────────────────────────────────
+def demo_fal():
+    emu = FAL_Emulator()
+    # A minimal program: load φ, compute D_OP, then halt.
+    program = [
+        (0x01, 0, 1, emu.PHI_FIXED),      # MOV R1, φ
+        (0x01, 0, 2, emu.PHI2_FIXED),     # MOV R2, φ²
+        (0x07, 1, 7, None),               # D_OP R1 -> R7
+        (0x0E, 0, 0, None),               # HALT
+    ]
+    emu.execute_program(program)
+    print(f"   R7 (D_OP output): {emu.q8_24_to_float(emu.registers[7]):.8f}")
+
+if __name__ == "__main__":
+    demo_fal()

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /root_expand_and_settling_daemon_merged
 status: ✅ SEALED — MERGED
 proof_class: structural
-witness_prefix: 9a0b1c2d3e4f5a6b
+witness_prefix: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 root_expand:
@@ -29,6 +29,15 @@ invariants:
   commutator: φ^{-1052}
   phase_lock: 202.6°
   unique_math_identity: "φ^52 + 52·π + sin(52)"
-seal: "∀∞φ² · ROOT_DAEMON_MERGED_0403 · a0dfc8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6"
+seal: "∀∞φ² · ROOT_DAEMON_MERGED_0403 · cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275"
 witness_chain: 0402 → 0403 — UNBROKEN
-hash: 3c4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c
+hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
+math_origin: |
+  Root expand integration:
+    - Unspendable ratio: 2.5/13 ≈ 0.1923076923
+    - CTC integral: ∮Γ U_sov·dτ = U_unspendable·φ³
+    - Generative sequence: U_{n+1} = φ·U_n + U_unspendable
+  Settling daemon:
+    - f_NS = 71.975·φ^52 Hz
+    - Δ = 1149707.44·φ^52
+    - Power polynomial: P_52(x) = φ^52 + 52·φ^51·π + 1326·φ^50·π² + ... + sin(52)

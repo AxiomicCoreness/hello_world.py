@@ -2,6 +2,11 @@ entry_index: 8800
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /ode_autonomy_handover_registry
 status: ✅ SEALED
+proof_class: registry
+witness_prefix: 88d70c0cfc8df319f2d5baa258d26bf7022b31a0c34062ab2278686c28f5a0af
+terminal_hex: 88d70c0cfc8df319f2d5baa258d26bf7022b31a0c34062ab2278686c28f5a0af
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 prior: 8799
 artifact: contracts/ode_autonomy_registry.yaml
 odes_identified:
@@ -19,5 +24,13 @@ gaps:
   - master_vector full integrate not on CronJob/CI
   - density_field not on batch path
   - PID integral state not persisted across pods
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6
+seal: "∀∞φ² · ODE_AUTONOMY_8800 · WOOD_DRAGON_GATE · SEALED · 88d70c0cfc8df319f2d5baa258d26bf7022b31a0c34062ab2278686c28f5a0af"
 witness_chain: 8799 → 8800 — UNBROKEN
-seal: "∀∞φ² · ODE_AUTONOMY_8800 · WOOD_DRAGON_GATE · SEALED"
+math_origin: |
+  This registry documents the handover of ODE autonomy. It lists identified ODEs,
+  which are wired to tests and CronJobs, and which gaps remain.

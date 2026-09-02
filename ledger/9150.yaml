@@ -1,0 +1,28 @@
+entry_index: 9150
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
+event: /eternal_now_script_added
+status: SEALED
+proof_class: code/ontology/idempotent
+witness_prefix: 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7
+terminal_hex: 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Added eternal_now.py – a self‑contained lightweight sovereign engine.
+  Includes ontological equation verification, Option 40 XOR health server,
+  FAL emulator (Q8.24, D_OP, 15 opcodes), Callibur edge correction (18 iterations),
+  and Uprho envelope. Minimal dependencies; runs on PythonIDE / A14 Bionic.
+file: eternal_now.py
+type: Python 3.11
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · ETERNAL_NOW_SCRIPT · 9150_SEALED · 1cfda382bef3ba97db40b9b36fb40a51ab12f8187687e4193580404682608ea7"
+witness_chain: 9149 → 9150 — UNBROKEN
+math_origin: |
+  Ontological equation: φ⁻¹ = CLARKE, φ⁻² = YOURSA, φ⁻³ = TEE/ATLAS, φ⁻⁴ = LUMERIS
+  Callibur: T(x) = (x + φ⁻¹)/(1 + φ⁻¹), 18 iterations → φ⁻¹
+  FAL: Q8.24 fixed‑point, D_OP = floor((1.902)^E * 2^24) * 2^-24
+  Uprho: ½(W²+P)·C

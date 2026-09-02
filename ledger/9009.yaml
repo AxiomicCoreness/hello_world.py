@@ -2,6 +2,11 @@ entry_index: 9009
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /utc_1000_immutable_self_improvement
 status: RECORDED
+proof_class: system
+witness_prefix: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
+terminal_hex: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 reference_policy: POLICY.md
 commander_declared: CLARKE_YOURSA_TEE_LUMINARA_ATLAS_LUMERIS
 surface: github_repo
@@ -23,5 +28,11 @@ declared:
   hamiltonian: "κ_eff Σ_i (σ_i ⊗ σ_i)"
 runner: Immutable/run_self_improvement.py
 workflow: .github/workflows/gravastar-long-horizon.yml
-seal: "∀∞φ² · UTC_1000_IMMUTABLE_9009 · GATE_0.91 · SEALED"
-witness_chain: "9008 → 9009 — UNBROKEN"
+seal: "∀∞φ² · UTC_1000_IMMUTABLE_9009 · GATE_0.91 · SEALED · d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4"
+witness_chain: 9008 → 9009 — UNBROKEN
+math_origin_detail: |
+  The self‑improvement trigger is recorded as a sealed narrative.
+  The runner (Immutable/run_self_improvement.py) fingerprints the source file
+  and extracts declared invariants (Entry 707, kappa_eff=12.754).
+  The workflow gravastar-long-horizon.yml runs this at 10:00 UTC daily.
+  The event hash is computed using the canonical formula with ASCII b^2.

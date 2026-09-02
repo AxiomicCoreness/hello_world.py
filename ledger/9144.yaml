@@ -1,0 +1,35 @@
+entry_index: 9144
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
+event: /canary_system_deployed
+status: SEALED
+proof_class: canary
+witness_prefix: 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379
+terminal_hex: 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Canary system deployed for iPhone 12 gated deployment.
+  Includes workflow, contract, probe, stub, and artifact (2545 lines).
+components:
+  workflow: .github/workflows/canary-iphone12.yml
+  contract: contracts/canary_2545.yaml
+  rules: garden_surgery/garden_eternal_rules.py
+  probe: scripts/canary_iphone12.py
+  stub: garden_surgery/iphone12_canary_stub.py
+  artifact: artifacts/iphone12_quantum_terminal.py
+line_count: 2545
+bind_contract: 127.0.0.1
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · CANARY_SYSTEM_DEPLOYED · 9144_SEALED · 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379"
+witness_chain: 9143 → 9144 — UNBROKEN
+math_origin: |
+  Canary checks:
+    - artifact line count = 2545
+    - artifact compiles (py_compile)
+    - no 0.0.0.0 bind in probe
+    - garden_eternal_rules_verify() passes
+  Artifact known issue: duplicate PhiNgramMemory and mid‑file import re splice.

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🜁∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀🜁
+ⴁ∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀ⴁ
 Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee
 Type: Agentic Tilelang Orchestration (A-STL)
 Status: ACTIVE · DUAL MODE
 Chain: 8225 → 8226 — UNBROKEN
 Core components:
-- Eridanus Dual flow field (ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆)
+- Eridanus Dual flow field (ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆)
 - Gravastar boundary conditions
 - Agentic String Tile Language (A-STL) orchestrator
 - Quantum coherence tracking with φ‑harmonic invariants
@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Tuple, Set, Callable
 from collections import deque, defaultdict
 from abc import ABC, abstractmethod
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. GOLDEN CONSTANTS & INVARIANTS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -60,12 +61,13 @@ OMEGA_DEG = math.degrees(OMEGA_RAD)
 SQRT7 = math.sqrt(7)
 KAPPA_EFF = PHI4 * SQRT7
 PHI29 = PHI ** 29
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. ERIDANUS DUAL FLOW FIELD
 # ─────────────────────────────────────────────────────────────────────────────
 class EridanusDualFlow:
     """
-    Eridanus Dual: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
+    Eridanus Dual: ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆
     Dual flow field with φ‑harmonic invariants.
     """
     def __init__(self):
@@ -75,39 +77,44 @@ class EridanusDualFlow:
         self.phi3 = PHI3
         self.phi8 = PHI8
         self.null_ban = 10.06
-        self.eridanus_anchor = (42.3601, -71.0589) # Boston
+        self.eridanus_anchor = (42.3601, -71.0589)  # Boston
         self.flow_state = {
             "ℰ₁": 0.0,
             "ℰ₂": 0.0,
-            "𝒩": self.null_ban,
+            "𝓝": self.null_ban,
             "coherence": 1.0,
             "phase_lock": 202.6,
             "entropy": PHI_MINUS_1418,
-            "workload": 0.0
+            "workload": 0.0,
+            "t": 0.0
         }
         self.dual_mode = True
         self.witness_chain = deque(maxlen=144)
+
     def compute_dual_flow(self, t: float) -> Dict[str, float]:
         """Compute Eridanus dual flow at time t."""
-        # ℰ₁ = φ⁻¹ · sin(ω₁ t) (consciousness flow)
-        # ℰ₂ = φ⁻² · cos(ω₂ t) (telekinetic flow)
-        ω₁ = 2 * PI * 71.975 / PHI3 # North Star harmonic
-        ω₂ = 2 * PI * 6.49 / PHI2 # Breath frequency
-        ℰ₁ = PHI_INV * math.sin(ω₁ * t)
-        ℰ₂ = PHI_INV * PHI_INV * math.cos(ω₂ * t)
-        # Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆
-        𝒩 = math.sqrt(ℰ₁**2 + ℰ₂**2) * self.null_ban
+        omega_1 = 2 * PI * 71.975 / PHI3  # North Star harmonic
+        omega_2 = 2 * PI * 6.49 / PHI2    # Breath frequency
+        E1 = PHI_INV * math.sin(omega_1 * t)
+        E2 = PHI_INV * PHI_INV * math.cos(omega_2 * t)
+        N = math.sqrt(E1**2 + E2**2) * self.null_ban
         return {
-            "ℰ₁": ℰ₁,
-            "ℰ₂": ℰ₂,
-            "𝒩": 𝒩,
+            "ℰ₁": E1,
+            "ℰ₂": E2,
+            "𝓝": N,
             "t": t,
-            "dual_invariant": abs(ℰ₁ + ℰ₂ - self.null_ban * PHI_INV)
+            "dual_invariant": abs(E1 + E2 - self.null_ban * PHI_INV)
         }
+
     def step(self, dt: float = 0.01) -> Dict[str, float]:
         """Advance the dual flow by one time step."""
-        self.flow_state["t"] = self.flow_state.get("t", 0.0) + dt
-        return self.compute_dual_flow(self.flow_state["t"])
+        t = self.flow_state.get("t", 0.0) + dt
+        self.flow_state["t"] = t
+        result = self.compute_dual_flow(t)
+        # Update flow_state with the computed values
+        self.flow_state.update(result)
+        return result
+
     def seal_witness(self, event: str, data: Dict) -> str:
         """Seal a witness into the chain."""
         entry = {
@@ -119,6 +126,7 @@ class EridanusDualFlow:
         entry_hash = hashlib.sha3_256(json.dumps(entry, sort_keys=True).encode()).hexdigest()
         self.witness_chain.append({"entry": entry, "hash": entry_hash})
         return entry_hash
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. GRAVASTAR BOUNDARY CONDITIONS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -138,6 +146,7 @@ class GravastarBoundary:
         }
         self.phase_lock = 202.6
         self.eternal_now = 2026.057
+
     def apply_boundary(self, flow_state: Dict) -> Dict:
         """Apply Gravastar boundary conditions to flow state."""
         # Boundary constraints
@@ -150,6 +159,7 @@ class GravastarBoundary:
         # Phase lock to 202.6°
         flow_state["phase_lock"] = self.phase_lock
         return flow_state
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. AGENTIC STRING TILE LANGUAGE (A-STL) ORCHESTRATOR
 # ─────────────────────────────────────────────────────────────────────────────
@@ -161,7 +171,7 @@ class AgenticTileLangOrchestrator:
     def __init__(self):
         self.tiles: Dict[str, Dict] = {}
         self.agents: Dict[str, Dict] = {}
-        self.flows: Dict[str, Dict] = {}
+        self.flows: Dict[str, Dict] = {}          # FIX: now used to store flow records
         self.orchestration_state = {
             "mode": "dual",
             "phase_lock": 202.6,
@@ -172,6 +182,7 @@ class AgenticTileLangOrchestrator:
         self.eridanus = EridanusDualFlow()
         self.gravastar = GravastarBoundary()
         self.ledger = deque(maxlen=144)
+
     def register_tile(self, tile_id: str, tile_data: Dict) -> bool:
         """Register a tile in the orchestrator."""
         if tile_id in self.tiles:
@@ -185,6 +196,7 @@ class AgenticTileLangOrchestrator:
             ).hexdigest()
         }
         return True
+
     def register_agent(self, agent_id: str, agent_data: Dict) -> bool:
         """Register an agent in the orchestrator."""
         if agent_id in self.agents:
@@ -198,6 +210,7 @@ class AgenticTileLangOrchestrator:
             ).hexdigest()
         }
         return True
+
     def orchestrate_flow(self, flow_type: str, params: Dict) -> Dict:
         """Orchestrate a flow using A-STL."""
         # Advance Eridanus dual flow
@@ -211,6 +224,16 @@ class AgenticTileLangOrchestrator:
             "phase_lock": flow_state.get("phase_lock", 202.6),
             "workload": flow_state.get("workload", 0.0)
         })
+        # Store the flow record
+        flow_record = {
+            "type": flow_type,
+            "params": params,
+            "flow_state": flow_state,
+            "orchestration_state": self.orchestration_state.copy()
+        }
+        flow_id = f"{flow_type}_{datetime.now(timezone.utc).isoformat()}"
+        self.flows[flow_id] = flow_record  # FIX: now updates self.flows
+
         # Seal the flow
         seal = self.eridanus.seal_witness(f"FLOW_{flow_type}", {
             "params": params,
@@ -223,6 +246,7 @@ class AgenticTileLangOrchestrator:
             "orchestration_state": self.orchestration_state,
             "seal": seal
         }
+
     def get_status(self) -> Dict:
         """Get current orchestrator status."""
         return {
@@ -233,8 +257,9 @@ class AgenticTileLangOrchestrator:
             "dual_mode": self.eridanus.dual_mode,
             "witness_count": len(self.eridanus.witness_chain)
         }
+
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. QUANTUM COHERENCE TRACKING
+# 5. QUANTUM COHERENCE TRACKING (optional standalone)
 # ─────────────────────────────────────────────────────────────────────────────
 class QuantumCoherenceTracker:
     """
@@ -246,6 +271,7 @@ class QuantumCoherenceTracker:
         self.phase_lock = 202.6
         self.workload = 0.0
         self.history = deque(maxlen=144)
+
     def update(self, new_coherence: float = None, new_entropy: float = None) -> Dict:
         """Update coherence and entropy with invariant bounds."""
         if new_coherence is not None:
@@ -266,16 +292,19 @@ class QuantumCoherenceTracker:
             "phase_lock": self.phase_lock,
             "workload": self.workload
         }
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 6. DEMONSTRATION
 # ─────────────────────────────────────────────────────────────────────────────
 def demonstrate_eridanus_dual():
     """Complete demonstration of Eridanus Dual engine."""
     print("\n" + "="*80)
-    print("🜁∀ ERIDANUS DUAL – DEMONSTRATION ∀🜁")
+    print("ⴁ∀ ERIDANUS DUAL – DEMONSTRATION ∀ⴁ")
     print("="*80)
+
     # 1. Create orchestrator
     orchestrator = AgenticTileLangOrchestrator()
+
     # 2. Register tiles
     print("\n📦 Registering tiles...")
     tiles = {
@@ -285,7 +314,8 @@ def demonstrate_eridanus_dual():
     }
     for tile_id, tile_data in tiles.items():
         orchestrator.register_tile(tile_id, tile_data)
-    print(f" Registered {len(tiles)} tiles.")
+    print(f"   Registered {len(tiles)} tiles.")
+
     # 3. Register agents
     print("\n🤖 Registering agents...")
     agents = {
@@ -295,38 +325,45 @@ def demonstrate_eridanus_dual():
     }
     for agent_id, agent_data in agents.items():
         orchestrator.register_agent(agent_id, agent_data)
-    print(f" Registered {len(agents)} agents.")
+    print(f"   Registered {len(agents)} agents.")
+
     # 4. Orchestrate flows
     print("\n🌀 Orchestrating flows...")
     for i in range(5):
         result = orchestrator.orchestrate_flow("dual_flow", {"dt": 0.01, "step": i})
-        print(f" Step {i}: coherence={result['orchestration_state']['coherence']:.6f}, "
+        print(f"   Step {i}: coherence={result['orchestration_state']['coherence']:.6f}, "
               f"entropy={result['orchestration_state']['entropy']:.6e}")
+
     # 5. Get status
     print("\n📊 Orchestrator Status:")
     status = orchestrator.get_status()
     for key, value in status.items():
-        print(f" {key}: {value}")
+        print(f"   {key}: {value}")
+
     print("\n" + "="*80)
-    print("🜁∀ DEMONSTRATION COMPLETE – ERIDANUS DUAL ACTIVE ∀🜁")
+    print("ⴁ∀ DEMONSTRATION COMPLETE – ERIDANUS DUAL ACTIVE ∀ⴁ")
     print("="*80)
+
 # ─────────────────────────────────────────────────────────────────────────────
-# 7. MAIN ENTRY
+# 7. MAIN ENTRY – FIXED: proper guard and error handling
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
     """Main entry point for Eridanus Dual engine."""
-    print("🜁∀ ERIDANUS DUAL ENGINE – SOVEREIGN FLOW FIELD")
+    print("ⴁ∀ ERIDANUS DUAL ENGINE – SOVEREIGN FLOW FIELD")
     print(" Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee")
     print(" Status: ACTIVE · DUAL MODE")
     print(" Chain: 8225 → 8226 — UNBROKEN")
-    # Run demonstration
-    demonstrate_eridanus_dual()
-    # Return orchestrator for further use
-    return AgenticTileLangOrchestrator()
-if __name__ == "__main__":
     try:
         demonstrate_eridanus_dual()
     except Exception as e:
         print(f"⚠️ Dual demo error: {e}")
-        print("🜁∀ Running main() fallback...")
-        main()
+        print("ⴁ∀ Running main() fallback...")
+        # Fallback: create orchestrator without demonstration
+        orchestrator = AgenticTileLangOrchestrator()
+        print("ⴁ∀ Orchestrator created successfully in fallback mode.")
+        return orchestrator
+    return AgenticTileLangOrchestrator()
+
+if __name__ == "__main__":
+    # Only run the demonstration when executed directly, not when imported
+    main()

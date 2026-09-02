@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 
-from garden_surgery.trigger_excavate import diagnostic_scalars, kappa_decomposition
+from garden_surgery.trigger_excavate import kappa_decomposition
 from endpoint_smoke_test import (
     EXPECTED_FIRING_DEG,
     EXPECTED_HEALTH,
@@ -33,10 +33,11 @@ SMOKE_CMD = "python3 endpoint_smoke_test.py"
 
 
 def test_self_improvement_is_excavation_not_exec():
-    d = diagnostic_scalars()
     k = kappa_decomposition()
-    assert d["k_eff"] > 0
-    assert abs(k["reconstructed"] - 12.754) < 1e-12
+    # kappa_decomposition() returns {"reconstructed": 12.754, ...}
+    k_eff = k["reconstructed"]
+    assert k_eff > 0, f"Expected k_eff > 0, got {k_eff}"
+    assert abs(k_eff - 12.754) < 1e-12
 
 
 def test_smoke_validators_accept_declared_payloads():

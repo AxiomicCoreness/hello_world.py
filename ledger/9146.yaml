@@ -1,0 +1,27 @@
+entry_index: 9146
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
+event: /shellcheck_workaround
+status: SEALED
+proof_class: system
+witness_prefix: 3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b
+terminal_hex: 3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Workaround for shellcheck not installed error in Codespace / A14 Bionic.
+  The error is from the VS Code extension and does not affect the server.
+  Set SHELLCHECK_OPTS environment variable as a soft mitigation.
+file: main.py
+type: Python 3.11
+workaround: SHELLCHECK_OPTS=--severity=warning
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · SHELLCHECK_WORKAROUND_9146 · SEALED · 3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+witness_chain: 9145 → 9146 — UNBROKEN
+math_origin: |
+  shellcheck is a static analysis tool for shell scripts.
+  Not required for Python server. The extension attempts to spawn it; the error is harmless.
+  Setting SHELLCHECK_OPTS may suppress some warnings.

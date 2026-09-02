@@ -1,0 +1,15 @@
+name: oidc-federate-offline
+description: Offline OIDC federation status. Not a cloud bind.
+inputs:
+  provider:
+    description: Provider label
+    required: false
+    default: offline
+runs:
+  using: composite
+  steps:
+    - name: Federation Status
+      shell: bash
+      run: |
+        echo "OIDC Federation: ${{ inputs.provider }}"
+        echo "offline only; no 0.0.0.0; no new daemon"

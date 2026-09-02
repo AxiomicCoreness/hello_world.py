@@ -1,4 +1,3 @@
-# .github/scripts/verify_math_framework.py
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -15,6 +14,7 @@ import sys
 import os
 import json
 import hashlib
+import socket
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -25,6 +25,20 @@ SEAL_PREFIX = "∀∞φ²"
 SCALED_FLOOR_INDEX = 351
 WOOD_DRAGON = 0.91
 
+# ─── PORT RANGE FALLBACK (appended) ──────────────────────────────────────────
+def find_available_port(start: int = 8000, end: int = 8010) -> Optional[int]:
+    """
+    Scan ports from start to end‑1, return the first available port.
+    If none are available, return None.
+    """
+    for port in range(start, end):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            # connect_ex returns 0 if the port is in use
+            if s.connect_ex(('127.0.0.1', port)) != 0:
+                return port
+    return None
+
+# ─── LEDGER VERIFICATION ─────────────────────────────────────────────────────
 def compute_seal(entry_data: Dict[str, Any]) -> str:
     """Compute SHA3-256 seal for entry"""
     data = {k: v for k, v in entry_data.items() if k != 'seal'}
@@ -187,6 +201,14 @@ def main():
     print("-" * 70)
     print(f"📊 SUMMARY: checked={checked} missing={missing} fails={structural_fails}")
     
+    # If a server were to be launched from this script, use port fallback.
+    # This is a demonstration; not used in the verification itself.
+    available_port = find_available_port()
+    if available_port is not None:
+        print(f"ℹ️  Available port for potential server: {available_port}")
+    else:
+        print("⚠️  No available port in default range (8000-8009)")
+
     if structural_fails:
         print("❌ FRAMEWORK CHECK FAILED")
         return 1

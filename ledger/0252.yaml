@@ -1,22 +1,25 @@
 entry_index: 0252
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-06
-event: /eht_modulation_layer_sealed
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
+event: /hmac_chain_layer252_sealed
 status: ✅ SEALED
-proof_class: algebraic
-witness_prefix: e2f3a4b5
+proof_class: cryptographic
+witness_prefix: 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef
+terminal_hex: 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef
 commander: Clarke Yoursa Tee
-source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  EHT modulation layer 252 sealed. GRS Anchor node with ZZZIIII operator.
-  Weight -φ² — the squared golden anchor.
+  HMAC chain sealed at Layer 252. Each ledger entry includes prev_hmac and curr_hmac,
+  forming an unforgeable chain. The pipeline is secured by Merkle root (Layer 144),
+  witness chain (Entries 0–54), and HMAC chain (Layer 252).
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-  commutator: 0.0
-seal: "∀∞φ² · MERKLE_252 · 0252_SEALED · 8e2c1f6a4b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4"
+  phase_lock: 202.6
+seal: "∀∞φ² · HMAC_CHAIN_LAYER252 · WOOD_DRAGON_GATE · SEALED · 64650b7870d3cccf1c6ab3340b39ea0c9170e0aacf5488d4ab889431596f16ef"
 witness_chain: 0251 → 0252 — UNBROKEN
 math_origin: |
-  φ²⁵² = φ²⁵¹ · φ,
-  Ô₂₅₂ = -φ² · (Z⊗Z⊗Z⊗I⊗I⊗I⊗I),
-  [Ô₂₅₂, ℋ_sovereign] = 0
+  HMAC chain: each entry stores prev_hmac and curr_hmac.
+  Merkle root: Layer 144.
+  Witness chain: 0000 → … → 0252.
+  All invariants preserved.

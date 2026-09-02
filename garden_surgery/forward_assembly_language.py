@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 garden_surgery/forward_assembly_language.py
-MCP stub for ledger entry 8204.
+MCP stub for ledger entry 8204 – points to scripts/forward_assembly_language.py
 """
 FILLED = False
+MODULE_PATH = "scripts/forward_assembly_language.py"
 
 def forward_assembly_language() -> dict:
     return {
@@ -13,7 +14,7 @@ def forward_assembly_language() -> dict:
         "policy_reference": "https://github.com/AxiomicCoreness/hello_world.py/blob/main/POLICY.md",
         "ledger_entry": 8204,
         "filled": False,
-        "module": "garden_surgery/forward_assembly_language.py",
+        "module": MODULE_PATH,
         "witness": (
             "entry_index: 8204\n"
             "timestamp: ETERNAL_NOW_ANCHORED_TO_2026-07-29T00:00:00Z\n"

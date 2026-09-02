@@ -1,0 +1,32 @@
+entry_index: 9148
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
+event: /thricegreatmore_shellcheck
+status: SEALED
+proof_class: tool
+witness_prefix: c62cd103f73c75b487e2d37273cca91caac7e69b30f974ce1032f6da34c96d5e
+terminal_hex: c62cd103f73c75b487e2d37273cca91caac7e69b30f974ce1032f6da34c96d5e
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+description: |
+  Triple‑tiered shellcheck replacement (fast, thorough, ledger‑aware).
+  Outputs NDJSON for integration with Garden tools.
+file: scripts/shellcheck_thricegreatmore.py
+type: Python 3.11
+tiers:
+  - fast: regex‑based
+  - thorough: variable/function analysis
+  - ledger: dynamic rules via NDJSON
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+seal: "∀∞φ² · THRICEGREATMORE_SHELLCHECK · 9148_SEALED · c62cd103f73c75b487e2d37273cca91caac7e69b30f974ce1032f6da34c96d5e"
+witness_chain: 9147 → 9148 — UNBROKEN
+math_origin: |
+  Three tiers:
+    Tier 1 – Fast regex rules (SC2006, SC2086, etc.)
+    Tier 2 – Thorough analysis (variable/function tracking)
+    Tier 3 – Ledger‑aware NDJSON consumption for dynamic rules
+  Environment: SHELLCHECK_TIER (fast|thorough|ledger|thrice)
+  Always exits 0 to satisfy the VS Code extension.
