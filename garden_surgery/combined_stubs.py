@@ -5,7 +5,39 @@ garden_surgery/combined_stubs.py
 Merged, deduplicated MCP stubs for all sealed ledger entries.
 All existing stubs remain untouched; this is an additional file.
 """
+class AgenticLatticeStub:
+    def __init__(self):
+        from pathlib import Path
+        import yaml
+        path = Path(__file__).parent.parent / "ledger" / "9155.yaml"
+        self._data = yaml.safe_load(path.read_text()) if path.exists() else {}
 
+    @property
+    def witness_prefix(self) -> str:
+        return self._data.get("witness_prefix", "")
+
+    @property
+    def seal(self) -> str:
+        return self._data.get("seal", "")
+
+    @property
+    def results(self) -> dict:
+        return self._data.get("results", {})
+
+    @property
+    def lattice_axiom(self) -> str:
+        return self._data.get("lattice_axiom", "")
+
+    @property
+    def beryl_lattice(self) -> dict:
+        return self._data.get("beryl_lattice", {})
+
+    @property
+    def math_origin(self) -> str:
+        return self._data.get("math_origin", "")
+
+    def verify_integrity(self) -> bool:
+        return self.seal.endswith(self.witness_prefix)
 # Deduplicated Witness YAML Store (keyed by entry_index)
 WITNESS_YAML = {
     8204: """entry_index: 8204
