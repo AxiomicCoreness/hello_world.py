@@ -1,0 +1,109 @@
+# k8s/codespace/20-workspace.yaml
+# Desktop-like Codespace workspace. Requests and limits are mandatory.
+# Lightweight class uses 1Gi memory limit (idle ~220Mi, browser ~500Mi).
+# Standard class starts 2 vCPU / 4Gi request, 4 vCPU / 8Gi limit.
+# MCP FILLED=false. Does not bind 0.0.0.0.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codespace-workspace
+  namespace: garden-codespace
+  labels:
+    app: codespace-workspace
+    garden.ledger: "9157"
+    mcp.garden/filled: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codespace-workspace
+  template:
+    metadata:
+      labels:
+        app: codespace-workspace
+        garden.ledger: "9157"
+      annotations:
+        garden.dual_asgi: "127.0.0.1:8024"
+        garden.bind_0000: "false"
+    spec:
+      nodeSelector:
+        garden.role: compute
+      containers:
+        - name: workspace
+          image: gitpod/openvscode-server:latest
+          ports:
+            - name: ide
+              containerPort: 3000
+          env:
+            - name: GARDEN_BIND
+              value: "127.0.0.1"
+            - name: GARDEN_MCP_FILLED
+              value: "false"
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codespace-workspace-light
+  namespace: garden-codespace
+  labels:
+    app: codespace-workspace-light
+    garden.ledger: "9157"
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: codespace-workspace-light
+  template:
+    metadata:
+      labels:
+        app: codespace-workspace-light
+    spec:
+      containers:
+        - name: workspace-light
+          image: gitpod/openvscode-server:latest
+          resources:
+            requests:
+              cpu: "250m"
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codespace-workspace
+  namespace: garden-codespace
+spec:
+  selector:
+    app: codespace-workspace
+  ports:
+    - name: ide
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: codespace-home
+  namespace: garden-codespace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi

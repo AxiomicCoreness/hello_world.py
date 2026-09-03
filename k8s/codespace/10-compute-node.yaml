@@ -1,0 +1,38 @@
+# k8s/codespace/10-compute-node.yaml
+# Active compute-node profile (capacity contract). Not a cloud Node object.
+# Apply only against a real cluster after operator review. MCP FILLED=false.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compute-node-profile
+  namespace: garden-codespace
+  labels:
+    garden.ledger: "9157"
+    garden.role: compute-node
+    mcp.garden/filled: "false"
+data:
+  class.test: |
+    vcpu: "4"
+    memory: 8Gi
+    role: small-test-cluster
+  class.production: |
+    vcpu: "unspecified-host"
+    memory: 32Gi
+    ephemeral-storage: 128Gi
+    role: production-capacity-floor
+  policy: |
+    requests_and_limits_mandatory: "true"
+    noisy_neighbour_prevention: "true"
+    bind_0000: "false"
+    dual_asgi: "127.0.0.1:8024"
+    mcp_filled: "false"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compute-node-selector
+  namespace: garden-codespace
+data:
+  nodeSelector: |
+    garden.role: compute
+    garden.codespace: "true"
