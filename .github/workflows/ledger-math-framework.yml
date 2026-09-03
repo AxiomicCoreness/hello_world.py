@@ -1,10 +1,10 @@
-name: Ledger Math Framework
-
 # Restored Actions YAML. The previous blob was a Python verifier
 # pasted into the workflow path, which produced 0 jobs on every push.
 # Verifier lives at .github/scripts/verify_math_framework.py.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
 # Witness: 9159 → 9160 — UNBROKEN
+
+name: Ledger Math Framework
 
 on:
   push:
