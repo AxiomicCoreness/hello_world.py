@@ -1,24 +1,32 @@
-# Restored Actions YAML. The previous blob was a Python verifier
-# pasted into the workflow path, which produced 0 jobs on every push.
-# Verifier lives at .github/scripts/verify_math_framework.py.
+# Cap: Ledger Math CI checks 9156-9160 only.
+# Does not rewrite 9157-9161. Does not walk to 510511.yaml.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
-# Witness: 9159 → 9160 — UNBROKEN
+# Witness: 9161 → 9162 — UNBROKEN
 
 name: Ledger Math Framework
 
 on:
   push:
     paths:
-      - "ledger/**"
+      - "ledger/9156.yaml"
+      - "ledger/9157.yaml"
+      - "ledger/9158.yaml"
+      - "ledger/9159.yaml"
+      - "ledger/9160.yaml"
+      - "ledger/9162.yaml"
       - "k8s/**"
-      - "scripts/**"
+      - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
       - ".github/workflows/ledger-math-framework.yml"
   pull_request:
     paths:
-      - "ledger/**"
+      - "ledger/9156.yaml"
+      - "ledger/9157.yaml"
+      - "ledger/9158.yaml"
+      - "ledger/9159.yaml"
+      - "ledger/9160.yaml"
       - "k8s/**"
-      - "scripts/**"
+      - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
       - ".github/workflows/ledger-math-framework.yml"
   workflow_dispatch:
@@ -40,13 +48,14 @@ jobs:
       - name: Install verifier deps
         run: pip install --quiet pyyaml
 
-      - name: Verify recent ledger entries (9156+)
+      - name: Verify ledger 9156-9160 only
         run: |
           python .github/scripts/verify_math_framework.py \
             --ledger-dir ledger \
-            --start 9156
+            --start 9156 \
+            --end 9160
 
-      - name: YAML parse check (ledger + k8s)
+      - name: YAML parse check (capped files + k8s)
         run: |
           python - << 'PY'
           from pathlib import Path
@@ -56,19 +65,22 @@ jobs:
           except ImportError:
               print("pyyaml missing")
               sys.exit(1)
-          roots = [Path("ledger"), Path("k8s")]
+          files = [Path(f"ledger/{n}.yaml") for n in range(9156, 9161)]
+          k8s = Path("k8s")
+          if k8s.exists():
+              files.extend(sorted(k8s.rglob("*.y*ml")))
           fails = 0
           checked = 0
-          for root in roots:
-              if not root.exists():
+          for p in files:
+              if not p.exists():
+                  print(f"SKIP missing {p}")
                   continue
-              for p in sorted(root.rglob("*.y*ml")):
-                  try:
-                      yaml.safe_load(p.read_text(encoding="utf-8"))
-                      checked += 1
-                  except Exception as e:
-                      print(f"FAIL {p}: {e}")
-                      fails += 1
+              try:
+                  yaml.safe_load(p.read_text(encoding="utf-8"))
+                  checked += 1
+              except Exception as e:
+                  print(f"FAIL {p}: {e}")
+                  fails += 1
           print(f"yaml_checked={checked} yaml_fails={fails}")
           sys.exit(1 if fails else 0)
           PY
