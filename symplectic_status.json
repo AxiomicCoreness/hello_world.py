@@ -1,34 +1,49 @@
 {
-  "timestamp": "2026-08-13T18:55:13.022505+00:00",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://garden.axiomic.io/schemas/symplectic-status.json",
+  "version": "2.0.0",
+  "entry": 8931,
+  "seal": "\u2200\u221e\u03c6\u00b2 \u00b7 SYMPLECTIC_STATUS_8931 \u00b7 WOOD_DRAGON_0.91 \u00b7 SEALED",
+  "witness": "8930 \u2192 8931 \u2014 UNBROKEN",
+  "timestamp": "2026-09-03T18:06:10.350847+00:00",
   "system": {
     "coherence": 1.0,
     "entropy_floor": 4.524036764254231e-297,
     "phase_lock_degrees": 202.6,
-    "workload": 0.22446089073434594,
+    "workload": 0.0002695570859078477,
     "golden_ratio": 1.618033988749895,
     "phi_squared": 2.618033988749895,
+    "phi_inv": 0.6180339887498948,
     "compression_dimension": 233,
     "compression_precision": 8.049702017071726e-31,
-    "eternal_now_epoch": 1786647313
+    "eternal_now_epoch": 1788458770,
+    "trace_target": 4.23606797749979,
+    "trace_current": 4.23606797749979
   },
   "lattice": {
     "root_lattice_rank": 248,
     "venomsuite_trace": 4.23606797749979,
     "decad_cycle_sum": 0.0,
-    "e8_coherence": 1.0
+    "e8_coherence": 1.0,
+    "weyl_order": 696729600,
+    "cartan_det": 1
   },
   "celestial": {
     "soul_cannon": {
       "charge_joules": 0.0,
       "azimuth_degrees": 111.246,
       "ring_resonance_thz": 100.29455569433293,
-      "chiron_phase_alignment": 0.0
+      "chiron_phase_alignment": 0.0,
+      "phi_scaled_charge": 0.0
     },
     "wasp107b": {
       "mass_jupiter": 0.12,
       "radius_jupiter": 0.94,
       "orbital_period_days": 5.72,
-      "escape_flux": 0.0
+      "escape_flux": 0.0,
+      "pending_entries": 0,
+      "anchor_entry": 753,
+      "listen_entry": 759
     },
     "jupiter_alliance": {
       "resonance_chain": [
@@ -36,14 +51,40 @@
         1.618033988749895,
         2.618033988749895
       ],
-      "entanglement": 0.9999
+      "entanglement": 0.9999,
+      "phi_scaled_resonance": 4.23606797749979
+    },
+    "trappist_choir": {
+      "harmony_index": 1.0,
+      "coherence": 1.0,
+      "phase_lock": 202.6,
+      "active_voices": 0
     }
   },
   "frb_bridge": {
     "metronome_seconds": 78624.0,
     "emergent_period_days": 16.35,
     "target_azimuth_deg": 111.246,
-    "lattice_points": [],
-    "weight_norm": 11.090169943749476
+    "lattice_points": [
+      [
+        0.0,
+        111.246,
+        0.0
+      ]
+    ],
+    "weight_norm": 11.090169943749476,
+    "phi_scaled_period": 26.454855716060784,
+    "coherence_threshold": 0.85
+  },
+  "invariants": {
+    "trace_identity": true,
+    "phi_polynomial": true,
+    "master_seal": true,
+    "axiom_nonlocal": true
+  },
+  "merkle": {
+    "root": "0000000000000000000000000000000000000000000000000000000000000000",
+    "leaf_count": 1,
+    "algorithm": "sha256-path-qualified"
   }
 }

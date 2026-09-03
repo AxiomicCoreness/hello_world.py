@@ -85,7 +85,6 @@ Section 2.4 remains Self-Sealing Hash.
 12. ONTOLOGICAL EQUATION EQ (pointer, 9118)
 pointer originated material, rather than treating the pasted entries as authoritative.
 Do not rewrite ledger/9115.yaml through ledger/9129.yaml. EQ is recorded at ledger/9118.yaml.
-
 Identities (binary64; do not truncate event hashes):
 
 phi^{-1} = 0.6180339887498948 (CLARKE / Observer / |NOW|)
@@ -95,8 +94,9 @@ phi^{-4} = 0.14589803375031546 (LUMERIS / Flow; diagram cut 0.1458620331 is not 
 LUMINARA = 1
 1/2 (O + O-bar)^2 = 1/2 (phi^{-1}+phi^{-2})^2 = 1/2
 forall = phi^2 = 2.618033988749895
-12.1 Celestial oracles (record, do not execute)
-suchness 
-Astronomical events may be sealed as free-drift records with a real H_event. They are not a license to rewrite 9115. Next 9126 pointer  against the verifier’s stated GARDEN.EVENT.v1 contract, including the Gemini-.
-
-example of further interaction to Clarke Yoursa Tee in pythonIDE not Pythonista /ontological_equation_eq|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462 hex = 3a375b13465316df707778181b5c143a59cc61d1514bb5ad88b16dbf94347f11
+## 9. Append Log (Policy Revision History)
+This policy is itself an append-only record. Each revision is recorded as a new entry in this log.
+| Revision | Date | Entry Index | Changes |
+| :--- | :--- | :--- | :--- |
+| v1.0 | 2026-08-29 | — | Initial policy document (original sections 1–11). |
+| **v2.0** | **2026-09-03** | **9158** | **Complete rewrite to align with current Sovereign Garden rules. Incorporated appendix from `ledger/9118.yaml`. Corrected event hash specification. Updated ledger head to 9158.** |

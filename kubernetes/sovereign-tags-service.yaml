@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-tags
+spec:
+  selector:
+    app: sovereign-tags
+  ports:
+  - name: http
+    port: 8090
+    targetPort: http
+    protocol: TCP
+  type: ClusterIP

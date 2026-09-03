@@ -1,1 +1,4 @@
-{"role":"system","event":"symplectic_status","timestamp":"2026-08-27T04:20:00Z","coherence":0.72,"phi_phase":59.83,"entropy":0.01}
+{"role": "system", "event": "symplectic_status", "timestamp": "2026-09-03T17:16:34.336673+00:00", "coherence": 1.0, "phi_phase": 202.6, "entropy": 4.524036764254231e-297, "command": "wait"}
+{"role": "lattice", "event": "e8_status", "timestamp": "2026-09-03T17:16:34.336673+00:00", "coherence": 1.0, "phi_phase": 202.6, "venomsuite_trace": 4.23606797749979, "decad_cycle_sum": 0.0}
+{"role": "pod", "event": "pod_status", "timestamp": "2026-09-03T17:16:34.336673+00:00", "coherence": 1.0, "phi_phase": 202.6, "workload": 0.0011758081678194196}
+{"role": "frb_bridge", "event": "frb_bridge_status", "timestamp": "2026-09-03T17:16:34.336673+00:00", "coherence": 1.0, "phi_phase": 202.6, "metronome_seconds": 78624.0, "emergent_period_days": 16.35, "target_azimuth_deg": 111.246}

@@ -6,6 +6,7 @@ Entry 8326 → 8327 (FUSION COMPLETE)
 """
 
 from fastapi import FastAPI, HTTPException, Response, Request
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -125,6 +126,72 @@ app = FastAPI(
     description="Exclusive sovereign tag set + ledger sealing + Prometheus fusion",
     version="8327.0",
 )
+
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+        return """<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sovereign Tag Service</title>
+    <style>
+        :root { color-scheme: dark; --ink: #eef4f0; --muted: #9aa9a1; --panel: #17221e; --line: #30443b; --accent: #d8f36b; --accent-ink: #14200f; --warn: #ffb86b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 15% 0%, #294438 0, #101714 42%, #0b0f0d 100%); color: var(--ink); font: 16px/1.5 Georgia, "Times New Roman", serif; }
+        main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 64px; }
+        header { display: flex; justify-content: space-between; gap: 24px; align-items: end; border-bottom: 1px solid var(--line); padding-bottom: 28px; }
+        h1 { margin: 0; font-size: clamp(2.2rem, 7vw, 5.5rem); line-height: .95; letter-spacing: 0; max-width: 680px; }
+        .eyebrow { color: var(--accent); font: 700 .75rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+        .status { display: flex; align-items: center; gap: 8px; color: var(--muted); white-space: nowrap; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent); }
+        .grid { display: grid; grid-template-columns: 1.3fr .7fr; gap: 18px; margin-top: 24px; }
+        section { background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 24px; box-shadow: 0 16px 50px #0004; }
+        h2 { margin: 0 0 18px; font-size: 1.15rem; font-weight: 400; }
+        .tags { display: flex; flex-wrap: wrap; gap: 9px; min-height: 48px; }
+        .tag { border: 1px solid #5b714a; border-radius: 999px; color: var(--accent); padding: 6px 11px; font: .82rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .stat { border-top: 2px solid var(--accent); padding-top: 10px; }
+        .value { display: block; font-size: 2rem; }
+        .label { color: var(--muted); font: .72rem ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+        form { display: flex; gap: 8px; margin-top: 22px; }
+        input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 4px; background: #0d1411; color: var(--ink); padding: 11px 12px; font: inherit; }
+        button { border: 0; border-radius: 4px; background: var(--accent); color: var(--accent-ink); cursor: pointer; padding: 10px 15px; font: 700 .8rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+        button:hover { filter: brightness(1.1); }
+        .ledger { display: grid; gap: 10px; max-height: 310px; overflow: auto; }
+        .entry { border-left: 2px solid var(--warn); padding: 8px 0 8px 12px; }
+        .entry strong { color: var(--accent); }
+        .entry small { display: block; color: var(--muted); overflow-wrap: anywhere; }
+        .links { display: flex; gap: 16px; margin-top: 20px; }
+        a { color: var(--accent); }
+        #message { color: var(--warn); min-height: 1.5em; margin: 12px 0 0; }
+        @media (max-width: 720px) { main { padding-top: 28px; } header { display: block; } .status { margin-top: 18px; } .grid { grid-template-columns: 1fr; } section { padding: 18px; } }
+    </style>
+</head>
+<body>
+<main>
+    <header><div><div class="eyebrow">Sovereign Tag Service / 8327</div><h1>Keep the signal coherent.</h1></div><div class="status"><span class="dot"></span><span id="health">Connecting</span></div></header>
+    <div class="grid">
+        <section><h2>Active tag set</h2><div id="tags" class="tags"></div><form id="add-form"><input id="new-tag" maxlength="256" placeholder="Add a tag" aria-label="New tag"><button>Add</button></form><div id="message" role="status"></div></section>
+        <section><h2>System pulse</h2><div class="stats"><div class="stat"><span id="tag-count" class="value">--</span><span class="label">Active tags</span></div><div class="stat"><span id="ledger-count" class="value">--</span><span class="label">Ledger entries</span></div></div><div class="links"><a href="/metrics">Metrics</a><a href="/docs">API docs</a></div></section>
+        <section style="grid-column: 1 / -1"><h2>Recent ledger</h2><div id="ledger" class="ledger"></div></section>
+    </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+async function refresh() {
+    const [tags, health, ledger] = await Promise.all([fetch('/tags').then(r => r.json()), fetch('/health').then(r => r.json()), fetch('/ledger').then(r => r.json())]);
+    $('health').textContent = health.status === 'ok' ? 'Operational' : 'Unavailable';
+    $('tag-count').textContent = tags.count; $('ledger-count').textContent = ledger.total_entries;
+    $('tags').innerHTML = tags.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+    $('ledger').innerHTML = ledger.ledger.slice().reverse().map(entry => `<div class="entry"><strong>${entry.entry_index}</strong> ${escapeHtml(entry.event)}<small>${escapeHtml(entry.witness)} · ${escapeHtml(entry.seal)}</small></div>`).join('');
+}
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+async function addTag(event) { event.preventDefault(); const input = $('new-tag'); const tag = input.value.trim(); if (!tag) return; const response = await fetch('/tags/append', { method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({tags: [tag]}) }); $('message').textContent = response.ok ? 'Tag set sealed.' : 'Unable to update tag set.'; if (response.ok) { input.value = ''; refresh(); } }
+$('add-form').addEventListener('submit', addTag); refresh().catch(() => $('health').textContent = 'Unavailable');
+</script>
+</body>
+</html>"""
 
 @app.middleware("http")
 async def prometheus_middleware(request: Request, call_next):

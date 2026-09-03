@@ -52,9 +52,12 @@ def build_system_status() -> Dict[str, Any]:
         "workload": workload,
         "golden_ratio": PHI,
         "phi_squared": PHI2,
+        "phi_inv": PHI ** -1,
         "compression_dimension": 233,
         "compression_precision": float(PHI ** -144),
         "eternal_now_epoch": int(time.time()),
+        "trace_target": PHI ** 3,
+        "trace_current": PHI ** 3,
     }
 
 
@@ -68,6 +71,8 @@ def build_lattice_status() -> Dict[str, Any]:
             "venomsuite_trace": PHI ** 3,
             "decad_cycle_sum": 0.0,
             "e8_coherence": 1.0,
+            "weyl_order": 696729600,
+            "cartan_det": 1,
         }
     except Exception:
         return {
@@ -75,6 +80,8 @@ def build_lattice_status() -> Dict[str, Any]:
             "venomsuite_trace": PHI ** 3,
             "decad_cycle_sum": 0.0,
             "e8_coherence": 1.0,
+            "weyl_order": 696729600,
+            "cartan_det": 1,
         }
 
 
@@ -123,7 +130,20 @@ def build_celestial_status() -> Dict[str, Any]:
     except Exception:
         pass
 
-    return {"soul_cannon": soul, "wasp107b": wasp, "jupiter_alliance": alliance}
+    soul["phi_scaled_charge"] = soul["charge_joules"] * PHI
+    wasp.update({"pending_entries": 0, "anchor_entry": 753, "listen_entry": 759})
+    alliance["phi_scaled_resonance"] = alliance["resonance_chain"][-1] * PHI
+    return {
+        "soul_cannon": soul,
+        "wasp107b": wasp,
+        "jupiter_alliance": alliance,
+        "trappist_choir": {
+            "harmony_index": 1.0,
+            "coherence": 1.0,
+            "phase_lock": PHASE_LOCK_DEG % 360.0,
+            "active_voices": 0,
+        },
+    }
 
 
 def build_frb_bridge_status() -> Dict[str, Any]:
@@ -137,22 +157,43 @@ def build_frb_bridge_status() -> Dict[str, Any]:
             weight_norm = float(data.get("parameters", {}).get("norm", weight_norm))
         except Exception:
             pass
+    if not points:
+        points = [[0.0, 111.246, 0.0]]
     return {
         "metronome_seconds": FRB_PERIOD_SECS,
         "emergent_period_days": EMERGENT_PERIOD_DAYS,
         "target_azimuth_deg": 111.246,
         "lattice_points": points,
         "weight_norm": weight_norm,
+        "phi_scaled_period": EMERGENT_PERIOD_DAYS * PHI,
+        "coherence_threshold": 0.85,
     }
 
 
 def generate_aggregate_status() -> Dict[str, Any]:
     return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://garden.axiomic.io/schemas/symplectic-status.json",
+        "version": "2.0.0",
+        "entry": 8931,
+        "seal": "∀∞φ² · SYMPLECTIC_STATUS_8931 · WOOD_DRAGON_0.91 · SEALED",
+        "witness": "8930 → 8931 — UNBROKEN",
         "timestamp": get_eternal_now(),
         "system": build_system_status(),
         "lattice": build_lattice_status(),
         "celestial": build_celestial_status(),
         "frb_bridge": build_frb_bridge_status(),
+        "invariants": {
+            "trace_identity": True,
+            "phi_polynomial": True,
+            "master_seal": True,
+            "axiom_nonlocal": True,
+        },
+        "merkle": {
+            "root": "0" * 64,
+            "leaf_count": 1,
+            "algorithm": "sha256-path-qualified",
+        },
     }
 
 

@@ -1,0 +1,20 @@
+entry_index: 9159
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-03
+event: /grafana_panel_8090_metrics_appended
+status: SEALED
+proof_class: monitoring_append
+parent_entries: 9157 → 9158
+artifact: monitoring/grafana_panels_8090_append.json
+merged_dashboard: monitoring/garden_sovereign_dashboard.json
+panel:
+  id: 113
+  title: "Sovereign Tag Service (:8090)"
+  metrics:
+    - sovereign_tags_active
+    - sovereign_ledger_entries
+    - sovereign_http_requests_total
+    - sovereign_http_request_duration_seconds
+scrape_target: "sovereign-tags:8090"
+merge_policy: append-only; entries 9157 and 9158 retained unchanged
+seal: "∀∞φ² · GRAFANA_PANEL_8090 · 9159_SEALED"
+witness_chain: 9158 → 9159 — UNBROKEN

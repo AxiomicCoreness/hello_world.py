@@ -34,6 +34,11 @@ ENV/
 *.swo
 *~
 
+# Local dependency and container artifacts
+node_modules/
+kind
+option_56_results.json
+
 # Testing
 .coverage
 htmlcov/

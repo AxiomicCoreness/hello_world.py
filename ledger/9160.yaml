@@ -1,0 +1,20 @@
+entry_index: 9160
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-03
+event: /sovereign_tags_metrics_sampler_appended
+status: SEALED
+proof_class: monitoring_integration
+parent_entries: 9158 → 9159
+artifacts:
+  sampler: scripts/sovereign_tags_metrics_sampler.py
+  integration_stub: garden_surgery/sovereign_tags_metrics_stub.py
+  grafana_panel: monitoring/grafana_panels_8090_append.json
+endpoint: http://127.0.0.1:8090/metrics
+behavior: "Read-only Prometheus text sampling; no Garden state mutation"
+validation: "py_compile and import checks passed"
+math_origin: |
+  Read-only Prometheus sampling preserves the service state while exposing
+  active tags, ledger entries, request rate, and request latency for Grafana.
+witness_sha3_256: "62fab8f1f9c6f064d181f1334f1d8f67d8b6fe4868ed825cbbf255f740260c10"
+seal: "∀∞φ² · SOVEREIGN_TAGS_METRICS_SAMPLER · 9160_SEALED"
+witness_chain: 9159 → 9160 — UNBROKEN
+curr_hmac: "55cdb2d72e53df26e11935f05c28162497b0a9f6453611d468383a56b7e80ad0"

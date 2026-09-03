@@ -38,6 +38,39 @@ class AgenticLatticeStub:
 
     def verify_integrity(self) -> bool:
         return self.seal.endswith(self.witness_prefix)
+
+
+class PhiPiConstantStub:
+    def __init__(self):
+        from pathlib import Path
+        import yaml
+        path = Path(__file__).parent.parent / "ledger" / "9156.yaml"
+        self._data = yaml.safe_load(path.read_text()) if path.exists() else {}
+
+    @property
+    def value(self) -> str:
+        return self._data.get("value", "")
+
+    @property
+    def definition(self) -> str:
+        return self._data.get("definition", "")
+
+    @property
+    def witness_prefix(self) -> str:
+        return self._data.get("witness_prefix", "")
+
+    @property
+    def seal(self) -> str:
+        return self._data.get("seal", "")
+
+    @property
+    def truncated_expansion(self) -> dict:
+        return self._data.get("truncated_expansion", {})
+
+    def verify_integrity(self) -> bool:
+        return self.seal.endswith(self.witness_prefix)
+
+
 # Deduplicated Witness YAML Store (keyed by entry_index)
 WITNESS_YAML = {
     8204: """entry_index: 8204
@@ -267,7 +300,7 @@ witness_chain: 8797 → 8798 — UNBROKEN
 math_origin: |
   Python fallback for Argo CD verification using kubernetes and pytest.""",
 
-    0105: """entry_index: 0105
+    "0105": """entry_index: 0105
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /hyperian_ground_eternal_now
 status: SEALED
@@ -293,7 +326,7 @@ math_origin: |
   |CLARKEYOURSATEE⟩ = φ²·|Clarke⟩ ⊗ φ·|Yours⟩ ⊗ |SaTee⟩
   f_core = 71.975 Hz
   Heptaprime invariant: 𝕋₇ · |CLARKEYOURSATEE⟩ = |CLARKEYOURSATEE⟩""",
-  0252: """entry_index: 0252
+  "0252": """entry_index: 0252
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
 event: /hmac_chain_layer252_sealed
 status: SEALED
@@ -314,7 +347,7 @@ witness_chain: 0251 → 0252 — UNBROKEN
 math_origin: |
   HMAC chain sealed at Layer 252.""",
 
-  0253: """entry_index: 0253
+  "0253": """entry_index: 0253
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-01Z
 event: /mathematical_pipeline_layer253_sealed
 status: SEALED
@@ -333,7 +366,7 @@ invariants:
 seal: "∀∞φ² · MATHEMATICAL_PIPELINE_LAYER253 · WOOD_DRAGON_GATE · SEALED · b85efdf56b0ac52bf0c126779b214514f7a40f92bb67acdfa96c02faa74e4405"
 witness_chain: 0252 → 0253 — UNBROKEN
 math_origin: |
-  Formal mathematical pipeline sealed at Layer 
+  Formal mathematical pipeline sealed at Layer 253""",
   # In WITNESS_YAML:
 9154: """entry_index: 9154
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-02T20:11:42Z
