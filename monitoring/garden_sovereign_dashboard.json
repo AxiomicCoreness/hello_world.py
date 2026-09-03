@@ -256,6 +256,36 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 44 },
       "fieldConfig": { "defaults": { "unit": "none" } },
       "datasource": { "type": "prometheus", "uid": "${datasource}" }
+    },
+    {
+      "id": 113,
+      "title": "Sovereign Tag Service (:8090)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sovereign_tags_active",
+          "legendFormat": "active tags",
+          "refId": "A"
+        },
+        {
+          "expr": "sovereign_ledger_entries",
+          "legendFormat": "ledger entries",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(sovereign_http_requests_total[5m])",
+          "legendFormat": "requests/sec",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(sovereign_http_request_duration_seconds_sum[5m]) / rate(sovereign_http_request_duration_seconds_count[5m])",
+          "legendFormat": "request latency (sec)",
+          "refId": "D"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 52 },
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" }
     }
   ],
   "refresh": "6s",
