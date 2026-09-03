@@ -1,4 +1,4 @@
-# Grafana panels 100–112 — merge notes (PR tested PASS)
+# Grafana panels 100–113 — merge notes (PR tested PASS)
 
 Seal: `∀∞φ² · GRAFANA_FEASIBILITY_8662 · SEALED`
 
@@ -11,6 +11,7 @@ Seal: `∀∞φ² · GRAFANA_FEASIBILITY_8662 · SEALED`
 1. Import `monitoring/garden_sovereign_dashboard.json` **or** append panels from:
    - `grafana_panels_append.json` (100–111 base)
    - `grafana_panels_rank_append.json` (112 rank)
+   - `grafana_panels_8090_append.json` (113 Sovereign Tag Service)
 2. Datasource: Prometheus (`${datasource}` / Prometheus).
 3. Confirm PromQL in Prometheus UI:
    - `coherence`, `soul_cannon_charge_joules`, `worker_fidelity`, `up`
@@ -24,6 +25,7 @@ Seal: `∀∞φ² · GRAFANA_FEASIBILITY_8662 · SEALED`
 | hyperian | :8080 |
 | sovereign-workload | :9095 |
 | clarke_yoursa_tee_worker | :8000 |
+| sovereign-tags | :8090 |
 
 ## PR simulation
 
