@@ -1,0 +1,39 @@
+entry_index: 9169
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T13:30:00Z
+event: /dual_ci_venv_update
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 8324fa2b01c313e61d716735066facbb0a74189284612a13af189d0b51400480
+terminal_hex: 8324fa2b01c313e61d716735066facbb0a74189284612a13af189d0b51400480
+chain_hex: 6b36483b177b3a06000181f9b3f42351b6527bfbb2323e5aa2dfc94eda2c5903
+description: |
+  Dual CI virtualenv recipe. .venv remains gitignored.
+  Control lane installs requirements-control.txt only.
+  DeepSeek lane is offline and does not require DEEPSEEK_API_KEY.
+  Does not rewrite harness.py, ledger/9003.yaml, pytest.yml, or sovereign-ci-cd.yml.
+  MCP FILLED=False. Dual ASGI remains 127.0.0.1:8024.
+files:
+  - scripts/update_dual_ci_venv.sh
+  - .github/workflows/dual-ci-venv.yml
+  - ledger/9169.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · DUAL_CI_VENV · 9169_SEALED · 8324fa2b01c313e61d716735066facbb0a74189284612a13af189d0b51400480"
+witness_chain: 9167 → 9169 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9169|/dual_ci_venv_update|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 8324fa2b01c313e61d716735066facbb0a74189284612a13af189d0b51400480
+  Chain prev=6188a0fb162d9db6d8d1f54458d0bb05ccaedd7632c67d19a78ab7606d9e6133
+  H_chain = 6b36483b177b3a06000181f9b3f42351b6527bfbb2323e5aa2dfc94eda2c5903
+  Append only. Next free index after 9169 on main is 9171+ (9170 reserved on deepseek).
