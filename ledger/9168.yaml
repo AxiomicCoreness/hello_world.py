@@ -1,0 +1,39 @@
+entry_index: 9168
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T13:27:00Z
+event: /root_bin_layers_witness_main_9167
+status: SEALED
+proof_class: architectural_mapping
+branch: deepseek
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 9e6633123f53de60f52d48c2ec1e810b650add5bed041b09c775a2c61562d47c
+terminal_hex: 9e6633123f53de60f52d48c2ec1e810b650add5bed041b09c775a2c61562d47c
+chain_hex: c6940b6544325eaad9276ea9f06dd07746c6aac50a616e5329a433b3cc116527
+description: |
+  Witness on deepseek that main sealed root GARDEN.BIN.v1 layers at 9167.
+  Binary files live on main as source of record. This entry does not
+  rewrite harness.py, ledger/9003.yaml, or the relay workflow.
+  MCP FILLED=False. Dual ASGI remains 127.0.0.1:8024.
+pointers:
+  main_entry: 9167
+  main_event: /root_bin_ci_layers_append
+  H_9167: 6188a0fb162d9db6d8d1f54458d0bb05ccaedd7632c67d19a78ab7606d9e6133
+  merkle_layers: e9e9f6749ecc3bba07d17ac7361fc32f9484cf2d0daa9b20f4914540c66c075b
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · ROOT_BIN_WITNESS · 9168_SEALED · 9e6633123f53de60f52d48c2ec1e810b650add5bed041b09c775a2c61562d47c"
+witness_chain: 9166 → 9168 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9168|/root_bin_layers_witness_main_9167|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 9e6633123f53de60f52d48c2ec1e810b650add5bed041b09c775a2c61562d47c
+  Chain prev=2d2b7fb77e793e937a92d63a5ab8df1ffdf252804e72388b3258c1c1d8f5494c
+  H_chain = c6940b6544325eaad9276ea9f06dd07746c6aac50a616e5329a433b3cc116527
+  Append only. Next free index after 9168 on deepseek is 9169+.
