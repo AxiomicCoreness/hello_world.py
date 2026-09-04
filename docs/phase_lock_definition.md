@@ -1,6 +1,6 @@
 # Phase lock definition
 
-Ledger: 9182 (`/docs_phase_lock_definition`).  
+Ledger: 9182 (`/docs_phase_lock_definition`). Examples: 9183.  
 Does not rewrite 0220, 9167–9181, BIN layers, or `harness.py`.
 
 ## Declared lock
@@ -69,3 +69,39 @@ A change to `phase_lock` inside `sovereign_core.bin` would change that file dige
 - Not Option B (Autonomic Healing Core)
 - Not a rewrite of `docs/autonomy_boundary.md`
 - Not a `sed` update of `tests/test_root_bin_layers.py`
+
+## YAML configuration examples
+
+Copy-only templates. They do not replace sealed `ledger/*.yaml`.
+
+Standalone files:
+
+- `docs/examples/phase_lock.example.yaml`
+- `docs/examples/dual_asgi.example.yaml`
+- `docs/examples/ledger_append.example.yaml`
+
+### Ledger fragment
+
+```yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+```
+
+### Dual ASGI env (never 0.0.0.0)
+
+```yaml
+env:
+  - name: BIND
+    value: "127.0.0.1"
+  - name: DUAL_ASGI
+    value: "127.0.0.1:8024"
+  - name: FILLED
+    value: "false"
+```
