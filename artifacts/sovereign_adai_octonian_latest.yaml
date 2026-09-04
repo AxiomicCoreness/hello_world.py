@@ -1,0 +1,29 @@
+# Specification artifact only. Does not rewrite ledger/9003.yaml.
+# Seal pointer: ledger/9165.yaml on main. Sister tip: ledger/9166.yaml on deepseek.
+# harness.py and .github/workflows/self-improvement-relay.yml are not rewritten.
+metadata:
+  name: Sovereign AdAI / Octonian latest pointer
+  version: "0.91-pointer"
+  ledger_entry: 9165
+  historical_9003_status: SEALED_GRAVASTAR_FIRE
+  witness: "9164 → 9165 — UNBROKEN"
+  seal: "∀∞φ² · ADAI_OCTONIAN_POINTER · 9165_SEALED · 42be11918cd6c7cbee18489be17b1ed99441b141d56c3d1c6afdaa3ff6679b45"
+policy:
+  rewrite_9003: false
+  rewrite_harness: false
+  rewrite_relay: false
+  mcp_filled: false
+  dual_asgi: "127.0.0.1:8024"
+  bind_0000: false
+  fusion_515: sealed
+  hyperion_516: sealed
+components:
+  harness:
+    file: harness.py
+    note: existing shim; command remains python harness.py --suite void --json
+  relay:
+    file: .github/workflows/self-improvement-relay.yml
+    note: already present; cron 15 */6 * * *; not overwritten
+  ledger_historical:
+    file: ledger/9003.yaml
+    event: /trigger_gravastar_clarkeyoursatee_fired
