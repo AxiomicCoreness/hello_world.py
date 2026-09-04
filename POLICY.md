@@ -100,3 +100,30 @@ This policy is itself an append-only record. Each revision is recorded as a new 
 | :--- | :--- | :--- | :--- |
 | v1.0 | 2026-08-29 | — | Initial policy document (original sections 1–11). |
 | **v2.0** | **2026-09-03** | **9158** | **Complete rewrite to align with current Sovereign Garden rules. Incorporated appendix from `ledger/9118.yaml`. Corrected event hash specification. Updated ledger head to 9158.** |
+
+## 13. Band 9167–9193+ (append 9193; do not edit the table rows above)
+
+Sealed YAML under `ledger/9167.yaml` through `ledger/9193.yaml` is immutable.
+Later work uses the next free integer. Ease of use is alias files and docs, not in-place edits.
+
+Do not rewrite:
+- Fusion 515, Hyperion 516, 0220, 9003, 9157–9159, 9164
+- `k8s/dual-asyncio-cicd.yaml` (9179)
+- `tests/test_dual_asyncio_cicd.py` (9174 loops)
+- GARDEN.BIN.v1 bytes sealed at 9167/9171/9173
+
+Live rules that stay:
+- Dual ASGI `127.0.0.1:8024` never `0.0.0.0`
+- MCP `filled: false` until a later index names a fill
+- Event hash `SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta|theta)`
+- Capacity `0 ≺ R ⪡ L ⪡ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
+- Hook live git targets: `main`, `deepseek`, `deepseek-ci` only (9181)
+
+math_origin: |
+  H = SHA3-256( GARDEN.EVENT.v1 || 0x00 || payload )
+  payload = index|event|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  9193|/policy_append_9167_9193_immutable|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 1c9f8571c77ef0c4a265225e9e0cf094bebb62114019f827e960fa9b99d565b8
+  BIN merkle (9171/9173) = 3a00d16045470561e2d9f15f707a05c57dfc859948d559b898c00ffdefd8dc2a
+  phase_lock = 202.6
+  Next free after 9193 is 9194+.
