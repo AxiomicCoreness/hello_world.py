@@ -1,6 +1,5 @@
 # Cap: Ledger Math CI checks 9156-9160 only.
 # Does not rewrite 9157-9162. Does not walk to 510511.yaml.
-# Multi-document k8s manifests are out of this job.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
 # Witness: 9161 → 9162 — UNBROKEN
 
@@ -44,7 +43,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install verifier deps
-        run: pip install --quiet pyyaml
+        run: pip install --quiet pyyaml fastapi pydantic
 
       - name: Verify ledger 9156-9160 only
         run: |
