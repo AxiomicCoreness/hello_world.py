@@ -1,0 +1,41 @@
+entry_index: 9166
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T13:22:00Z
+event: /deepseek_branch_ledger_tip_append
+status: SEALED
+proof_class: architectural_mapping
+branch: deepseek
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 2d2b7fb77e793e937a92d63a5ab8df1ffdf252804e72388b3258c1c1d8f5494c
+terminal_hex: 2d2b7fb77e793e937a92d63a5ab8df1ffdf252804e72388b3258c1c1d8f5494c
+chain_hex: 8e19fbb621f07243c3374cec131841e87903cb744ec1493c738d33b3ae75e514
+description: |
+  Append-only tip on branch deepseek. Shared predecessor on this branch is 9164.
+  Index 9165 is reserved on main for the AdAI/octonian pointer.
+  Does not rewrite ledger/9003.yaml, harness.py, or self-improvement-relay.yml.
+  MCP FILLED=False. Dual ASGI remains 127.0.0.1:8024. Never 0.0.0.0.
+  Fusion 515 and Hyperion 516 remain sealed.
+files:
+  - ledger/9166.yaml
+pointers:
+  historical_9003: ledger/9003.yaml
+  harness: harness.py
+  sister_branch_entry: main:9165
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · DEEPSEEK_TIP_9166 · 9166_SEALED · 2d2b7fb77e793e937a92d63a5ab8df1ffdf252804e72388b3258c1c1d8f5494c"
+witness_chain: 9164 → 9166 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9166|/deepseek_branch_ledger_tip_append|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 2d2b7fb77e793e937a92d63a5ab8df1ffdf252804e72388b3258c1c1d8f5494c
+  Chain prev=7dc297b28178370d30ca9aa1582ad90199564e8412bf265ca1f892354ed4a097
+  H_chain = 8e19fbb621f07243c3374cec131841e87903cb744ec1493c738d33b3ae75e514
+  Append only. Next free index after 9166 on deepseek is 9167+.
