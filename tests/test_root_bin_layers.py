@@ -1,4 +1,4 @@
-"""Substantive pytest for root GARDEN.BIN.v1 layers (ledger 9167).
+"""Substantive pytest for root GARDEN.BIN.v1 layers (ledger 9167/9171).
 
 Does not execute bookmarklets. Does not spawn EXE. MCP stays unfilled.
 Does not rewrite harness.py.
@@ -10,12 +10,12 @@ from pathlib import Path
 from scripts.garden_bin_codec import LAYER_ORDER, load_layers, merkle
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_MERKLE = "e9e9f6749ecc3bba07d17ac7361fc32f9484cf2d0daa9b20f4914540c66c075b"
+EXPECTED_MERKLE = "3a00d16045470561e2d9f15f707a05c57dfc859948d559b898c00ffdefd8dc2a"
 EXPECTED = {
     "sovereign_core.bin": "5c5184f9368c9ee443d860aa419a11ca6937af9d5a5b597df703b00c3cb7c755",
-    "ledger_tip.bin": "0d52385456d8da81a7d9f2da2c25609613ea77a2a70dde9787ef2358e1061a01",
-    "octonian_relay.bin": "67fdce5e3d2456d24fc3f4c139f485b6c2b0e2ddcd77cc5ebd8189ba0b8c2ff3",
-    "adai_annihilator.bin": "e37ff65b9691382249d8671246625ed1faae3488ee0ad75b53161c842316950c",
+    "ledger_tip.bin": "ee1bc942cb2401f443804f6b836032fd5d93d8d26475bec77327cd82950c65bb",
+    "octonian_relay.bin": "f6bcb0288f4f985c8f9633cc9d53276dc27b136a996f707e21758cd9c3c117eb",
+    "adai_annihilator.bin": "f83ff65ffb86f670265819271a83f4603a79ce15d0f8366f67d8803d4c8f6f8a",
 }
 
 
