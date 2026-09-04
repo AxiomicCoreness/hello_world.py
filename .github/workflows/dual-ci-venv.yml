@@ -1,0 +1,65 @@
+name: Dual CI venv
+
+on:
+  push:
+    paths:
+      - "requirements-control.txt"
+      - "requirements.txt"
+      - "scripts/update_dual_ci_venv.sh"
+      - "scripts/garden_bin_codec.py"
+      - "scripts/dual_asyncio_cicd.py"
+      - "tests/test_root_bin_layers.py"
+      - "tests/test_dual_asyncio_cicd.py"
+      - ".github/workflows/dual-ci-venv.yml"
+      - "*.bin"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lane-control:
+    name: control-venv
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create .venv from control requirements
+        run: bash scripts/update_dual_ci_venv.sh
+      - name: Pytest bin layers inside venv
+        run: |
+          source .venv/bin/activate
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+      - name: Dual asyncio loops
+        run: |
+          source .venv/bin/activate
+          python scripts/dual_asyncio_cicd.py
+
+  lane-deepseek:
+    name: deepseek-venv
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create .venv (control only, no DeepSeek key)
+        env:
+          DUAL_CI_RUNTIME: "0"
+        run: bash scripts/update_dual_ci_venv.sh
+      - name: Offline contract + dual loops
+        env:
+          DUAL_CI_REQUIRE_OFFLINE: "1"
+        run: |
+          source .venv/bin/activate
+          python - << 'PY'
+          import os, sys
+          assert not os.environ.get("DEEPSEEK_API_KEY"), "offline lane must not require key"
+          print("deepseek lane offline OK", sys.executable)
+          PY
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+          python scripts/dual_asyncio_cicd.py

@@ -1,0 +1,2 @@
+GARDEN.BIN.v1
+{"executable":false,"harness":"harness.py","hash_prev":"ee1bc942cb2401f443804f6b836032fd5d93d8d26475bec77327cd82950c65bb","layer":"octonian_relay","mcp_filled":false,"octonian_dim":8,"rewrite_harness":false,"rewrite_relay":false,"seal":"∀∞φ² · OCTONIAN_RELAY_BIN · WOOD_DRAGON_0.91 · SEALED","suites":["void","core"],"version":"0.91","workflow":".github/workflows/self-improvement-relay.yml"}

@@ -1,0 +1,34 @@
+entry_index: 9173
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T13:52:00Z
+event: /bin_layer_pytest_self_contained
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 446713777738ec67b3e1d97fa3a46a8a32750bd06fe17852ad84ac18602f85e1
+terminal_hex: 446713777738ec67b3e1d97fa3a46a8a32750bd06fe17852ad84ac18602f85e1
+chain_hex: 8aa3ee4852c5c6b1433dc86fd1078d2b986dcc06a844700b7fd09c04b0ef2c09
+description: |
+  Self-contained pytest for GARDEN.BIN.v1 layers.
+  Digest is SHA3-256 of full file bytes. Magic line stripped only for JSON.
+  Does not import a second digest algorithm. MCP FILLED=False.
+files:
+  - tests/test_root_bin_layers.py
+  - ledger/9173.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · BIN_PYTEST_SELF_CONTAINED · 9173_SEALED · 446713777738ec67b3e1d97fa3a46a8a32750bd06fe17852ad84ac18602f85e1"
+witness_chain: 9172 → 9173 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9173|/bin_layer_pytest_self_contained|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 446713777738ec67b3e1d97fa3a46a8a32750bd06fe17852ad84ac18602f85e1
+  Append only. Next free index after 9173 is 9174+.
