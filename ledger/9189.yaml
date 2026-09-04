@@ -1,0 +1,58 @@
+entry_index: 9189
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T19:03:00Z
+event: /actualized_dual_asyncio_cicd_appended_math_origin
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+reference_entry: 9188
+witness_prefix: 8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86
+terminal_hex: 8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86
+chain_hex: 9e12d29cc4496d7dda61ea0a8e2a386ffe41a478acb71e5affbadc4f9b1eebd8
+description: |
+  Directory map only. Does not rewrite scripts/dual_asyncio_cicd.sh (9188),
+  tests/test_dual_asyncio_cicd.py (9174 loops), or k8s/dual-asyncio-cicd.yaml (9179).
+  Does not change --validate=false on the apply wrapper.
+  Option B remains unopened.
+files:
+  - ledger/9189.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · ACTUALIZED_APPEND_9189 · 9189_SEALED · 8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86"
+witness_chain: 9188 → 9189 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9189|/actualized_dual_asyncio_cicd_appended_math_origin|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86
+
+  Directory (roles, not new copies):
+    k8s/dual-asyncio-cicd.yaml
+      9179 Deployment. replicas=0. R=50m/128Mi L=200m/256Mi. 0 ≺ R ⪡ L ⪡ C.
+      BIND=127.0.0.1 DUAL_ASGI=127.0.0.1:8024 FILLED=false.
+      command ["python","scripts/dual_asyncio_cicd.py"] — no bash -c.
+    scripts/dual_asyncio_cicd.py
+      9174 isolated asyncio loops. SHA3-256 + merkle of GARDEN.BIN.v1.
+    scripts/kubectl_apply_dual_asyncio.sh
+      9179 dry-run apply.
+    scripts/dual_asyncio_cicd.sh
+      9188 wrapper. kubectl apply --dry-run=client --validate=false.
+    tests/test_dual_asyncio_cicd.py
+      9174 loop tests. Not overwritten by this index.
+    tests/test_k8s_dual_asyncio.py
+      9179 manifest contracts (replicas=0, no 0.0.0.0).
+    tests/test_dual_asyncio_cicd_sh.py
+      9188 wrapper contracts.
+    ledger/9174.yaml … ledger/9188.yaml
+      prior seals. This file is 9189 only.
+
+  Rationale: loopback bind keeps Dual ASGI off 0.0.0.0. replicas=0 keeps workload=0.
+  Fixed argv is the apply path; missing kubectl/cluster exits 0.
+  Next free index after 9189 is 9190+.
