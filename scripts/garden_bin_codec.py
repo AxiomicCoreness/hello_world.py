@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""GARDEN.BIN.v1 codec — sealed manifests, not executables.
-
-Stdlib only. Does not eval, exec, or bind sockets.
-"""
+"""Load and verify GARDEN.BIN.v1 layer files."""
 from __future__ import annotations
 
 import hashlib
@@ -10,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-MAGIC = "GARDEN.BIN.v1\n"
 LAYER_ORDER = [
     "sovereign_core.bin",
     "ledger_tip.bin",
@@ -18,25 +13,22 @@ LAYER_ORDER = [
     "adai_annihilator.bin",
 ]
 
-
-def parse(path: Path) -> Tuple[str, Dict[str, Any]]:
-    raw = path.read_text(encoding="utf-8")
-    if not raw.startswith(MAGIC):
-        raise ValueError(f"bad magic: {path.name}")
-    payload = raw[len(MAGIC) :].strip()
-    obj = json.loads(payload)
-    if not isinstance(obj, dict):
-        raise ValueError("payload must be object")
-    return hashlib.sha3_256(raw.encode("utf-8")).hexdigest(), obj
-
-
 def load_layers(root: Path) -> List[Tuple[str, str, Dict[str, Any]]]:
-    out = []
+    """Return list of (name, digest, decoded json) for each layer in order."""
+    result = []
     for name in LAYER_ORDER:
-        digest, obj = parse(root / name)
-        out.append((name, digest, obj))
-    return out
-
+        path = root / name
+        if not path.exists():
+            raise FileNotFoundError(f"Missing layer: {path}")
+        data = path.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        try:
+            obj = json.loads(data.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            raise ValueError(f"Invalid JSON in {name}: {e}")
+        result.append((name, digest, obj))
+    return result
 
 def merkle(digests: List[str]) -> str:
-    return hashlib.sha3_256("".join(digests).encode("utf-8")).hexdigest()
+    """Compute SHA3-256 of concatenated digests in order."""
+    return hashlib.sha3_256("".join(digests).encode()).hexdigest()
