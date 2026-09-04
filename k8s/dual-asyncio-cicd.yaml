@@ -1,0 +1,51 @@
+# k8s/dual-asyncio-cicd.yaml — ledger 9179
+# Specification only. Does not rewrite k8s/agent-service.yaml (9164).
+# replicas=0. MCP FILLED=false. Never 0.0.0.0.
+# Dual ASGI 127.0.0.1:8024 is not occupied.
+# Container command is a fixed argv, not a shell command interpreter.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garden-dual-asyncio
+  namespace: garden-codespace
+  labels:
+    app: garden-dual-asyncio
+    garden.ledger: "9179"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/containerized_dual_asyncio_spec"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+    garden.subprocess: "false"
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: garden-dual-asyncio
+  template:
+    metadata:
+      labels:
+        app: garden-dual-asyncio
+        mcp.garden/filled: "false"
+    spec:
+      containers:
+        - name: dual-asyncio
+          image: python:3.11-slim
+          workingDir: /src
+          command: ["python", "scripts/dual_asyncio_cicd.py"]
+          env:
+            - name: BIND
+              value: "127.0.0.1"
+            - name: DUAL_ASGI
+              value: "127.0.0.1:8024"
+            - name: FILLED
+              value: "false"
+            - name: DUAL_CI_REQUIRE_OFFLINE
+              value: "1"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 128Mi
+            limits:
+              cpu: "200m"
+              memory: 256Mi

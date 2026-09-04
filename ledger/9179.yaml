@@ -1,0 +1,33 @@
+entry_index: 9179
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T14:07:00Z
+event: /containerized_dual_asyncio_spec
+status: SEALED
+proof_class: code
+branch: deepseek-ci
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: bc8b108d4078ca913aba77160cfbf03fddca645c3a4021517f3dfeb03749fb96
+terminal_hex: bc8b108d4078ca913aba77160cfbf03fddca645c3a4021517f3dfeb03749fb96
+chain_hex: 161e2b42a392b9769c0a3bff030e843f7941aaaad7673119196ba138570a1ddd
+description: |
+  Remaining containerized asyncio loop as a new Deployment spec.
+  Does not rewrite k8s/agent-service.yaml (9164) or ledger 9174-9178.
+  replicas=0. Command is python scripts/dual_asyncio_cicd.py only.
+files:
+  - k8s/dual-asyncio-cicd.yaml
+  - scripts/kubectl_apply_dual_asyncio.sh
+  - tests/test_k8s_dual_asyncio.py
+  - ledger/9179.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · CONTAINER_DUAL_ASYNCIO · 9179_SEALED · bc8b108d4078ca913aba77160cfbf03fddca645c3a4021517f3dfeb03749fb96"
+witness_chain: 9178 → 9179 — UNBROKEN
+math_origin: |
+  9179|/containerized_dual_asyncio_spec SHA3-256 = bc8b108d4078ca913aba77160cfbf03fddca645c3a4021517f3dfeb03749fb96
