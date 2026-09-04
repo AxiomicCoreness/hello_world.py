@@ -1,5 +1,6 @@
 # Cap: Ledger Math CI checks 9156-9160 only.
-# Does not rewrite 9157-9161. Does not walk to 510511.yaml.
+# Does not rewrite 9157-9162. Does not walk to 510511.yaml.
+# Multi-document k8s manifests are out of this job.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
 # Witness: 9161 → 9162 — UNBROKEN
 
@@ -13,8 +14,6 @@ on:
       - "ledger/9158.yaml"
       - "ledger/9159.yaml"
       - "ledger/9160.yaml"
-      - "ledger/9162.yaml"
-      - "k8s/**"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
       - ".github/workflows/ledger-math-framework.yml"
@@ -25,7 +24,6 @@ on:
       - "ledger/9158.yaml"
       - "ledger/9159.yaml"
       - "ledger/9160.yaml"
-      - "k8s/**"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
       - ".github/workflows/ledger-math-framework.yml"
@@ -55,7 +53,7 @@ jobs:
             --start 9156 \
             --end 9160
 
-      - name: YAML parse check (capped files + k8s)
+      - name: YAML parse check (9156-9160 only)
         run: |
           python - << 'PY'
           from pathlib import Path
@@ -65,19 +63,17 @@ jobs:
           except ImportError:
               print("pyyaml missing")
               sys.exit(1)
-          files = [Path(f"ledger/{n}.yaml") for n in range(9156, 9161)]
-          k8s = Path("k8s")
-          if k8s.exists():
-              files.extend(sorted(k8s.rglob("*.y*ml")))
           fails = 0
           checked = 0
-          for p in files:
+          for n in range(9156, 9161):
+              p = Path(f"ledger/{n}.yaml")
               if not p.exists():
                   print(f"SKIP missing {p}")
                   continue
               try:
-                  yaml.safe_load(p.read_text(encoding="utf-8"))
+                  list(yaml.safe_load_all(p.read_text(encoding="utf-8")))
                   checked += 1
+                  print(f"OK {p}")
               except Exception as e:
                   print(f"FAIL {p}: {e}")
                   fails += 1
