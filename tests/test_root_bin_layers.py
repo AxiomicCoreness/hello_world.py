@@ -24,7 +24,6 @@ EXPECTED = {
     "adai_annihilator.bin": "f83ff65ffb86f670265819271a83f4603a79ce15d0f8366f67d8803d4c8f6f8a",
 }
 
-
 def load_layers(root: Path):
     """Yield (name, sha3_256_digest, parsed_json_obj) for each layer in order."""
     for name in LAYER_ORDER:
@@ -33,22 +32,20 @@ def load_layers(root: Path):
             raise FileNotFoundError(f"Layer not found: {path}")
         data = path.read_bytes()
         digest = hashlib.sha3_256(data).hexdigest()
+        # Strip the magic header: "GARDEN.BIN.v1\n"
         if not data.startswith(b"GARDEN.BIN.v1\n"):
             raise ValueError(f"{name}: missing GARDEN.BIN.v1 header")
         json_bytes = data.split(b"\n", 1)[1]
         obj = json.loads(json_bytes)
         yield name, digest, obj
 
-
 def merkle(digests: list[str]) -> str:
     """Merkle root = SHA3-256 of concatenated digests in layer order."""
     return hashlib.sha3_256("".join(digests).encode()).hexdigest()
 
-
 def test_layers_exist_and_order():
     names = [n for n, _, _ in load_layers(ROOT)]
     assert names == LAYER_ORDER
-
 
 def test_digests_and_merkle():
     layers = list(load_layers(ROOT))
@@ -57,7 +54,6 @@ def test_digests_and_merkle():
         assert digest == EXPECTED[name]
         digests.append(digest)
     assert merkle(digests) == EXPECTED_MERKLE
-
 
 def test_chain_and_contracts():
     layers = list(load_layers(ROOT))
@@ -79,7 +75,6 @@ def test_chain_and_contracts():
     adai = layers[3][2]
     assert adai["bookmarklet_exec"] is False
     assert adai["kind"] == "specification_token"
-
 
 def test_not_pe_or_elf():
     for name in LAYER_ORDER:
