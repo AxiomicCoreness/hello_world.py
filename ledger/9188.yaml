@@ -1,0 +1,49 @@
+entry_index: 9188
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T18:44:00Z
+event: /actualized_dual_asyncio_cicd_sh
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+reference_entry: 9179
+witness_prefix: 3df44cdd2b84883bb52eb5e254fd978ad7af1b5867a71df4f1890a5c678d42cf
+terminal_hex: 3df44cdd2b84883bb52eb5e254fd978ad7af1b5867a71df4f1890a5c678d42cf
+chain_hex: cdd296ff2b1d97f5328de54395c8d13c9d106789a69d50a7218f585a2aa1d1d3
+description: |
+  New scripts/dual_asyncio_cicd.sh. 9179 manifest unchanged.
+  9185 remains singularity spec. tests/test_dual_asyncio_cicd.py unchanged.
+  Invalid kubectl 'apply services --dry-run=contract' was not used.
+files:
+  - scripts/dual_asyncio_cicd.sh
+  - tests/test_dual_asyncio_cicd_sh.py
+  - ledger/9188.yaml
+existing:
+  manifest: k8s/dual-asyncio-cicd.yaml
+  apply_9179: scripts/kubectl_apply_dual_asyncio.sh
+  py_loops: scripts/dual_asyncio_cicd.py
+  test_k8s: tests/test_k8s_dual_asyncio.py
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · ACTUALIZED_DUAL_ASYNCIO_SH · 9188_SEALED · 3df44cdd2b84883bb52eb5e254fd978ad7af1b5867a71df4f1890a5c678d42cf"
+witness_chain: 9187 → 9188 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9188|/actualized_dual_asyncio_cicd_sh|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 3df44cdd2b84883bb52eb5e254fd978ad7af1b5867a71df4f1890a5c678d42cf
+  Directory:
+    k8s/dual-asyncio-cicd.yaml              Deployment replicas=0 (9179)
+    scripts/dual_asyncio_cicd.py            isolated asyncio verify loops (9174)
+    scripts/kubectl_apply_dual_asyncio.sh   dry-run apply (9179)
+    scripts/dual_asyncio_cicd.sh            this wrapper (9188)
+    tests/test_k8s_dual_asyncio.py          manifest contracts (9179)
+    tests/test_dual_asyncio_cicd.py         loop tests (9174, not rewritten)
+    tests/test_dual_asyncio_cicd_sh.py      wrapper contracts (9188)
+  Bind 127.0.0.1 only. Workload 0 via replicas=0. Next free 9189+.
