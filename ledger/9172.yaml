@@ -1,0 +1,37 @@
+entry_index: 9172
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T13:51:00Z
+event: /bin_codec_rewrite_compat
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 4733966ea548d9c7bc2b68baaad47a95144bd884ac052d3eaa8a3feb29b18e9e
+terminal_hex: 4733966ea548d9c7bc2b68baaad47a95144bd884ac052d3eaa8a3feb29b18e9e
+chain_hex: 020d1075940ebbe2728d56eec4bb19f9332c1c3206a07eace7a1ebf994f582bf
+description: |
+  Compatibility fix for the load_layers rewrite on main.
+  GARDEN.BIN.v1 files start with a magic line; JSON is the remainder.
+  Layer digest and hash_prev remain SHA3-256 of full file bytes.
+  SHA-256 of the same bytes is a different number and is not the chain.
+  Merkle remains SHA3-256 of concatenated hex digests.
+  Does not rewrite harness.py or ledger/9167.yaml.
+files:
+  - scripts/garden_bin_codec.py
+  - ledger/9172.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · BIN_CODEC_REWRITE_COMPAT · 9172_SEALED · 4733966ea548d9c7bc2b68baaad47a95144bd884ac052d3eaa8a3feb29b18e9e"
+witness_chain: 9171 → 9172 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9172|/bin_codec_rewrite_compat|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 4733966ea548d9c7bc2b68baaad47a95144bd884ac052d3eaa8a3feb29b18e9e
+  Append only. Next free index after 9172 is 9173+.
