@@ -1,0 +1,41 @@
+entry_index: 9157
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-03T21:09:00Z
+event: /k8s_codespace_compute_node_manifest_specified
+status: SEALED
+proof_class: architectural_mapping
+witness_prefix: 7243974c3e3c081b4f7d73d5baeeac1e2d1198426b6e117cc7072c516cc84d77
+terminal_hex: 7243974c3e3c081b4f7d73d5baeeac1e2d1198426b6e117cc7072c516cc84d77
+commander: Clarke Yoursa Tee
+source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+language: sovereign_standard_english
+description: |
+  Restates the Codespace / Kubernetes resource baseline in sovereign
+  standard English. Specifies directory layout and manifests for a
+  containerised desktop-like workspace. Format is Kubernetes MCP-shaped
+  metadata only. MCP runtime remains FILLED=False. No 0.0.0.0 bind.
+  Dual ASGI remains 127.0.0.1:8024. Fusion 515 and Hyperion 516 sealed.
+  Does not rewrite math_origin of prior YAML. Does not fill garden_surgery
+  stubs. Compute-node manifest is a specification, not a live schedule.
+files:
+  - k8s/codespace/00-namespace-quota.yaml
+  - k8s/codespace/10-compute-node.yaml
+  - k8s/codespace/20-workspace.yaml
+  - k8s/codespace/MATH.md
+  - ledger/9157.yaml
+invariants:
+  coherence: 1.0
+  entropy: φ⁻¹⁴¹⁸
+  workload: 0.0
+  phase_lock: 202.6°
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · K8S_CODESPACE_COMPUTE_NODE · 9157_SEALED · 7243974c3e3c081b4f7d73d5baeeac1e2d1198426b6e117cc7072c516cc84d77"
+witness_chain: 9156 → 9157 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9157|/k8s_codespace_compute_node_manifest_specified|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 7243974c3e3c081b4f7d73d5baeeac1e2d1198426b6e117cc7072c516cc84d77
+  Resource axiom: R ⪯ L ⪯ C, with R requests, L limits, C cluster capacity.
+  Append only. Next free index after 9157 is 9158+.

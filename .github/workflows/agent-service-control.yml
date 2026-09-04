@@ -1,0 +1,45 @@
+name: Agent Service Control
+
+on:
+  push:
+    paths:
+      - "k8s/agent-service.yaml"
+      - "requirements-control.txt"
+      - "requirements.txt"
+      - "scripts/kubectl_apply_agent_service.sh"
+      - ".github/workflows/agent-service-control.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install control-layer requirements
+        run: pip install --quiet -r requirements-control.txt
+      - name: Parse agent Service YAML
+        run: |
+          python - << 'PY'
+          from pathlib import Path
+          import yaml
+          docs = list(yaml.safe_load_all(Path("k8s/agent-service.yaml").read_text(encoding="utf-8")))
+          kinds = [d.get("kind") for d in docs if d]
+          assert "Service" in kinds, kinds
+          assert "Deployment" in kinds, kinds
+          dep = next(d for d in docs if d and d.get("kind") == "Deployment")
+          assert dep["spec"]["replicas"] == 0
+          env = {e["name"]: e["value"] for e in dep["spec"]["template"]["spec"]["containers"][0]["env"]}
+          assert env["BIND"] == "127.0.0.1"
+          assert env["DUAL_ASGI"] == "127.0.0.1:8024"
+          assert env["FILLED"] == "false"
+          print("agent service control OK", kinds)
+          PY
+      - name: kubectl dry-run if present
+        run: bash scripts/kubectl_apply_agent_service.sh

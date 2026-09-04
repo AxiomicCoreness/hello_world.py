@@ -1,0 +1,68 @@
+# k8s/agent-service.yaml — ledger 9164
+# Specification only. MCP FILLED=false. replicas=0.
+# Dual ASGI remains 127.0.0.1:8024. Never 0.0.0.0.
+# Axiom: 0 ≺ R ⪳ L ⪳ C
+apiVersion: v1
+kind: Service
+metadata:
+  name: garden-agent
+  namespace: garden-codespace
+  labels:
+    app: garden-agent
+    garden.ledger: "9164"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/agent_service_control_layer"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+spec:
+  type: ClusterIP
+  selector:
+    app: garden-agent
+  ports:
+    - name: hook
+      port: 8091
+      targetPort: 8091
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garden-agent
+  namespace: garden-codespace
+  labels:
+    app: garden-agent
+    garden.ledger: "9164"
+    mcp.garden/filled: "false"
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: garden-agent
+  template:
+    metadata:
+      labels:
+        app: garden-agent
+        mcp.garden/filled: "false"
+    spec:
+      containers:
+        - name: hook-worker
+          image: python:3.11-slim
+          command: ["python", "-c", "print('FILLED=False'); raise SystemExit(0)"]
+          ports:
+            - containerPort: 8091
+          env:
+            - name: BIND
+              value: "127.0.0.1"
+            - name: PORT
+              value: "8091"
+            - name: DUAL_ASGI
+              value: "127.0.0.1:8024"
+            - name: FILLED
+              value: "false"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: 256Mi
+            limits:
+              cpu: "500m"
+              memory: 512Mi

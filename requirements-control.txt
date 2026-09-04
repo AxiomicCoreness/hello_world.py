@@ -1,0 +1,7 @@
+# Control layer — minimum decency for is:success
+# Ledger 9164. Offline CI must pass without DEEPSEEK_API_KEY.
+pyyaml>=6.0
+fastapi>=0.109.0
+pydantic>=2.0
+uvicorn>=0.27.0
+pytest>=7.0

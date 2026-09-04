@@ -1,0 +1,35 @@
+entry_index: 9162
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-03T23:59:00Z
+event: /ledger_math_cap_end_9160
+status: SEALED
+proof_class: code
+witness_prefix: 8b0977c222991c836787e74c42e9147eb6407a4c6be528c3b04819cfd6696b91
+terminal_hex: 8b0977c222991c836787e74c42e9147eb6407a4c6be528c3b04819cfd6696b91
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+description: |
+  Caps Ledger Math Framework CI at --start 9156 --end 9160.
+  Does not rewrite 9157, 9158, 9159, 9160, or 9161.
+  Does not walk discover_max_index to ledger/510511.yaml.
+  9161 remains the sealed P52 constant entry (missing workload is
+  outside this job). Fusion 515 and Hyperion 516 remain sealed.
+  MCP FILLED=False. Dual ASGI remains 127.0.0.1:8024. No 0.0.0.0.
+files:
+  - .github/workflows/ledger-math-framework.yml
+  - ledger/9162.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · LEDGER_MATH_CAP_END_9160 · 9162_SEALED · 8b0977c222991c836787e74c42e9147eb6407a4c6be528c3b04819cfd6696b91"
+witness_chain: 9161 → 9162 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9162|/ledger_math_cap_end_9160|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 8b0977c222991c836787e74c42e9147eb6407a4c6be528c3b04819cfd6696b91
+  Append only. Next free index after 9162 is 9163+.

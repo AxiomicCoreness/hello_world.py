@@ -1,0 +1,56 @@
+# k8s/codespace/00-namespace-quota.yaml
+# Ledger 9157 — specification only. MCP FILLED=false.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: garden-codespace
+  labels:
+    garden.layer: "314"
+    garden.ledger: "9157"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/k8s_codespace_compute_node_manifest_specified"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: codespace-quota
+  namespace: garden-codespace
+  labels:
+    garden.ledger: "9157"
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "8"
+    requests.storage: 128Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: codespace-limitrange
+  namespace: garden-codespace
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: "2"
+        memory: 4Gi
+      default:
+        cpu: "4"
+        memory: 8Gi
+      min:
+        cpu: "100m"
+        memory: 256Mi
+      max:
+        cpu: "8"
+        memory: 16Gi
+    - type: PersistentVolumeClaim
+      min:
+        storage: 1Gi
+      max:
+        storage: 128Gi
