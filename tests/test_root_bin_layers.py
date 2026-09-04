@@ -18,11 +18,9 @@ EXPECTED = {
     "adai_annihilator.bin": "f83ff65ffb86f670265819271a83f4603a79ce15d0f8366f67d8803d4c8f6f8a",
 }
 
-
 def test_layers_exist_and_order():
     names = [n for n, _, _ in load_layers(ROOT)]
     assert names == LAYER_ORDER
-
 
 def test_digests_and_merkle():
     layers = load_layers(ROOT)
@@ -31,7 +29,6 @@ def test_digests_and_merkle():
         assert digest == EXPECTED[name]
         digests.append(digest)
     assert merkle(digests) == EXPECTED_MERKLE
-
 
 def test_chain_and_contracts():
     layers = load_layers(ROOT)
@@ -53,7 +50,6 @@ def test_chain_and_contracts():
     adai = layers[3][2]
     assert adai["bookmarklet_exec"] is False
     assert adai["kind"] == "specification_token"
-
 
 def test_not_pe_or_elf():
     for name in LAYER_ORDER:
