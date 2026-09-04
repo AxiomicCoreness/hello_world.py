@@ -1,0 +1,11 @@
+entry_index: 9181
+event: /hook_no_mass_branch_update
+status: SEALED
+branch: deepseek
+witness_prefix: 2357594cbd469fd7f42933304c862dc15095daab7f9d775a64b3d5e000c1a0c6
+mass_update_historical: false
+mcp:
+  filled: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · HOOK_NO_MASS_BRANCH · 9181_SEALED · 2357594cbd469fd7f42933304c862dc15095daab7f9d775a64b3d5e000c1a0c6"
+witness_chain: 9180 → 9181 — UNBROKEN
