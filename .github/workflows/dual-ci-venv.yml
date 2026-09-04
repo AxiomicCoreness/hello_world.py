@@ -7,7 +7,9 @@ on:
       - "requirements.txt"
       - "scripts/update_dual_ci_venv.sh"
       - "scripts/garden_bin_codec.py"
+      - "scripts/dual_asyncio_cicd.py"
       - "tests/test_root_bin_layers.py"
+      - "tests/test_dual_asyncio_cicd.py"
       - ".github/workflows/dual-ci-venv.yml"
       - "*.bin"
   workflow_dispatch:
@@ -30,9 +32,11 @@ jobs:
       - name: Pytest bin layers inside venv
         run: |
           source .venv/bin/activate
-          pytest tests/test_root_bin_layers.py -q
-      - name: Venv is ephemeral
-        run: test -d .venv && echo ".venv present on runner only"
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+      - name: Dual asyncio loops
+        run: |
+          source .venv/bin/activate
+          python scripts/dual_asyncio_cicd.py
 
   lane-deepseek:
     name: deepseek-venv
@@ -47,7 +51,9 @@ jobs:
         env:
           DUAL_CI_RUNTIME: "0"
         run: bash scripts/update_dual_ci_venv.sh
-      - name: Offline contract
+      - name: Offline contract + dual loops
+        env:
+          DUAL_CI_REQUIRE_OFFLINE: "1"
         run: |
           source .venv/bin/activate
           python - << 'PY'
@@ -55,4 +61,5 @@ jobs:
           assert not os.environ.get("DEEPSEEK_API_KEY"), "offline lane must not require key"
           print("deepseek lane offline OK", sys.executable)
           PY
-          pytest tests/test_root_bin_layers.py -q
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+          python scripts/dual_asyncio_cicd.py
