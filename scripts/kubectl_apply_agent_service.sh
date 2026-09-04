@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Specification apply for k8s/agent-service.yaml (ledger 9164).
-# Default: client dry-run. Live apply only with --live and a cluster.
+# Default: client dry-run without cluster OpenAPI.
+# Live apply only with --live and a reachable cluster.
 set -euo pipefail
 FILE="k8s/agent-service.yaml"
 MODE="${1:-dry-run}"
@@ -15,5 +16,5 @@ fi
 if [ "$MODE" = "--live" ]; then
   kubectl apply -f "$FILE"
 else
-  kubectl apply --dry-run=client -f "$FILE"
+  kubectl apply --dry-run=client --validate=false -f "$FILE"
 fi
