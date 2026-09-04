@@ -1,0 +1,15 @@
+entry_index: 9187
+event: /codespace_app_main_loopback
+status: SEALED
+branch: deepseek
+witness_prefix: 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc
+asgi:
+  object: "app_main:app"
+  host: "127.0.0.1"
+  port: 8024
+  bind_0000: false
+mcp:
+  filled: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · CODESPACE_APP_MAIN · 9187_SEALED · 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc"
+witness_chain: 9186 → 9187 — UNBROKEN
