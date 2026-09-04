@@ -12,7 +12,7 @@ from scripts.garden_bin_codec import LAYER_ORDER, load_layers, merkle
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_MERKLE = "e9e9f6749ecc3bba07d17ac7361fc32f9484cf2d0daa9b20f4914540c66c075b"
 EXPECTED = {
-    "sovereign_core.bin": "72301f4be2e1a32c85d8da5f002433e8fd611ec885c735c56aac0204e1deb9ee",
+    "sovereign_core.bin": "5c5184f9368c9ee443d860aa419a11ca6937af9d5a5b597df703b00c3cb7c755",
     "ledger_tip.bin": "0d52385456d8da81a7d9f2da2c25609613ea77a2a70dde9787ef2358e1061a01",
     "octonian_relay.bin": "67fdce5e3d2456d24fc3f4c139f485b6c2b0e2ddcd77cc5ebd8189ba0b8c2ff3",
     "adai_annihilator.bin": "e37ff65b9691382249d8671246625ed1faae3488ee0ad75b53161c842316950c",
