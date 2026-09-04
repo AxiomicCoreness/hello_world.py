@@ -1,0 +1,14 @@
+entry_index: 9186
+event: /dual_ci_venv_refresh
+status: SEALED
+branch: deepseek
+witness_prefix: b3aaa50b7736bc3c0ae36118b271c458fc0c9dc60212f5d1618cc9290019cc33
+mcp:
+  filled: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · DUAL_CI_VENV_REFRESH · 9186_SEALED · b3aaa50b7736bc3c0ae36118b271c458fc0c9dc60212f5d1618cc9290019cc33"
+witness_chain: 9185 → 9186 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9186|/dual_ci_venv_refresh|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = b3aaa50b7736bc3c0ae36118b271c458fc0c9dc60212f5d1618cc9290019cc33

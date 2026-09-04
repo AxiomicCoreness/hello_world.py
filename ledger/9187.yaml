@@ -1,15 +1,37 @@
 entry_index: 9187
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T18:39:00Z
 event: /codespace_app_main_loopback
 status: SEALED
+proof_class: code
 branch: deepseek
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
 witness_prefix: 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc
+terminal_hex: 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc
+chain_hex: efdb6d70d666a3e03625d234a2791784f991e708ca043206c6e4a0feca3a4496
+description: |
+  Same event hash as main 9187. math_origin taken from main (superset).
+  Short deepseek stub body replaced by full origin. Witness prefix unchanged.
 asgi:
   object: "app_main:app"
   host: "127.0.0.1"
   port: 8024
   bind_0000: false
+files:
+  - scripts/codespace_app_main.sh
+  - ledger/9187.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
 mcp:
   filled: false
+  bind_0000: false
   dual_asgi: "127.0.0.1:8024"
 seal: "∀∞φ² · CODESPACE_APP_MAIN · 9187_SEALED · 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc"
 witness_chain: 9186 → 9187 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9187|/codespace_app_main_loopback|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 69bf06c51b12a9737e5429bd737a73fdb57139fae12d3bbc5e306029f44728dc
