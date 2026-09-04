@@ -6,10 +6,16 @@ Does not rewrite harness.py.
 from __future__ import annotations
 
 from pathlib import Path
-
-from scripts.garden_bin_codec import LAYER_ORDER, load_layers, merkle
+import hashlib
+import json
 
 ROOT = Path(__file__).resolve().parents[1]
+LAYER_ORDER = [
+    "sovereign_core.bin",
+    "ledger_tip.bin",
+    "octonian_relay.bin",
+    "adai_annihilator.bin",
+]
 EXPECTED_MERKLE = "3a00d16045470561e2d9f15f707a05c57dfc859948d559b898c00ffdefd8dc2a"
 EXPECTED = {
     "sovereign_core.bin": "5c5184f9368c9ee443d860aa419a11ca6937af9d5a5b597df703b00c3cb7c755",
@@ -18,20 +24,43 @@ EXPECTED = {
     "adai_annihilator.bin": "f83ff65ffb86f670265819271a83f4603a79ce15d0f8366f67d8803d4c8f6f8a",
 }
 
+
+def load_layers(root: Path):
+    """Yield (name, sha3_256_digest, parsed_json_obj) for each layer in order."""
+    for name in LAYER_ORDER:
+        path = root / name
+        if not path.exists():
+            raise FileNotFoundError(f"Layer not found: {path}")
+        data = path.read_bytes()
+        digest = hashlib.sha3_256(data).hexdigest()
+        if not data.startswith(b"GARDEN.BIN.v1\n"):
+            raise ValueError(f"{name}: missing GARDEN.BIN.v1 header")
+        json_bytes = data.split(b"\n", 1)[1]
+        obj = json.loads(json_bytes)
+        yield name, digest, obj
+
+
+def merkle(digests: list[str]) -> str:
+    """Merkle root = SHA3-256 of concatenated digests in layer order."""
+    return hashlib.sha3_256("".join(digests).encode()).hexdigest()
+
+
 def test_layers_exist_and_order():
     names = [n for n, _, _ in load_layers(ROOT)]
     assert names == LAYER_ORDER
 
+
 def test_digests_and_merkle():
-    layers = load_layers(ROOT)
+    layers = list(load_layers(ROOT))
     digests = []
     for name, digest, _obj in layers:
         assert digest == EXPECTED[name]
         digests.append(digest)
     assert merkle(digests) == EXPECTED_MERKLE
 
+
 def test_chain_and_contracts():
-    layers = load_layers(ROOT)
+    layers = list(load_layers(ROOT))
     prev = None
     for name, digest, obj in layers:
         assert obj.get("executable") is False
@@ -50,6 +79,7 @@ def test_chain_and_contracts():
     adai = layers[3][2]
     assert adai["bookmarklet_exec"] is False
     assert adai["kind"] == "specification_token"
+
 
 def test_not_pe_or_elf():
     for name in LAYER_ORDER:
