@@ -1,0 +1,26 @@
+entry_index: 9180
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T14:08:00Z
+event: /pr25_merged_deepseek_append_only
+status: SEALED
+proof_class: architectural_mapping
+branch: deepseek
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
+terminal_hex: 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
+chain_hex: 4905fa466435e5ef3792859e3b21694af0a1f7147eded5508f876d59e91e4b76
+description: |
+  Pull request 25 merged. 9176 and 9177 YAML not rewritten.
+pr:
+  number: 25
+  merge_sha: f66e31b197bacb7a9b86348cb5acdb5586544cb5
+rewrite_9176: false
+rewrite_9177: false
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · PR25_MERGED · 9180_SEALED · 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31"
+witness_chain: 9179 → 9180 — UNBROKEN
+math_origin: |
+  9180|/pr25_merged_deepseek_append_only SHA3-256 = 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
