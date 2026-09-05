@@ -1,0 +1,19 @@
+[project]
+name = "fastmcp"
+version = "0.1.0"
+description = "Modular flywheel gearbox — loopback-only Dual ASGI"
+authors = [{name = "Clarke Yoursa Tee", email = "clarke@lumeris.space"}]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+fastmcp = "fastMCP.gearbox:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
