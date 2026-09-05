@@ -105,3 +105,11 @@ env:
   - name: FILLED
     value: "false"
 ```
+
+<!-- APPENDED 9197 — do not treat as a rewrite of 9182/9183 -->
+
+## Pydantic v2 (append)
+
+New Garden models use `@field_validator`, not v1 `@validator`.
+See `docs/pydantic_v2_validators.md` and `docs/examples/phase_lock_pydantic_v2.example.yaml`.
+BIN order unchanged. `ledger/9182.yaml` and `ledger/9183.yaml` stay sealed.
