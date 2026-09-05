@@ -1,0 +1,2 @@
+-r base.txt
+# No DeepSeek key required. Bind remains 127.0.0.1:8024.
