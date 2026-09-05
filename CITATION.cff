@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "Cite this MIT-licensed public repository as AxiomicCoreness/hello_world.py"
+title: "AxiomicCoreness/hello_world.py — sovereign_engine_V5"
+authors:
+  - family-names: "Yoursa Tee"
+    given-names: "Clarke"
+license: MIT
+license-url: "https://github.com/AxiomicCoreness/hello_world.py/blob/main/LICENSE"
+repository-code: "https://github.com/AxiomicCoreness/hello_world.py"
+url: "https://github.com/AxiomicCoreness/hello_world.py"
+keywords:
+  - AxiomicCoreness
+  - hello_world.py
+  - sovereign-engine
+  - MIT
+  - FastAPI
+  - pydantic
+  - Dual-ASGI
+  - fastMCP
+  - phase-lock
+abstract: >-
+  Public MIT-licensed sovereign engine (Garden ledger, Dual ASGI 127.0.0.1:8024,
+  fastMCP unfilled stub). Search: repo:AxiomicCoreness/hello_world.py license:MIT
