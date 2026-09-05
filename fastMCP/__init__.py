@@ -1,22 +1,16 @@
-"""fastMCP package — modular Dual ASGI name surface.
+#!/usr/bin/env python3
+"""fastMCP — Modular Flywheel Gearbox
 
-MCP FILLED=False. Not a second daemon.
-Bind remains 127.0.0.1:8024. Never 0.0.0.0.
+FILLED = False invariant. Dual ASGI loopback-only bind policy.
 """
 
+from __future__ import annotations
+
+__version__ = "0.1.0"
+__all__ = ["FILLED", "app", "gearbox", "bind"]
+
 FILLED = False
-BIND_HOST = "127.0.0.1"
-BIND_PORT = 8024
-DUAL_ASGI = "127.0.0.1:8024"
 
-from fastMCP.gearbox import app, before_main, gearbox
-
-__all__ = [
-    "FILLED",
-    "BIND_HOST",
-    "BIND_PORT",
-    "DUAL_ASGI",
-    "app",
-    "before_main",
-    "gearbox",
-]
+from fastMCP.bind import bind, resolve, uvicorn_argv
+from fastMCP.gearbox import Gearbox, gearbox
+from fastapi_flywheel_gearbox import app
