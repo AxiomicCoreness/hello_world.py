@@ -116,7 +116,7 @@ Live rules that stay:
 - Dual ASGI `127.0.0.1:8024` never `0.0.0.0`
 - MCP `filled: false` until a later index names a fill
 - Event hash `SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta|theta)`
-- Capacity `0 ≺ R ⪡ L ⪡ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
+- Capacity `0 ≺ R ⪨ L ⪨ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
 - Hook live git targets: `main`, `deepseek`, `deepseek-ci` only (9181)
 
 math_origin: |
@@ -127,3 +127,24 @@ math_origin: |
   BIN merkle (9171/9173) = 3a00d16045470561e2d9f15f707a05c57dfc859948d559b898c00ffdefd8dc2a
   phase_lock = 202.6
   Next free after 9193 is 9194+.
+
+<!-- APPENDED 9198 — do not edit sections 1–13 or the v1.0/v2.0 table -->
+
+## 14. fastMCP work achieved (append 9198; POLICY body above is immutable)
+
+Do not rewrite this file except by appending a new numbered section.
+Do not rewrite `ledger/9182.yaml` or `ledger/9183.yaml`.
+9183 remains `/docs_phase_lock_yaml_examples` with
+H_9183 = 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7.
+
+fastMCP on main (package + tests + docs + MIT search header):
+- `fastMCP/` modular package, `FILLED=False`
+- Dual ASGI `127.0.0.1:8024` only; wildcard raises
+- Same ASGI object as `fastapi_flywheel_gearbox:app` (live flywheel not stubbed)
+- `docs/phase_lock_definition.md` examples (9183) stay
+- BIN order unchanged: sovereign_core.bin → ledger_tip.bin → octonian_relay.bin → adai_annihilator.bin
+- License MIT at repo root; public search notes in README / docs/SEARCH.md / CITATION.cff
+- Pydantic v2 `@field_validator` / `@model_validator` docs; no Pydantic v3 API
+
+Sealed YAML 9167–9197 is not rewritten by this section.
+Next free after 9198 is 9199+.
