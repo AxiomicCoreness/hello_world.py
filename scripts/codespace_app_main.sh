@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Codespace / local loopback for app_main:app.
+# Does not rewrite app_main.py (historical 0.0.0.0 docstring stays).
+# Dual ASGI for this launch: 127.0.0.1:8024.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
