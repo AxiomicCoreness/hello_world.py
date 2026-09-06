@@ -11,15 +11,22 @@ permissions:
   contents: write
 
 concurrency:
-  group: fastmcp-pythonide-${{ github.ref }}
+  group: fastmcp-pythonide-${{ matrix.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        ref: [main, deepseek]
+    if: github.event_name != 'push' || github.ref_name == matrix.ref
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref }}
 
       - uses: actions/setup-python@v5
         with:
@@ -37,21 +44,22 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pythonide-fastmcp-${{ github.ref_name }}
+          name: pythonide-fastmcp-${{ matrix.ref }}-${{ github.run_id }}
           path: |
             pythonIDE/baseline.json
             pythonIDE/last_fastmcp.log
           if-no-files-found: ignore
 
-      - name: Commit baseline on same branch
+      - name: Commit baseline on matrix ref
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+          branch: ${{ matrix.ref }}
           commit_message: "chore: pythonIDE fastMCP baseline (no ledger rewrite)"
           file_pattern: pythonIDE/baseline.json pythonIDE/last_fastmcp.log
 
       - name: Summary
         if: always()
         run: |
-          echo "fastMCP + pythonIDE baseline on ${{ github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "fastMCP + pythonIDE baseline on ${{ matrix.ref }}" >> "$GITHUB_STEP_SUMMARY"
           echo "MCP FILLED=false Dual ASGI 127.0.0.1:8024" >> "$GITHUB_STEP_SUMMARY"
