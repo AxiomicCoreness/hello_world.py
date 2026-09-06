@@ -1,0 +1,42 @@
+entry_index: 9205
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-06T15:43:00Z
+event: /dual_ci_venv_run2_expected_string
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: aad1ee479dab81cae19843d63a95e36cbf8025e7eb26e7659264537736781ff6
+terminal_hex: aad1ee479dab81cae19843d63a95e36cbf8025e7eb26e7659264537736781ff6
+chain_hex: 2a65bebda094ddd8824d27d29525e11abce3cba945eb9ba11af68b06a78ad215
+description: |
+  Dual CI venv workflow_dispatch #2 (33878584794) failed because
+  tests/test_root_bin_layers.py EXPECTED sovereign_core.bin was
+  72301f4be2e1a32c85d8da5f002433e8fd611ec885c735c56aac0204e1deb9ee
+  while file digest was
+  5c5184f9368c9ee443d860aa419a11ca6937af9d5a5b597df703b00c3cb7c755.
+  Current main already stores the 5c5184f9 string (9171/9173).
+  ledger/9186.yaml not rewritten. Historical run #2 stays red.
+  Fresh workflow_dispatch queued on main.
+files:
+  - tests/test_root_bin_layers.py
+  - .github/workflows/dual-ci-venv.yml
+  - ledger/9205.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · DUAL_CI_VENV_RUN2_STRING · 9205_SEALED · aad1ee479dab81cae19843d63a95e36cbf8025e7eb26e7659264537736781ff6"
+witness_chain: 9204 → 9205 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9205|/dual_ci_venv_run2_expected_string|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = aad1ee479dab81cae19843d63a95e36cbf8025e7eb26e7659264537736781ff6
+  Chain prev=0c038fb1058055aa665f4a3c588beac1107693872d51109e095eb965e38d4db4
+  SHA3-256 chain = 2a65bebda094ddd8824d27d29525e11abce3cba945eb9ba11af68b06a78ad215
+  Next free after 9205 is 9206+.
