@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-09-06T14:42:00+00:00",
+  "surface": "pythonIDE",
+  "not": "pythonista",
+  "dual_asgi": "127.0.0.1:8024",
+  "mcp_filled": false,
+  "fastmcp": {
+    "ok": true,
+    "filled": false,
+    "bind_host": "127.0.0.1",
+    "bind_port": 8024,
+    "module": null,
+    "errors": []
+  },
+  "ledger_rewrite": false
+}

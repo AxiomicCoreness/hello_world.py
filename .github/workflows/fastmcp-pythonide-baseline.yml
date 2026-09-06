@@ -1,0 +1,57 @@
+name: fastMCP + pythonIDE baseline
+
+on:
+  push:
+    branches: [main, deepseek]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fastmcp-pythonide-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install probe deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -q fastapi pydantic uvicorn || true
+
+      - name: Run pythonIDE baseline (not Pythonista)
+        run: python pythonIDE/update_baseline.py
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pythonide-fastmcp-${{ github.ref_name }}
+          path: |
+            pythonIDE/baseline.json
+            pythonIDE/last_fastmcp.log
+          if-no-files-found: ignore
+
+      - name: Commit baseline on same branch
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: pythonIDE fastMCP baseline (no ledger rewrite)"
+          file_pattern: pythonIDE/baseline.json pythonIDE/last_fastmcp.log
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "fastMCP + pythonIDE baseline on ${{ github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "MCP FILLED=false Dual ASGI 127.0.0.1:8024" >> "$GITHUB_STEP_SUMMARY"
