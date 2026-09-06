@@ -1,0 +1,49 @@
+name: MD Scalar Matrix
+
+on:
+  push:
+    branches: [main, deepseek]
+    paths:
+      - "pythonIDE/md_scalar_matrix.py"
+      - "POLICY.md"
+      - "README.md"
+      - "docs/**"
+      - ".github/workflows/md-scalar-matrix.yml"
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -q numpy matplotlib seaborn
+
+      - name: Generate matrix
+        run: python pythonIDE/md_scalar_matrix.py
+
+      - name: Upload png
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: md-scalar-matrix-${{ github.ref_name }}
+          path: pythonIDE/md_scalar_matrix.png
+          if-no-files-found: ignore
+
+      - name: Auto-commit png only
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: pythonIDE/md_scalar_matrix.png (no ledger rewrite)"
+          file_pattern: pythonIDE/md_scalar_matrix.png
