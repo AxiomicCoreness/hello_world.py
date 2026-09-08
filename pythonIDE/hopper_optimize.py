@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""JAX 1D hopper optimizer using hopper_toi.step_hopper. No uvicorn."""
+"""JAX 1D hopper optimizer + writer. Uses hopper_toi. No uvicorn."""
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 
 import jax
 import jax.numpy as jnp
 
 from multibody_simulator.hopper_toi import step_hopper
+from pythonIDE.hopper_writer import write_hopper_run
 
 DT = 0.01
 T = 2.0
@@ -35,14 +34,9 @@ def objective(u_seq):
 
 
 def main():
-    out_dir = Path(os.environ.get("HOPPER_OUT", "/app/ledger"))
-    if not out_dir.exists():
-        out_dir = Path("ledger")
-    out_dir.mkdir(parents=True, exist_ok=True)
     u = jnp.full((N,), 4.0)
     vg = jax.jit(jax.value_and_grad(lambda uu: objective(uu)[0]))
     hist = []
-    hits_hist = []
     lr = 0.02
     for i in range(80):
         loss, g = vg(u)
@@ -50,9 +44,7 @@ def main():
         hist.append(float(loss))
         if i % 10 == 0:
             _, (_, _, hits) = objective(u)
-            hc = int(hits.sum())
-            hits_hist.append(hc)
-            print(f"Iter {i}: loss={float(loss):.6f} hits={hc}")
+            print(f"Iter {i}: loss={float(loss):.6f} hits={int(hits.sum())}")
     s, rec = rollout(u)
     results = {
         "final_loss": hist[-1],
@@ -61,12 +53,12 @@ def main():
         "h_last": float(rec[0][-1]),
         "v_last": float(rec[1][-1]),
         "u_mean": float(jnp.mean(u)),
-        "note": "9220 is code. This JSON is only written when the process actually runs.",
+        "note": "writer only records a run when this process executes under JAX",
     }
-    path = out_dir / "hopper_run.json"
-    path.write_text(json.dumps(results, indent=2))
+    path = write_hopper_run(results)
     print(json.dumps(results, indent=2))
     print("wrote", path)
+    return results
 
 
 if __name__ == "__main__":

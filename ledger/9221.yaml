@@ -1,0 +1,37 @@
+entry_index: 9221
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:42:00Z
+event: /jax_hopper_writer_embed
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 3f25731e27d970e704fdc4f995d99c28a191ddb4859667c4b828447fcd1c9ecb
+terminal_hex: 3f25731e27d970e704fdc4f995d99c28a191ddb4859667c4b828447fcd1c9ecb
+chain_hex: 0d4d8f2ec55693b87dea29e84800a1094cffa24c6d9011457d64518ed1ac4eec
+description: |
+  Embedded pythonIDE/hopper_writer.py into hopper_optimize.
+  Did not ingest Deepseek engine Options 0-52 (0.0.0.0 binds, Option 31).
+  Did not rewrite 9220. Not a measured JAX docker run.
+files:
+  - pythonIDE/hopper_writer.py
+  - pythonIDE/hopper_optimize.py
+  - ledger/9221.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · JAX_HOPPER_WRITER_EMBED · 9221_SEALED · 3f25731e27d970e704fdc4f995d99c28a191ddb4859667c4b828447fcd1c9ecb"
+witness_chain: 9220 → 9221 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9221|/jax_hopper_writer_embed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 3f25731e27d970e704fdc4f995d99c28a191ddb4859667c4b828447fcd1c9ecb
+  Chain prev=491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030
+  SHA3-256 chain = 0d4d8f2ec55693b87dea29e84800a1094cffa24c6d9011457d64518ed1ac4eec
+  Next free after 9221 is 9222+.
