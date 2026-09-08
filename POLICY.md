@@ -116,7 +116,7 @@ Live rules that stay:
 - Dual ASGI `127.0.0.1:8024` never `0.0.0.0`
 - MCP `filled: false` until a later index names a fill
 - Event hash `SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta|theta)`
-- Capacity `0 ≺ R ⪨ L ⪨ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
+- Capacity `0 ≪ R ⪡ L ⪡ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
 - Hook live git targets: `main`, `deepseek`, `deepseek-ci` only (9181)
 
 math_origin: |
@@ -148,3 +148,26 @@ fastMCP on main (package + tests + docs + MIT search header):
 
 Sealed YAML 9167–9197 is not rewritten by this section.
 Next free after 9198 is 9199+.
+
+<!-- APPENDED 9208 — do not edit sections 1–14 -->
+
+## 15. pythonIDE TOI files (append 9208)
+
+`pythonIDE/` is the local numeric / baseline surface. It is not Pythonista.
+TOI modules do not bind Dual ASGI and do not fill MCP.
+
+Handling:
+- Keep `pythonIDE/toi_step.py` and `pythonIDE/optimize_toi.py` at this path.
+- Do not move them under `sheaf/` (9204 plan only).
+- Do not import `sovereign_lattice` (package absent).
+- Do not start uvicorn from these files.
+- Gearbox remains `uvicorn fastMCP.gearbox:app --host 127.0.0.1 --port 8024`.
+- Sealed ledger 91xx and 9200–9207 YAML are not rewritten.
+
+pythonIDE files on main:
+- a14_bionic_spine.py
+- baseline.json
+- md_scalar_matrix.py
+- optimize_toi.py
+- toi_step.py
+- update_baseline.py
