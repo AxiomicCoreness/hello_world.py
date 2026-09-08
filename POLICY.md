@@ -171,3 +171,21 @@ pythonIDE files on main:
 - optimize_toi.py
 - toi_step.py
 - update_baseline.py
+
+<!-- APPENDED 9224 — do not edit sections 1–15 -->
+
+## 16. Band 0000–9223 immutable (append 9224)
+
+`ledger/0000.yaml` is not rewritten by this section.
+Sealed YAML `ledger/0000.yaml` through `ledger/9223.yaml` is immutable.
+Witness chain is append-only. Event hashes stay full 64-hex SHA3-256.
+`math_origin` on existing YAML is not edited.
+
+Do not rewrite:
+- Fusion 515, Hyperion 516
+- `ledger/0000.yaml` … `ledger/9223.yaml`
+- Dual ASGI lock `127.0.0.1:8024` (never `0.0.0.0`)
+
+fastMCP CI remains `.github/workflows/fastmcp-ci.yml` plus `fastmcp-pythonide-baseline.yml`.
+MCP `FILLED=False` until a later index names a fill.
+Next free after 9224 is 9225+.
