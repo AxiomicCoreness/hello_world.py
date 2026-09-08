@@ -1,24 +1,30 @@
-"""Test TOI detection and impulse resolution."""
-
+"""Head-on TOI + elastic swap."""
 import jax.numpy as jnp
-from multibody_simulator import detect_collisions, resolve_impulse
-from multibody_simulator.core import RigidBody, MultibodySystem
+from multibody_simulator.two_ball_toi import step_with_toi, R
 
 
-def test_two_spheres():
-    ball1 = RigidBody(mass=1.0, radius=0.2)
-    ball2 = RigidBody(mass=1.0, radius=0.2)
-    bodies = [ball1, ball2]
-    sys = MultibodySystem(bodies, [-1, -1], ["free", "free"], [jnp.zeros(3), jnp.zeros(3)])
-    # Set positions: overlapping
-    q = jnp.array([0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # dummy
-    qd = jnp.array([1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # velocities
-    collisions = detect_collisions(sys, q, qd, 0.01)
-    assert len(collisions) > 0
-    # Resolve impulse
-    qd_new = resolve_impulse(sys, q, qd, collisions[0])
-    # Velocities should have swapped: elastic collision equal masses
-    # Simplified: check that signs reversed
-    assert qd_new[0] == -1.0
-    assert qd_new[3] == 1.0
+def test_head_on_swap():
+    # ball1 at 0 moving +x, ball2 at 1 at rest; R=0.2 so gap 0.6
+    s = jnp.array([0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+    u = jnp.array([0.0, 0.0])
+    s1, tau, hit, _, s_plus = step_with_toi(s, u, 1.0)
+    assert bool(hit)
+    assert abs(float(tau) - 0.6) < 1e-6
+    v1 = s_plus[4:6]
+    v2 = s_plus[6:8]
+    assert abs(float(v1[0])) < 1e-6
+    assert abs(float(v2[0]) - 1.0) < 1e-6
+
+
+def test_no_hit_short_dt():
+    s = jnp.array([-1.0, -2.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0])
+    u = jnp.array([0.0, 3.0])
+    _, tau, hit, _, _ = step_with_toi(s, u, 0.05)
+    assert not bool(hit)
+    assert float(tau) == 0.05
+
+
+if __name__ == "__main__":
+    test_head_on_swap()
+    test_no_hit_short_dt()
     print("Test passed.")
