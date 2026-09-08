@@ -1,0 +1,36 @@
+entry_index: 9207
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T16:33:00Z
+event: /toi_optimal_control_shooter
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46
+terminal_hex: 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46
+chain_hex: 3ce37bfa867799cf94203b58711c63a59d3b8be4966ab7c4c7ed88043a8bdad6
+description: |
+  pythonIDE/optimize_toi.py open-loop Adam shooter on step_with_toi.
+  T=1 N=480 default. No MCP, no uvicorn, no sovereign_lattice.
+files:
+  - pythonIDE/optimize_toi.py
+  - pythonIDE/toi_step.py
+  - ledger/9207.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · TOI_OPTIMIZER · 9207_SEALED · 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46"
+witness_chain: 9206 → 9207 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9207|/toi_optimal_control_shooter|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46
+  Chain prev=38d907929ae6ed61783b3cab66bc632419cc2593c09a44a42b3f2b8e53bf13c9
+  SHA3-256 chain = 3ce37bfa867799cf94203b58711c63a59d3b8be4966ab7c4c7ed88043a8bdad6
+  Next free after 9207 is 9208+.
