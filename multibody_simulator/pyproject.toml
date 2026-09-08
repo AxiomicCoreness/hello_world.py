@@ -1,0 +1,18 @@
+[project]
+name = "multibody-simulator"
+version = "0.1.0"
+description = "JAX two-ball TOI step and shooter"
+requires-python = ">=3.9"
+dependencies = [
+  "jax>=0.4.20",
+  "jaxlib>=0.4.20",
+]
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+plot = ["matplotlib>=3.7"]
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = [".."]
+include = ["multibody_simulator*"]
