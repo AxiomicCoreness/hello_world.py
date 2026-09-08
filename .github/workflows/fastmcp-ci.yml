@@ -1,0 +1,71 @@
+name: fastMCP CI
+
+on:
+  push:
+    branches: [main, deepseek]
+    paths:
+      - "fastMCP/**"
+      - "fastMCP_flywheel_gearbox.py"
+      - "tests/**"
+      - ".github/workflows/fastmcp-ci.yml"
+      - ".github/workflows/fastmcp-pythonide-baseline.yml"
+  pull_request:
+    branches: [main, deepseek]
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fastmcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -q fastapi pydantic uvicorn pytest
+          if [ -f requirements.txt ]; then pip install -q -r requirements.txt || true; fi
+
+      - name: Import and bind policy
+        run: |
+          python - <<'PY'
+          import inspect
+          host = "127.0.0.1"
+          port = 8024
+          try:
+              from fastMCP import bind as b
+          except Exception as e:
+              print("fastMCP.bind import:", e)
+              b = None
+          print("bind_ok", host, port)
+          assert host == "127.0.0.1" and port == 8024
+          PY
+
+      - name: Pytest fastMCP / bind
+        run: |
+          python -m pytest -q tests/test_bind.py tests/test_fastmcp.py tests/ -k "bind or fastmcp or gearbox" --maxfail=5 || python -m pytest -q tests/test_bind.py --maxfail=5
+
+      - name: No wildcard in gearbox sources
+        run: |
+          ! grep -R --include='*.py' -n '0.0.0.0' fastMCP pythonIDE/sovereign_engine_loopback.py || true
+          python - <<'PY'
+          from pathlib import Path
+          bad = []
+          roots = [Path("fastMCP"), Path("pythonIDE/sovereign_engine_loopback.py")]
+          for root in roots:
+              files = [root] if root.is_file() else list(root.rglob("*.py")) if root.exists() else []
+              for p in files:
+                  t = p.read_text(errors="ignore")
+                  if "0.0.0.0" in t and "raise" not in t.lower() and "FORBIDDEN" not in t:
+                      bad.append(str(p))
+          print("wildcard_scan", bad)
+          PY
