@@ -1,0 +1,37 @@
+entry_index: 9216
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:18:00Z
+event: /multibody_toi_jit_perf
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: f3817770fcc5f707395c491458901310001304e22c41c710e0c702040d4c1699
+terminal_hex: f3817770fcc5f707395c491458901310001304e22c41c710e0c702040d4c1699
+chain_hex: dc987c8c2a7893a4156f3a4a21dbfacb2abfed9fb5525ef8ac952cd5b7fd2279
+description: |
+  benchmarks/jit_perf.py times plain vs jit forward/loss/grad.
+  step_with_toi(s,u,dt) only. Draft 21x/32x tables not measured.
+  9215 YAML not rewritten. Hopper not included.
+files:
+  - multibody_simulator/benchmarks/__init__.py
+  - multibody_simulator/benchmarks/jit_perf.py
+  - ledger/9216.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · MULTIBODY_TOI_JIT_PERF · 9216_SEALED · f3817770fcc5f707395c491458901310001304e22c41c710e0c702040d4c1699"
+witness_chain: 9215 → 9216 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9216|/multibody_toi_jit_perf|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = f3817770fcc5f707395c491458901310001304e22c41c710e0c702040d4c1699
+  Chain prev=35c25fff71f8ceb6dae33ab9bcc969e87e27e9ca2563104a8529358d2853631a
+  SHA3-256 chain = dc987c8c2a7893a4156f3a4a21dbfacb2abfed9fb5525ef8ac952cd5b7fd2279
+  Next free after 9216 is 9217+.
