@@ -1,0 +1,36 @@
+entry_index: 9224
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:53:00Z
+event: /policy_append_0000_9223_immutable
+status: SEALED
+proof_class: policy
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 0ee7a00bff46fadaa94fa444016e1783f7484ea0bef0cf6444b4b6b6ae744513
+terminal_hex: 0ee7a00bff46fadaa94fa444016e1783f7484ea0bef0cf6444b4b6b6ae744513
+chain_hex: 30ee5a46d0d01aa0a241acfe1e884ead194064a7489aec4e3370e44b319f8b0a
+description: |
+  POLICY.md section 16 appended. ledger/0000.yaml NOT rewritten.
+  Band 0000-9223 declared immutable. Event hashes full 64-hex.
+  9223 YAML not rewritten.
+files:
+  - POLICY.md
+  - ledger/9224.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · POLICY_0000_9223_IMMUTABLE · 9224_SEALED · 0ee7a00bff46fadaa94fa444016e1783f7484ea0bef0cf6444b4b6b6ae744513"
+witness_chain: 9223 → 9224 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9224|/policy_append_0000_9223_immutable|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 0ee7a00bff46fadaa94fa444016e1783f7484ea0bef0cf6444b4b6b6ae744513
+  Chain prev=6b10fde568a3a76352abb8cdc303bed57e7e3bd151408752b0166fa8c7697943
+  SHA3-256 chain = 30ee5a46d0d01aa0a241acfe1e884ead194064a7489aec4e3370e44b319f8b0a
+  Next free after 9224 is 9225+.
