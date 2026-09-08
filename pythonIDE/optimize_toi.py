@@ -35,6 +35,7 @@ def optimize(n: int, iters: int, lr: float = 0.01) -> dict:
         s, recs = rollout(s0, u, dt)
         J = terminal_loss(s) + running_cost(u, dt)
         J.backward()
+        torch.nn.utils.clip_grad_norm_([u], max_norm=1.0)
         opt.step()
         hist.append(float(J.detach()))
         if k % max(1, iters // 10) == 0 or k == iters - 1:
@@ -71,6 +72,23 @@ def main() -> int:
         i = out["hit_idx"][0]
         pre = u[:i, 1]
         print("pre-impact uy first,last", float(pre[0]), float(pre[-1]), "delta", float(pre[-1] - pre[0]))
+    if os.environ.get("TOI_PLOT", "0") == "1":
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            print("matplotlib missing — skip plot")
+            return 0
+        fig, ax = plt.subplots(2, 1, figsize=(8, 6))
+        ax[0].plot(out["hist"])
+        ax[0].set_ylabel("J")
+        t = [i * out["dt"] for i in range(len(u))]
+        ax[1].plot(t, u[:, 1].numpy(), label="uy")
+        ax[1].set_xlabel("t")
+        ax[1].set_ylabel("uy")
+        fig.tight_layout()
+        png = HERE / "optimize_toi_controls.png"
+        fig.savefig(png, dpi=120)
+        print("wrote", png)
     return 0
 
 
