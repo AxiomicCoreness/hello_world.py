@@ -140,8 +140,8 @@ jobs:
           retention-days: 14
 
   oidc-federation:
-    needs: test
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.oidc_provider != 'offline'
+    needs: [verify-integrity, test]
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.oidc_provider != 'offline' }}
     uses: ./.github/workflows/oidc-cloud-providers.yml
     with:
       provider: ${{ github.event.inputs.oidc_provider }}
@@ -149,7 +149,7 @@ jobs:
 
   seal:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [verify-integrity, test]
     if: always()
     timeout-minutes: 5
     steps:
@@ -174,8 +174,8 @@ jobs:
 
   worker-hook:
     runs-on: ubuntu-latest
-    needs: [seal]
-    if: success()
+    needs: [verify-integrity, test, seal]
+    if: ${{ success() && needs.verify-integrity.result == 'success' && needs.test.result == 'success' }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -235,7 +235,7 @@ jobs:
 
   synthesis:
     runs-on: ubuntu-latest
-    needs: [worker-hook]
+    needs: [verify-integrity, test, worker-hook]
     if: always()
     timeout-minutes: 5
     steps:
