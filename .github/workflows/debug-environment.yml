@@ -1,5 +1,5 @@
 - name: Debug environment
   run: |
     echo "MCP_URL=${MCP_URL:-not set}"
-    echo "GARDEN_SECRET=${GARDEN_SECRET:0:5}..."  # show only first 5 chars
+    echo "GARDEN_SECRET=${GARDEN_SECRET:0:5}..."
     ls -la ledger/ port380_mcp.py 2>/dev/null || true
