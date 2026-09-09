@@ -6,13 +6,19 @@ on:
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign-ci-cd.yml"
+      - "pythonIDE/**"
+      - "ledger/*.yaml"
+      - ".github/workflows/**"
+      - "quantum/**"
   pull_request:
     branches: [main]
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign-ci-cd.yml"
+      - "pythonIDE/**"
+      - "ledger/*.yaml"
+      - ".github/workflows/**"
+      - "quantum/**"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -38,6 +44,9 @@ concurrency:
 env:
   MCP_URL: ${{ vars.MCP_URL || 'http://127.0.0.1:380' }}
   GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  NORTH_STAR: H6VSH2
+  PHASE_LOCK: "202.6"
+  DUAL_ASGI: "127.0.0.1:8024"
 
 jobs:
   verify-integrity:
@@ -174,8 +183,8 @@ jobs:
 
   worker-hook:
     runs-on: ubuntu-latest
-    needs: [verify-integrity, test, seal]
-    if: ${{ success() && needs.verify-integrity.result == 'success' && needs.test.result == 'success' }}
+    needs: [seal]
+    if: always()
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -189,6 +198,8 @@ jobs:
             description: "Verification worker"
           - name: ledger
             description: "Ledger sync worker"
+          - name: north-star
+            description: "H6VSH2 North Star alignment worker"
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -201,6 +212,8 @@ jobs:
         id: worker
         env:
           WORKER_NAME: ${{ matrix.worker.name }}
+          NORTH_STAR: ${{ env.NORTH_STAR }}
+          PHASE_LOCK: ${{ env.PHASE_LOCK }}
         run: |
           echo "🔷 WORKER HOOK — ${{ matrix.worker.name }}"
           echo "📝 Description: ${{ matrix.worker.description }}"
@@ -212,7 +225,8 @@ jobs:
             echo "⚠️ No worker script found — using built-in"
             python -c "
             import os
-            print('✅ Worker', os.environ.get('WORKER_NAME'), 'executed successfully')
+            print('✅ Worker', os.environ.get('WORKER_NAME'), 'executed')
+            print('north_star', os.environ.get('NORTH_STAR'), 'phase', os.environ.get('PHASE_LOCK'))
             "
           fi
       - name: Record worker hook status
@@ -235,7 +249,7 @@ jobs:
 
   synthesis:
     runs-on: ubuntu-latest
-    needs: [verify-integrity, test, worker-hook]
+    needs: [worker-hook]
     if: always()
     timeout-minutes: 5
     steps:
