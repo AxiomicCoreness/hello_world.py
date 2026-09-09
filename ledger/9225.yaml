@@ -1,0 +1,34 @@
+entry_index: 9225
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-09Z
+event: /binary_artifact_container
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 665147c485b16ecf6d40b84ab323bb83b14e3695a2eed6470b2caa03a6611807
+terminal_hex: 665147c485b16ecf6d40b84ab323bb83b14e3695a2eed6470b2caa03a6611807
+description: |
+  *.bin container: pickle, msgpack, protobuf, raw buffers.
+  Conceptual index note 8985 mapped to append-only 9225.
+  CI workers emit ledger deltas and witness chains as binary artifacts.
+files:
+  - multibody_simulator/utils/binary_artifacts.py
+  - .github/workflows/sovereign-ci-cd.yml
+  - ledger/9225.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · BINARY_ARTIFACT_CONTAINER · 9225_SEALED · 665147c485b16ecf6d40b84ab323bb83b14e3695a2eed6470b2caa03a6611807"
+witness_chain: 9224 → 9225 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9225|/binary_artifact_container|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 665147c485b16ecf6d40b84ab323bb83b14e3695a2eed6470b2caa03a6611807
+  Next free after 9225 is 9226+.
