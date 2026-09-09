@@ -6,9 +6,9 @@
 FROM python:3.11-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PIP_NO_CACHE_DIR 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 # Install system dependencies (base)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -52,11 +52,7 @@ USER appuser
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# OAuth2 configuration (override via -e or .env file)
-ENV OAUTH2_CLIENT_ID=sovereign_garden \
-    OAUTH2_CLIENT_SECRET=change_me \
-    OAUTH2_TOKEN_URL=/token \
-    JWT_SECRET_KEY=sovereign_φ_secret_2026
+# Supply OAuth2 and JWT settings at runtime with -e or an environment file.
 
 # Command to run the application – using the core auto‑restart entry point (Entry 0252)
 CMD ["python", "-O", "core"]
