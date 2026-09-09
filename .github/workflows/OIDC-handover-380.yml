@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 */6 * * *'   # every 6 hours, φ‑harmonic
 
+concurrency:
+  group: oidc-handover-380
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -18,6 +22,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -33,11 +39,11 @@ jobs:
           from cryptography.hazmat.primitives.asymmetric import ed25519
           import yaml, sys
           # Verify entry 377 (Port-380 gate initialization)
-          with open('ledger/377.yaml') as f:
+          with open('ledger/0377.yaml') as f:
               data = yaml.safe_load(f)
               print('✅ Ledger 377 signature verified')
           # Verify entry 378 (Port-380 gate first handover)
-          with open('ledger/378.yaml') as f:
+          with open('ledger/0378.yaml') as f:
               data = yaml.safe_load(f)
               print('✅ Ledger 378 signature verified')
           "
@@ -72,11 +78,13 @@ jobs:
     name: Handover via Port‑380 MCP Gate
     runs-on: ubuntu-latest
     needs: verify-integrity
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -184,10 +192,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: handover-via-380
     if: always()
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
