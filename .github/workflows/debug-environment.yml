@@ -1,5 +1,6 @@
 - name: Debug environment
   run: |
-    echo "MCP_URL=${MCP_URL:-not set}"
-    echo "GARDEN_SECRET=${GARDEN_SECRET:0:5}..."
-    ls -la ledger/ port380_mcp.py 2>/dev/null || true
+    echo "MCP_URL=${{ vars.MCP_URL || 'not set' }}"
+    echo "GARDEN_SECRET=${{ secrets.GARDEN_SECRET && '********' }}"
+    if [ -f ledger/ ]; then ls -la ledger/; else echo "ledger/ not found"; fi
+    if [ -f port380_mcp.py ]; then ls -la port380_mcp.py; else echo "port380_mcp.py not found"; fi
