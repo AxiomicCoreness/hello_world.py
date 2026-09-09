@@ -100,3 +100,92 @@ This policy is itself an append-only record. Each revision is recorded as a new 
 | :--- | :--- | :--- | :--- |
 | v1.0 | 2026-08-29 | — | Initial policy document (original sections 1–11). |
 | **v2.0** | **2026-09-03** | **9158** | **Complete rewrite to align with current Sovereign Garden rules. Incorporated appendix from `ledger/9118.yaml`. Corrected event hash specification. Updated ledger head to 9158.** |
+
+## 13. Band 9167–9193+ (append 9193; do not edit the table rows above)
+
+Sealed YAML under `ledger/9167.yaml` through `ledger/9193.yaml` is immutable.
+Later work uses the next free integer. Ease of use is alias files and docs, not in-place edits.
+
+Do not rewrite:
+- Fusion 515, Hyperion 516, 0220, 9003, 9157–9159, 9164
+- `k8s/dual-asyncio-cicd.yaml` (9179)
+- `tests/test_dual_asyncio_cicd.py` (9174 loops)
+- GARDEN.BIN.v1 bytes sealed at 9167/9171/9173
+
+Live rules that stay:
+- Dual ASGI `127.0.0.1:8024` never `0.0.0.0`
+- MCP `filled: false` until a later index names a fill
+- Event hash `SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta|theta)`
+- Capacity `0 ≪ R ⪡ L ⪡ C` on 9179 (`R=50m/128Mi`, `L=200m/256Mi`)
+- Hook live git targets: `main`, `deepseek`, `deepseek-ci` only (9181)
+
+math_origin: |
+  H = SHA3-256( GARDEN.EVENT.v1 || 0x00 || payload )
+  payload = index|event|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  9193|/policy_append_9167_9193_immutable|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 1c9f8571c77ef0c4a265225e9e0cf094bebb62114019f827e960fa9b99d565b8
+  BIN merkle (9171/9173) = 3a00d16045470561e2d9f15f707a05c57dfc859948d559b898c00ffdefd8dc2a
+  phase_lock = 202.6
+  Next free after 9193 is 9194+.
+
+<!-- APPENDED 9198 — do not edit sections 1–13 or the v1.0/v2.0 table -->
+
+## 14. fastMCP work achieved (append 9198; POLICY body above is immutable)
+
+Do not rewrite this file except by appending a new numbered section.
+Do not rewrite `ledger/9182.yaml` or `ledger/9183.yaml`.
+9183 remains `/docs_phase_lock_yaml_examples` with
+H_9183 = 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7.
+
+fastMCP on main (package + tests + docs + MIT search header):
+- `fastMCP/` modular package, `FILLED=False`
+- Dual ASGI `127.0.0.1:8024` only; wildcard raises
+- Same ASGI object as `fastapi_flywheel_gearbox:app` (live flywheel not stubbed)
+- `docs/phase_lock_definition.md` examples (9183) stay
+- BIN order unchanged: sovereign_core.bin → ledger_tip.bin → octonian_relay.bin → adai_annihilator.bin
+- License MIT at repo root; public search notes in README / docs/SEARCH.md / CITATION.cff
+- Pydantic v2 `@field_validator` / `@model_validator` docs; no Pydantic v3 API
+
+Sealed YAML 9167–9197 is not rewritten by this section.
+Next free after 9198 is 9199+.
+
+<!-- APPENDED 9208 — do not edit sections 1–14 -->
+
+## 15. pythonIDE TOI files (append 9208)
+
+`pythonIDE/` is the local numeric / baseline surface. It is not Pythonista.
+TOI modules do not bind Dual ASGI and do not fill MCP.
+
+Handling:
+- Keep `pythonIDE/toi_step.py` and `pythonIDE/optimize_toi.py` at this path.
+- Do not move them under `sheaf/` (9204 plan only).
+- Do not import `sovereign_lattice` (package absent).
+- Do not start uvicorn from these files.
+- Gearbox remains `uvicorn fastMCP.gearbox:app --host 127.0.0.1 --port 8024`.
+- Sealed ledger 91xx and 9200–9207 YAML are not rewritten.
+
+pythonIDE files on main:
+- a14_bionic_spine.py
+- baseline.json
+- md_scalar_matrix.py
+- optimize_toi.py
+- toi_step.py
+- update_baseline.py
+
+<!-- APPENDED 9224 — do not edit sections 1–15 -->
+
+## 16. Band 0000–9223 immutable (append 9224)
+
+`ledger/0000.yaml` is not rewritten by this section.
+Sealed YAML `ledger/0000.yaml` through `ledger/9223.yaml` is immutable.
+Witness chain is append-only. Event hashes stay full 64-hex SHA3-256.
+`math_origin` on existing YAML is not edited.
+
+Do not rewrite:
+- Fusion 515, Hyperion 516
+- `ledger/0000.yaml` … `ledger/9223.yaml`
+- Dual ASGI lock `127.0.0.1:8024` (never `0.0.0.0`)
+
+fastMCP CI remains `.github/workflows/fastmcp-ci.yml` plus `fastmcp-pythonide-baseline.yml`.
+MCP `FILLED=False` until a later index names a fill.
+Next free after 9224 is 9225+.

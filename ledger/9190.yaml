@@ -1,0 +1,37 @@
+entry_index: 9190
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T19:08:00Z
+event: /fastmcp_event_hash_stub_unfilled
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690
+terminal_hex: b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690
+description: |
+  FastMCP config for event hash. FILLED=false. stdio only.
+  No port 380 route. No 0.0.0.0. 9189 YAML not rewritten.
+  compute() is an alias of event_hash_block. Hash formula unchanged.
+files:
+  - ledger/event_hash.py
+  - garden_surgery/mcp_event_hash_stub.py
+  - tests/test_mcp_event_hash_stub.py
+  - ledger/9190.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+  transport: stdio
+  port_380: false
+seal: "∀∞φ² · FASTMCP_EVENT_HASH · 9190_SEALED · b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690"
+witness_chain: 9189 → 9190 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9190|/fastmcp_event_hash_stub_unfilled|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690
+  Next free index after 9190 is 9191+.

@@ -1,0 +1,49 @@
+entry_index: 9211
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T16:45:00Z
+event: /ledger_index_9200_9210
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8
+terminal_hex: 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8
+chain_hex: a1a37bd898fffce424b3c806b4a7146eca6cba2c6825b4a18d3c78007a091e94
+description: |
+  Canonical numbering for 9200-9210. Do not reuse these indices.
+  Do not rewrite any listed YAML. Next free after this seal is 9212+.
+index:
+  9200: /fastmcp_pythonide_baseline_ci
+  9201: /fastmcp_pythonide_cron_matrix
+  9202: /pythonide_md_seaborn_scalar_matrix
+  9203: /md_scalar_matrix_workflow
+  9204: /sheaf_reorganization_file_list
+  9205: /dual_ci_venv_run2_expected_string
+  9206: /pythonide_toi_step_two_ball
+  9207: /toi_optimal_control_shooter
+  9208: /policy_append_toi_pythonide
+  9209: /toi_shooter_clip_plot
+  9210: /toi_shooter_measured_expectations
+  9211: /ledger_index_9200_9210
+corrections:
+  - "Do not seal sheaf plan as 9202; 9202 is seaborn matrix."
+  - "Do not reseal 9207 with illustrative 0.019012 stdout."
+  - "Do not use 9209 for measured expectations; that is 9210."
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · LEDGER_INDEX_9200_9210 · 9211_SEALED · 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8"
+witness_chain: 9210 → 9211 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9211|/ledger_index_9200_9210|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8
+  Chain prev=a468f46a3c06bbb458398bc06eb75e5ae7621d4eda0876ea60a560156c07585a
+  SHA3-256 chain = a1a37bd898fffce424b3c806b4a7146eca6cba2c6825b4a18d3c78007a091e94
+  Next free after 9211 is 9212+.

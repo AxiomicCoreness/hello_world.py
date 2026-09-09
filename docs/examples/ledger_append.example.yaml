@@ -1,0 +1,17 @@
+# Template for a NEW index. Do not save over a sealed file.
+entry_index: 9183  # replace with next free index at use time
+event: /example_append_only
+status: SEALED
+proof_class: architectural_mapping
+language: sovereign_standard_english
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+witness_chain: "9182 → 9183 — UNBROKEN"
+note: "Example. Real 9183 is /docs_phase_lock_yaml_examples."

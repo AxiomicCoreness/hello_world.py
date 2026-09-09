@@ -1,0 +1,24 @@
+name: multibody-toi
+on:
+  push:
+    paths:
+      - "multibody_simulator/**"
+      - ".github/workflows/multibody-toi.yml"
+  pull_request:
+    paths:
+      - "multibody_simulator/**"
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install jax cpu
+        run: pip install "jax[cpu]" pytest
+      - name: head-on + grad smoke
+        run: |
+          python -m multibody_simulator.tests.test_toi
+          pytest -q multibody_simulator/tests/test_toi.py multibody_simulator/tests/test_toi_grad.py

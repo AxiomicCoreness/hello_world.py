@@ -1,0 +1,41 @@
+entry_index: 9192
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T19:13:00Z
+event: /dual_asyncio_filename_aliases
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+reference_entry: 9179
+witness_prefix: 40457d0bbddbce929dc2f0fdc7bc4c372788189e63466031db7cad16743ac6a4
+terminal_hex: 40457d0bbddbce929dc2f0fdc7bc4c372788189e63466031db7cad16743ac6a4
+description: |
+  Extra filenames only. Does not rewrite 9179 YAML or recommit 9179.
+  9188-9191 stay sealed. 9189 is not free.
+files:
+  - scripts/apply_dual_asyncio.sh
+  - tests/test_dual_asyncio_cicd_manifest.py
+  - ledger/9192.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · DUAL_ASYNCIO_ALIASES · 9192_SEALED · 40457d0bbddbce929dc2f0fdc7bc4c372788189e63466031db7cad16743ac6a4"
+witness_chain: 9191 → 9192 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9192|/dual_asyncio_filename_aliases|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 40457d0bbddbce929dc2f0fdc7bc4c372788189e63466031db7cad16743ac6a4
+  Live names:
+    k8s/dual-asyncio-cicd.yaml              9179 (unchanged)
+    scripts/kubectl_apply_dual_asyncio.sh   9179
+    scripts/dual_asyncio_cicd.sh            9188
+    scripts/apply_dual_asyncio.sh           9192 alias -> 9188
+    tests/test_k8s_dual_asyncio.py          9179
+    tests/test_dual_asyncio_cicd_manifest.py 9192 alias test
+  R=50m/128Mi L=200m/256Mi. Next free 9193+.

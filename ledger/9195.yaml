@@ -1,0 +1,42 @@
+entry_index: 9195
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T21:39:00Z
+event: /fast_mcp_modular_deploy
+status: SEALED
+proof_class: code
+branch: main
+commit_ref: f17647e86ad8c50dae633b61134d922a1af8f9ae
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 05979ca35b12b1fe17884c2a74d4f386c967fce893976c69d1d1bd99214512cf
+terminal_hex: 05979ca35b12b1fe17884c2a74d4f386c967fce893976c69d1d1bd99214512cf
+chain_hex: 1510877324516f5434b9e877cb4f6b71fa1175cbd1c400a28d4356bc1090ec82
+description: |
+  Receipt for fastMCP/ modular package already on main.
+  Same ASGI object as fastapi_flywheel_gearbox:app. No second daemon.
+  Does not rewrite 9167-9194. Does not fill MCP. Does not bind 0.0.0.0.
+files:
+  - fastMCP/__init__.py
+  - fastMCP/bind.py
+  - fastMCP/gearbox.py
+  - fastMCP/app.py
+  - fastMCP_flywheel_gearbox.py
+  - ledger/9195.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · FAST_MCP_MODULAR_DEPLOY · 9195_SEALED · 05979ca35b12b1fe17884c2a74d4f386c967fce893976c69d1d1bd99214512cf"
+witness_chain: 9194 → 9195 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9195|/fast_mcp_modular_deploy|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 05979ca35b12b1fe17884c2a74d4f386c967fce893976c69d1d1bd99214512cf
+  Chain prev=05185b31866e862ea0124b062278e64f36f25cbdb103d98c284e74d714c13efc
+  SHA3-256 chain = 1510877324516f5434b9e877cb4f6b71fa1175cbd1c400a28d4356bc1090ec82
+  Dispatch remains uvicorn fastMCP.gearbox:app --host 127.0.0.1 --port 8024
+  Next free index after 9195 is 9196+.

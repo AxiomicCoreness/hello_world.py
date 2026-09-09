@@ -1,0 +1,11 @@
+# Example only. Does not bind a process.
+# Dual ASGI remains 127.0.0.1:8024. Never 0.0.0.0.
+bind: "127.0.0.1"
+dual_asgi: "127.0.0.1:8024"
+bind_0000: false
+mcp:
+  filled: false
+hook:
+  bind: "127.0.0.1"
+  port: 8091
+  occupies_8024: false

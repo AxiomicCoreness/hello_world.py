@@ -1,0 +1,36 @@
+entry_index: 9214
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:01:00Z
+event: /multibody_jax_toi_optimize
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 6481d161a81413bd82a800e9a5bad87261a7ac603386e6949511d55ff5d858ff
+terminal_hex: 6481d161a81413bd82a800e9a5bad87261a7ac603386e6949511d55ff5d858ff
+chain_hex: 9877999ae9de28ea5366f6a67ecd901e13c201f2ee34132eaa1e6da9586bbfe4
+description: |
+  examples/two_ball_optimize.py JAX SGD+momentum on step_with_toi.
+  Wired to 9213 5-tuple return. Does not rewrite 9213.yaml.
+  Illustrative ramp printout is not a measured run.
+files:
+  - multibody_simulator/examples/two_ball_optimize.py
+  - ledger/9214.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · MULTIBODY_JAX_TOI_OPT · 9214_SEALED · 6481d161a81413bd82a800e9a5bad87261a7ac603386e6949511d55ff5d858ff"
+witness_chain: 9213 → 9214 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9214|/multibody_jax_toi_optimize|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 6481d161a81413bd82a800e9a5bad87261a7ac603386e6949511d55ff5d858ff
+  Chain prev=e1afae2d8a307fb922d8c6a2ec01e27b21264670ddaaa11074fa15e9ee94e495
+  SHA3-256 chain = 9877999ae9de28ea5366f6a67ecd901e13c201f2ee34132eaa1e6da9586bbfe4
+  Next free after 9214 is 9215+.
