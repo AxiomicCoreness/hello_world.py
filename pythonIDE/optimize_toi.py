@@ -1,271 +1,158 @@
 #!/usr/bin/env python3
+"""pythonIDE/optimize_toi.py — NumPy TOI-Velocity open-loop shooter.
+
+Defaults match 9207 (T=1, N=480, 500 Adam iters).
+Override with TOI_N / TOI_ITERS. a2=0 (paper), not gravity.
+Does not rewrite ledger/9207.yaml.
 """
-pythonIDE/optimize_toi.py — Two‑ball optimal control with TOI‑Velocity
+from __future__ import annotations
 
-Problem setup (from paper):
-- Two identical balls (r=0.2) on a plane
-- Initial: p1=[-1,-2], p2=[-1,-1], v1=v2=0
-- Control: forces on Ball 1 only (u_x, u_y)
-- Time horizon: T=1.0s, N=480 steps (dt=1/480)
-- Loss: J = ||p2(T)||² + 0.01 * Σ||u_i||² * dt
-- Initial guess: u = [0, 3] (constant)
-
-Expected result:
-- Pre‑collision u_y should INCREASE with time (ramp)
-- Post‑collision u_y should flatten out
-- Loss should converge to analytical optimum
-
-Uses the TOI‑Velocity step from toi_step.py (artifact 9206).
-"""
-
-import torch
-import torch.nn as nn
-import numpy as np
-import matplotlib.pyplot as plt
 import hashlib
 import json
+import math
 import os
-from datetime import datetime
+from typing import List, Tuple
 
-# Import the TOI step from 9206
-try:
-    from pythonIDE.toi_step import step_with_toi
-except ImportError:
-    # Fallback: define minimal step if not available
-    def step_with_toi(s, u, dt, r=0.2):
-        """Placeholder — actual implementation from 9206."""
-        p1, v1, p2, v2 = s[0:2], s[2:4], s[4:6], s[6:8]
-        # ... (full implementation from 9206)
-        # For now, raise error
-        raise NotImplementedError("Need toi_step.py from 9206")
+import numpy as np
+
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+PHI_SQ = PHI ** 2
+THETA_SOVEREIGN = 2.5416018462
+
+BALL_RADIUS = 0.2
+BALL_MASS = 1.0
+T_FINAL = 1.0
+N_STEPS = int(os.environ.get("TOI_N", "480"))
+DT = T_FINAL / N_STEPS
+LAMBDA_REG = 0.01
+S0 = np.array([-1.0, -2.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)
+MAX_ITER = int(os.environ.get("TOI_ITERS", "500"))
+LR = float(os.environ.get("TOI_LR", "0.01"))
+EPS_FD = math.sqrt(np.finfo(np.float64).eps)
+
+
+def step_with_toi(s: np.ndarray, u: np.ndarray, dt: float) -> Tuple[np.ndarray, float]:
+    p1, p2 = s[0:2], s[2:4]
+    v1, v2 = s[4:6], s[6:8]
+    a1 = u / BALL_MASS
+    a2 = np.zeros(2, dtype=np.float64)
+    v1n = v1 + a1 * dt
+    v2n = v2 + a2 * dt
+    d = p2 - p1
+    v_rel = v2n - v1n
+    A = float(np.dot(v_rel, v_rel))
+    B = float(2.0 * np.dot(d, v_rel))
+    C = float(np.dot(d, d) - (2.0 * BALL_RADIUS) ** 2)
+    gamma = dt
+    if A > 1e-12:
+        disc = B * B - 4.0 * A * C
+        if disc >= 0.0:
+            sqrt_disc = math.sqrt(disc)
+            for t in ((-B - sqrt_disc) / (2.0 * A), (-B + sqrt_disc) / (2.0 * A)):
+                if 0.0 < t <= dt:
+                    gamma = t
+                    break
+    if gamma < dt:
+        p1_hit = p1 + v1n * gamma
+        p2_hit = p2 + v2n * gamma
+        n = p2_hit - p1_hit
+        n = n / (np.linalg.norm(n) + 1e-12)
+        v1_n = np.dot(v1n, n) * n
+        v2_n = np.dot(v2n, n) * n
+        v1_post = (v1n - v1_n) + v2_n
+        v2_post = (v2n - v2_n) + v1_n
+        rem = dt - gamma
+        p1_new = p1_hit + v1_post * rem
+        p2_new = p2_hit + v2_post * rem
+        return np.concatenate([p1_new, p2_new, v1_post, v2_post]), gamma
+    p1_new = p1 + v1n * dt
+    p2_new = p2 + v2n * dt
+    return np.concatenate([p1_new, p2_new, v1n, v2n]), gamma
+
+
+def forward_trajectory(u_seq: np.ndarray) -> Tuple[np.ndarray, List[float], float]:
+    s = S0.copy()
+    collisions: List[float] = []
+    total = 0.0
+    for i in range(N_STEPS):
+        s, gamma = step_with_toi(s, u_seq[i], DT)
+        if gamma < DT:
+            collisions.append(i * DT + gamma)
+        total += LAMBDA_REG * float(u_seq[i, 0] ** 2 + u_seq[i, 1] ** 2) * DT
+    p2 = s[2:4]
+    total += float(np.dot(p2, p2))
+    return s, collisions, total
+
+
+def numerical_gradient(u_seq: np.ndarray, eps: float = EPS_FD) -> np.ndarray:
+    grad = np.zeros_like(u_seq)
+    for i in range(N_STEPS):
+        for j in range(2):
+            up, um = u_seq.copy(), u_seq.copy()
+            up[i, j] += eps
+            um[i, j] -= eps
+            _, _, lp = forward_trajectory(up)
+            _, _, lm = forward_trajectory(um)
+            grad[i, j] = (lp - lm) / (2.0 * eps)
+    return grad
+
+
+def adam_step(u, grad, m, v, t, lr=LR):
+    b1, b2, eps = 0.9, 0.999, 1e-8
+    m = b1 * m + (1.0 - b1) * grad
+    v = b2 * v + (1.0 - b2) * (grad ** 2)
+    mh = m / (1.0 - b1 ** t)
+    vh = v / (1.0 - b2 ** t)
+    return u - lr * mh / (np.sqrt(vh) + eps), m, v
+
+
+def compute_event_hash(index: int, event: str) -> str:
+    payload = f"{index}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+    return hashlib.sha3_256(b"GARDEN.EVENT.v1\x00" + payload.encode("ascii")).hexdigest()
 
 
 def run_optimization():
-    """Run the two‑ball TOI‑Velocity optimization and print results."""
-    
-    # ------------------------------------------------------------------
-    # 1. Problem setup
-    # ------------------------------------------------------------------
-    T = 1.0
-    N = 480
-    dt = T / N
-    r = 0.2
-    lam = 0.01  # control effort penalty
-    
-    # Initial state: p1=[-1,-2], p2=[-1,-1], velocities zero
-    p1_0 = torch.tensor([-1.0, -2.0], requires_grad=False)
-    p2_0 = torch.tensor([-1.0, -1.0], requires_grad=False)
-    v1_0 = torch.tensor([0.0, 0.0], requires_grad=False)
-    v2_0 = torch.tensor([0.0, 0.0], requires_grad=False)
-    
-    s0 = torch.cat([p1_0, v1_0, p2_0, v2_0])  # shape (8,)
-    
-    # Initial control: constant [0, 3] as in paper
-    u_init = torch.zeros((N, 2))
-    u_init[:, 1] = 3.0  # y‑direction force = 3
-    u = nn.Parameter(u_init.clone())
-    
-    # ------------------------------------------------------------------
-    # 2. Forward simulation (differentiable)
-    # ------------------------------------------------------------------
-    def forward(u_seq):
-        s = s0.clone()
-        loss = 0.0
-        hit_count = 0
-        
-        for i in range(N):
-            s, hit = step_with_toi(s, u_seq[i], dt, r)
-            loss += lam * torch.sum(u_seq[i]**2) * dt
-            hit_count += hit.item() if isinstance(hit, torch.Tensor) else hit
-        
-        p2 = s[4:6]
-        loss += torch.sum(p2**2)  # terminal cost
-        
-        return loss, hit_count, s
-    
-    # ------------------------------------------------------------------
-    # 3. Optimizer
-    # ------------------------------------------------------------------
-    optimizer = torch.optim.Adam([u], lr=0.02)
-    
-    loss_history = []
-    hit_history = []
-    u_history = []
-    
-    print("\n" + "="*80)
-    print("TOI‑Velocity Optimal Control — Two‑Ball Shooter")
-    print(f"  T={T}s, N={N}, dt={dt:.6f}s, λ={lam}")
-    print("="*80)
-    
-    n_iter = 500
-    for it in range(n_iter):
-        optimizer.zero_grad()
-        loss, hits, s_final = forward(u)
-        loss.backward()
-        optimizer.step()
-        
-        loss_history.append(loss.item())
-        hit_history.append(hits)
-        
-        if it % 50 == 0:
-            u_y_mean = u[:, 1].mean().item()
-            u_y_std = u[:, 1].std().item()
-            print(f"Iter {it:4d}: loss={loss.item():.6f}, hits={hits}, u_y_mean={u_y_mean:.4f}±{u_y_std:.4f}")
-    
-    # ------------------------------------------------------------------
-    # 4. Final results
-    # ------------------------------------------------------------------
-    final_loss, final_hits, final_s = forward(u)
-    p2_final = final_s[4:6].detach().numpy()
-    
-    u_final = u.detach().numpy()
-    u_x = u_final[:, 0]
-    u_y = u_final[:, 1]
-    
-    print("\n" + "="*80)
-    print("FINAL RESULTS")
-    print("="*80)
-    print(f"  Final loss: {final_loss.item():.6f}")
-    print(f"  Hits: {final_hits}")
-    print(f"  Ball 2 final position: ({p2_final[0]:.4f}, {p2_final[1]:.4f})")
-    
-    # Pre‑collision ramp: find collision time
-    # For u_y=3, t_collision ≈ 0.632s (step 304 when N=480, dt=1/480)
-    # We'll detect where u_y starts to drop after collision
-    # Simple heuristic: find max u_y after the ramp
-    collision_idx = np.argmax(u_y)
-    print(f"  Estimated collision step: {collision_idx} ({collision_idx*dt:.4f}s)")
-    
-    print("\n" + "-"*80)
-    print("CONTROL SEQUENCE — FIRST 10 STEPS:")
-    for i in range(min(10, N)):
-        print(f"  step {i:3d}: u_x={u_x[i]:.6f}, u_y={u_y[i]:.6f}")
-    
-    print("\n" + "-"*80)
-    print("CONTROL SEQUENCE — PRE‑COLLISION RAMP (steps around max):")
-    ramp_start = max(0, collision_idx - 10)
-    ramp_end = min(N, collision_idx + 5)
-    for i in range(ramp_start, ramp_end):
-        marker = " <-- collision" if i == collision_idx else ""
-        print(f"  step {i:3d}: u_x={u_x[i]:.6f}, u_y={u_y[i]:.6f}{marker}")
-    
-    print("\n" + "-"*80)
-    print("CONTROL SEQUENCE — LAST 10 STEPS:")
-    for i in range(max(0, N-10), N):
-        print(f"  step {i:3d}: u_x={u_x[i]:.6f}, u_y={u_y[i]:.6f}")
-    
-    # ------------------------------------------------------------------
-    # 5. Cryptographic hash (untrucated)
-    # ------------------------------------------------------------------
-    hash_data = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "loss": final_loss.item(),
-        "hits": final_hits,
-        "p2_final": [float(x) for x in p2_final],
-        "u_first_10": [float(x) for x in u_x[:10]] + [float(x) for x in u_y[:10]],
-        "u_last_10": [float(x) for x in u_x[-10:]] + [float(x) for x in u_y[-10:]],
-        "collision_step": int(collision_idx),
-        "u_x_mean": float(np.mean(u_x)),
-        "u_y_mean": float(np.mean(u_y)),
-        "u_y_max": float(np.max(u_y))
+    u = np.zeros((N_STEPS, 2), dtype=np.float64)
+    u[:, 1] = 3.0
+    s, cols, loss0 = forward_trajectory(u)
+    print(f"init J={loss0:.12f} hits={len(cols)} p2={s[2:4]}")
+    m = np.zeros_like(u)
+    v = np.zeros_like(u)
+    history = []
+    for it in range(MAX_ITER):
+        s, cols, loss = forward_trajectory(u)
+        history.append(float(loss))
+        grad = numerical_gradient(u)
+        u, m, v = adam_step(u, grad, m, v, it + 1)
+        if it % max(1, MAX_ITER // 10) == 0 or it == MAX_ITER - 1:
+            g = cols[0] if cols else -1.0
+            print(f"iter {it:4d} J={loss:.12f} hits={len(cols)} gamma={g:.8f}")
+    s, cols, loss_f = forward_trajectory(u)
+    h9207 = compute_event_hash(9207, "/toi_optimal_control_shooter")
+    result = {
+        "loss": float(loss_f),
+        "hits": len(cols),
+        "p2_final": s[2:4].tolist(),
+        "gamma": float(cols[0]) if cols else None,
+        "n": N_STEPS,
+        "iters": MAX_ITER,
+        "hash_9207": h9207,
+        "u_y_first5": [float(x) for x in u[:5, 1]],
+        "u_y_last5": [float(x) for x in u[-5:, 1]],
+        "loss_history": history,
     }
-    
-    hash_str = json.dumps(hash_data, sort_keys=True)
-    hash_hex = hashlib.sha256(hash_str.encode()).hexdigest()
-    
-    print("\n" + "-"*80)
-    print("CRYPTOGRAPHIC SEAL:")
-    print(f"  SHA‑256: {hash_hex}")
-    
-    # ------------------------------------------------------------------
-    # 6. Plot
-    # ------------------------------------------------------------------
-    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
-    
-    # Loss curve
-    axes[0, 0].plot(loss_history)
-    axes[0, 0].set_title("Loss vs Iteration")
-    axes[0, 0].set_xlabel("Iteration")
-    axes[0, 0].set_ylabel("Loss")
-    axes[0, 0].grid(True)
-    
-    # Hit count
-    axes[0, 1].plot(hit_history)
-    axes[0, 1].set_title("Hits per Iteration")
-    axes[0, 1].set_xlabel("Iteration")
-    axes[0, 1].set_ylabel("Hits")
-    axes[0, 1].grid(True)
-    
-    # Control sequences
-    t = np.arange(N) * dt
-    axes[1, 0].plot(t, u_x, label='u_x')
-    axes[1, 0].plot(t, u_y, label='u_y')
-    axes[1, 0].axvline(collision_idx * dt, color='r', linestyle='--', label='collision')
-    axes[1, 0].set_title("Learned Control Sequence")
-    axes[1, 0].set_xlabel("Time (s)")
-    axes[1, 0].set_ylabel("Control")
-    axes[1, 0].legend()
-    axes[1, 0].grid(True)
-    
-    # u_y ramp detail (pre‑collision)
-    ramp_start_idx = max(0, collision_idx - 60)
-    ramp_end_idx = min(N, collision_idx + 10)
-    t_ramp = t[ramp_start_idx:ramp_end_idx]
-    u_y_ramp = u_y[ramp_start_idx:ramp_end_idx]
-    axes[1, 1].plot(t_ramp, u_y_ramp, 'b-', linewidth=2)
-    axes[1, 1].axvline(collision_idx * dt, color='r', linestyle='--', label='collision')
-    axes[1, 1].set_title("Pre‑Collision u_y Ramp (paper Fig. 8)")
-    axes[1, 1].set_xlabel("Time (s)")
-    axes[1, 1].set_ylabel("u_y")
-    axes[1, 1].legend()
-    axes[1, 1].grid(True)
-    
-    plt.tight_layout()
-    
-    # Save plot
-    plot_path = "ledger/optimize_toi_plot.png"
     os.makedirs("ledger", exist_ok=True)
-    plt.savefig(plot_path)
-    print(f"\n  Plot saved: {plot_path}")
-    
-    # Save JSON results
-    result_path = "ledger/optimize_toi_results.json"
-    with open(result_path, "w") as f:
-        json.dump({
-            "loss_history": loss_history,
-            "hit_history": hit_history,
-            "u_x": [float(x) for x in u_x],
-            "u_y": [float(x) for x in u_y],
-            "final_loss": final_loss.item(),
-            "final_hits": final_hits,
-            "p2_final": [float(x) for x in p2_final],
-            "collision_step": int(collision_idx),
-            "hash": hash_hex,
-            "timestamp": datetime.utcnow().isoformat()
-        }, f, indent=2)
-    print(f"  Results saved: {result_path}")
-    
-    # ------------------------------------------------------------------
-    # 7. Return
-    # ------------------------------------------------------------------
-    return {
-        "loss": final_loss.item(),
-        "hits": final_hits,
-        "p2_final": p2_final.tolist(),
-        "collision_step": int(collision_idx),
-        "hash": hash_hex,
-        "u_x": u_x.tolist(),
-        "u_y": u_y.tolist()
-    }
+    with open("ledger/optimize_toi_results.json", "w") as f:
+        json.dump(result, f, indent=2)
+    print("FINAL", json.dumps({k: result[k] for k in ("loss", "hits", "p2_final", "gamma", "hash_9207")}))
+    return result
+
+
+def main():
+    print("optimize_toi NumPy TOI_N=", N_STEPS, "TOI_ITERS=", MAX_ITER)
+    print("H_9207", compute_event_hash(9207, "/toi_optimal_control_shooter"))
+    return run_optimization()
 
 
 if __name__ == "__main__":
-    results = run_optimization()
-    
-    print("\n" + "="*80)
-    print("✅ OPTIMIZATION COMPLETE")
-    print("="*80)
-    print(f"  Loss: {results['loss']:.6f}")
-    print(f"  Hits: {results['hits']}")
-    print(f"  Hash: {results['hash']}")
-    print("="*80)
+    main()
