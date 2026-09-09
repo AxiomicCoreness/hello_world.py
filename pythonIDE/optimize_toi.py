@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """pythonIDE/optimize_toi.py — NumPy TOI-Velocity open-loop shooter.
 
-Defaults match 9207 (T=1, N=480, 500 Adam iters).
-Override with TOI_N / TOI_ITERS. a2=0 (paper), not gravity.
-Does not rewrite ledger/9207.yaml.
+Gravity assumption: a2 = 0 (paper / 9206). Hopper g is 9220 OPEN.
+Triune placeholder is UNFILLED. MCP FILLED=False. No 0.0.0.0 bind.
 """
 from __future__ import annotations
 
@@ -30,12 +29,48 @@ MAX_ITER = int(os.environ.get("TOI_ITERS", "500"))
 LR = float(os.environ.get("TOI_LR", "0.01"))
 EPS_FD = math.sqrt(np.finfo(np.float64).eps)
 
+# Gravity: two-ball paper has no free-fall on ball 2.
+GRAVITY_ASSUMPTION = "a2=0"
+A2_GRAVITY = np.zeros(2, dtype=np.float64)
+
+# Hybrid triple placeholders. Only two-ball flow is implemented here.
+TRIUNE = {
+    "two_ball": {
+        "filled": True,
+        "flow": "ds = f(s, u)",
+        "guard": "||p2-p1||^2 = (2R)^2",
+        "reset": "elastic",
+        "gravity": GRAVITY_ASSUMPTION,
+    },
+    "hopper": {
+        "filled": False,
+        "flow": "ds = f(s, u)",
+        "guard": "h + v t + 0.5 a t^2 = 0",
+        "reset": "velocity reversal",
+        "gravity": "g stub — ledger 9220 OPEN",
+    },
+    "mcp_lattice": {
+        "filled": False,
+        "bind": "127.0.0.1:8024",
+        "wildcard": False,
+        "note": "FILLED=False stub only",
+    },
+}
+
+
+def triune_status() -> dict:
+    return {
+        "filled": False,
+        "gravity": GRAVITY_ASSUMPTION,
+        "legs": {k: bool(v.get("filled")) for k, v in TRIUNE.items()},
+    }
+
 
 def step_with_toi(s: np.ndarray, u: np.ndarray, dt: float) -> Tuple[np.ndarray, float]:
     p1, p2 = s[0:2], s[2:4]
     v1, v2 = s[4:6], s[6:8]
     a1 = u / BALL_MASS
-    a2 = np.zeros(2, dtype=np.float64)
+    a2 = A2_GRAVITY
     v1n = v1 + a1 * dt
     v2n = v2 + a2 * dt
     d = p2 - p1
@@ -115,7 +150,8 @@ def run_optimization():
     u = np.zeros((N_STEPS, 2), dtype=np.float64)
     u[:, 1] = 3.0
     s, cols, loss0 = forward_trajectory(u)
-    print(f"init J={loss0:.12f} hits={len(cols)} p2={s[2:4]}")
+    print(f"init J={loss0:.12f} hits={len(cols)} p2={s[2:4]} gravity={GRAVITY_ASSUMPTION}")
+    print("triune", json.dumps(triune_status()))
     m = np.zeros_like(u)
     v = np.zeros_like(u)
     history = []
@@ -137,6 +173,8 @@ def run_optimization():
         "n": N_STEPS,
         "iters": MAX_ITER,
         "hash_9207": h9207,
+        "gravity": GRAVITY_ASSUMPTION,
+        "triune": triune_status(),
         "u_y_first5": [float(x) for x in u[:5, 1]],
         "u_y_last5": [float(x) for x in u[-5:, 1]],
         "loss_history": history,
@@ -144,12 +182,19 @@ def run_optimization():
     os.makedirs("ledger", exist_ok=True)
     with open("ledger/optimize_toi_results.json", "w") as f:
         json.dump(result, f, indent=2)
-    print("FINAL", json.dumps({k: result[k] for k in ("loss", "hits", "p2_final", "gamma", "hash_9207")}))
+    print("FINAL", json.dumps({
+        "loss": result["loss"],
+        "hits": result["hits"],
+        "gravity": GRAVITY_ASSUMPTION,
+        "triune_filled": False,
+        "hash_9207": h9207,
+    }))
     return result
 
 
 def main():
     print("optimize_toi NumPy TOI_N=", N_STEPS, "TOI_ITERS=", MAX_ITER)
+    print("gravity", GRAVITY_ASSUMPTION, "triune_filled", False)
     print("H_9207", compute_event_hash(9207, "/toi_optimal_control_shooter"))
     return run_optimization()
 
