@@ -246,6 +246,32 @@ jobs:
           name: worker-hook-${{ matrix.worker.name }}-${{ github.run_id }}
           path: .worker-hooks/${{ matrix.worker.name }}.log
           retention-days: 14
+      - name: Emit binary artifact
+        if: always()
+        env:
+          PYTHONPATH: .
+        run: |
+          python -c "
+          import json
+          from multibody_simulator.utils.binary_artifacts import emit_ledger_delta
+          data = {
+              'entry': '9225',
+              'alias': '8985',
+              'event': '/binary_artifact_container',
+              'worker': '${{ matrix.worker.name }}',
+              'seal': '∀∞φ²',
+          }
+          result = emit_ledger_delta(data, '${{ matrix.worker.name }}', '${{ github.run_id }}')
+          print(json.dumps(result))
+          "
+      - name: Upload binary artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.worker.name }}-${{ github.run_id }}
+          path: artifacts/${{ matrix.worker.name }}/*.bin
+          if-no-files-found: ignore
+          retention-days: 14
 
   synthesis:
     runs-on: ubuntu-latest
