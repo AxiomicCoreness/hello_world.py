@@ -1,0 +1,33 @@
+entry_index: 9226
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-09Z
+event: /garden_bin_v1
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8
+terminal_hex: 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8
+description: |
+  GARDEN.BIN.v1 framed worker deltas. Magic b"GARDEN.B" (8 bytes).
+  SHA3-256 trailer over header+payload. Five workers.
+  Does not rewrite ledger/9225.yaml.
+files:
+  - multibody_simulator/utils/binary_artifacts.py
+  - ledger/9226.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · GARDEN_BIN_V1 · 9226_SEALED · 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8"
+witness_chain: 9225 → 9226 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9226|/garden_bin_v1|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8
+  Next free after 9226 is 9227+.
