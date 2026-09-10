@@ -1,6 +1,47 @@
-- name: Debug environment
-  run: |
-    echo "MCP_URL=${{ vars.MCP_URL || 'not set' }}"
-    echo "GARDEN_SECRET=${{ secrets.GARDEN_SECRET && '********' }}"
-    if [ -f ledger/ ]; then ls -la ledger/; else echo "ledger/ not found"; fi
-    if [ -f port380_mcp.py ]; then ls -la port380_mcp.py; else echo "port380_mcp.py not found"; fi
+      - name: Debug environment
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          HASH_ALGO: ${{ env.HASH_ALGO }}
+          LEDGER_DIR: ${{ env.LEDGER_DIR }}
+        run: |
+          set -euo pipefail
+          echo "─────────────── Debug environment ───────────────"
+          echo "runner.os         = ${{ runner.os }}"
+          echo "github.ref        = ${{ github.ref }}"
+          echo "github.sha        = ${{ github.sha }}"
+          echo "github.event_name = ${{ github.event_name }}"
+          echo "── secrets (presence only, never printed) ──"
+          for name in MCP_URL GARDEN_SECRET ARGOCD_SERVER ARGOCD_AUTH_TOKEN AWS_ROLE_ARN; do
+            if [ -n "${!name:-}" ]; then
+              echo "  ${name}          = SET (length ${#name})"
+            else
+              echo "  ${name}          = not set"
+            fi
+          done
+          echo "── env ──"
+          echo "  HASH_ALGO        = ${HASH_ALGO:-<unset>}"
+          echo "  LEDGER_DIR       = ${LEDGER_DIR:-<unset>}"
+          echo "── filesystem ──"
+          if [ -d "${LEDGER_DIR:-ledger}" ]; then
+            echo "  ${LEDGER_DIR:-ledger}/  (directory)"
+            ls -la "${LEDGER_DIR:-ledger}/"
+          else
+            echo "  ${LEDGER_DIR:-ledger}/  not found"
+          fi
+          if [ -f port380_mcp.py ]; then
+            echo "  port380_mcp.py (file)"
+            ls -la port380_mcp.py
+          else
+            echo "  port380_mcp.py  not found"
+          fi
+          if [ -d scripts ]; then
+            echo "  scripts/ (directory)"
+            ls -la scripts/ | head -n 40
+          else
+            echo "  scripts/  not found"
+          fi
+          echo "─────────────────────────────────────────────────"
