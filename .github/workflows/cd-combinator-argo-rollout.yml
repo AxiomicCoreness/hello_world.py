@@ -16,7 +16,7 @@ on:
         default: false
 
 permissions:
-  contents: write  # needed to commit ledger entry
+  contents: write
   id-token: write
 
 concurrency:
@@ -180,21 +180,20 @@ EOF
           argocd app wait "$ARGO_APP" --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" \
             --grpc-web --health --timeout 300
 
-      # ==================== APPENDED: SEAL LEDGER 8926 ====================
       - name: Seal ledger entry 8926
         if: success()
         run: |
           mkdir -p ledger
-          cat > ledger/8926.yaml << 'EOF'
-          entry_index: 8926
-          timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          event: /cd_combinator_argo_rollout
-          status: SUCCESS
-          workflow: CD Combinator (Argo Rollout)
-          deployment: sovereign-garden
-          witness: "8925 → 8926 — UNBROKEN"
-          seal: "∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED · REPLACE_WITH_HASH"
-          EOF
+          cat > ledger/8926.yaml << EOF
+entry_index: 8926
+timestamp: "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+event: /cd_combinator_argo_rollout
+status: SUCCESS
+workflow: CD Combinator (Argo Rollout)
+deployment: sovereign-garden
+witness: "8925 → 8926 — UNBROKEN"
+seal: "∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED · REPLACE_WITH_HASH"
+EOF
           echo "📋 Ledger entry 8926 written."
 
       - name: Compute and update seal hash for 8926
