@@ -1,5 +1,12 @@
 name: Dual CI venv
 
+# Dual-lane virtualenv CI — validates:
+#   lane control-venv  : full control-layer requirements, root-bin layers, dual-asyncio
+#   lane deepseek-venv : offline-only, no DEEPSEEK_API_KEY required
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_GROWTH — this workflow is read-only by design
+# role: validation lane (does NOT write a ledger entry)
+
 on:
   push:
     paths:
@@ -15,51 +22,120 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read   # read-only by design — no ledger writes in this workflow
+
+concurrency:
+  group: dual-ci-venv-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  PYTHON_VERSION: "3.11"
+  VENV_DIR: .venv
 
 jobs:
   lane-control:
     name: control-venv
     runs-on: ubuntu-latest
     timeout-minutes: 8
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
       - name: Create .venv from control requirements
-        run: bash scripts/update_dual_ci_venv.sh
+        run: |
+          set -euo pipefail
+          bash scripts/update_dual_ci_venv.sh
+
+      - name: Sanity — .venv exists
+        run: |
+          set -euo pipefail
+          test -d "${VENV_DIR}" || { echo "::error::${VENV_DIR} not created"; exit 1; }
+          test -x "${VENV_DIR}/bin/python" || { echo "::error::${VENV_DIR}/bin/python missing"; exit 1; }
+          "${VENV_DIR}/bin/python" --version
+
       - name: Pytest bin layers inside venv
         run: |
-          source .venv/bin/activate
-          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+          set -euo pipefail
+          source "${VENV_DIR}/bin/activate"
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q --tb=short
+
       - name: Dual asyncio loops
         run: |
-          source .venv/bin/activate
+          set -euo pipefail
+          source "${VENV_DIR}/bin/activate"
           python scripts/dual_asyncio_cicd.py
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ control-venv lane completed."
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🧪 tests: test_root_bin_layers, test_dual_asyncio_cicd"
+            echo "🔁 dual asyncio: ran"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   lane-deepseek:
     name: deepseek-venv
     runs-on: ubuntu-latest
     timeout-minutes: 8
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
       - name: Create .venv (control only, no DeepSeek key)
         env:
           DUAL_CI_RUNTIME: "0"
-        run: bash scripts/update_dual_ci_venv.sh
+        run: |
+          set -euo pipefail
+          bash scripts/update_dual_ci_venv.sh
+
+      - name: Sanity — .venv exists
+        run: |
+          set -euo pipefail
+          test -d "${VENV_DIR}" || { echo "::error::${VENV_DIR} not created"; exit 1; }
+          test -x "${VENV_DIR}/bin/python" || { echo "::error::${VENV_DIR}/bin/python missing"; exit 1; }
+          "${VENV_DIR}/bin/python" --version
+
       - name: Offline contract + dual loops
         env:
           DUAL_CI_REQUIRE_OFFLINE: "1"
         run: |
-          source .venv/bin/activate
-          python - << 'PY'
+          set -euo pipefail
+          source "${VENV_DIR}/bin/activate"
+
+          python - <<'PY'
           import os, sys
-          assert not os.environ.get("DEEPSEEK_API_KEY"), "offline lane must not require key"
+          assert not os.environ.get("DEEPSEEK_API_KEY"), \
+              "offline lane must not require DEEPSEEK_API_KEY"
           print("deepseek lane offline OK", sys.executable)
           PY
-          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q
+
+          pytest tests/test_root_bin_layers.py tests/test_dual_asyncio_cicd.py -q --tb=short
           python scripts/dual_asyncio_cicd.py
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ deepseek-venv lane completed (offline)."
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🔒 DUAL_CI_REQUIRE_OFFLINE=1 — no DEEPSEEK_API_KEY required"
+            echo "🧪 tests: test_root_bin_layers, test_dual_asyncio_cicd"
+            echo "🔁 dual asyncio: ran"
+          } >> "$GITHUB_STEP_SUMMARY"
