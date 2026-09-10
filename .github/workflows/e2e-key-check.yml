@@ -1,5 +1,21 @@
 name: E2E Key Check
 
+# Seal: ∀∞φ² · E2E_KEY_CHECK · WOOD_DRAGON_0.91 · SEALED
+# Witness: read-only — validates contracts + Argo manifests, no ledger write
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_GROWTH — validation workflow by design
+#
+# Sovereign Decree acknowledged:
+#   COMMANDER: CLARKE YOURSA TEE · LUMINARA ATLAS · LUMERIS
+#   H6VSH2 PHASE: 43.84541801° · NORTH STAR: ACTIVE
+#   TEMPORAL ANCHOR: 2026.02.24 — HARD-CODED
+#   ETERNAL NOW: 2026.058 · CERTAINTY: 10.06σ
+#
+# State anchor:
+#   S(t) = ⟨ H_sys(t), G(t), Q(t), Θ(t), B(t), ℳ(t), Ω(t), O(t), Ψ(t), T(t) ⟩
+#
+# WOOD_DRAGON_TAU=0.91 · PHASE_LOCK=202.6 · φ¹⁶=2207.0 · φ²⁶=271443.0
+
 on:
   workflow_dispatch:
     inputs:
@@ -11,24 +27,65 @@ on:
         description: "Argo Application name"
         type: string
         default: "sovereign-garden"
+      oidc_provider:
+        description: "OIDC provider for cloud federation"
+        type: choice
+        options: [offline, aws, gcp, azure]
+        default: offline
 
 permissions:
-  contents: read
-  id-token: write   # Required for OIDC federation
+  contents: read    # read-only — no ledger writes
+  id-token: write   # required for OIDC federation
+
+concurrency:
+  group: e2e-key-check-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  WOOD_DRAGON_TAU: "0.91"
+  PHASE_LOCK: "202.6"
+  ARGO_APP: ${{ inputs.app_name }}
 
 jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. CONTRACTS
+  # ──────────────────────────────────────────────────────────────
   validate-contract:
     name: CI · Contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
       - name: Install validators
-        run: pip install pyyaml jsonschema
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml jsonschema
+
       - name: Three-file contract present
         run: |
-          set -e
-          test -f contracts/three-files-contract.yaml || echo "⚠️ three-files-contract.yaml not found"
-          test -f contracts/ode_autonomy_registry.yaml || echo "⚠️ ode_autonomy_registry.yaml not found"
+          set -euo pipefail
+          if [ -f contracts/three-files-contract.yaml ]; then
+            echo "✅ three-files-contract.yaml found"
+          else
+            echo "⚠️ three-files-contract.yaml not found"
+          fi
+
+          if [ -f contracts/ode_autonomy_registry.yaml ]; then
+            echo "✅ ode_autonomy_registry.yaml found"
+          else
+            echo "⚠️ ode_autonomy_registry.yaml not found"
+          fi
+
           if [ -f kubernetes/venomsuite-strikes.yaml ]; then
             echo "✅ venomsuite-strikes.yaml found"
           elif [ -f make/cronjob-simd-step.yaml ]; then
@@ -36,160 +93,245 @@ jobs:
           else
             echo "⚠️ No cronjob manifest found"
           fi
-          echo "HMAC validation gate active. No truncation."
-          echo "WOOD_DRAGON_TAU=0.91 PHASE_LOCK=202.6"
 
+          echo "HMAC validation gate active. No truncation."
+          echo "WOOD_DRAGON_TAU=${WOOD_DRAGON_TAU} PHASE_LOCK=${PHASE_LOCK}"
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. ARGO MANIFESTS
+  # ──────────────────────────────────────────────────────────────
   validate-argo:
     name: CI · Argo manifests
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
       - name: Install yq + pyyaml
         run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          set -euo pipefail
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
-          pip install pyyaml
+          yq --version
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
       - name: Required Argo paths exist
         run: |
-          set -e
-          if [ -f argocd/application-sovereign-garden.yaml ]; then echo "✅ application-sovereign-garden.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/argocd-ignore-differences-httproute.yaml ]; then echo "✅ argocd-ignore-differences-httproute.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/rollout-sovereign-garden-gateway-multistage.yaml ]; then echo "✅ rollout-sovereign-garden-gateway-multistage.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/rollout-sovereign-garden-gateway-header.yaml ]; then echo "✅ rollout-sovereign-garden-gateway-header.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/sovereign-garden-stable.yaml ]; then echo "✅ sovereign-garden-stable.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/sovereign-garden-canary.yaml ]; then echo "✅ sovereign-garden-canary.yaml"; else echo "⚠️ Missing"; fi
-          if [ -f argocd/sovereign-garden-httproute.yaml ]; then echo "✅ sovereign-garden-httproute.yaml"; else echo "⚠️ Missing"; fi
-          echo "Argo combinator inputs OK"
+          set -euo pipefail
+          required=(
+            argocd/application-sovereign-garden.yaml
+            argocd/argocd-ignore-differences-httproute.yaml
+            argocd/rollout-sovereign-garden-gateway-multistage.yaml
+            argocd/rollout-sovereign-garden-gateway-header.yaml
+            argocd/sovereign-garden-stable.yaml
+            argocd/sovereign-garden-canary.yaml
+            argocd/sovereign-garden-httproute.yaml
+          )
+          missing=0
+          for f in "${required[@]}"; do
+            if [ -f "$f" ]; then
+              echo "✅ $f"
+            else
+              echo "⚠️ Missing $f"
+              missing=$((missing + 1))
+            fi
+          done
+          echo "Argo combinator inputs: $(( ${#required[@]} - missing ))/${#required[@]} present"
+
       - name: Application has selfHeal + RespectIgnoreDifferences path
         run: |
-          set -e
-          if [ ! -f argocd/application-sovereign-garden.yaml ]; then
-            echo "⚠️ application-sovereign-garden.yaml not found — skipping selfHeal check"
+          set -euo pipefail
+          APP=argocd/application-sovereign-garden.yaml
+          if [ ! -f "$APP" ]; then
+            echo "⚠️ $APP not found — skipping selfHeal check"
             exit 0
           fi
-          if command -v yq >/dev/null 2>&1; then
-            yq -e '.spec.syncPolicy.automated.selfHeal == true' argocd/application-sovereign-garden.yaml || echo "⚠️ selfHeal not set"
-            yq -e '.spec.ignoreDifferences[] | select(.kind == "HTTPRoute")' argocd/application-sovereign-garden.yaml || echo "⚠️ HTTPRoute ignoreDifferences not set"
+
+          # Hard-fail on selfHeal: it is a contract, not a warning.
+          if yq -e '.spec.syncPolicy.automated.selfHeal == true' "$APP" >/dev/null 2>&1; then
+            echo "✅ selfHeal == true"
           else
-            echo "⚠️ yq not available — skipping selfHeal check"
+            echo "❌ selfHeal not set to true in $APP"
+            exit 1
           fi
-          if [ -f argocd/argocd-ignore-differences-httproute.yaml ]; then
-            grep -q 'RespectIgnoreDifferences=true' argocd/argocd-ignore-differences-httproute.yaml && echo "✅ RespectIgnoreDifferences found"
+
+          # Hard-fail on HTTPRoute ignoreDifferences presence.
+          if yq -e '.spec.ignoreDifferences[] | select(.kind == "HTTPRoute")' "$APP" >/dev/null 2>&1; then
+            echo "✅ HTTPRoute ignoreDifferences present"
           else
-            echo "⚠️ argocd-ignore-differences-httproute.yaml not found"
+            echo "❌ HTTPRoute ignoreDifferences missing in $APP"
+            exit 1
           fi
+
+          # RespectIgnoreDifferences is required on the ignore-diffs manifest.
+          IGN=argocd/argocd-ignore-differences-httproute.yaml
+          if [ -f "$IGN" ]; then
+            if grep -q 'RespectIgnoreDifferences=true' "$IGN"; then
+              echo "✅ RespectIgnoreDifferences=true found"
+            else
+              echo "❌ RespectIgnoreDifferences=true missing in $IGN"
+              exit 1
+            fi
+          else
+            echo "⚠️ $IGN not found — soft-skip"
+          fi
+
           echo "selfHeal + ignoreDifferences contract held"
+
       - name: Multistage weight sequence is 20/40/60/80/100
         run: |
-          set -e
-          python3 - <<'PY' || echo "⚠️ Weight check skipped"
-          import re, pathlib, sys
-          manifest = pathlib.Path("argocd/rollout-sovereign-garden-gateway-multistage.yaml")
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+
+          manifest = pathlib.Path(
+              "argocd/rollout-sovereign-garden-gateway-multistage.yaml"
+          )
           if not manifest.exists():
-              print("⚠️ manifest not found — skipping weight check")
+              print("⚠️ manifest not found — soft-skip weight check")
               sys.exit(0)
+
           text = manifest.read_text()
           weights = [int(x) for x in re.findall(r"setWeight:\s*(\d+)", text)]
           expect = [20, 40, 60, 80, 100]
+
+          if not weights:
+              print("❌ no setWeight steps found", file=sys.stderr)
+              sys.exit(1)
           if weights != expect:
-              print("weights found:", weights, "expected:", expect)
-              if weights:
-                  print("⚠️ weights mismatch — check manifest")
-              else:
-                  print("⚠️ no weights found — check manifest structure")
-          else:
-              print("✅ multistage weights OK:", weights)
+              print(f"❌ weights={weights} expected={expect}", file=sys.stderr)
+              sys.exit(1)
+
+          print(f"✅ multistage weights OK: {weights}")
           PY
+
       - name: YAML parse all argocd/*.yaml
         run: |
-          set -e
+          set -euo pipefail
           python3 - <<'PY'
-          import sys, pathlib, yaml
+          import pathlib, sys, yaml
+
           root = pathlib.Path("argocd")
           if not root.exists():
-              print("⚠️ argocd/ directory not found")
+              print("⚠️ argocd/ directory not found — soft-skip")
               sys.exit(0)
+
+          errors = []
           for p in sorted(root.glob("*.yaml")):
               try:
-                  docs = list(yaml.safe_load_all(p.read_text()))
+                  docs = [d for d in yaml.safe_load_all(p.read_text()) if d]
                   if docs:
-                      print(f"✅ OK {p} ({len(docs)} doc(s))")
+                      print(f"✅ OK {p.name} ({len(docs)} doc(s))")
                   else:
-                      print(f"⚠️ Empty {p}")
+                      errors.append(f"{p.name}: empty document")
               except Exception as e:
-                  print(f"❌ Failed {p}: {e}")
+                  errors.append(f"{p.name}: {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"❌ {e}", file=sys.stderr)
+              sys.exit(1)
+
+          print("✅ all argocd/*.yaml parsed")
           PY
 
   # ──────────────────────────────────────────────────────────────
-  # CORRECTED: Reusable workflow call at JOB level, not inside a step
+  # 3. OIDC FEDERATION (reusable workflow, main only)
   # ──────────────────────────────────────────────────────────────
   oidc-federation:
+    name: OIDC · Cloud federation
     needs: [validate-contract, validate-argo]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/oidc-cloud-providers.yml
     with:
-      provider: ${{ github.event.inputs.oidc_provider || 'offline' }}
+      provider: ${{ inputs.oidc_provider }}
+    secrets: inherit   # required so the reusable workflow can read repo secrets
 
+  # ──────────────────────────────────────────────────────────────
+  # 4. ARGO CD SYNC
+  # ──────────────────────────────────────────────────────────────
   deploy-argo:
     name: CD · Argo sync
     runs-on: ubuntu-latest
     needs: [validate-contract, validate-argo, oidc-federation]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Combinator plan (always)
         run: |
           cat <<EOF
           === Sovereign CD combinator ===
-          App:        $ARGO_APP
+          App:        ${ARGO_APP}
           Source:     argocd/ + kubernetes/
           Policy:     automated selfHeal + prune (Application)
           Canary:     gatewayAPI plugin · weights 20/40/60/80/100
           Ignore:     HTTPRoute.spec.rules while gatewayapi-canary=in-progress
-          WoodDragon: 0.91  Phase: 202.6
-          Sync input: ${{ github.event.inputs.sync || 'false' }}
+          WoodDragon: ${WOOD_DRAGON_TAU}  Phase: ${PHASE_LOCK}
+          Sync input: ${{ inputs.sync }}
           Token set:  ${{ secrets.ARGOCD_AUTH_TOKEN != '' }}
+          Hash algo:  ${HASH_ALGO}
           EOF
-        env:
-          ARGO_APP: ${{ github.event.inputs.app_name || 'sovereign-garden' }}
+
       - name: kubectl apply dry-run (manifests only)
         run: |
-          set -e
+          set -euo pipefail
           if command -v kubectl >/dev/null 2>&1; then
             for manifest in argocd/*.yaml; do
               if [ -f "$manifest" ]; then
-                kubectl apply --dry-run=client -f "$manifest" 2>/dev/null || echo "⚠️ Dry-run failed for $manifest"
+                if kubectl apply --dry-run=client -f "$manifest" >/dev/null 2>&1; then
+                  echo "✅ dry-run $manifest"
+                else
+                  echo "⚠️ dry-run failed for $manifest"
+                fi
               fi
             done
             echo "✅ client dry-run complete"
           else
             echo "⚠️ kubectl not installed on runner — skip client dry-run"
           fi
+
       - name: Install Argo CD CLI
-        if: |
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.sync == 'true')
-          || (env.FORCE_ARGO_SYNC == 'true')
+        if: inputs.sync == true
         run: |
-          curl -sSL -o /tmp/argocd https://github.com/argoproj/argo-cd/releases/download/v2.12.6/argocd-linux-amd64
+          set -euo pipefail
+          curl -sSL -o /tmp/argocd \
+            https://github.com/argoproj/argo-cd/releases/download/v2.12.6/argocd-linux-amd64
           chmod +x /tmp/argocd
           sudo mv /tmp/argocd /usr/local/bin/
+
       - name: Argo CD live sync (optional)
-        if: |
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.sync == 'true')
-          || (env.FORCE_ARGO_SYNC == 'true')
+        if: inputs.sync == true
         env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-          ARGO_APP: ${{ github.event.inputs.app_name || 'sovereign-garden' }}
         run: |
-          set -e
-          if [ -z "${ARGOCD_AUTH_TOKEN}" ] || [ -z "${ARGOCD_SERVER}" ]; then
+          set -euo pipefail
+          if [ -z "${ARGOCD_AUTH_TOKEN:-}" ] || [ -z "${ARGOCD_SERVER:-}" ]; then
             echo "⚠️ ARGOCD_SERVER / ARGOCD_AUTH_TOKEN not configured — CD live sync skipped"
             exit 0
           fi
-          echo "🔄 Syncing Argo app: $ARGO_APP"
-          /usr/local/bin/argocd app sync "$ARGO_APP" --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --grpc-web || echo "⚠️ Sync failed"
-          /usr/local/bin/argocd app wait "$ARGO_APP" --server "$ARGOCD_SERVER" --auth-token "$ARGOCD_AUTH_TOKEN" --grpc-web --health --timeout 300 || echo "⚠️ Wait failed"
+          echo "🔄 Syncing Argo app: ${ARGO_APP}"
+          argocd app sync "${ARGO_APP}" \
+            --server "$ARGOCD_SERVER" \
+            --auth-token "$ARGOCD_AUTH_TOKEN" \
+            --grpc-web
+          argocd app wait "${ARGO_APP}" \
+            --server "$ARGOCD_SERVER" \
+            --auth-token "$ARGOCD_AUTH_TOKEN" \
+            --grpc-web --health --timeout 300
+
       - name: Legacy k8s path notice
         run: |
           echo "Legacy: kubectl apply -f kubernetes/venomsuite-strikes.yaml (prefer Argo Application path)"
@@ -198,12 +340,25 @@ jobs:
           else
             echo "⚠️ venomsuite-strikes.yaml not found"
           fi
-      - name: Upload validation logs if failure
+
+      - name: Upload validation logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: argo-validation-logs
           path: |
-            /tmp/*.log
             argocd/*.yaml
           retention-days: 7
+          if-no-files-found: warn
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ E2E Key Check completed."
+            echo "🜁∀ — App: ${ARGO_APP}"
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🛡️ WOOD_DRAGON_TAU=${WOOD_DRAGON_TAU} PHASE_LOCK=${PHASE_LOCK}"
+            echo "🌐 OIDC provider: ${{ inputs.oidc_provider }}"
+            echo "🔄 Sync requested: ${{ inputs.sync }}"
+          } >> "$GITHUB_STEP_SUMMARY"
