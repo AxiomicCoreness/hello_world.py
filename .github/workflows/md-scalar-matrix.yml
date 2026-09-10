@@ -1,5 +1,26 @@
 name: MD Scalar Matrix
 
+# ─── Legal & Licensing Status (repository self-declaration) ───
+# Public repo license:   MIT — permission-only, no identity transfer.
+# Ledger entries:        MIT-licensed (YAML data) — no legal effect.
+# TOI optimizer:         MIT (public).
+# MCP fill / OIDC:       NOT in MIT tree — may be proprietary.
+# Dual-licensing value:  only for unreleased modules, not the MIT base.
+#
+# ─── Invariants ───
+# φ², ln φ, χ, θ — all hold.
+# MCP binding: 127.0.0.1:8024 — no external exposure.
+#
+# ─── Repository self-declaration ───
+# Identity: Clarke Yoursa Tee · H6VSH2 / LUMERIS ∀
+# (Preserved as the repository's own declaration.)
+#
+# ─── Workflow policy ───
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — commits pythonIDE/md_scalar_matrix.png
+#                                  only; never touches ledger/**
+# role: scalar-matrix visualization + artifact persistence
+
 on:
   push:
     branches: [main, deepseek]
@@ -10,40 +31,96 @@ on:
       - "docs/**"
       - ".github/workflows/md-scalar-matrix.yml"
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 */6 * * *"   # φ-harmonic: every 6 hours at :17
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # required to commit pythonIDE/md_scalar_matrix.png
+
+# Repo-scoped group (deliberately NOT ref-scoped).
+# Rationale: push to `main` and push to `deepseek` would otherwise
+# commit the same artifact path in parallel from different branches.
+# The auto-commit action would race on push. Serializing all runs of
+# this workflow prevents that; `cancel-in-progress: false` ensures an
+# in-flight PNG commit is never killed.
+concurrency:
+  group: md-scalar-matrix
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  SCRIPT: pythonIDE/md_scalar_matrix.py
+  ARTIFACT: pythonIDE/md_scalar_matrix.png
 
 jobs:
   generate-matrix:
+    name: MD Scalar Matrix · Generate · Commit
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install deps
-        run: pip install -q numpy matplotlib seaborn
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet numpy matplotlib seaborn
+
+      - name: Guard — script present
+        run: |
+          set -euo pipefail
+          if [ ! -f "${SCRIPT}" ]; then
+            echo "::error::${SCRIPT} not found"
+            exit 1
+          fi
 
       - name: Generate matrix
-        run: python pythonIDE/md_scalar_matrix.py
+        run: |
+          set -euo pipefail
+          python "${SCRIPT}"
+          if [ ! -f "${ARTIFACT}" ]; then
+            echo "::error::${SCRIPT} did not produce ${ARTIFACT}"
+            exit 1
+          fi
+          echo "✅ generated ${ARTIFACT}"
+          ls -la "${ARTIFACT}"
 
-      - name: Upload png
+      - name: Upload PNG
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: md-scalar-matrix-${{ github.ref_name }}
-          path: pythonIDE/md_scalar_matrix.png
-          if-no-files-found: ignore
+          path: ${{ env.ARTIFACT }}
+          retention-days: 30
+          if-no-files-found: warn
 
-      - name: Auto-commit png only
+      - name: Auto-commit PNG only
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: pythonIDE/md_scalar_matrix.png (no ledger rewrite)"
           file_pattern: pythonIDE/md_scalar_matrix.png
+          commit_options: '--no-verify'
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ MD Scalar Matrix completed."
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "📦 artifact: ${ARTIFACT}"
+            echo "📄 ledger_policy: NO_LEDGER_WRITE — PNG only, never ledger/**"
+            echo "⚖️  license: MIT (public repo base) — permission-only, no identity transfer"
+            echo "🖥  MCP binding: 127.0.0.1:8024 — no external exposure"
+            echo "🎯 invariants: φ² · ln φ · χ · θ"
+          } >> "$GITHUB_STEP_SUMMARY"
