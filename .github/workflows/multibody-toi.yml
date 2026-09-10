@@ -1,4 +1,11 @@
 name: multibody-toi
+
+# Time-of-impact (TOI) tests + gradient smoke for the multibody simulator.
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — test lane only, no commit, no ledger
+# role: TOI correctness + differentiability check
+# note: JAX on CPU only — no GPU dependency; `jax[cpu]` pulls the CPU backend.
+
 on:
   push:
     paths:
@@ -7,18 +14,73 @@ on:
   pull_request:
     paths:
       - "multibody_simulator/**"
+      - ".github/workflows/multibody-toi.yml"
   workflow_dispatch:
+
+permissions:
+  contents: read   # read-only by design — no ledger writes, no commits
+
+concurrency:
+  group: multibody-toi-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  PYTHON_VERSION: "3.11"
+  TEST_DIR: multibody_simulator/tests
+
 jobs:
   test:
+    name: Multibody TOI · Head-on · Grad smoke
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - name: install jax cpu
-        run: pip install "jax[cpu]" pytest
-      - name: head-on + grad smoke
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install JAX (CPU) + pytest
         run: |
-          python -m multibody_simulator.tests.test_toi
-          pytest -q multibody_simulator/tests/test_toi.py multibody_simulator/tests/test_toi_grad.py
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet "jax[cpu]" pytest
+
+      - name: Guard — test directory present
+        run: |
+          set -euo pipefail
+          if [ ! -d "${TEST_DIR}" ]; then
+            echo "::error::${TEST_DIR} not found"
+            exit 1
+          fi
+
+      - name: Head-on + grad smoke (module invocation)
+        run: |
+          set -euo pipefail
+          # Module-level invocation — exercises __main__ path.
+          # Uses PYTHONPATH=. so the package resolves without install.
+          PYTHONPATH=. python -m multibody_simulator.tests.test_toi
+
+      - name: Pytest — TOI + gradient
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. pytest -q \
+            "${TEST_DIR}/test_toi.py" \
+            "${TEST_DIR}/test_toi_grad.py" \
+            --tb=short
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ multibody-toi completed."
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🧪 tests: ${TEST_DIR}/test_toi.py · ${TEST_DIR}/test_toi_grad.py"
+            echo "⚙️  jax[cpu] — CPU backend, no GPU dependency"
+            echo "📄 ledger_policy: NO_LEDGER_WRITE — no ledger entry, no commit"
+          } >> "$GITHUB_STEP_SUMMARY"
