@@ -235,5 +235,7 @@ EOF
       - name: Final summary
         if: always()
         run: |
-          echo "✅ CD Combinator completed." >> $GITHUB_STEP_SUMMARY
-          echo "∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · sha3_256" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "✅ CD Combinator completed."
+            echo "∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · sha3_256"
+          } >> "$GITHUB_STEP_SUMMARY"
