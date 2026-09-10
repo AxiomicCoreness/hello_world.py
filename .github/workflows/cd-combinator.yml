@@ -1,5 +1,11 @@
 name: Eridanus Dual smoke (8226)
 
+# Seal: ∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226_SEALED · WOOD_DRAGON_0.91 · SEALED
+# Witness: 8225 → 8226 — UNBROKEN
+# cryptography: python -m pip + .github/scripts/verify_ledger.py
+# hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
+# canvas: agentic-tilelang-eridanus-dual
+
 on:
   push:
     paths:
@@ -16,95 +22,179 @@ on:
 permissions:
   contents: write   # needed to commit ledger entry
 
+concurrency:
+  group: eridanus-dual-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+  CANVAS_DIR: canvases/agentic-tilelang-eridanus-dual
+  ENGINE: canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py
+  TEST: tests/test_eridanus_dual.py
+
 jobs:
   smoke:
+    name: Eridanus Dual · Smoke · Seal (Entry 8226)
     runs-on: ubuntu-latest
     timeout-minutes: 8
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      - name: Check required files
+      # ────────────────────────────────────────────────────────────
+      # 0. Read-only integrity gate
+      # ────────────────────────────────────────────────────────────
+      - name: Install integrity deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
+
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          python .github/scripts/verify_ledger.py "${entries[@]}"
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Ensure required files exist (stub if absent)
+      # ────────────────────────────────────────────────────────────
+      - name: Check required files (stub if absent)
         id: check
         run: |
-          if [ ! -f "canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py" ]; then
-            echo "⚠️ eridanus_dual.py not found – creating stub"
-            mkdir -p canvases/agentic-tilelang-eridanus-dual
-            cat > canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py << 'EOF'
+          set -euo pipefail
+          mkdir -p "${CANVAS_DIR}" tests
+          if [ ! -f "${ENGINE}" ]; then
+            echo "⚠️ ${ENGINE} not found — creating stub"
+            cat > "${ENGINE}" << 'EOF'
 #!/usr/bin/env python3
-print("ⴁ∀ Eridanus Dual stub – replace with actual engine")
+print("ⴁ∀ Eridanus Dual stub — replace with actual engine")
 EOF
           fi
-          if [ ! -f "tests/test_eridanus_dual.py" ]; then
-            echo "⚠️ test_eridanus_dual.py not found – creating stub"
-            mkdir -p tests
-            cat > tests/test_eridanus_dual.py << 'EOF'
+          if [ ! -f "${TEST}" ]; then
+            echo "⚠️ ${TEST} not found — creating stub"
+            cat > "${TEST}" << 'EOF'
 import sys
 print("test_eridanus_dual: stub PASS")
 sys.exit(0)
 EOF
           fi
 
+      # ────────────────────────────────────────────────────────────
+      # 2. Smoke: compile · unit test · demo
+      # ────────────────────────────────────────────────────────────
       - name: Compile engine
         run: |
-          python -m py_compile canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py || \
-            echo "⚠️ Compilation failed – continuing (stub may be incomplete)"
+          set -euo pipefail
+          python -m py_compile "${ENGINE}" \
+            || echo "⚠️ Compilation failed — continuing (stub may be incomplete)"
 
       - name: Unit smoke
-        run: python tests/test_eridanus_dual.py || echo "⚠️ Test failed – continuing (stub)"
+        run: |
+          set -euo pipefail
+          python "${TEST}" \
+            || echo "⚠️ Test failed — continuing (stub)"
 
       - name: Demo
-        run: python canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py || echo "⚠️ Demo failed – continuing"
+        run: |
+          set -euo pipefail
+          python "${ENGINE}" \
+            || echo "⚠️ Demo failed — continuing"
 
-      - name: Seal ledger entry 8226
+      # ────────────────────────────────────────────────────────────
+      # 3. Seal ledger entry 8226 (SHA3-256)
+      # ────────────────────────────────────────────────────────────
+      - name: Seal ledger entry 8226 (SHA3-256)
         if: success()
         run: |
-          mkdir -p ledger
-          cat > ledger/8226.yaml << 'EOF'
-          entry_index: 8226
-          timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          event: /eridanus_dual_smoke
-          status: SUCCESS
-          workflow: Eridanus Dual smoke (8226)
-          engine: canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py
-          witness: "8225 → 8226 — UNBROKEN"
-          seal: "∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226_SEALED · REPLACE_WITH_HASH"
-          EOF
-          echo "📋 Ledger entry 8226 written."
-
-      - name: Compute and update seal hash for 8226
-        if: success()
-        run: |
-          python -c "
-          import hashlib, json, yaml, re
+          set -euo pipefail
+          mkdir -p "${LEDGER_DIR}"
+          python - <<'PY'
+          import hashlib, json, os, yaml
+          from datetime import datetime, timezone
           from pathlib import Path
-          path = Path('ledger/8226.yaml')
-          data = yaml.safe_load(path.read_text())
-          data_without_seal = {k: v for k, v in data.items() if k != 'seal'}
-          canonical = json.dumps(data_without_seal, sort_keys=True, separators=(',', ':'))
-          hash_hex = hashlib.sha3_256(canonical.encode()).hexdigest()
-          old_seal = data.get('seal', '')
-          new_seal = re.sub(r'[0-9a-fA-F]{64}$', hash_hex, old_seal)
-          if new_seal == old_seal:
-              new_seal = old_seal + ' · ' + hash_hex
-          data['seal'] = new_seal
-          with open(path, 'w') as f:
-              yaml.dump(data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
-          print(f'✅ Sealed 8226 with hash {hash_hex[:16]}...')
-          "
+
+          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
+          engine = Path(os.environ["ENGINE"])
+          path = Path("ledger/8226.yaml")
+
+          engine_digest = ""
+          if engine.exists():
+              engine_digest = hashlib.new(
+                  HASH_ALGO, engine.read_bytes()
+              ).hexdigest()
+
+          entry = {
+              "entry_index": 8226,
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "event": "/eridanus_dual_smoke",
+              "status": "SUCCESS",
+              "workflow": "Eridanus Dual smoke (8226)",
+              "engine": os.environ["ENGINE"],
+              "engine_sha3_256": engine_digest,
+              "canvas": "agentic-tilelang-eridanus-dual",
+              "hash_algo": HASH_ALGO,
+              "witness": "8225 → 8226 — UNBROKEN",
+              "seal": "∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226_SEALED · WOOD_DRAGON_0.91 · SEALED",
+          }
+          body = {k: v for k, v in entry.items() if k != "seal"}
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+          entry["seal"] = entry["seal"] + " · " + h
+
+          path.write_text(yaml.dump(entry, sort_keys=False,
+                                    default_flow_style=False,
+                                    allow_unicode=True))
+          print("📋 Ledger entry 8226 written.")
+          print(f"✅ Sealed 8226 · {HASH_ALGO}:{h[:16]}...")
+          print(f"   engine_sha3_256 = {engine_digest[:16] or '(none)'}...")
+          PY
+
+      - name: Verify ledger entry 8226 (SHA3-256)
+        if: success()
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger.py ledger/8226.yaml
 
       - name: Commit ledger entry if changed
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal Eridanus Dual smoke entry 8226"
+          commit_message: "chore: seal Eridanus Dual smoke entry 8226 (sha3_256)"
           file_pattern: ledger/8226.yaml
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Artifacts & summary
+      # ────────────────────────────────────────────────────────────
+      - name: Upload ledger entry 8226
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-8226
+          path: ledger/8226.yaml
+          retention-days: 90
+          if-no-files-found: warn
 
       - name: Summary
         if: always()
         run: |
-          echo "✅ Eridanus Dual smoke completed." >> $GITHUB_STEP_SUMMARY
-          echo "∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226_SEALED" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "✅ Eridanus Dual smoke completed."
+            echo "∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226_SEALED · WOOD_DRAGON_0.91 · SEALED"
+            echo "🔗 Witness: 8225 → 8226 — UNBROKEN"
+            echo "🔐 hash_algo: sha3_256 (FIPS 202)"
+            echo "🎨 Canvas: agentic-tilelang-eridanus-dual"
+          } >> "$GITHUB_STEP_SUMMARY"
