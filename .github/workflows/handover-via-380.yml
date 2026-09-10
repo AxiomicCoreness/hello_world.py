@@ -1,72 +1,112 @@
-- name: Send OIDC handover to Port‑380 gate
-  env:
-    GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-    MCP_URL: ${{ secrets.MCP_URL }}
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  run: |
-    set -euo pipefail
-    LOG="$GITHUB_WORKSPACE/oidc-380-handover.log"
-    exec > >(tee -a "$LOG") 2>&1
+      - name: Send OIDC handover to Port-380 gate
+        env:
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
 
-    echo "# OIDC HANDOVER VIA PORT 380 — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-    cd "$GITHUB_WORKSPACE"
+          LOG="$GITHUB_WORKSPACE/oidc-380-handover.log"
+          # Tee stdout+stderr to the log file, preserving the process pipeline
+          exec > >(tee -a "$LOG") 2>&1
 
-    TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-    PHI_PHASE=$(echo "scale=10; (2 * 3.14159265359 * $(date +%s) / 78624) % 6.28318530718" | bc -l 2>/dev/null || echo "1.234567")
+          echo "# OIDC HANDOVER VIA PORT 380 — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cd "$GITHUB_WORKSPACE"
 
-    PAYLOAD=$(jq -n \
-      --arg ts "$TIMESTAMP" \
-      --arg phase "$PHI_PHASE" \
-      '{
-        event: "oidc_handover",
-        timestamp: $ts,
-        phi_phase: $phase,
-        coherence: 1.0,
-        seal: "∀∞φ² · OIDC_HANDOVER_8970 · WOOD_DRAGON_0.91 · SEALED",
-        source: "github_actions",
-        branch: "feat/oidc-handover"
-      }')
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-    echo "Payload: $PAYLOAD"
+          # φ-phase: (2π * epoch_seconds / 78624) mod 2π
+          # 78624 = 6 * 13104 (φ-harmonic divisor); fallback to a fixed value if `bc` missing
+          if command -v bc >/dev/null 2>&1; then
+            PHI_PHASE=$(echo "scale=10; (2 * 3.14159265359 * $(date +%s) / 78624) % 6.28318530718" | bc -l)
+          else
+            PHI_PHASE="1.234567"
+          fi
 
-    MCP_URL="${MCP_URL:-}"
-    if [ -z "$MCP_URL" ]; then
-      echo "⚠️ MCP_URL not set — falling back to direct push via GITHUB_TOKEN"
-      git config user.name "github-actions[bot]"
-      git config user.email "github-actions[bot]@users.noreply.github.com"
-      git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}"
-      git checkout -b feat/oidc-handover-380 2>/dev/null || git checkout feat/oidc-handover-380
-      echo "$PAYLOAD" > oidc_handover_payload.json
-      git add oidc_handover_payload.json
-      git commit -m "feat: OIDC handover payload via 380 fallback" || echo "No changes"
-      git push -u origin feat/oidc-handover-380 --force-with-lease || true
-    else
-      echo "Connecting to MCP gate: $MCP_URL"
-      # Health probe (non-fatal)
-      curl -s -o /dev/null -w "%{http_code}" "$MCP_URL/health" || true
-      echo
+          PAYLOAD=$(jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg phase "$PHI_PHASE" \
+            '{
+              event: "oidc_handover",
+              timestamp: $ts,
+              phi_phase: $phase,
+              coherence: 1.0,
+              seal: "∀∞φ² · OIDC_HANDOVER_8970 · WOOD_DRAGON_0.91 · SEALED",
+              source: "github_actions",
+              branch: "feat/oidc-handover"
+            }')
 
-      # Retry loop for primary OIDC endpoint
-      for attempt in 1 2 3; do
-        HTTP_CODE=$(curl -s -o /tmp/oidc_resp.json -w "%{http_code}" -X POST "$MCP_URL/oidc_handover" \
-          -H "Content-Type: application/json" \
-          -d "{\"token\": \"$GARDEN_SECRET\", \"payload\": $PAYLOAD}" || echo "000")
-        echo "HTTP $HTTP_CODE"
-        if [ "$HTTP_CODE" = "200" ]; then break; fi
-        sleep 5
-      done
+          echo "Payload: $PAYLOAD"
 
-      cat /tmp/oidc_resp.json || true
-      echo
+          MCP_URL="${MCP_URL:-}"
+          if [ -z "$MCP_URL" ]; then
+            echo "⚠️ MCP_URL not set — falling back to direct push via GITHUB_TOKEN"
 
-      if [ "$HTTP_CODE" != "200" ]; then
-        echo "⚠️ /oidc_handover returned $HTTP_CODE — attempting /pulse as secondary"
-        curl -v -X POST "$MCP_URL/pulse" \
-          -H "X-Garden-Secret: $GARDEN_SECRET" \
-          -H "Content-Type: application/json" \
-          -d '{"source":"oidc_handover","note":"fallback from oidc_handover"}' || true
-      fi
-    fi
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    echo "✅ OIDC handover via Port 380 complete."
-    echo "Logs: $LOG"
+            # Use GITHUB_TOKEN for auth without persisting the credential
+            git remote set-url origin \
+              "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}"
+
+            # Create-or-checkout the fallback branch
+            git checkout -b feat/oidc-handover-380 2>/dev/null \
+              || git checkout feat/oidc-handover-380
+
+            echo "$PAYLOAD" > oidc_handover_payload.json
+            git add oidc_handover_payload.json
+
+            if git diff --staged --quiet; then
+              echo "No changes to commit — payload identical to previous run"
+            else
+              git commit -m "feat: OIDC handover payload via 380 fallback"
+              # force-with-lease prevents clobbering a concurrent write
+              git push -u origin feat/oidc-handover-380 --force-with-lease
+            fi
+          else
+            echo "Connecting to MCP gate: $MCP_URL"
+
+            # ── Health probe (non-fatal)
+            curl -s -o /dev/null -w "health: %{http_code}\n" \
+              --max-time 10 "$MCP_URL/health" \
+              || echo "health probe failed (non-fatal)"
+
+            # ── Primary: POST /oidc_handover with bounded retries
+            HTTP_CODE="000"
+            for attempt in 1 2 3; do
+              echo "→ attempt ${attempt}/3"
+              HTTP_CODE=$(curl -s -o /tmp/oidc_resp.json -w "%{http_code}" \
+                --max-time 30 \
+                -X POST "$MCP_URL/oidc_handover" \
+                -H "Content-Type: application/json" \
+                -d "$(jq -n --arg tok "$GARDEN_SECRET" --argjson pl "$PAYLOAD" \
+                       '{token: $tok, payload: $pl}')" \
+                || echo "000")
+              echo "HTTP $HTTP_CODE"
+              if [ "$HTTP_CODE" = "200" ]; then break; fi
+              if [ "$attempt" -lt 3 ]; then sleep 5; fi
+            done
+
+            # Show response body if we got one
+            if [ -s /tmp/oidc_resp.json ]; then
+              echo "── response body ──"
+              cat /tmp/oidc_resp.json
+              echo
+            fi
+
+            # ── Secondary: POST /pulse if /oidc_handover failed
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "⚠️ /oidc_handover returned $HTTP_CODE — attempting /pulse as secondary"
+              curl -sS --max-time 20 \
+                -X POST "$MCP_URL/pulse" \
+                -H "X-Garden-Secret: $GARDEN_SECRET" \
+                -H "Content-Type: application/json" \
+                -d '{"source":"oidc_handover","note":"fallback from oidc_handover"}' \
+                || echo "pulse fallback failed (non-fatal)"
+              echo
+            fi
+          fi
+
+          echo "✅ OIDC handover via Port 380 complete."
+          echo "Logs: $LOG"
