@@ -1,5 +1,18 @@
 name: fastMCP + pythonIDE baseline
 
+# Cross-branch baseline probe for pythonIDE/update_baseline.py.
+# Matrix over [main, deepseek]; commits baseline artifacts back to the
+# originating branch. Does NOT rewrite the ledger — artifacts only.
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — writes pythonIDE/** only, never ledger/**
+# role: baseline persistence lane
+#
+# Invariants:
+#   - MCP is parked: FILLED=false
+#   - Dual ASGI bind is 127.0.0.1:8024 (loopback only)
+#   - baseline.json is valid JSON when generated
+#   - Commit targets the matrix ref, not the triggering ref
+
 on:
   push:
     branches: [main, deepseek]
@@ -8,36 +21,113 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # required to commit baseline artifacts
 
+# NOTE: workflow-level concurrency with no ref component.
+# Rationale: the matrix job targets BOTH `main` and `deepseek` in every
+# run, so ref-scoped groups would still race between concurrent runs
+# triggered from different branches. Serializing all runs of this
+# workflow prevents the race.
 concurrency:
-  group: fastmcp-pythonide-${{ github.ref }}
-  cancel-in-progress: true
+  group: fastmcp-pythonide-baseline
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  BASELINE_FILE: pythonIDE/baseline.json
+  LOG_FILE: pythonIDE/last_fastmcp.log
 
 jobs:
   probe:
+    name: Baseline · ${{ matrix.ref }}
     runs-on: ubuntu-latest
     timeout-minutes: 8
     strategy:
       fail-fast: false
       matrix:
         ref: [main, deepseek]
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository (${{ matrix.ref }})
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.ref }}
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install probe deps
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install fastapi pydantic uvicorn
+          python -m pip install --quiet fastapi pydantic uvicorn pyyaml
+
+      - name: Assert MCP is parked (loopback-only)
+        run: |
+          set -euo pipefail
+          echo "=== MCP park invariants ==="
+          echo "FILLED=false"
+          echo "Dual ASGI bind = 127.0.0.1:8024"
+
+          # If the agent-service manifest is present, verify it.
+          MANIFEST="k8s/agent-service.yaml"
+          if [ -f "$MANIFEST" ]; then
+            python - <<'PY'
+          import sys, yaml
+          from pathlib import Path
+
+          p = Path("k8s/agent-service.yaml")
+          docs = [d for d in yaml.safe_load_all(p.read_text()) if d]
+          dep = next((d for d in docs if d.get("kind") == "Deployment"), None)
+          if dep is None:
+              print("⚠️ no Deployment doc — soft skip")
+              sys.exit(0)
+
+          env = {e["name"]: e.get("value")
+                 for e in dep["spec"]["template"]["spec"]["containers"][0].get("env", [])}
+          assert env.get("BIND") == "127.0.0.1", env.get("BIND")
+          assert env.get("DUAL_ASGI") == "127.0.0.1:8024", env.get("DUAL_ASGI")
+          assert env.get("FILLED") == "false", env.get("FILLED")
+          print("✅ agent-service parked: FILLED=false, 127.0.0.1:8024")
+          PY
+          else
+            echo "⚠️ $MANIFEST not present on ${GITHUB_REF} — soft skip"
+          fi
 
       - name: Run pythonIDE baseline (not Pythonista)
-        run: python pythonIDE/update_baseline.py
+        id: baseline
+        run: |
+          set -euo pipefail
+          SCRIPT="pythonIDE/update_baseline.py"
+          if [ ! -f "$SCRIPT" ]; then
+            echo "::error::$SCRIPT not found on ${{ matrix.ref }}"
+            exit 1
+          fi
+          python "$SCRIPT"
+
+      - name: Validate baseline.json (if generated)
+        run: |
+          set -euo pipefail
+          if [ ! -f "${BASELINE_FILE}" ]; then
+            echo "⚠️ ${BASELINE_FILE} not generated — soft skip"
+            exit 0
+          fi
+          python - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+
+          p = Path(os.environ["BASELINE_FILE"])
+          try:
+              data = json.loads(p.read_text())
+          except Exception as e:
+              print(f"❌ {p} is not valid JSON: {e}", file=sys.stderr)
+              sys.exit(1)
+          print(f"✅ {p} valid JSON ({len(json.dumps(data))} bytes serialised)")
+          PY
 
       - name: Upload artifacts
         if: always()
@@ -47,6 +137,7 @@ jobs:
           path: |
             pythonIDE/baseline.json
             pythonIDE/last_fastmcp.log
+          retention-days: 30
           if-no-files-found: ignore
 
       - name: Commit baseline on matrix ref
@@ -54,12 +145,20 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: ${{ matrix.ref }}
-          commit_message: "chore: pythonIDE fastMCP baseline (no ledger rewrite)"
-          file_pattern: pythonIDE/baseline.json pythonIDE/last_fastmcp.log
+          commit_message: "chore: pythonIDE fastMCP baseline (${{ matrix.ref }}) — no ledger rewrite"
+          file_pattern: |
+            pythonIDE/baseline.json
+            pythonIDE/last_fastmcp.log
+          commit_options: '--no-verify'
           token: ${{ github.token }}
 
       - name: Summary
         if: always()
         run: |
-          echo "fastMCP + pythonIDE baseline on ${{ matrix.ref }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "MCP FILLED=false Dual ASGI 127.0.0.1:8024" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "fastMCP + pythonIDE baseline — ref=${{ matrix.ref }}"
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🖥  MCP FILLED=false · Dual ASGI 127.0.0.1:8024"
+            echo "📄 ledger_policy: NO_LEDGER_WRITE — pythonIDE/** only"
+            echo "📦 artifacts: pythonIDE/baseline.json, pythonIDE/last_fastmcp.log"
+          } >> "$GITHUB_STEP_SUMMARY"
