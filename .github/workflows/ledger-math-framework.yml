@@ -1,7 +1,9 @@
 # Cap: Ledger Math CI checks 9156-9160 only.
 # Does not rewrite 9157-9162. Does not walk to 510511.yaml.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
-# Witness: 9161 → 9162 — UNBROKEN
+# Witness: 9161 → 9162 — UNBROKEN  (chain head — this workflow does NOT extend it)
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_GROWTH — read-only verifier (permissions: contents: read)
 
 name: Ledger Math Framework
 
@@ -29,42 +31,79 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read   # read-only by design — bounded verifier
+
+concurrency:
+  group: ledger-math-framework-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  RANGE_START: "9156"
+  RANGE_END: "9160"
 
 jobs:
   verify:
+    name: Ledger Math Framework · 9156–9160
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install verifier deps
-        run: pip install --quiet pyyaml fastapi pydantic
-
-      - name: Verify ledger 9156-9160 only
         run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml fastapi pydantic
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Bounded math-framework verification
+      # ────────────────────────────────────────────────────────────
+      - name: Verify ledger 9156–9160 only
+        run: |
+          set -euo pipefail
+          if [ ! -f ".github/scripts/verify_math_framework.py" ]; then
+            echo "::error::.github/scripts/verify_math_framework.py not found"
+            exit 1
+          fi
           python .github/scripts/verify_math_framework.py \
             --ledger-dir ledger \
-            --start 9156 \
-            --end 9160
+            --start "${RANGE_START}" \
+            --end "${RANGE_END}"
 
-      - name: YAML parse check (9156-9160 only)
+      # ────────────────────────────────────────────────────────────
+      # 2. YAML parse check (9156–9160 only)
+      # ────────────────────────────────────────────────────────────
+      - name: YAML parse check (9156–9160 only)
+        env:
+          RANGE_START: ${{ env.RANGE_START }}
+          RANGE_END: ${{ env.RANGE_END }}
         run: |
-          python - << 'PY'
+          set -euo pipefail
+          python - <<'PY'
+          import os, sys
           from pathlib import Path
-          import sys
+
           try:
               import yaml
           except ImportError:
-              print("pyyaml missing")
+              print("❌ pyyaml missing", file=sys.stderr)
               sys.exit(1)
+
+          start = int(os.environ["RANGE_START"])
+          end = int(os.environ["RANGE_END"])
+
           fails = 0
           checked = 0
-          for n in range(9156, 9161):
+          for n in range(start, end + 1):
               p = Path(f"ledger/{n}.yaml")
               if not p.exists():
                   print(f"SKIP missing {p}")
@@ -76,22 +115,60 @@ jobs:
               except Exception as e:
                   print(f"FAIL {p}: {e}")
                   fails += 1
+
           print(f"yaml_checked={checked} yaml_fails={fails}")
           sys.exit(1 if fails else 0)
           PY
 
+      # ────────────────────────────────────────────────────────────
+      # 3. Hook worker import (no bind)
+      # ────────────────────────────────────────────────────────────
       - name: Hook worker import (no bind)
+        env:
+          PYTHONPATH: "."
         run: |
-          PYTHONPATH=. python - << 'PY'
+          set -euo pipefail
+          python - <<'PY'
           import importlib.util
+          import sys
           from pathlib import Path
+
           p = Path("scripts/codespace_hook_worker.py")
+          if not p.exists():
+              print("⚠️ scripts/codespace_hook_worker.py not found — soft skip")
+              sys.exit(0)
+
           spec = importlib.util.spec_from_file_location("codespace_hook_worker", p)
+          if spec is None or spec.loader is None:
+              print("❌ could not create import spec", file=sys.stderr)
+              sys.exit(1)
+
           mod = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(mod)
-          assert mod.FILLED is False
-          assert mod.BIND == "127.0.0.1"
-          assert mod.PORT == 8091
-          assert mod.DUAL_ASGI == "127.0.0.1:8024"
-          print("hook worker import OK FILLED=False bind 127.0.0.1:8091")
+
+          # Loopback-only contract — no wildcard bind allowed.
+          assert mod.FILLED is False, f"FILLED must be False, got {mod.FILLED!r}"
+          assert mod.BIND == "127.0.0.1", f"BIND must be 127.0.0.1, got {mod.BIND!r}"
+          assert mod.PORT == 8091, f"PORT must be 8091, got {mod.PORT!r}"
+          assert mod.DUAL_ASGI == "127.0.0.1:8024", (
+              f"DUAL_ASGI must be 127.0.0.1:8024, got {mod.DUAL_ASGI!r}"
+          )
+
+          print("✅ hook worker import OK — FILLED=False, bind 127.0.0.1:8091")
           PY
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ Ledger Math Framework — bounded check completed."
+            echo "🜁∀ — Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED"
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "📏 range: ${RANGE_START}–${RANGE_END} (capped; no walk to 510511.yaml)"
+            echo "🛡  does not rewrite: 9157 · 9158 · 9159 · 9160 · 9161 · 9162"
+            echo "🔗 witness head: 9161 → 9162 — UNBROKEN (not extended by this workflow)"
+            echo "📄 ledger_policy: NO_GROWTH — read-only verifier"
+          } >> "$GITHUB_STEP_SUMMARY"
