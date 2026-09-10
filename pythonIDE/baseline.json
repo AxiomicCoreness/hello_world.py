@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-06T14:42:00+00:00",
+  "generated_at": "2026-09-10T17:07:51.020985+00:00",
   "surface": "pythonIDE",
   "not": "pythonista",
   "dual_asgi": "127.0.0.1:8024",
@@ -9,7 +9,7 @@
     "filled": false,
     "bind_host": "127.0.0.1",
     "bind_port": 8024,
-    "module": null,
+    "module": "/home/runner/work/hello_world.py/hello_world.py/fastMCP/__init__.py",
     "errors": []
   },
   "ledger_rewrite": false
