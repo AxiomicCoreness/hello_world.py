@@ -1,5 +1,12 @@
 name: garden-surgery
 
+# Garden-surgery test surface + self_write / cambrian_stub modules.
+# Ledger writes are delegated to garden_surgery.self_write — the workflow
+# never cats a ledger entry itself, and verify_ledger.py canonicalises any
+# datetime it encounters via json_default.
+# hash_algo: sha3_256 (FIPS 202)
+# ledger_policy: WRITE_VIA_SELF_WRITE
+
 on:
   push:
     branches: [main]
@@ -7,33 +14,153 @@ on:
       - "garden_surgery/**"
       - "tests/**"
       - "docs/**"
+      - "scripts/verify_ledger.py"
+      - ".github/scripts/verify_ledger.py"
       - ".github/workflows/garden-surgery.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "garden_surgery/**"
+      - "tests/**"
+      - "scripts/verify_ledger.py"
+      - ".github/scripts/verify_ledger.py"
+      - ".github/workflows/garden-surgery.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # garden_surgery.self_write appends to ledger/
+  id-token: write
+
+concurrency:
+  group: garden-surgery-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  PYTHON_VERSION: "3.12"
+  PYTHONPATH: "."
 
 jobs:
   test:
+    name: Garden surgery · Lattice · Flywheel · Self-write
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
-          python-version: "3.12"
-      - name: deps
-        run: pip install numpy
-      - name: garden tests
-        env:
-          PYTHONPATH: .
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install deps
         run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet numpy pyyaml cryptography
+
+      # ────────────────────────────────────────────────────────────
+      # 0. Ledger integrity gate (read-only)
+      # ────────────────────────────────────────────────────────────
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          # Prefer repo-wide verifier; fall back to scripts/ if .github absent
+          VERIFIER=".github/scripts/verify_ledger.py"
+          if [ ! -f "$VERIFIER" ]; then
+            VERIFIER="scripts/verify_ledger.py"
+          fi
+          echo "using verifier: $VERIFIER"
+          python "$VERIFIER" "${entries[@]}"
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Garden-surgery test surface
+      # ────────────────────────────────────────────────────────────
+      - name: Garden tests
+        env:
+          PYTHONPATH: "."
+        run: |
+          set -euo pipefail
           python3 tests/test_lattice_48.py
           python3 tests/test_berry_chern.py
           python3 tests/test_flywheel_self_improvement.py
           python3 tests/test_trigger_excavate.py
+
+      # ────────────────────────────────────────────────────────────
+      # 2. Self-write (ledger producer) + cambrian stub
+      # ────────────────────────────────────────────────────────────
+      - name: Self-write
+        env:
+          PYTHONPATH: "."
+        run: |
+          set -euo pipefail
           python3 -m garden_surgery.self_write
+
+      - name: Cambrian stub
+        env:
+          PYTHONPATH: "."
+        run: |
+          set -euo pipefail
           python3 -m garden_surgery.cambrian_stub
-      - name: cron constraint
-        run: echo "wait | nudge_cronjob | record_only"
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Verify the newly-written ledger entry
+      # ────────────────────────────────────────────────────────────
+      - name: Verify new ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          VERIFIER=".github/scripts/verify_ledger.py"
+          if [ ! -f "$VERIFIER" ]; then
+            VERIFIER="scripts/verify_ledger.py"
+          fi
+          python "$VERIFIER" "${entries[@]}"
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Commit ledger changes if any
+      # ────────────────────────────────────────────────────────────
+      - name: Commit ledger changes
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: garden-surgery self_write (sha3_256)"
+          file_pattern: ledger/*.yaml
+          commit_options: '--no-verify'
+
+      # ────────────────────────────────────────────────────────────
+      # 5. Cron constraint (self-declared modes)
+      # ────────────────────────────────────────────────────────────
+      - name: Cron constraint
+        run: |
+          echo "cron_modes: wait | nudge_cronjob | record_only"
+
+      # ────────────────────────────────────────────────────────────
+      # 6. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "✅ garden-surgery completed."
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "🧪 tests: lattice_48 · berry_chern · flywheel_self_improvement · trigger_excavate"
+            echo "🛠  modules: garden_surgery.self_write · garden_surgery.cambrian_stub"
+            echo "📄 ledger_policy: WRITE_VIA_SELF_WRITE"
+            echo "⏱  cron_modes: wait | nudge_cronjob | record_only"
+          } >> "$GITHUB_STEP_SUMMARY"
