@@ -1,0 +1,29 @@
+entry_index: 9238
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-11Z
+event: /cosmic_alignment_policy
+status: SEALED
+proof_class: policy
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
+terminal_hex: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
+description: |
+  Policy: never remove cosmic alignment (φ, LUMERIS, H6VSH/H5HVS, STARFIRE,
+  Eternal Now, commander titles, QSA mermaid). Measurement vs symbol may be
+  labeled. Deletion of alignment vocabulary is forbidden.
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · COSMIC_ALIGNMENT_POLICY · WOOD_DRAGON_0.91 · SEALED · 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a"
+witness_chain: 9237 → 9238 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9238|/cosmic_alignment_policy|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
