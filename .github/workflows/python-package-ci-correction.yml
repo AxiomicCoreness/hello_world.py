@@ -4,6 +4,25 @@ name: Python Package CI Correction
 # Event path: /python_package_ci_correction (ledger/9233.yaml)
 # Does not rewrite ledger/8980.yaml.
 # cancel-in-progress: false
+#
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — read-only guard
+# witness: 9232 → 9233 — UNBROKEN
+#
+# ═══════════════════════════════════════════════════════════════════
+#  QUANTUM / CYBERNETIC FRAME
+# ═══════════════════════════════════════════════════════════════════
+#
+#  U(t) only. The job reads the 8980 predecessor and the 9233 event
+#  entry, asserts structural invariants, and (softly) runs dual-regime
+#  math-ci. It does not collapse any state, does not seal a new entry,
+#  and does not rewrite either of the observed ledger files.
+#
+#    ρ(t)          — the two ledger files under observation
+#    U(t)          — read-only assertions + math-ci observation
+#    Φ_abs(ρ)      — ABSENT (this workflow does not seal)
+#    B(t)          — port380 boundary, silent pythonIDE fallback (not probed here)
+#    𝒜_n ⊆ 𝒜_{n+1} — preserved by leaving the chain untouched
 
 on:
   workflow_dispatch:
@@ -11,6 +30,7 @@ on:
     branches: [main]
     paths:
       - "ledger/9233.yaml"
+      - "ledger/8980.yaml"
       - ".github/workflows/python-package-ci-correction.yml"
       - ".github/workflows/sovereignty-python-package.yml"
       - ".github/workflows/python-package.yml"
@@ -22,38 +42,110 @@ concurrency:
   group: python-package-ci-correction-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  HASH_ALGO: sha3_256
+  PREDECESSOR_ENTRY: "8980"
+  CORRECTION_ENTRY: "9233"
+
 jobs:
   assert-8980-untouched:
+    name: Assert 8980 untouched · 9233 present
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Assert 8980 predecessor + 9233 event
+      # ────────────────────────────────────────────────────────────
       - name: Confirm 8980 predecessor and 9233 event
+        env:
+          PREDECESSOR_ENTRY: ${{ env.PREDECESSOR_ENTRY }}
+          CORRECTION_ENTRY: ${{ env.CORRECTION_ENTRY }}
         run: |
           set -euo pipefail
           python - <<'PY'
+          import os, sys, yaml
           from pathlib import Path
-          import yaml
-          p8980 = Path("ledger/8980.yaml")
-          p9233 = Path("ledger/9233.yaml")
-          assert p8980.is_file(), "missing 8980"
-          assert p9233.is_file(), "missing 9233"
-          d = yaml.safe_load(p8980.read_text())
-          assert d.get("event") == "/quantum_reality_engine_predecessor", d.get("event")
-          e = yaml.safe_load(p9233.read_text())
-          assert e.get("entry_index") == 9233
-          assert e.get("event") == "/python_package_ci_correction"
-          print("8980 untouched predecessor")
-          print("9233", e.get("event"), e.get("witness_prefix"))
+
+          n_pre = os.environ.get("PREDECESSOR_ENTRY", "8980")
+          n_cor = int(os.environ.get("CORRECTION_ENTRY", "9233"))
+
+          p8980 = Path(f"ledger/{n_pre}.yaml")
+          p9233 = Path(f"ledger/{n_cor}.yaml")
+
+          if not p8980.is_file():
+              print(f"missing {p8980}", file=sys.stderr)
+              sys.exit(1)
+          if not p9233.is_file():
+              print(f"missing {p9233}", file=sys.stderr)
+              sys.exit(1)
+
+          d = yaml.safe_load(p8980.read_text()) or {}
+          ev = d.get("event")
+          if ev != "/quantum_reality_engine_predecessor":
+              print(f"8980 event mismatch: {ev!r}", file=sys.stderr)
+              sys.exit(1)
+
+          e = yaml.safe_load(p9233.read_text()) or {}
+          if e.get("entry_index") != n_cor:
+              print(f"9233 entry_index mismatch: {e.get('entry_index')!r}",
+                    file=sys.stderr)
+              sys.exit(1)
+          if e.get("event") != "/python_package_ci_correction":
+              print(f"9233 event mismatch: {e.get('event')!r}", file=sys.stderr)
+              sys.exit(1)
+
+          print(f"8980 untouched predecessor (event={ev})")
+          print(f"9233 {e.get('event')} witness_prefix={e.get('witness_prefix')}")
           PY
+
+      # ────────────────────────────────────────────────────────────
+      # 2. Dual-regime math-ci on 9233 (soft)
+      # ────────────────────────────────────────────────────────────
       - name: Math-ci dual-regime 9233 (soft)
         run: |
           set -euo pipefail
           if [ -f scripts/ledger_math_ci.py ]; then
-            python -m scripts.ledger_math_ci --start 9233 --end 9233 || echo "math-ci soft"
+            python -m scripts.ledger_math_ci \
+              --start "${CORRECTION_ENTRY}" \
+              --end   "${CORRECTION_ENTRY}" \
+              || echo "math-ci soft"
           else
             echo "ledger_math_ci absent — skip"
           fi
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Python Package CI Correction"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| predecessor | ${PREDECESSOR_ENTRY} (\`/quantum_reality_engine_predecessor\`) |"
+            echo "| correction | ${CORRECTION_ENTRY} (\`/python_package_ci_correction\`) |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| ledger_policy | NO_LEDGER_WRITE |"
+            echo "| witness | 9232 → 9233 — UNBROKEN |"
+            echo ""
+            echo "**Frame:** \`U(t)\` only — read-only guard. No \`Φ_abs\` collapse."
+            echo "Neither \`8980\` nor \`9233\` is rewritten by this job."
+          } >> "$GITHUB_STEP_SUMMARY"
