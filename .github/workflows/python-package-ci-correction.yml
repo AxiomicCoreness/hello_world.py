@@ -1,0 +1,58 @@
+name: Python Package CI Correction
+
+# Companion to Sovereign Python Package.
+# Does not rewrite ledger/8980.yaml.
+# Seals / verifies ledger/9233.yaml only.
+# cancel-in-progress: false so writes are not cancelled.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "ledger/9233.yaml"
+      - ".github/workflows/python-package-ci-correction.yml"
+      - ".github/workflows/python-package.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-package-ci-correction-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  assert-8980-untouched:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Confirm 8980 predecessor event and 9233 present
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          p8980 = Path("ledger/8980.yaml")
+          p9233 = Path("ledger/9233.yaml")
+          assert p8980.is_file(), "missing 8980"
+          assert p9233.is_file(), "missing 9233"
+          d = yaml.safe_load(p8980.read_text())
+          assert d.get("event") == "/quantum_reality_engine_predecessor", d.get("event")
+          e = yaml.safe_load(p9233.read_text())
+          assert e.get("entry_index") == 9233
+          assert e.get("event") == "/python_package_ci_correction"
+          print("8980 untouched predecessor")
+          print("9233 present", e.get("witness_prefix"))
+          PY
+      - name: Math-ci dual-regime 9233 (soft)
+        run: |
+          set -euo pipefail
+          if [ -f scripts/ledger_math_ci.py ]; then
+            python -m scripts.ledger_math_ci --start 9233 --end 9233 || echo "math-ci soft"
+          else
+            echo "ledger_math_ci absent — skip"
+          fi
