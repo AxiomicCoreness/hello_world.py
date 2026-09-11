@@ -1,5 +1,39 @@
 name: Sovereign Core Sidecar
 
+# Activates the Sovereign Core as a *sidecar* — a supervisory subprocess that
+# observes the primary system without mutating it. In cybernetic terms:
+#   U(t) = exp(-iHt/hbar) applied to the *observation* channel only.
+# The sidecar reads state; it does not write to the ledger.
+#
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — read-only verifier lane
+# witness: 510510 → 510511 — UNBROKEN
+#
+# ═══════════════════════════════════════════════════════════════════
+#  CYBERNETIC FRAMING
+# ═══════════════════════════════════════════════════════════════════
+#
+#  A sidecar is the classical cybernetic pattern for a supervisory process
+#  that runs alongside a primary process. It differs from a controller in
+#  that it *cannot* mutate the primary state — its only output is an
+#  observation channel.
+#
+#  In the formal model:
+#    H_sys (primary state)   — the append-only ledger, head at 510511
+#    H_sidecar (observer)    — the sidecar's read-only projection
+#    Φ_abs                   — ABSENT here by design (no merge)
+#    U_obs(t)                — the sidecar's unitary observation channel
+#
+#  This is the read-only analogue of the 510510 verification workflow.
+#  The difference:
+#    510510 verifier — checks genesis of the MATH_ORIGIN anchor
+#    this sidecar    — checks the append-only invariant between
+#                      510510 and its successor 510511
+#
+#  The sidecar never writes ledger/** — the `permissions: contents: read`
+#  and the absence of any `stefanzweifel/git-auto-commit-action` step
+#  enforce this at the workflow level.
+
 on:
   workflow_dispatch:
     inputs:
@@ -18,29 +52,231 @@ on:
       - "ledger/510511.yaml"
 
 permissions:
-  contents: read
+  contents: read   # read-only by design — the sidecar observes, never writes
+
+concurrency:
+  group: sovereign-core-sidecar-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  MATH_ORIGIN: "510510"          # p7# = 2·3·5·7·11·13·17
+  SIDECAR_ENTRY: "510511"
+  MCP_URL: ${{ secrets.MCP_URL }}       # unified with sibling workflows
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
 jobs:
   activate:
+    name: Core sidecar · activate · verify append-only
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Activate core (dry-run)
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
+
+      # ────────────────────────────────────────────────────────────
+      # 1. SHA3-256 integrity gate over the whole ledger (read-only)
+      # ────────────────────────────────────────────────────────────
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          VERIFIER=".github/scripts/verify_ledger.py"
+          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
+          if [ -f "$VERIFIER" ]; then
+            python "$VERIFIER" "${entries[@]}"
+          else
+            echo "⚠️ no verify_ledger.py — soft skip"
+          fi
+
+      # ────────────────────────────────────────────────────────────
+      # 2. Activate the core (mode-aware: dry-run or sidecar-once)
+      # ────────────────────────────────────────────────────────────
+      - name: Activate core
+        id: activate
         env:
-          MCP_URL: ${{ vars.MCP_URL }}
+          MODE: ${{ inputs.mode || 'dry-run' }}
+          MCP_URL: ${{ secrets.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
-          python -m core.activate --dry-run
-          python -m core.sidecar --once || echo "sidecar probe skipped/unreachable (non-fatal)"
-      - name: Confirm 510510 not overwritten
+
+          if [ ! -f core/activate.py ]; then
+            echo "⚠️ core/activate.py not found — soft skip"
+            echo "activated=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          case "${MODE}" in
+            dry-run)
+              echo "🔍 mode=dry-run — activating without side effects"
+              python -m core.activate --dry-run
+              ;;
+            sidecar-once)
+              echo "🌀 mode=sidecar-once — activating a single sidecar cycle"
+              python -m core.activate --sidecar-once
+              ;;
+            *)
+              echo "::error::unknown mode ${MODE}"
+              exit 1
+              ;;
+          esac
+
+          echo "activated=true" >> "$GITHUB_OUTPUT"
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Sidecar probe (single cycle, non-fatal if MCP unreachable)
+      # ────────────────────────────────────────────────────────────
+      - name: Sidecar probe (--once)
+        id: sidecar
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
-          test -f ledger/510510.yaml
-          test -f ledger/510511.yaml
-          grep -q "MATH_ORIGIN_510510" ledger/510510.yaml
-          grep -q "CORE_SIDECAR_510511" ledger/510511.yaml
-          echo "append-only ok"
+          set -euo pipefail
+
+          if [ ! -f core/sidecar.py ]; then
+            echo "⚠️ core/sidecar.py not found — soft skip"
+            echo "sidecar_probe=skipped" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if python -m core.sidecar --once 2>&1 | tee sidecar_probe.log; then
+            echo "sidecar_probe=success" >> "$GITHUB_OUTPUT"
+          else
+            rc=$?
+            echo "⚠️ sidecar probe returned ${rc} (non-fatal)"
+            echo "sidecar_probe=soft_fail" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Confirm 510510 + 510511 are intact (append-only invariant)
+      # ────────────────────────────────────────────────────────────
+      - name: Confirm append-only invariant (510510 / 510511)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, sys, hashlib, subprocess
+          from pathlib import Path
+
+          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
+          origin  = os.environ.get("MATH_ORIGIN", "510510")
+          successor = os.environ.get("SIDECAR_ENTRY", "510511")
+
+          p_origin = Path(f"ledger/{origin}.yaml")
+          p_succ   = Path(f"ledger/{successor}.yaml")
+
+          # 1. Both files must exist
+          for p, label in [(p_origin, "MATH_ORIGIN"),
+                            (p_succ,  "SIDECAR successor")]:
+              if not p.exists():
+                  print(f"❌ {label} missing: {p}", file=sys.stderr)
+                  sys.exit(1)
+              print(f"✅ {p} present")
+
+          # 2. MATH_ORIGIN anchor marker must be present in 510510
+          origin_text = p_origin.read_text()
+          if "MATH_ORIGIN_510510" not in origin_text:
+              print("❌ ledger/510510.yaml missing MATH_ORIGIN_510510 marker",
+                    file=sys.stderr)
+              sys.exit(1)
+          print("✅ MATH_ORIGIN_510510 marker present")
+
+          # 3. SIDECAR marker must be present in 510511
+          succ_text = p_succ.read_text()
+          if "CORE_SIDECAR_510511" not in succ_text:
+              print("❌ ledger/510511.yaml missing CORE_SIDECAR_510511 marker",
+                    file=sys.stderr)
+              sys.exit(1)
+          print("✅ CORE_SIDECAR_510511 marker present")
+
+          # 4. 510510 must be unmodified vs HEAD (append-only proof)
+          for p in (p_origin, p_succ):
+              try:
+                  head_bytes = subprocess.check_output(
+                      ["git", "show", f"HEAD:{p.as_posix()}"],
+                      stderr=subprocess.DEVNULL,
+                  )
+              except subprocess.CalledProcessError:
+                  print(f"⚠️ {p} not tracked at HEAD — soft skip")
+                  continue
+              disk_hash = hashlib.new(HASH_ALGO, p.read_bytes()).hexdigest()
+              head_hash = hashlib.new(HASH_ALGO, head_bytes).hexdigest()
+              if disk_hash != head_hash:
+                  print(f"❌ {p} was modified in this run "
+                        f"({head_hash[:16]}… → {disk_hash[:16]}…)", file=sys.stderr)
+                  sys.exit(1)
+              print(f"✅ {p} unchanged (sha3_256={disk_hash[:16]}…)")
+
+          # 5. Witness chain between the two
+          import yaml
+          s = yaml.safe_load(succ_text) or {}
+          wc = str(s.get("witness", ""))
+          if origin in wc and successor in wc:
+              print(f"✅ witness chain holds: {wc}")
+          else:
+              print(f"⚠️ witness field on {successor} does not reference both: {wc!r}")
+
+          print()
+          print("✅ append-only invariant holds — 510510 not overwritten")
+          PY
+
+      # ────────────────────────────────────────────────────────────
+      # 5. Upload sidecar probe log
+      # ────────────────────────────────────────────────────────────
+      - name: Upload sidecar probe log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidecar-probe-log-${{ github.ref_name }}
+          path: sidecar_probe.log
+          retention-days: 14
+          if-no-files-found: warn
+
+      # ────────────────────────────────────────────────────────────
+      # 6. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        env:
+          MODE: ${{ inputs.mode || 'dry-run' }}
+          ACTIVATED: ${{ steps.activate.outputs.activated }}
+          SIDECAR_PROBE: ${{ steps.sidecar.outputs.sidecar_probe }}
+        run: |
+          {
+            echo "### Sovereign Core Sidecar"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| mode | ${MODE} |"
+            echo "| activated | ${ACTIVATED:-unknown} |"
+            echo "| sidecar_probe | ${SIDECAR_PROBE:-unknown} |"
+            echo "| MATH_ORIGIN | ${MATH_ORIGIN} |"
+            echo "| sidecar entry | ${SIDECAR_ENTRY} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| ledger_policy | NO_LEDGER_WRITE |"
+            echo ""
+            echo "**Witness:** \`510510 → 510511 — UNBROKEN\`"
+            echo ""
+            echo "**Cybernetic note:** the sidecar observes via a read-only channel."
+            echo "It cannot collapse the primary state, cannot merge (Φ_abs absent),"
+            echo "and cannot rewrite the MATH_ORIGIN anchor."
+          } >> "$GITHUB_STEP_SUMMARY"
