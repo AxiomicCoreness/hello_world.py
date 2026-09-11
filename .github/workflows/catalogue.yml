@@ -1,3 +1,4 @@
+# .github/workflows/generate-smoke-catalogue.yml
 name: Generate Smoke Catalogue
 
 # Seal: ∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED
