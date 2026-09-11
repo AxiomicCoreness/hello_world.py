@@ -2,12 +2,20 @@ name: Sovereign Python Package
 
 # Read-only CI lane — headers source probe, ledger YAML parse, Python matrix,
 # offline federate via local composite action.
+# Dual target: this file + /python_package_ci_correction (ledger/9233.yaml).
 # quantum/cybernetic frame: U(t) only — no Φ_abs collapse, no ledger write.
 # permissions: contents: read
+# cancel-in-progress: false — do not kill in-flight runs.
 
 on:
   push:
     branches: [main, master, deepseek]
+    paths:
+      - ".github/workflows/sovereignty-python-package.yml"
+      - ".github/workflows/python-package-ci-correction.yml"
+      - "ledger/9233.yaml"
+      - "port380_mcp.py"
+      - "**.py"
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -15,14 +23,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sovereignty-python-package-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   verify-integrity:
     runs-on: ubuntu-latest
     name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - name: headers source probe
@@ -49,7 +61,7 @@ jobs:
               sys.exit(1)
           print("headers present in source")
           PY
-      - name: ledger yaml parse
+      - name: ledger yaml parse 8979 + 9233
         run: |
           python3 - << 'PY'
           from pathlib import Path
@@ -58,12 +70,18 @@ jobs:
           except ImportError:
               print("pyyaml absent — parse skipped")
               raise SystemExit(0)
-          p = Path("ledger/8979.yaml")
-          if p.exists():
-              yaml.safe_load(p.read_text())
-              print("ledger/8979.yaml parsed")
-          else:
-              print("ledger/8979.yaml absent — skipped")
+          for rel, event in [
+              ("ledger/8979.yaml", None),
+              ("ledger/9233.yaml", "/python_package_ci_correction"),
+          ]:
+              p = Path(rel)
+              if not p.exists():
+                  print(rel, "absent — skipped")
+                  continue
+              data = yaml.safe_load(p.read_text()) or {}
+              if event:
+                  assert data.get("event") == event, data.get("event")
+              print(rel, "parsed", data.get("event"))
           PY
 
   build:
@@ -74,8 +92,8 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: deps
@@ -88,7 +106,7 @@ jobs:
     needs: build
     if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: offline federate
         uses: ./.github/actions/oidc-federate-offline
         with:

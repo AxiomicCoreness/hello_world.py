@@ -1,9 +1,9 @@
 name: Python Package CI Correction
 
-# Companion to Sovereign Python Package.
+# Dual target with .github/workflows/sovereignty-python-package.yml
+# Event path: /python_package_ci_correction (ledger/9233.yaml)
 # Does not rewrite ledger/8980.yaml.
-# Seals / verifies ledger/9233.yaml only.
-# cancel-in-progress: false so writes are not cancelled.
+# cancel-in-progress: false
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ on:
     paths:
       - "ledger/9233.yaml"
       - ".github/workflows/python-package-ci-correction.yml"
+      - ".github/workflows/sovereignty-python-package.yml"
       - ".github/workflows/python-package.yml"
 
 permissions:
@@ -30,7 +31,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-      - name: Confirm 8980 predecessor event and 9233 present
+      - name: Confirm 8980 predecessor and 9233 event
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -46,7 +47,7 @@ jobs:
           assert e.get("entry_index") == 9233
           assert e.get("event") == "/python_package_ci_correction"
           print("8980 untouched predecessor")
-          print("9233 present", e.get("witness_prefix"))
+          print("9233", e.get("event"), e.get("witness_prefix"))
           PY
       - name: Math-ci dual-regime 9233 (soft)
         run: |
