@@ -1,5 +1,10 @@
 name: Sovereign Python Package
 
+# Read-only CI lane — headers source probe, ledger YAML parse, Python matrix,
+# offline federate via local composite action.
+# quantum/cybernetic frame: U(t) only — no Φ_abs collapse, no ledger write.
+# permissions: contents: read
+
 on:
   push:
     branches: [main, master, deepseek]
