@@ -1,0 +1,28 @@
+entry_index: 9237
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-11Z
+event: /qsa_ack
+status: SEALED
+proof_class: docs
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
+terminal_hex: cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
+description: |
+  Acknowledges the Quantum Sovereignty Architecture paste as documentation.
+  Phases III-V collapsed to one ack leaf. No reactor run. No 8980 rewrite.
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · QSA_ACK · WOOD_DRAGON_0.91 · SEALED · cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487"
+witness_chain: 9236 → 9237 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9237|/qsa_ack|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
