@@ -1,0 +1,12 @@
+entry_index: 9237
+event: /qsa_ack
+status: SEALED
+branch: deepseek-ci
+witness_prefix: cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
+terminal_hex: cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · QSA_ACK · WOOD_DRAGON_0.91 · SEALED · cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487"
+witness_chain: 9236 → 9237 — UNBROKEN
