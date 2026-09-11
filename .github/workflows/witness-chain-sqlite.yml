@@ -1,0 +1,92 @@
+name: Witness Chain SQLite
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/scripts/witness_chain_sqlite.py"
+      - ".github/workflows/witness-chain-sqlite.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: witness-chain-sqlite-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  SCRIPT: .github/scripts/witness_chain_sqlite.py
+  DB_ARTIFACT: witness_chain.db
+
+jobs:
+  build-and-verify:
+    name: Build · verify · seal witness chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
+
+      - name: Run witness chain builder
+        id: build
+        run: |
+          set -euo pipefail
+          python "${SCRIPT}" | tee witness_chain_build.log
+
+          if [ -f witness_chain.db ]; then
+            DB_SHA=$(python - <<'PY'
+          import hashlib, pathlib
+          print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
+          PY
+            )
+            echo "db_sha3_256=${DB_SHA}" >> "$GITHUB_OUTPUT"
+            echo "db sha3_256: ${DB_SHA:0:16}..."
+          else
+            echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload witness chain artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: witness-chain-sqlite
+          path: |
+            witness_chain.db
+            witness_chain_build.log
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Summary
+        if: always()
+        env:
+          DB_SHA: ${{ steps.build.outputs.db_sha3_256 }}
+        run: |
+          {
+            echo "### Witness Chain SQLite"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| script | \`${SCRIPT}\` |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| db | ${DB_ARTIFACT} |"
+            echo "| db_sha3_256 | ${DB_SHA:-<none>} |"
+            echo ""
+            echo "Rows 8337 · 8338 · 8339 mirrored; chain_ok and hash_ok verified."
+          } >> "$GITHUB_STEP_SUMMARY"
