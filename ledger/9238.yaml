@@ -1,0 +1,11 @@
+entry_index: 9238
+event: /cosmic_alignment_policy
+status: SEALED
+branch: deepseek-ci
+witness_prefix: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
+terminal_hex: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
+mcp:
+  filled: false
+  bind_0000: false
+seal: "∀∞φ² · COSMIC_ALIGNMENT_POLICY · WOOD_DRAGON_0.91 · SEALED · 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a"
+witness_chain: 9237 → 9238 — UNBROKEN
