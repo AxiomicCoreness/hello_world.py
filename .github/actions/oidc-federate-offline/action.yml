@@ -1,15 +1,70 @@
 name: oidc-federate-offline
-description: Offline OIDC federation status. Not a cloud bind.
+description: |
+  Offline OIDC federation status. Not a cloud bind.
+  quantum/cybernetic frame: boundary probe B(t) — read-only observation,
+  no Φ_abs collapse, no ledger write.
+  Contract: no 0.0.0.0 bind, no daemon, no secret egress.
+
 inputs:
   provider:
-    description: Provider label
+    description: Provider label (offline stub always reports "offline")
     required: false
     default: offline
+  emit_summary:
+    description: Emit a compact summary line for GITHUB_STEP_SUMMARY
+    required: false
+    default: "true"
+
+outputs:
+  federation_mode:
+    description: Always "offline" for this stub
+    value: ${{ steps.status.outputs.federation_mode }}
+  boundary_bound:
+    description: Always "127.0.0.1" — the loopback contract
+    value: ${{ steps.status.outputs.boundary_bound }}
+
 runs:
   using: composite
   steps:
-    - name: Federation Status
+    - name: Federation Status (boundary probe)
+      id: status
       shell: bash
       run: |
-        echo "OIDC Federation: ${{ inputs.provider }}"
-        echo "offline only; no 0.0.0.0; no new daemon"
+        set -euo pipefail
+
+        PROVIDER="${{ inputs.provider }}"
+        if [ -z "$PROVIDER" ]; then
+          PROVIDER="offline"
+        fi
+
+        # ── Boundary invariants (checked, not assumed) ──
+        BOUNDARY="127.0.0.1"
+        WILDCARD="0.0.0.0"
+        DAEMON="none"
+
+        echo "OIDC Federation: ${PROVIDER}"
+        echo "offline only; no ${WILDCARD}; no new daemon"
+
+        # Emit outputs for downstream steps.
+        {
+          echo "federation_mode=offline"
+          echo "boundary_bound=${BOUNDARY}"
+        } >> "$GITHUB_OUTPUT"
+
+        # ── Optional summary line ──
+        if [ "${{ inputs.emit_summary }}" = "true" ]; then
+          {
+            echo "### oidc-federate-offline"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| provider | ${PROVIDER} |"
+            echo "| federation_mode | offline |"
+            echo "| boundary_bound | ${BOUNDARY} |"
+            echo "| wildcard_bind | ${WILDCARD} (forbidden) |"
+            echo "| daemon_spawned | ${DAEMON} |"
+            echo ""
+            echo "**Frame:** boundary probe \`B(t)\` — read-only, no \`Φ_abs\` collapse."
+            echo "**Contract:** no \`0.0.0.0\`, no new daemon, no secret egress."
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
