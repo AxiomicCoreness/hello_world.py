@@ -1,0 +1,41 @@
+name: Toolkit 54 Exorcise
+
+on:
+  push:
+    branches: [main, deepseek, deepseek-ci, deepseek-cd]
+    paths:
+      - "pythonIDE/toolkit.py"
+      - "scripts/exorcise_toolkit_54.py"
+      - ".github/workflows/toolkit-54-exorcise.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: toolkit-54-exorcise-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  exorcise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install minimal deps
+        run: pip install --quiet pyyaml || true
+      - name: Run 54-capability exorcise pipeline
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python scripts/exorcise_toolkit_54.py
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Toolkit 54 Exorcise"
+            echo "- honest count: **54** (not 51)"
+            echo "- DM φ⁷×1000: **rejected**"
+            echo "- CMAC-512 ∈ event-hash: **false**"
+            echo "- seal_add ledger write: **stub / NO_LEDGER_WRITE**"
+            echo "- MCP: unfilled · 127.0.0.1:8024"
+          } >> "$GITHUB_STEP_SUMMARY"
