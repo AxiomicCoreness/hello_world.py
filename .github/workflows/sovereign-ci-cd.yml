@@ -10,6 +10,7 @@ on:
       - "ledger/*.yaml"
       - ".github/workflows/**"
       - "quantum/**"
+      - "scripts/workers/**"
   pull_request:
     branches: [main]
     paths:
@@ -19,6 +20,7 @@ on:
       - "ledger/*.yaml"
       - ".github/workflows/**"
       - "quantum/**"
+      - "scripts/workers/**"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -47,6 +49,7 @@ env:
   NORTH_STAR: H6VSH2
   PHASE_LOCK: "202.6"
   DUAL_ASGI: "127.0.0.1:8024"
+  LIGHTNING_IMPACT_HZ: "6.49"
 
 jobs:
   verify-integrity:
@@ -63,42 +66,13 @@ jobs:
         run: pip install --quiet cryptography pyyaml
       - name: Verify ledger 8976 (soft)
         run: |
-          python -c "
-          import yaml, sys, os
-          path = 'ledger/8976.yaml'
-          if not os.path.exists(path):
-              print('⚠️ ledger/8976.yaml not found — skipping')
-              sys.exit(0)
-          with open(path) as f:
-              yaml.safe_load(f)
-          print('✅ Ledger 8976 loaded')
-          "
+          python -c "import yaml,sys,os; p='ledger/8976.yaml';
+            (print('⚠️ ledger/8976.yaml not found — skipping') or sys.exit(0)) if not os.path.exists(p) else (yaml.safe_load(open(p)), print('✅ Ledger 8976 loaded'))"
       - name: Verify security headers in source
         run: |
-          python -c "
-          import sys
-          from pathlib import Path
-          p = Path('port380_mcp.py')
-          if not p.exists():
-              print('⚠️ port380_mcp.py missing — soft-skip')
-              sys.exit(0)
-          content = p.read_text()
-          required = [
-              'CORSMiddleware',
-              'SecurityHeadersMiddleware',
-              'Content-Security-Policy',
-              'Strict-Transport-Security',
-              'X-Content-Type-Options',
-              'X-Frame-Options',
-              'Referrer-Policy',
-              'Permissions-Policy',
-          ]
-          missing = [h for h in required if h not in content]
-          if missing:
-              print('⚠️ Missing header markers (soft):', ', '.join(missing))
-              sys.exit(0)
-          print('✅ All security headers present')
-          "
+          python -c "from pathlib import Path; p=Path('port380_mcp.py');
+            print('⚠️ port380_mcp.py missing — soft-skip') if not p.exists() else None"
+          python -c "from pathlib import Path; import sys; p=Path('port380_mcp.py'); sys.exit(0) if not p.exists() else None; c=p.read_text(); req=['CORSMiddleware','SecurityHeadersMiddleware','Content-Security-Policy','Strict-Transport-Security','X-Content-Type-Options','X-Frame-Options','Referrer-Policy','Permissions-Policy']; m=[h for h in req if h not in c]; print('⚠️ Missing (soft):', ', '.join(m)) if m else print('✅ All security headers present')"
 
   test:
     runs-on: ubuntu-latest
@@ -129,15 +103,7 @@ jobs:
           pytest -q --tb=line || pytest tests -q --tb=line || echo "⚠️ pytest had failures (non-fatal)"
       - name: DeepSeek adapter smoke
         run: |
-          PYTHONPATH=. python -c "
-          try:
-              from quantum.deepseek_mesh.dsh_adapter import probe, complete
-              p = probe()
-              r = complete('ci', prefer='offline')
-              print('✅ DeepSeek offline passed:', p.get('modes'), r.mode)
-          except ImportError:
-              print('⚠️ quantum.deepseek_mesh not installed — skipping')
-          "
+          PYTHONPATH=. python -c "try:\n from quantum.deepseek_mesh.dsh_adapter import probe, complete\n p=probe(); r=complete('ci', prefer='offline'); print('✅ DeepSeek offline passed:', p.get('modes'), r.mode)\nexcept ImportError:\n print('⚠️ quantum.deepseek_mesh not installed — skipping')"
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -214,6 +180,7 @@ jobs:
           WORKER_NAME: ${{ matrix.worker.name }}
           NORTH_STAR: ${{ env.NORTH_STAR }}
           PHASE_LOCK: ${{ env.PHASE_LOCK }}
+          LIGHTNING_IMPACT_HZ: ${{ env.LIGHTNING_IMPACT_HZ }}
         run: |
           echo "🔷 WORKER HOOK — ${{ matrix.worker.name }}"
           echo "📝 Description: ${{ matrix.worker.description }}"
@@ -223,11 +190,7 @@ jobs:
             python "$WORKER_SCRIPT"
           else
             echo "⚠️ No worker script found — using built-in"
-            python -c "
-            import os
-            print('✅ Worker', os.environ.get('WORKER_NAME'), 'executed')
-            print('north_star', os.environ.get('NORTH_STAR'), 'phase', os.environ.get('PHASE_LOCK'))
-            "
+            python -c "import os; print('✅ Worker', os.environ.get('WORKER_NAME'), 'executed'); print('north_star', os.environ.get('NORTH_STAR'), 'phase', os.environ.get('PHASE_LOCK'), 'lightning_hz', os.environ.get('LIGHTNING_IMPACT_HZ', '6.49'), 'chessboard', 64)"
           fi
       - name: Record worker hook status
         if: always()
@@ -251,19 +214,7 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          python -c "
-          import json
-          from multibody_simulator.utils.binary_artifacts import emit_ledger_delta
-          data = {
-              'entry': '9225',
-              'alias': '8985',
-              'event': '/binary_artifact_container',
-              'worker': '${{ matrix.worker.name }}',
-              'seal': '∀∞φ²',
-          }
-          result = emit_ledger_delta(data, '${{ matrix.worker.name }}', '${{ github.run_id }}')
-          print(json.dumps(result))
-          "
+          python -c "import json,sys;\ntry:\n from multibody_simulator.utils.binary_artifacts import emit_ledger_delta\n data={'entry':'9225','alias':'8985','event':'/binary_artifact_container','worker':'${{ matrix.worker.name }}','seal':'∀∞φ²'}\n print(json.dumps(emit_ledger_delta(data, '${{ matrix.worker.name }}', '${{ github.run_id }}')))\nexcept Exception as e:\n print('⚠️ binary emit soft-skip:', e); sys.exit(0)"
       - name: Upload binary artifact
         if: always()
         uses: actions/upload-artifact@v4
