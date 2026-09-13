@@ -6,6 +6,9 @@ name: Symplectic Status Generation
 # ledger_policy: WRITE_VIA_SEAL — entry 8984 only (+ catch-all for external ledger changes)
 # witness: 8983 → 8984 — UNBROKEN
 #
+# fix: id: generate on generator step; hash/seal extracted to scripts/;
+#      summary asserts Φ_abs only when generator present (EXISTS=true).
+#
 # ═══════════════════════════════════════════════════════════════════
 #  QUANTUM / CYBERNETIC FRAME
 # ═══════════════════════════════════════════════════════════════════
@@ -32,7 +35,9 @@ on:
       - "frb_bridge*"
       - "monitoring/sovereign_workload_exporter.py"
       - "quantum/port_380_*.py"
-      - ".github/workflows/symplectic-status-generation.yml"
+      - "scripts/hash_artifact.py"
+      - "scripts/seal_symplectic_8984.py"
+      - ".github/workflows/symplectic-status.yml"
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"
@@ -58,12 +63,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -113,20 +118,15 @@ jobs:
       # 2. Run the symplectic status generator
       # ────────────────────────────────────────────────────────────
       - name: Run symplectic status generator
+        id: generate
         if: steps.check_script.outputs.exists == 'true'
         run: |
           set -euo pipefail
           python symplectic_status.py
 
-          # Bind artifact hashes as step outputs for the seal step
           for artifact in symplectic_status.json symplectic_status.agent.jsonl; do
             if [ -f "$artifact" ]; then
-              H=$(python - <<PY
-          import hashlib, pathlib
-          data = pathlib.Path("$artifact").read_bytes()
-          print(hashlib.new("sha3_256", data).hexdigest())
-          PY
-              )
+              H=$(python scripts/hash_artifact.py "$artifact")
               KEY=$(echo "$artifact" | tr '.' '_')
               echo "${KEY}_sha3_256=${H}" >> "$GITHUB_OUTPUT"
               echo "   $artifact sha3_256=${H:0:16}..."
@@ -193,62 +193,13 @@ jobs:
       - name: Seal ledger entry 8984 (SHA3-256)
         if: steps.check_script.outputs.exists == 'true'
         env:
-          STATUS_JSON_SHA: ${{ steps.run.outputs.symplectic_status_json_sha3_256 }}
-          AGENT_JSONL_SHA: ${{ steps.run.outputs.symplectic_status_agent_jsonl_sha3_256 }}
+          STATUS_JSON_SHA: ${{ steps.generate.outputs.symplectic_status_json_sha3_256 }}
+          AGENT_JSONL_SHA: ${{ steps.generate.outputs.symplectic_status_agent_jsonl_sha3_256 }}
           SCHEMA_VALIDATED: ${{ steps.schema.outputs.validated }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
-          python - <<'PY'
-          import hashlib, json, os, yaml
-          from datetime import datetime, timezone
-          from pathlib import Path
-
-          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          n = int(os.environ.get("STATUS_ENTRY", "8984"))
-          path = Path(f"ledger/{n}.yaml")
-
-          # Fall back to on-disk hashing if step outputs are empty
-          def disk_hash(p: str) -> str:
-              f = Path(p)
-              if not f.exists():
-                  return ""
-              return hashlib.new(HASH_ALGO, f.read_bytes()).hexdigest()
-
-          status_sha = os.environ.get("STATUS_JSON_SHA") or disk_hash("symplectic_status.json")
-          agent_sha  = os.environ.get("AGENT_JSONL_SHA") or disk_hash("symplectic_status.agent.jsonl")
-
-          entry = {
-              "entry_index": n,
-              "event": "/symplectic_status_generation",
-              "status": "SUCCESS",
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "hash_algo": HASH_ALGO,
-              # cybernetic fields
-              "observation_channel": "symplectic_sample",
-              "symplectic_form_preserved": True,
-              "status_json_sha3_256": status_sha,
-              "agent_jsonl_sha3_256": agent_sha,
-              "schema_validated": os.environ.get("SCHEMA_VALIDATED", "false") == "true",
-              "port380_gate_deployed": True,
-              "witness": "8983 → 8984 — UNBROKEN",
-              "witness_chain": "8983 → 8984 — UNBROKEN",
-              "seal": "∀∞φ² · SYMPLECTIC_STATUS_8984 · WOOD_DRAGON_0.91 · SEALED",
-          }
-          body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
-          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
-
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
-          print(f"📋 Ledger entry {n} written.")
-          print(f"✅ Sealed {n} · {HASH_ALGO}:{h[:16]}...")
-          print(f"   status_json_sha3_256  = {status_sha[:16] or '(none)'}...")
-          print(f"   agent_jsonl_sha3_256  = {agent_sha[:16] or '(none)'}...")
-          print(f"   schema_validated      = {entry['schema_validated']}")
-          PY
+          python scripts/seal_symplectic_8984.py
 
       - name: Verify ledger entry 8984 (SHA3-256)
         if: steps.check_script.outputs.exists == 'true'
@@ -279,7 +230,7 @@ jobs:
           commit_options: '--no-verify'
 
       # ────────────────────────────────────────────────────────────
-      # 8. Summary
+      # 8. Summary — Φ_abs only when generator actually ran
       # ────────────────────────────────────────────────────────────
       - name: Summary
         if: always()
@@ -287,21 +238,29 @@ jobs:
           EXISTS: ${{ steps.check_script.outputs.exists }}
           SCHEMA_VALIDATED: ${{ steps.schema.outputs.validated }}
         run: |
+          EXISTS="${EXISTS:-false}"
+          SCHEMA_VALIDATED="${SCHEMA_VALIDATED:-false}"
           {
             echo "### Symplectic Status Generation"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
             echo "| entry | ${STATUS_ENTRY} |"
-            echo "| generator present | ${EXISTS:-unknown} |"
-            echo "| schema validated | ${SCHEMA_VALIDATED:-false} (non-blocking) |"
+            echo "| generator present | ${EXISTS} |"
+            echo "| schema validated | ${SCHEMA_VALIDATED} (non-blocking) |"
             echo "| hash_algo | ${HASH_ALGO} |"
             echo "| witness | 8983 → 8984 — UNBROKEN |"
             echo ""
-            echo "**Quantum/cybernetic frame:**"
-            echo "- Symplectic form ω preserved across the sampling channel"
-            echo "- Merkle leaves are the observation basis; aggregate JSON is the collapse"
-            echo "- \`Φ_abs\` collapse recorded at entry 8984"
+            if [ "$EXISTS" = "true" ]; then
+              echo "**Quantum/cybernetic frame:**"
+              echo "- Symplectic form ω preserved across the sampling channel"
+              echo "- Merkle leaves are the observation basis; aggregate JSON is the collapse"
+              echo "- \`Φ_abs\` collapse recorded at entry 8984"
+            else
+              echo "**Generator absent — no observation, no collapse.**"
+              echo "- \`symplectic_status.py\` not present; entry 8984 was not written."
+              echo "- Chain remains at 8983 — UNBROKEN."
+            fi
             echo ""
             echo "🜁∀ — Seal: ∀∞φ² · SYMPLECTIC_STATUS_8984 · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
