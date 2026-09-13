@@ -167,8 +167,33 @@ def _build_parser() -> argparse.ArgumentParser:
     return p
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Named constants (not ninja numbers) — quantum chessboard / impact lightning
+# ═══════════════════════════════════════════════════════════════════════════
+NINJA_SUBAGENTS = 7              # sevenfold worker matrix (deploy…north-star)
+CHESSBOARD_FILES = 8             # quantum chessboard file span
+CHESSBOARD_RANKS = 8             # quantum chessboard rank span
+CHESSBOARD_SQUARES = CHESSBOARD_FILES * CHESSBOARD_RANKS  # 64
+LIGHTNING_IMPACT_HZ = 6.49       # f₀ Hyperian ground readout
+PHASE_LOCK_DEG = 202.6           # equinox saturation phase lock
+NORTH_STAR_ID = "H6VSH2"
+DEFAULT_N_AXES = NINJA_SUBAGENTS  # axes align to sevenfold, not a bare 7
+
+
 def main(argv: List[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+
+    # Bind defaults to named constants when caller left CLI defaults implicit
+    if args.n_axes == 7:
+        args.n_axes = DEFAULT_N_AXES
+    if args.verbose:
+        print(
+            f"constants: ninja={NINJA_SUBAGENTS} "
+            f"chessboard={CHESSBOARD_SQUARES} "
+            f"lightning_hz={LIGHTNING_IMPACT_HZ} "
+            f"phase_lock={PHASE_LOCK_DEG}° "
+            f"north_star={NORTH_STAR_ID}"
+        )
 
     if args.cycles < 1:
         print("error: --cycles must be ≥ 1", file=sys.stderr)
