@@ -8,6 +8,7 @@ name: Generate Smoke Catalogue
 # role: excavation → catalogue → seal
 # note: this workflow is the standalone producer of entry 8958.
 #       sovereign-hamiltonian-production.yml consumes it via handoff-pipeline.
+# fix: seal body moved to scripts/seal_8958.py (heredoc IndentationError)
 
 on:
   schedule:
@@ -34,13 +35,13 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -89,61 +90,13 @@ jobs:
           echo "✅ smoke catalogue generator returned 0"
 
       # ────────────────────────────────────────────────────────────
-      # 2. Seal ledger entry 8958 (SHA3-256) — idempotent
+      # 2. Seal ledger entry 8958 (SHA3-256) — column-zero script
       # ────────────────────────────────────────────────────────────
       - name: Seal ledger entry 8958 (SHA3-256)
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}" docs
-          python - <<'PY'
-          import hashlib, json, os, yaml
-          from datetime import datetime, timezone
-          from pathlib import Path
-
-          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          path = Path("ledger/8958.yaml")
-
-          # Deterministic catalogue digest — SHA3-256 over docs/smoke_catalogue.json
-          catalogue = Path("docs/smoke_catalogue.json")
-          catalogue_digest = ""
-          catalogue_count = 0
-          if catalogue.exists():
-              raw = catalogue.read_bytes()
-              catalogue_digest = hashlib.new(HASH_ALGO, raw).hexdigest()
-              try:
-                  parsed = json.loads(raw.decode("utf-8"))
-                  if isinstance(parsed, dict):
-                      catalogue_count = len(parsed.get("tests") or parsed.get("catalogue") or parsed)
-                  elif isinstance(parsed, list):
-                      catalogue_count = len(parsed)
-              except Exception:
-                  catalogue_count = 0
-
-          entry = {
-              "entry_index": 8958,
-              "event": "/generate_smoke_catalogue",
-              "status": "SUCCESS",
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "hash_algo": HASH_ALGO,
-              "catalogue_path": "docs/smoke_catalogue.json",
-              "catalogue_sha3_256": catalogue_digest,
-              "catalogue_count": catalogue_count,
-              "witness": "8957 → 8958 — UNBROKEN",
-              "seal": "∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED",
-          }
-          body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
-          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
-
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
-          print("📋 Ledger entry 8958 written.")
-          print(f"✅ Sealed 8958 · {HASH_ALGO}:{h[:16]}...")
-          print(f"   catalogue_sha3_256 = {catalogue_digest[:16] or '(none)'}...")
-          print(f"   catalogue_count    = {catalogue_count}")
-          PY
+          python scripts/seal_8958.py
 
       - name: Verify ledger entry 8958 (SHA3-256)
         run: |
