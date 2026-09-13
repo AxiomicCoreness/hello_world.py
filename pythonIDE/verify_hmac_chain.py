@@ -40,11 +40,31 @@ except ImportError:
     )
 
 import argparse
-import json
 import sys
 from pathlib import Path
+from typing import Union
 
 DEFAULT_CHAIN = "ledger/attenuation_chain.jsonl"
+
+
+def verify(
+    chain_path: Union[str, Path],
+    verbose: bool = False,
+) -> int:
+    """
+    Read-side HMAC chain check. NO_LEDGER_WRITE.
+
+    Returns:
+        0 on PASS, 1 on FAIL, 2 if path missing.
+    """
+    path = Path(chain_path)
+    if not path.is_file():
+        print(f"FAIL soft: missing {path}")
+        return 2
+    if verbose:
+        print(f"verifying {path}")
+    ok = verify_jsonl(str(path))
+    return 0 if ok else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -60,6 +80,10 @@ def main(argv: list[str] | None = None) -> int:
         "--show-identity",
         action="store_true",
         help="Print attribution vs genesis head (must differ)",
+    )
+    p.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="extra progress lines",
     )
     args = p.parse_args(argv)
 
@@ -78,13 +102,7 @@ def main(argv: list[str] | None = None) -> int:
             print("FAIL: attribution hex collided with genesis head")
             return 1
 
-    path = Path(args.chain)
-    if not path.is_file():
-        print(f"FAIL soft: missing {path}")
-        return 2
-
-    ok = verify_jsonl(str(path))
-    return 0 if ok else 1
+    return verify(args.chain, verbose=args.verbose)
 
 
 if __name__ == "__main__":
