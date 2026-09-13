@@ -41,6 +41,11 @@ except ImportError:
         PRECEDENT_WITNESS_CHAIN,
     )
 
+try:
+    from pythonIDE.verify_hmac_chain import verify as _verify_chain
+except ImportError:
+    from verify_hmac_chain import verify as _verify_chain  # type: ignore
+
 PHI = (1.0 + np.sqrt(5.0)) / 2.0
 DEFAULT_CHAIN_OUT = "ledger/attenuation_chain.jsonl"
 
@@ -121,6 +126,18 @@ def run(
     }
 
 
+def _run_verify(chain_path: str, verbose: bool) -> int:
+    print()
+    print("=" * 72)
+    print("VERIFY — read-side chain check")
+    print("=" * 72)
+    try:
+        return _verify_chain(Path(chain_path), verbose=verbose)
+    except FileNotFoundError:
+        print(f"⚠️  chain not found: {chain_path}", file=sys.stderr)
+        return 1
+
+
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="coherent_instrument",
@@ -129,13 +146,15 @@ def _build_parser() -> argparse.ArgumentParser:
             "The HMAC chain head seeds the next input."
         ),
     )
-    p.add_argument("--cycles", type=int, default=100, help="number of learning cycles (default: 100)")
-    p.add_argument("--dt", type=float, default=0.01, help="learning rate / step size per cycle (default: 0.01)")
-    p.add_argument("--n-axes", type=int, default=7, help="density matrix dimensionality (default: 7)")
-    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT, help=f"chain JSONL path (default: {DEFAULT_CHAIN_OUT})")
-    p.add_argument("--no-emit", action="store_true", help="do not write the chain JSONL (run in-memory only)")
-    p.add_argument("--json", action="store_true", help="print final summary as JSON on stdout")
-    p.add_argument("-v", "--verbose", action="store_true", help="print every cycle instead of every N/5 cycles")
+    p.add_argument("--cycles", type=int, default=100)
+    p.add_argument("--dt", type=float, default=0.01)
+    p.add_argument("--n-axes", type=int, default=7)
+    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT)
+    p.add_argument("--no-emit", action="store_true")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("--verify", action="store_true",
+                   help="after the run, verify the HMAC chain (read-only)")
     return p
 
 
@@ -163,6 +182,17 @@ def main(argv: List[str] | None = None) -> int:
 
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
+
+    if args.verify:
+        if args.no_emit:
+            print(
+                "⚠️  --verify with --no-emit: chain not written; "
+                "verifying whatever exists on disk",
+                file=sys.stderr,
+            )
+        rc = _run_verify(args.chain_out, args.verbose)
+        if rc != 0:
+            return rc
 
     return 0
 

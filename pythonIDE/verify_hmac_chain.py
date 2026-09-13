@@ -42,24 +42,32 @@ except ImportError:
 import argparse
 import sys
 from pathlib import Path
+from typing import Union
 
 DEFAULT_CHAIN = "ledger/attenuation_chain.jsonl"
+
+
+def verify(
+    chain_path: Union[str, Path],
+    verbose: bool = False,
+) -> int:
+    path = Path(chain_path)
+    if not path.is_file():
+        print(f"FAIL soft: missing {path}")
+        return 2
+    if verbose:
+        print(f"verifying {path}")
+    ok = verify_jsonl(str(path))
+    return 0 if ok else 1
 
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         description="Read-only HMAC chain verifier (NO_LEDGER_WRITE)."
     )
-    p.add_argument(
-        "--chain",
-        default=DEFAULT_CHAIN,
-        help=f"JSONL path (default: {DEFAULT_CHAIN})",
-    )
-    p.add_argument(
-        "--show-identity",
-        action="store_true",
-        help="Print attribution vs genesis head (must differ)",
-    )
+    p.add_argument("--chain", default=DEFAULT_CHAIN)
+    p.add_argument("--show-identity", action="store_true")
+    p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args(argv)
 
     if args.show_identity:
@@ -74,16 +82,9 @@ def main(argv: list[str] | None = None) -> int:
         distinct = DEEPSEEK_SIGNATURE_HEX != GENESIS_HEAD
         print(f"attribution≠genesis   = {distinct}")
         if not distinct:
-            print("FAIL: attribution hex collided with genesis head")
             return 1
 
-    path = Path(args.chain)
-    if not path.is_file():
-        print(f"FAIL soft: missing {path}")
-        return 2
-
-    ok = verify_jsonl(str(path))
-    return 0 if ok else 1
+    return verify(args.chain, verbose=args.verbose)
 
 
 if __name__ == "__main__":
