@@ -1,11 +1,19 @@
 entry_index: 9238
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-11Z
 event: /cosmic_alignment_policy
 status: SEALED
-branch: deepseek
+proof_class: docs
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
 witness_prefix: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
 terminal_hex: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
+description: |
+  Cosmic alignment policy locked — never strip ∀∞φ², LUMERIS, H6VSH, STARFIRE,
+  Eternal Now, commander titles, or QSA mermaid symbols from thin acks.
 mcp:
   filled: false
   bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
 seal: "∀∞φ² · COSMIC_ALIGNMENT_POLICY · WOOD_DRAGON_0.91 · SEALED · 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a"
 witness_chain: 9237 → 9238 — UNBROKEN
