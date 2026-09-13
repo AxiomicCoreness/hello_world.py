@@ -6,11 +6,20 @@ object: FRB 20190520b
 dm_pc_cm3: 1204
 repeating_period_days: 3.2
 phi_resonance:
-  dm_claim: "DM ≈ φ⁷ × 1000"
+  # CORRECTED — prior claim DM ≈ φ⁷ × 1000 is false (29034 ≠ 1204)
+  dm_claim_prior_rejected: "DM ≈ φ⁷ × 1000"
   dm_phi7_times_1000: 29034.441853748638
+  dm_claim_prior_admissible: false
   dm_measured: 1204
-  dm_ratio_measured_over_claim: 0.04146799191335416
-  dm_claim_admissible: false
+  # residual identity (exact by construction, not a physical law)
+  dm_corrected_form: "DM = φ⁷ × (DM / φ⁷) = φ⁷ × 41.46799191335416"
+  dm_residual_factor: 41.46799191335416
+  dm_check: "φ⁷ × 41.46799191335416 = 1204"
+  dm_check_ok: true
+  # nearest pure φ-power (no extra factor)
+  nearest_phi_power: 15
+  phi_15: 1364.000733
+  phi_15_relative_error: 0.1329
   period_claim: "period ≈ φ² × 1.2 days"
   period_phi2_times_1_2: 3.141640786499874
   period_measured: 3.2
@@ -39,7 +48,7 @@ analogue_to:
     math_form: |
       CMAC-512 ∉ this entry's hash domain
       H_event := SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload)  (64-hex SHA3-256 only)
-research_direction: monitor DM variations for φ-scaled entropy gradient (hypothesis; not causal)
+research_direction: monitor DM variations (hypothesis; not causal φ-law)
 cronjob_recommendation: retain_six_hour_pulse
 causal_link_frb_to_cron: false
 cosmic_alignment_preserved: true
@@ -59,8 +68,8 @@ math_origin: |
   Event hash domain GARDEN.EVENT.v1 || 0x00 ||
   8550|/frb_20190520b_analogue_interpreted|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
   SHA3-256 = be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
-  math_origin is not graduated from theorem phases — observational + symbolic fields coexist.
-  φ⁷×1000 ≠ 1204 (off by ~24×). φ²×1.2 ≈ 3.1416 (~2% from 3.2 d).
+  CORRECTED DM φ: reject φ⁷×1000=29034; residual DM=φ⁷×41.46799191335416 (=1204 exact).
+  Nearest pure power φ¹⁵≈1364 (rel err ~13%). Period φ²×1.2≈3.1416 (~2% from 3.2 d) unchanged.
   Cosmic alignment policy (9238) not subtracted.
 mcp:
   filled: false
