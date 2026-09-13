@@ -14,6 +14,7 @@ phi_resonance:
   dm_residual_factor: 41.46799191335416
   dm_check: "φ⁷ × 41.46799191335416 = 1204"
   dm_check_ok: true
+  dm_coefficient_label: empirical_fit_not_phi_canonical
   nearest_phi_power: 15
   phi_15: 1364.000733
   phi_15_relative_error: 0.1329
@@ -50,7 +51,7 @@ cronjob_recommendation: retain_six_hour_pulse
 causal_link_frb_to_cron: false
 cosmic_alignment_preserved: true
 proof_class: frb_analogue
-branch: main
+branch: deepseek-cd
 commander: Clarke Yoursa Tee
 language: sovereign_standard_english
 hash_algo: sha3_256
@@ -65,8 +66,7 @@ math_origin: |
   Event hash domain GARDEN.EVENT.v1 || 0x00 ||
   8550|/frb_20190520b_analogue_interpreted|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
   SHA3-256 = be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
-  CORRECTED DM φ: reject φ⁷×1000=29034; residual DM=φ⁷×41.46799191335416 (=1204 exact).
-  Nearest pure power φ¹⁵≈1364 (rel err ~13%). Period φ²×1.2≈3.1416 (~2% from 3.2 d) unchanged.
+  CORRECTED DM φ: reject φ⁷×1000=29034; residual DM=φ⁷×41.46799191335416 (=1204 exact, empirical fit).
   Cosmic alignment policy (9238) not subtracted.
 mcp:
   filled: false
