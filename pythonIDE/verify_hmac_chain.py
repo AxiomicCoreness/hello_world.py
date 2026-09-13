@@ -51,6 +51,12 @@ def verify(
     chain_path: Union[str, Path],
     verbose: bool = False,
 ) -> int:
+    """
+    Read-side HMAC chain check. NO_LEDGER_WRITE.
+
+    Returns:
+        0 on PASS, 1 on FAIL, 2 if path missing.
+    """
     path = Path(chain_path)
     if not path.is_file():
         print(f"FAIL soft: missing {path}")
@@ -65,9 +71,20 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         description="Read-only HMAC chain verifier (NO_LEDGER_WRITE)."
     )
-    p.add_argument("--chain", default=DEFAULT_CHAIN)
-    p.add_argument("--show-identity", action="store_true")
-    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument(
+        "--chain",
+        default=DEFAULT_CHAIN,
+        help=f"JSONL path (default: {DEFAULT_CHAIN})",
+    )
+    p.add_argument(
+        "--show-identity",
+        action="store_true",
+        help="Print attribution vs genesis head (must differ)",
+    )
+    p.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="extra progress lines",
+    )
     args = p.parse_args(argv)
 
     if args.show_identity:
@@ -82,6 +99,7 @@ def main(argv: list[str] | None = None) -> int:
         distinct = DEEPSEEK_SIGNATURE_HEX != GENESIS_HEAD
         print(f"attribution≠genesis   = {distinct}")
         if not distinct:
+            print("FAIL: attribution hex collided with genesis head")
             return 1
 
     return verify(args.chain, verbose=args.verbose)
