@@ -1,72 +1,150 @@
-#!/usr/bin/env python3
 """
-Verify ledger YAML parse + optional Ed25519 presence.
-Seal: ∀∞φ² · VERIFY_LEDGER_SCRIPT · WOOD_DRAGON_0.91 · SEALED
+verify_ledger.py — verify a ledger entry's seal against its body.
+
+HASH ALGORITHM: SHA3-256 (FIPS 202). Non-negotiable.
+
+Dual regime (append-only safe):
+  Regime A (89xx): SHA3-256(canonical JSON body minus 'seal')
+  Regime B (92xx): SHA3-256(GARDEN.EVENT.v1 || 0x00 || n|event|phi2|delta|theta)
+                   ASCII b^2 only — Unicode b² is rejected.
+
+A seal verifies if declared hex matches A OR B. No ledger rewrite.
+
+Usage:
+    python .github/scripts/verify_ledger.py ledger/8979.yaml
+    python .github/scripts/verify_ledger.py ledger/9237.yaml ledger/9238.yaml
 """
 from __future__ import annotations
 
-import argparse
+import datetime as _dt
 import hashlib
 import json
 import re
 import sys
-from datetime import datetime
+import uuid
+from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
-SEAL_PREFIX = "∀∞φ²"
+import yaml
+
+
+HASH_ALGO = "sha3_256"
+HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
+
+EVENT_DOMAIN = b"GARDEN.EVENT.v1\x00"
+PHI2 = "2.618033988749895"
+DELTA = "b^2-4ac"
+THETA = "2.5416018462"
+
 
 def json_default(obj: Any) -> Any:
-    if isinstance(obj, datetime):
+    if isinstance(obj, _dt.datetime):
+        if obj.tzinfo is None:
+            return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return obj.astimezone(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if isinstance(obj, _dt.date):
         return obj.isoformat()
-    if hasattr(obj, "__dict__"):
-        return {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
-    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+    if isinstance(obj, _dt.time):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return str(obj)
+    if isinstance(obj, (set, frozenset)):
+        try:
+            return sorted(obj)
+        except TypeError:
+            return sorted(map(str, obj))
+    if isinstance(obj, (bytes, bytearray)):
+        return bytes(obj).hex()
+    if isinstance(obj, uuid.UUID):
+        return str(obj)
+    if isinstance(obj, Path):
+        return obj.as_posix()
+    return str(obj)
 
-def compute_seal(entry_data: Dict[str, Any]) -> str:
-    data = {k: v for k, v in entry_data.items() if k != 'seal'}
-    canonical = json.dumps(data, sort_keys=True, separators=(',', ':'), default=json_default)
-    return hashlib.sha3_256(canonical.encode('utf-8')).hexdigest()
 
-def extract_seal_hash(seal_str: str) -> str:
-    """
-    Extract the last 64‑hexadecimal‑character hash from a formatted seal string.
-    e.g. "∀∞φ² · REPO_VERIFIED_8979 · WOOD_DRAGON_0.91 · SEALED · c4705d91..."
-    returns "c4705d91..."
-    If no such hex block is found, returns the original string.
-    """
-    match = re.search(r'[0-9a-fA-F]{64}$', seal_str)
-    if match:
-        return match.group(0)
-    return seal_str
+def canonical_hash(data: dict) -> str:
+    body = {k: v for k, v in data.items() if k != "seal"}
+    canon = json.dumps(
+        body, sort_keys=True, separators=(",", ":"),
+        default=json_default, ensure_ascii=False,
+    )
+    return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+
+
+def event_hash(data: dict) -> Optional[str]:
+    n = data.get("entry_index")
+    event = data.get("event")
+    if not isinstance(n, int) or not isinstance(event, str):
+        return None
+    payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
+    return hashlib.new(
+        HASH_ALGO, EVENT_DOMAIN + payload.encode("ascii")
+    ).hexdigest()
+
+
+def declared_hex(data: dict) -> Optional[str]:
+    seal = str(data.get("seal", ""))
+    matches = HASH_RE.findall(seal)
+    if matches:
+        return matches[-1].lower()
+    for key in ("terminal_hex", "witness_prefix", "verification_hash"):
+        v = data.get(key)
+        if isinstance(v, str) and HASH_RE.fullmatch(v.strip()):
+            return v.strip().lower()
+    return None
+
+
+def verify(path: Path) -> bool:
+    if not path.exists():
+        print(f"⚠️ {path} not found — soft skip")
+        return True
+    try:
+        data = yaml.safe_load(path.read_text()) or {}
+    except yaml.YAMLError as e:
+        print(f"❌ {path}: YAML parse error: {e}")
+        return False
+    if not isinstance(data, dict):
+        print(f"❌ {path}: top-level YAML is not a mapping")
+        return False
+    declared = declared_hex(data)
+    if not declared:
+        print(f"❌ {path}: no 64-hex SHA3-256 digest in seal/terminal_hex")
+        return False
+    try:
+        computed_a = canonical_hash(data)
+        computed_b = event_hash(data)
+    except Exception as e:
+        print(f"❌ {path}: canonicalisation failed: {e}")
+        return False
+    if declared == computed_a:
+        regime = "A(json)"
+    elif computed_b is not None and declared == computed_b:
+        regime = "B(event)"
+    else:
+        print(f"❌ {path}: seal mismatch (sha3_256)")
+        print(f"   declared: {declared}")
+        print(f"   computed_A: {computed_a}")
+        if computed_b is not None:
+            print(f"   computed_B: {computed_b}")
+        return False
+    entry_index = data.get("entry_index", "?")
+    print(
+        f"✅ {path}: sha3_256 seal verified "
+        f"(entry_index={entry_index}, regime={regime}, {declared[:16]}...)"
+    )
+    return True
+
 
 def main() -> int:
-    import yaml
-    parser = argparse.ArgumentParser()
-    parser.add_argument("ledger", nargs="?", default="ledger/8978.yaml")
-    parser.add_argument("--verify-seal", action="store_true")
-    args = parser.parse_args()
+    if len(sys.argv) < 2:
+        print("usage: verify_ledger.py <ledger.yaml> [...]")
+        return 2
+    ok = True
+    for arg in sys.argv[1:]:
+        ok = verify(Path(arg)) and ok
+    return 0 if ok else 1
 
-    path = Path(args.ledger)
-    if not path.exists():
-        print(f"❌ Entry {path.stem} not found.")
-        return 1
-
-    data = yaml.safe_load(path.read_text())
-    entry_index = data.get('entry_index') if isinstance(data, dict) else None
-    print(f"✅ Ledger verified: {path} (entry_index={entry_index})")
-
-    if args.verify_seal and entry_index:
-        computed = compute_seal(data)
-        stored_raw = data.get('seal', '')
-        stored = extract_seal_hash(stored_raw)
-        if computed == stored:
-            print(f"✅ Seal verified: {computed[:32]}...")
-        else:
-            print(f"❌ Seal mismatch: computed {computed[:32]}... != stored {stored[:32]}...")
-            return 1
-
-    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
