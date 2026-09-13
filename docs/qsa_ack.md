@@ -1,9 +1,12 @@
-# QSA corpus acknowledgment (9237)
+# QSA Acknowledgment
 
-Appended next to `docs/growth_state_diagrams.md` (9236).
-Received 2026-09-11 as session paste. Acknowledged as **text corpus**, not as a live reactor.
+Thin pointer for the Quantum Sovereignty Architecture paste.
 
-Phases III / IV / V retired as runtime stages. Single merkle leaf `/qsa_ack`.
-MCP unfilled. Bind 127.0.0.1:8024.
+- Ledger: `ledger/9237.yaml` — event `/qsa_ack`
+- Hash: `cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487`
+- Witness: `9236 → 9237 — UNBROKEN`
+- Phases III–V collapsed to one documentation ack leaf
+- No reactor run claimed; no rewrite of `ledger/8980.yaml`
 
-Regime A: cb89b9025476f019b98a167672d97062105471a02661f5204a19db98afefe487
+See `docs/COSMIC_ALIGNMENT_POLICY.md` for symbol retention rules.
+MCP unfilled · Dual ASGI `127.0.0.1:8024`.
