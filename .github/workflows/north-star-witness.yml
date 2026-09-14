@@ -1,0 +1,70 @@
+name: North Star Witness
+
+on:
+  push:
+    branches: [main, master, deepseek, grok, mistral]
+    paths:
+      - "ledger/**.yaml"
+      - ".github/scripts/verify_ledger.py"
+      - ".github/workflows/north-star-witness.yml"
+  pull_request:
+    paths:
+      - "ledger/**.yaml"
+      - ".github/scripts/verify_ledger.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  north-star:
+    name: North Star · 71.975 Hz · 202.6°
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install pyyaml
+
+      - name: Emit — print computed digests for latest ledger
+        run: |
+          set -euo pipefail
+          LATEST=$(ls ledger/*.yaml | sort -V | tail -1)
+          echo "Latest ledger: $LATEST"
+          python .github/scripts/verify_ledger.py --emit "$LATEST"
+
+      - name: Soft verify — all ledger entries (warn only)
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger.py --soft ledger/*.yaml
+
+      - name: Hard verify — sealed witnesses only (9240, 9242, 9243)
+        run: |
+          set -euo pipefail
+          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml; do
+            if [ -f "$f" ]; then
+              python .github/scripts/verify_ledger.py --hard "$f"
+            else
+              echo "⚠️ $f missing — soft skip (hard target not yet landed)"
+            fi
+          done
+
+      - name: Assert North Star constants
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib
+          src = pathlib.Path(".github/scripts/verify_ledger.py").read_text()
+          assert "NORTH_STAR_HZ = 71.975" in src, "North Star frequency drifted"
+          assert "PHASE_LOCK_DEG = 202.6" in src, "Phase lock drifted"
+          assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src, "Regime B domain drifted"
+          assert 'DELTA = "b^2-4ac"' in src, "ASCII delta drifted"
+          assert "b²" not in src, "Unicode b² present — must be ASCII only"
+          print("✅ North Star constants intact")
+          PY
