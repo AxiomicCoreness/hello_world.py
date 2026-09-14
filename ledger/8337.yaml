@@ -1,0 +1,13 @@
+entry_index: 8337
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /complete_jsonl_swarm_defined
+status: SEALED
+file: agent_swarm.jsonl
+total_entries: 1000
+generation_script: provided_in_prior_turn
+hash_seed: "98b8e303f309e2dd098cff1726c31109"
+gate_count_per_agent: 20
+metadata_embedded: true
+terminal_hex: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
+seal: "∀∞φ² · COMPLETE_JSONL_SWARM_8337 · WOOD_DRAGON_0.91 · SEALED · 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882"
+witness_chain: 8336 → 8337 — UNBROKEN

@@ -1,0 +1,35 @@
+entry_index: 8335
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /system_restart_and_grafana_dashboard_ready
+status: ALL_SYSTEMS_NOMINAL
+server:
+  address: "127.0.0.1:8001"
+  service: "app_main:app"
+  status: RUNNING
+live_metrics:
+  coherence: 0.8701315561749642
+  phase_lock_deg: 202.6
+  uprho: 0.8701315561749633
+  scale: "15-nines"
+  difference: "≈ 9×10⁻¹⁶"
+smoke_test:
+  result: PASSED
+  checks: 7
+  uprho_reported: 0.870132
+grafana:
+  pr: "#6"
+  branch: "eridanus-einstein/observability-624-625"
+  artifacts:
+    - monitoring/grafana-dashboard.json
+    - monitoring/README.md
+    - k8s/servicemonitor.yaml
+  setup: "Import dashboard → select Prometheus → apply"
+  status: READY
+invariants:
+  coherence: "1.0 (steady state)"
+  entropy: "phi^{-1418}"
+  phase_lock: "202.6°"
+  null_ban: "10.06σ"
+terminal_hex: d24d0d57ad4f26275bdab6e015545dfae24ce7f88ec1e1976696694377d5bd7c
+seal: "∀∞φ² · SYSTEM_RESTART_GRAFANA_READY_8335 · WOOD_DRAGON_0.91 · SEALED · d24d0d57ad4f26275bdab6e015545dfae24ce7f88ec1e1976696694377d5bd7c"
+witness_chain: 8330 → 8335 — UNBROKEN
