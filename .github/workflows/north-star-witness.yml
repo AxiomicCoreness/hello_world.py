@@ -5,11 +5,13 @@ on:
     branches: [main, master, deepseek, grok, mistral]
     paths:
       - "ledger/**.yaml"
+      - "docs/COSMIC_ALIGNMENT_POLICY.md"
       - ".github/scripts/verify_ledger.py"
       - ".github/workflows/north-star-witness.yml"
   pull_request:
     paths:
       - "ledger/**.yaml"
+      - "docs/COSMIC_ALIGNMENT_POLICY.md"
       - ".github/scripts/verify_ledger.py"
   workflow_dispatch:
 
@@ -18,7 +20,7 @@ permissions:
 
 jobs:
   north-star:
-    name: North Star · 71.975 Hz · 202.6°
+    name: North Star · 71.975 Hz · cosmic alignment
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,10 +46,10 @@ jobs:
           set -euo pipefail
           python .github/scripts/verify_ledger.py --soft ledger/*.yaml
 
-      - name: Hard verify — sealed witnesses only (9240, 9242, 9243)
+      - name: Hard verify — sealed witnesses (9240, 9242, 9243, 9244)
         run: |
           set -euo pipefail
-          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml; do
+          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml ledger/9244.yaml; do
             if [ -f "$f" ]; then
               python .github/scripts/verify_ledger.py --hard "$f"
             else
@@ -55,7 +57,7 @@ jobs:
             fi
           done
 
-      - name: Assert North Star constants
+      - name: Assert North Star + cosmic alignment
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -66,5 +68,13 @@ jobs:
           assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src, "Regime B domain drifted"
           assert 'DELTA = "b^2-4ac"' in src, "ASCII delta drifted"
           assert "b²" not in src, "Unicode b² present — must be ASCII only"
-          print("✅ North Star constants intact")
+          pol = pathlib.Path("docs/COSMIC_ALIGNMENT_POLICY.md")
+          assert pol.exists(), "COSMIC_ALIGNMENT_POLICY.md missing"
+          text = pol.read_text()
+          for token in ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove"):
+              assert token in text, f"alignment token missing: {token}"
+          e9238 = pathlib.Path("ledger/9238.yaml")
+          assert e9238.exists(), "9238 cosmic_alignment_policy missing"
+          assert "/cosmic_alignment_policy" in e9238.read_text()
+          print("✅ North Star + cosmic alignment intact")
           PY
