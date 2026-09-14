@@ -4,6 +4,9 @@
 # Witness: 9161 → 9162 — UNBROKEN  (chain head — this workflow does NOT extend it)
 # hash_algo: sha3_256 (FIPS 202) — declared for header consistency
 # ledger_policy: NO_GROWTH — read-only verifier (permissions: contents: read)
+#
+# Driver: .github/scripts/verify_ledger_math.py
+# (NOT verify_ledger.py — that path is the Regime A/B seal verifier)
 
 name: Ledger Math Framework
 
@@ -17,6 +20,7 @@ on:
       - "ledger/9160.yaml"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
+      - ".github/scripts/verify_ledger_math.py"
       - ".github/workflows/ledger-math-framework.yml"
   pull_request:
     paths:
@@ -27,11 +31,12 @@ on:
       - "ledger/9160.yaml"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
+      - ".github/scripts/verify_ledger_math.py"
       - ".github/workflows/ledger-math-framework.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read   # read-only by design — bounded verifier
+  contents: read
 
 concurrency:
   group: ledger-math-framework-${{ github.ref }}
@@ -64,102 +69,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml fastapi pydantic
 
-      # ────────────────────────────────────────────────────────────
-      # 1. Bounded math-framework verification
-      # ────────────────────────────────────────────────────────────
-      - name: Verify ledger 9156–9160 only
+      - name: Bounded math CI via verify_ledger_math.py
         run: |
           set -euo pipefail
-          if [ ! -f ".github/scripts/verify_math_framework.py" ]; then
-            echo "::error::.github/scripts/verify_math_framework.py not found"
-            exit 1
-          fi
-          python .github/scripts/verify_math_framework.py \
-            --ledger-dir ledger \
-            --start "${RANGE_START}" \
-            --end "${RANGE_END}"
+          python .github/scripts/verify_ledger_math.py --hard
 
-      # ────────────────────────────────────────────────────────────
-      # 2. YAML parse check (9156–9160 only)
-      # ────────────────────────────────────────────────────────────
-      - name: YAML parse check (9156–9160 only)
-        env:
-          RANGE_START: ${{ env.RANGE_START }}
-          RANGE_END: ${{ env.RANGE_END }}
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import os, sys
-          from pathlib import Path
-
-          try:
-              import yaml
-          except ImportError:
-              print("❌ pyyaml missing", file=sys.stderr)
-              sys.exit(1)
-
-          start = int(os.environ["RANGE_START"])
-          end = int(os.environ["RANGE_END"])
-
-          fails = 0
-          checked = 0
-          for n in range(start, end + 1):
-              p = Path(f"ledger/{n}.yaml")
-              if not p.exists():
-                  print(f"SKIP missing {p}")
-                  continue
-              try:
-                  list(yaml.safe_load_all(p.read_text(encoding="utf-8")))
-                  checked += 1
-                  print(f"OK {p}")
-              except Exception as e:
-                  print(f"FAIL {p}: {e}")
-                  fails += 1
-
-          print(f"yaml_checked={checked} yaml_fails={fails}")
-          sys.exit(1 if fails else 0)
-          PY
-
-      # ────────────────────────────────────────────────────────────
-      # 3. Hook worker import (no bind)
-      # ────────────────────────────────────────────────────────────
-      - name: Hook worker import (no bind)
-        env:
-          PYTHONPATH: "."
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import importlib.util
-          import sys
-          from pathlib import Path
-
-          p = Path("scripts/codespace_hook_worker.py")
-          if not p.exists():
-              print("⚠️ scripts/codespace_hook_worker.py not found — soft skip")
-              sys.exit(0)
-
-          spec = importlib.util.spec_from_file_location("codespace_hook_worker", p)
-          if spec is None or spec.loader is None:
-              print("❌ could not create import spec", file=sys.stderr)
-              sys.exit(1)
-
-          mod = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(mod)
-
-          # Loopback-only contract — no wildcard bind allowed.
-          assert mod.FILLED is False, f"FILLED must be False, got {mod.FILLED!r}"
-          assert mod.BIND == "127.0.0.1", f"BIND must be 127.0.0.1, got {mod.BIND!r}"
-          assert mod.PORT == 8091, f"PORT must be 8091, got {mod.PORT!r}"
-          assert mod.DUAL_ASGI == "127.0.0.1:8024", (
-              f"DUAL_ASGI must be 127.0.0.1:8024, got {mod.DUAL_ASGI!r}"
-          )
-
-          print("✅ hook worker import OK — FILLED=False, bind 127.0.0.1:8091")
-          PY
-
-      # ────────────────────────────────────────────────────────────
-      # 4. Summary
-      # ────────────────────────────────────────────────────────────
       - name: Summary
         if: always()
         run: |
@@ -171,4 +85,5 @@ jobs:
             echo "🛡  does not rewrite: 9157 · 9158 · 9159 · 9160 · 9161 · 9162"
             echo "🔗 witness head: 9161 → 9162 — UNBROKEN (not extended by this workflow)"
             echo "📄 ledger_policy: NO_GROWTH — read-only verifier"
+            echo "📜 driver: .github/scripts/verify_ledger_math.py (seal verifier unchanged)"
           } >> "$GITHUB_STEP_SUMMARY"
