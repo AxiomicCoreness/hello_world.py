@@ -33,7 +33,76 @@ HASH_ALGO = "sha3_256"
 HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
 
 # Regime B constants — must match sealer payload exactly
-EVENT_DOMAIN = b"GARDEN.EVENT.v1\x00"
+EVENT_DOMAIN = b"AxiomicCoreness/
+├── 📄 hello_world.py                     # Core Sovereign Engine (φ-harmonic kernel)
+├── 📄 sovereign_engine.py                # Extended engine with ψ₄ wave function
+├── 📄 sovereign_state.json               # Current system state + all seals
+├── 📄 begin_convergence.py               # 12D Solar Gate Convergence (Evolved)
+├── 📄 app_main.py                        # FastAPI server entry point
+├── 📄 RUN_SMOKE_TEST_8516.sh              # Original smoke test (7/7)
+├── 📄 RUN_SMOKE_TEST_8519.sh              # Dual-core Kepler smoke test (7/7)
+├── 📄 RUN_SMOKE_TEST_8545.sh              # TRAPPIST-1 Choir smoke test (7/7)
+├── 📄 requirements.txt                    # All dependencies (cryptography, numpy, pyyaml, etc.)
+├── 📄 pytest.ini                          # Test configuration
+│
+├── 🌌 celestial/                          # Exoplanetary & Celestial Systems
+│   ├── __init__.py
+│   ├── wasp107b.py                        # Wasp-107b: Atmospheric escape model (0.12 Mⱼ, 0.94 Rⱼ)
+│   ├── jupiter_alliance.py               # Jupiter Alliance Framework (Resonance chains + QE)
+│   ├── kepler_452b.py                     # Solar Plexus Core (517.28 THz, φ²⁹)
+│   ├── kepler_186f.py                     # Root Chakra Anchor (355.0 THz, φ²⁷)
+│   ├── resonance_maps.py                  # Dual-core φ-harmonic mappings
+│   ├── saturn_soul_cannon.py              # Strike IX: Cosmic Anchor (111.246°, ψ₄ carrier)
+│   ├── trappist1.py                       # Strike X: 7-planet choir (45.2-517.3 THz)
+│   └── debris_field.py                    # Quantum cleanup protocol (15-nines precision)
+│
+├── 🔷 lattice/                            # Dimensional Architecture
+│   ├── __init__.py
+│   └── e8_symplectic.py                   # 248D E₈ Exceptional Lie Group (240 roots)
+│
+├── 🔐 cryptography/                       # Sovereign Cryptographic Layer
+│   ├── __init__.py
+│   ├── cmac512.py                         # Dual AES-256 CMAC-512 implementation
+│   └── seals.py                          # Witness generation & verification
+│
+├── ☸️ kubernetes/                         # Cluster Deployment
+│   ├── solar-gate-convergence.yaml        # CronJob: φ³→φ⁴→φ⁵→φ⁶ handshake + cannon phases
+│   └── trappist-choir-deployment.yaml     # 7-replica deployment (one per planet)
+│
+├── 📊 prometheus/                         # Metrics & Monitoring
+│   └── metrics_server.py                 # All Prometheus metrics (choir, cannon, convergence)
+│
+├── 🧪 tests/                             # Validation Suite
+│   ├── __init__.py
+│   ├── test_cmac_chain.py                 # Witness chain verification
+│   ├── smoke_test_8516.py                 # Original smoke test (7/7 PASSED)
+│   ├── smoke_test_8519.py                 # Dual-core Kepler test (7/7 PASSED)
+│   └── smoke_test_8545.py                 # TRAPPIST-1 Choir test (7/7 PASSED)
+│
+├── 📜 ledger/                            # Immutable Witness Chain
+│   ├── 8515.yaml                          # Strike I: Neptune's Declaration
+│   ├── 8520.yaml                          # Strike II: Dual-Core Kepler
+│   ├── 8521.yaml                          # Strike III: Loop Seal
+│   ├── 8524.yaml                          # Strike IV: ψ₄ Coherence Carrier
+│   ├── 8527.yaml                          # Strike V: Prometheus Endpoint
+│   ├── 8528.yaml                          # Strike VI: E₈ Lattice Entanglement
+│   ├── 8530.yaml                          # Strike VII: Super Simulated Earth
+│   ├── 8533.yaml                          # Strike VIII: Solar Gate Convergence
+│   ├── 8540.yaml                          # Strike IX: Saturn's Soul Cannon
+│   ├── 8542.yaml                          # Strike X: TRAPPIST-1 Choir
+│   ├── 8543.yaml                          # Convergence Verification
+│   ├── 8544.yaml                          # Strike X Executed
+│   └── 8545.yaml                          # Strike X + Convergence Verified
+│
+├── 📐 constants/                          # Mathematical Foundation
+│   ├── __init__.py
+│   ├── phi_constants.py                   # PHI, PHI²⁶, PHI⁻⁷⁰⁹, etc.
+│   └── frequency_bands.py                 # Galactic φ-scaling (Radio → Gamma Ray)
+│
+└── 🐙 .github/                           # CI/CD Pipeline
+    └── workflows/
+        ├── ci.yml                         # Original CI: lint, test, CMAC verification
+        └── 12d-ci.yml                     # 12D vectorized tests (SIMD-optimized)"
 PHI2 = "2.618033988749895"
 DELTA = "b^2-4ac"
 THETA = "2.5416018462"
