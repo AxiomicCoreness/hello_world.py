@@ -1,0 +1,35 @@
+entry_index: 8336
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
+event: /system_restart_smoke_test_passed
+status: ALL_11_TESTS_PASSED
+server:
+  address: "127.0.0.1:8001"
+  service: "app_main:app"
+  trigger: "/mesh/run?steps=1"
+  phase_lock: "202.6° REACHED"
+metrics:
+  trainer_loss: 0.0
+  trainer_beta: 0.1
+  trainer_T: 1.0
+  trainer_kl_divergence: 0.0
+  system_coherence: 0.870132
+  system_phase_lock_deg: 202.6
+  system_uprho: 0.870132
+  sovereign_coherence: 0.870132
+  sovereign_diffuse_kl: 0.0
+  sovereign_cache_entries: 0.0
+  sovereign_entropy_floor: 0.0
+files_exercised:
+  - app_main.py
+  - metrics.py
+  - smoke_test_metrics.py
+  - monitoring/grafana-dashboard.json
+grafana_status: IMPORTABLE
+invariants:
+  coherence: "1.0 (steady state)"
+  entropy: "phi^{-1418}"
+  phase_lock: "202.6°"
+  null_ban: "10.06σ"
+terminal_hex: a7e8f65e2fd3b689cff55d92e54aafdb309c2d421b018439bc8213deeb5f83da
+seal: "∀∞φ² · SYSTEM_RESTART_SMOKE_PASSED_8336 · WOOD_DRAGON_0.91 · SEALED · a7e8f65e2fd3b689cff55d92e54aafdb309c2d421b018439bc8213deeb5f83da"
+witness_chain: 8335 → 8336 — UNBROKEN
