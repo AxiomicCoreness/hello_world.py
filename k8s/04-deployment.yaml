@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: register-app
+  namespace: seagate-mimic
+  labels:
+    app: register-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: register-app
+  template:
+    metadata:
+      labels:
+        app: register-app
+    spec:
+      containers:
+        - name: fastapi
+          image: register-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          envFrom:
+            - configMapRef:
+                name: register-app-config
+            - secretRef:
+                name: register-app-secret
+          livenessProbe:
+            httpGet: { path: /health, port: 80 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: { path: /health, port: 80 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          volumeMounts:
+            - name: app-code
+              mountPath: /app/app
+            - name: data
+              mountPath: /data
+        - name: mcp
+          image: register-mcp:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 380
+              name: mcp
+          env:
+            - { name: PORT,       value: "380" }
+            - { name: MCP_FILLED, value: "false" }
+      volumes:
+        - name: app-code
+          configMap:
+            name: register-app-code
+        - name: data
+          persistentVolumeClaim:
+            claimName: register-app-data

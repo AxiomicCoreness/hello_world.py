@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: register-app-config
+  namespace: seagate-mimic
+data:
+  NAMESPACE: "seagate-mimic"
+  LEDGER_HEAD: "9142"
+  PHASE_LOCK: "202.6"
+  BIND_PORT: "80"
+  MCP_PORT: "380"
+  MCP_FILLED: "false"
