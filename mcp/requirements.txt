@@ -1,0 +1,2 @@
+# MCP server uses only the Python standard library.
+# No external dependencies required.
