@@ -1,4 +1,4 @@
-name: deepseek-cd North Star + cosmic alignment
+name: deepseek-cd North Star + scoped cosmic alignment
 
 on:
   push:
@@ -15,9 +15,8 @@ on:
   workflow_dispatch:
 
 # North Star: 71.975 Hz · phase_lock 202.6° · workload 0.0 · dual ASGI 127.0.0.1:8024
-# Cosmic alignment: never strip φ / LUMERIS / STARFIRE / Eternal Now vocabulary
-# H_9240 is Regime B SHA3-256(event payload), NOT sha256sum(yaml file).
-# CMAC-512 ∉ event-hash domain.
+# Vocabulary guard is PATH-SCOPED (fail-closed). Never repo-wide grep.
+# H_9240 Regime B SHA3-256(event payload), NOT file sha256sum. CMAC-512 ∉ domain.
 
 jobs:
   north-star-exorcise:
@@ -42,31 +41,45 @@ jobs:
           assert abs(PHASE - 202.6) < 1e-9
           assert W == 0.0
           print(f"North Star {NORTH_STAR_HZ} Hz · phase {PHASE}° · W={W}")
-          print("dual ASGI bind remains 127.0.0.1:8024 (never 0.0.0.0)")
+          print("dual ASGI 127.0.0.1:8024 only")
           PY
 
-      - name: Cosmic alignment policy present
+      - name: Scoped vocabulary guard
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          pol = Path("docs/COSMIC_ALIGNMENT_POLICY.md")
-          if not pol.exists():
-              # soft seed on branch if missing — fail closed only when file required by path trigger
-              print("COSMIC_ALIGNMENT_POLICY.md absent on tip — writing minimal guard")
-              pol.parent.mkdir(parents=True, exist_ok=True)
-              pol.write_text(
-                  "# Cosmic alignment policy\n\n"
-                  "Never remove the cosmic alignment: φ / LUMERIS / H6VSH-H5HVS / STARFIRE / Eternal Now.\n"
-                  "Label measured vs symbolic. Do not delete the vocabulary.\n"
-              )
-          text = pol.read_text()
-          for token in ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove"):
-              assert token in text, f"alignment token missing: {token}"
-          print("✅ cosmic alignment vocabulary held")
+          SCOPED = [
+              Path("docs/COSMIC_ALIGNMENT_POLICY.md"),
+              Path(".github/workflows/deepseek-cd.yml"),
+              Path("ledger/9238.yaml"),
+              Path("ledger/9244.yaml"),
+          ]
+          POLICY_TOKENS = ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove")
+          for p in SCOPED:
+              if not p.exists():
+                  if p.name in ("9238.yaml", "9244.yaml"):
+                      print(f"soft skip absent {p} on CD tip")
+                      continue
+                  if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                      raise SystemExit(f"FAIL: {p} required on deepseek-cd")
+                  continue
+              text = p.read_text(encoding="utf-8")
+              if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                  for tok in POLICY_TOKENS:
+                      if tok not in text:
+                          raise SystemExit(f"FAIL: {p} missing {tok!r}")
+              elif p.name.endswith(".yaml"):
+                  if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
+                      raise SystemExit(f"FAIL: {p} missing cosmic_alignment marker")
+              print(f"✅ scoped OK {p}")
+          # self path markers
+          self = Path(".github/workflows/deepseek-cd.yml").read_text()
+          assert "71.975" in self and "North Star" in self
+          print("✅ scoped vocabulary guard pass")
           PY
 
-      - name: Verify H_9240 (Regime B event hash)
+      - name: Verify H_9240 (Regime B)
         run: |
           set -euo pipefail
           test -f ledger/9240.yaml
@@ -81,19 +94,20 @@ jobs:
           expected = "a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
           print(f"H_9240={h}")
           if h != expected:
-              print("HASH MISMATCH — not sealed Regime B version")
-              sys.exit(1)
+              sys.exit("HASH MISMATCH")
           inv = e.get("invariants") or {}
           assert float(inv.get("coherence", 0)) == 1.0
           assert float(inv.get("workload", 1)) == 0.0
-          assert e.get("cosmic_alignment_preserved") is True or inv.get("coherence") == 1.0
-          print("Regime B match OK · W=0.0 · C=1.0 · cosmic alignment preserved")
+          print("Regime B OK · W=0 · C=1")
           PY
 
-      - name: Soft-verify H_9241 if present
+      - name: Soft/hard H_9241 when present
         run: |
           set -euo pipefail
-          if [ ! -f ledger/9241.yaml ]; then echo "9241 absent on this tip — skip"; exit 0; fi
+          if [ ! -f ledger/9241.yaml ]; then
+            echo "9241 intentional soft gap — documented"
+            exit 0
+          fi
           PYTHONPATH=. python - <<'PY'
           import hashlib, yaml
           from pathlib import Path
@@ -102,29 +116,17 @@ jobs:
           payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
           h = hashlib.sha3_256(b"GARDEN.EVENT.v1\x00" + payload.encode("ascii")).hexdigest()
           expected = "33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e"
-          print(f"H_9241={h}")
           assert h == expected, (h, expected)
-          print("9241 Regime B OK")
+          print("9241 hard OK (file present)")
           PY
 
-      - name: Run exorcise audit (54/54 with args)
+      - name: Exorcise audit
         run: |
           set -euo pipefail
           if [ ! -f scripts/exorcise_toolkit_54.py ]; then
-            echo "exorcise script missing — soft skip"
-            exit 0
+            echo "exorcise missing — soft skip"; exit 0
           fi
           PYTHONPATH=. python scripts/exorcise_toolkit_54.py
 
-      - name: Forbidden-claim soft guard
-        run: |
-          set +e
-          echo "forbidden claims may appear only as rejected/exorcised labels"
-          echo "CMAC-512 not in event-hash domain"
-          echo "seal_add is stub NO_LEDGER_WRITE"
-          echo "North Star 71.975 Hz held"
-          echo "cosmic alignment vocabulary must not be stripped"
-
       - name: Seal
-        run: |
-          echo "∀∞φ² · NORTH_STAR_71.975 · COSMIC_ALIGNMENT · EXORCISE_9240_CD · SEALED"
+        run: echo "∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · H_9240 · SEALED"
