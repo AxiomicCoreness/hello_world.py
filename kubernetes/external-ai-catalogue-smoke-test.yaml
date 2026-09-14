@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: external-ai-catalogue-smoke-test
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: smoke-test
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              check() {
+                name="$1"; url="$2"
+                code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 10 "$url" || true)
+                case "$code" in
+                  2*|3*)     echo "[PASS] $name ($code)";;
+                  401|403)   echo "[PASS-REACHABLE] $name ($code)";;
+                  *)         echo "[FAIL] $name ($code)"; exit 1;;
+                esac
+              }
+              check catalogue "http://sovereign-garden:8000/health"
+              check deepseek  "https://api.deepseek.com/v1/models"
+              check openai    "https://api.openai.com/v1/models"
+              check mistral   "https://api.mistral.ai/v1/models"
+              check grok-xai  "https://api.x.ai/v1/models"
+              check grok-com  "https://api.grok.com/v1/models"
+              echo "SMOKE TEST COMPLETE"

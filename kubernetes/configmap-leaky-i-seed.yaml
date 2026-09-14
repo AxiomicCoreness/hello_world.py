@@ -1,4 +1,3 @@
-# Optional seed value only (read-only). Runtime state lives on PVC leaky-i-state.
 apiVersion: v1
 kind: ConfigMap
 metadata:
