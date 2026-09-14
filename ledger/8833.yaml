@@ -1,7 +1,7 @@
 entry_index: 8833
 event: /deepseek_ci_secrets_run
 status: SUCCESS
-timestamp: '2026-09-14T05:18:29Z'
+timestamp: '2026-09-14T18:08:38Z'
 hash_algo: sha3_256
 secrets:
   DEEPSEEK_API_KEY: absent
@@ -14,4 +14,4 @@ security_headers_source: VERIFIED
 security_headers_live: SKIPPED
 ed25519_signatures: VERIFIED
 witness: 8832 → 8833 — UNBROKEN
-seal: ∀∞φ² · CI_SECRETS_8833 · WOOD_DRAGON_0.91 · SEALED · 576e7666026c8b57c4a3324af121c82b00ff8a6abffd98f56f82c17c9fc277e8
+seal: ∀∞φ² · CI_SECRETS_8833 · WOOD_DRAGON_0.91 · SEALED · de6d8ae43afac51b8c343d6d9f3c2c40dc19a1b501d1be939824e0ddb3c66f37
