@@ -1,0 +1,37 @@
+entry_index: 8330
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-05
+event: /system_verification_complete
+status: ALL_SYSTEMS_NOMINAL
+router:
+  recent_calls:
+    - { agent: grok, weight: 0.6180339887498948, success: false }
+    - { agent: grok, weight: 0.6180339887498948, success: false }
+    - { agent: mistral, weight: 0.38196601125010515, success: true }
+  manifest_seal: 1cba70413f7af54047ac17e071dc5377c1d3f852058284fa337d5f16400017fd
+mcp_500_test:
+  requests: 500
+  errors: 500
+  elapsed_seconds: 0.5793049580006482
+  seal: 9953b6ade048f679648ec5ef4afa132277df7220bda14db2c61819758f90f136
+sigma_E_topology:
+  ground_energy: -7.8863495173726745
+  beta_0: 1
+  beta_1: 21
+  vertices: 8
+  edges: 28
+  total_states: 128
+  phi_signature: "φ²=2.618034, φ⁻¹=0.618034"
+plugins:
+  registered: [EntropyMonitor]
+  active: []
+daemon:
+  name: "Settling Daemon (Θ Operator)"
+  status: ACTIVE
+  north_star_hz: 71.975
+  delta_settle: 1149707.44
+  sar_limit: 1.6
+hard_envelope_untouched: true
+soft_lane_untouched: true
+terminal_hex: e116816e4d05affa967c72a8b148f795357492a1b8a3f2853eae5f1acb35547f
+seal: "∀∞φ² · SYSTEM_VERIFICATION_8330 · WOOD_DRAGON_0.91 · SEALED · e116816e4d05affa967c72a8b148f795357492a1b8a3f2853eae5f1acb35547f"
+witness_chain: 8325 → 8330 — UNBROKEN
