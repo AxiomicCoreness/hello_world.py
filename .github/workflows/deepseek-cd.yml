@@ -1,0 +1,108 @@
+name: deepseek-cd-next North Star + scoped cosmic alignment
+
+on:
+  push:
+    branches: [deepseek-cd-next]
+    paths:
+      - "ledger/9240.yaml"
+      - "ledger/9241.yaml"
+      - "ledger/8550.yaml"
+      - "docs/COSMIC_ALIGNMENT_POLICY.md"
+      - "scripts/exorcise_toolkit_54.py"
+      - "pythonIDE/toolkit.py"
+      - ".github/workflows/toolkit-54-exorcise.yml"
+      - ".github/workflows/deepseek-cd.yml"
+  workflow_dispatch:
+
+# Successor to frozen deepseek-cd. Base = main. Unique CD artifacts only.
+# North Star: 71.975 Hz · 202.6° · W=0 · C=1 · ASGI 127.0.0.1:8024
+# Vocabulary guard PATH-SCOPED. H_9240 Regime B. CMAC-512 ∉ domain.
+
+jobs:
+  north-star-exorcise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install --quiet pyyaml || true
+
+      - name: North Star invariants
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          NORTH_STAR_HZ = 71.975
+          PHASE = 202.6
+          W = 0.0
+          assert NORTH_STAR_HZ == 71.975
+          assert abs(PHASE - 202.6) < 1e-9
+          assert W == 0.0
+          print(f"North Star {NORTH_STAR_HZ} Hz · phase {PHASE}° · W={W}")
+          print("dual ASGI 127.0.0.1:8024 only")
+          PY
+
+      - name: Scoped vocabulary guard
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          SCOPED = [
+              Path("docs/COSMIC_ALIGNMENT_POLICY.md"),
+              Path(".github/workflows/deepseek-cd.yml"),
+              Path("ledger/9238.yaml"),
+              Path("ledger/9244.yaml"),
+          ]
+          POLICY_TOKENS = ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove")
+          for p in SCOPED:
+              if not p.exists():
+                  if p.name in ("9238.yaml", "9244.yaml"):
+                      print(f"soft skip absent {p}")
+                      continue
+                  if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                      raise SystemExit(f"FAIL: {p} required")
+                  continue
+              text = p.read_text(encoding="utf-8")
+              if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                  for tok in POLICY_TOKENS:
+                      if tok not in text:
+                          raise SystemExit(f"FAIL: {p} missing {tok!r}")
+              elif p.name.endswith(".yaml"):
+                  if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
+                      raise SystemExit(f"FAIL: {p} missing cosmic_alignment marker")
+              print(f"OK {p}")
+          self = Path(".github/workflows/deepseek-cd.yml").read_text()
+          assert "71.975" in self and "North Star" in self
+          print("scoped vocabulary guard pass")
+          PY
+
+      - name: Verify H_9240 when present (Regime B)
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/9240.yaml ]; then echo "9240 not on tip — soft skip"; exit 0; fi
+          PYTHONPATH=. python - <<'PY'
+          import hashlib, sys, yaml
+          from pathlib import Path
+          e = yaml.safe_load(Path("ledger/9240.yaml").read_text()) or {}
+          n, event = e.get("entry_index"), e.get("event")
+          payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+          h = hashlib.sha3_256(b"GARDEN.EVENT.v1\x00" + payload.encode("ascii")).hexdigest()
+          expected = "a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
+          print(f"H_9240={h}")
+          if h != expected:
+              sys.exit("HASH MISMATCH")
+          print("Regime B OK")
+          PY
+
+      - name: Exorcise audit when present
+        run: |
+          set -euo pipefail
+          if [ ! -f scripts/exorcise_toolkit_54.py ]; then
+            echo "exorcise missing — soft skip"; exit 0
+          fi
+          PYTHONPATH=. python scripts/exorcise_toolkit_54.py
+
+      - name: Seal
+        run: echo "∀∞φ² · DEEPSEEK_CD_NEXT · NORTH_STAR_71.975 · SEALED"

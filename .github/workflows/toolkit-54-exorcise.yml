@@ -2,7 +2,7 @@ name: Toolkit 54 Exorcise
 
 on:
   push:
-    branches: [main, deepseek, deepseek-ci, deepseek-cd]
+    branches: [main, deepseek-cd-next]
     paths:
       - "pythonIDE/toolkit.py"
       - "scripts/exorcise_toolkit_54.py"
@@ -38,4 +38,5 @@ jobs:
             echo "- CMAC-512 ∈ event-hash: **false**"
             echo "- seal_add ledger write: **stub / NO_LEDGER_WRITE**"
             echo "- MCP: unfilled · 127.0.0.1:8024"
+            echo "- CD successor branch: **deepseek-cd-next**"
           } >> "$GITHUB_STEP_SUMMARY"
