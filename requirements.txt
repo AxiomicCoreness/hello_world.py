@@ -1,6 +1,3 @@
-# Port 380 MCP Service Dependencies
-# Layer 314 / Port 380 Identity Preserved
-# Entry 8755
-
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
