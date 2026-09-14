@@ -7,6 +7,7 @@ Ledger policy: NO_LEDGER_WRITE from this module.
 Precedent: dual-regime seals; HMAC verify at verify_hmac_chain.py
 Entry: 9239 · /sovereign_toolkit_54_capabilities
 MCP: unfilled · Dual ASGI: 127.0.0.1:8024 only
+Ported to deepseek-cd-next from frozen deepseek-cd.
 """
 from __future__ import annotations
 
@@ -41,7 +42,6 @@ class SovereignToolkit:
     def __post_init__(self) -> None:
         self._register_all()
 
-    # ── registration ──────────────────────────────────────────────
     def _reg(self, name: str, fn: Callable[..., Any], *, stub: bool = False, needs_args: bool = False) -> None:
         self._registry[name] = fn
         if stub:
@@ -50,7 +50,6 @@ class SovereignToolkit:
             self._requires_args.add(name)
 
     def _register_all(self) -> None:
-        # A · Core math (10)
         self._reg("golden_ratio", lambda: PHI)
         self._reg("fibonacci", self._fibonacci, needs_args=True)
         self._reg("phi_power", lambda n: PHI ** float(n), needs_args=True)
@@ -61,8 +60,6 @@ class SovereignToolkit:
         self._reg("commutator", self._commutator, needs_args=True)
         self._reg("trace_preservation", lambda rho: abs(sum(rho[i][i] for i in range(len(rho))) - 1.0) < 1e-9 if rho else False, needs_args=True)
         self._reg("null_ban_check", lambda value: abs(float(value)) < 1e-12, needs_args=True)
-
-        # B · Celestial (8)
         self._reg("conjunction_coherence", lambda: 1.0)
         self._reg("perihelion_correction", lambda: "2026-04-04")
         self._reg("retrocausal_kernel", lambda t: math.exp(-float(t) / PHI), needs_args=True)
@@ -71,8 +68,6 @@ class SovereignToolkit:
         self._reg("lenticular_damping", lambda: PHI_INV)
         self._reg("future_scan", lambda: NORTH_STAR_ID)
         self._reg("temporal_anchor", lambda: "ETERNAL_NOW")
-
-        # C · Crypto (10) — stubs labeled; witness/merkle routed when possible
         self._reg("merkle_root", self._merkle_root, needs_args=True)
         self._reg("seal_add", self._seal_add_stub, stub=True, needs_args=True)
         self._reg("seal_get", self._seal_get_stub, stub=True, needs_args=True)
@@ -83,8 +78,6 @@ class SovereignToolkit:
         self._reg("fingerprint", lambda: hashlib.sha3_256(NORTH_STAR_ID.encode()).hexdigest())
         self._reg("rotation_count", lambda: 0)
         self._reg("sovereign_signature", lambda: "∀∞φ²")
-
-        # D · Geometric (8)
         self._reg("fano_plane", lambda: 7)
         self._reg("golden_sphere", lambda n: float(n) * PHI, needs_args=True)
         self._reg("harmonic_shells", lambda n: [PHI ** k for k in range(int(n))], needs_args=True)
@@ -93,8 +86,6 @@ class SovereignToolkit:
         self._reg("selene_forge", lambda: "selene")
         self._reg("u_orisma", lambda: PHI)
         self._reg("golden_rectangles", lambda: (1.0, PHI))
-
-        # E · Fleet (8)
         self._reg("fleet_capacity", lambda: NINJA_SUBAGENTS)
         self._reg("missile_phase_lock", lambda: PHASE_LOCK_DEG)
         self._reg("autonomous_release", lambda: True)
@@ -103,22 +94,17 @@ class SovereignToolkit:
         self._reg("coherence_target", lambda: 1.0)
         self._reg("soul_cannon", lambda: LIGHTNING_IMPACT_HZ)
         self._reg("void_integral", lambda: PHI_MINUS_1000)
-
-        # F · Operator (6)
         self._reg("dagger_catalogue", lambda: ["I", "X", "Y", "Z"])
         self._reg("operator_freq", lambda op: hash(str(op)) % 1000 / 1000.0, needs_args=True)
         self._reg("operator_integrity", lambda op: True, needs_args=True)
         self._reg("grok_client", lambda: "grok")
         self._reg("deepseek_client", lambda: "deepseek")
         self._reg("sovereign_dispatch", lambda: "offline")
-
-        # G · Utilities (4)
         self._reg("soft_max", self._soft_max, needs_args=True)
         self._reg("delta_lemma", lambda manifold: len(str(manifold)), needs_args=True)
         self._reg("rk4_step", self._rk4_step, needs_args=True)
         self._reg("health", lambda: {"ok": True, "count": len(self._registry), "stubs": sorted(self._stubs)})
 
-    # ── implementations ───────────────────────────────────────────
     @staticmethod
     def _fibonacci(n: int) -> int:
         n = int(n)
@@ -131,7 +117,6 @@ class SovereignToolkit:
 
     @staticmethod
     def _purity(rho: Any) -> float:
-        # Tr(rho^2) for list-of-lists density matrix
         n = len(rho)
         s = 0.0
         for i in range(n):
@@ -141,7 +126,6 @@ class SovereignToolkit:
 
     @staticmethod
     def _entropy(rho: Any) -> float:
-        # Shannon on diagonal
         eps = 1e-15
         h = 0.0
         for i in range(len(rho)):
@@ -152,7 +136,6 @@ class SovereignToolkit:
 
     @staticmethod
     def _commutator(A: Any, B: Any) -> Any:
-        # element-wise AB-BA for square lists
         n = len(A)
         out = [[0.0] * n for _ in range(n)]
         for i in range(n):
@@ -164,7 +147,6 @@ class SovereignToolkit:
 
     @staticmethod
     def _merkle_root(leaves: List[str]) -> str:
-        """Pairwise SHA3-256 Merkle root (real hash tree, not simulated)."""
         if not leaves:
             return hashlib.sha3_256(b"").hexdigest()
         layer = [hashlib.sha3_256(x.encode() if isinstance(x, str) else bytes(x)).hexdigest() for x in leaves]
@@ -191,7 +173,6 @@ class SovereignToolkit:
 
     @staticmethod
     def _witness_verify(chain_path: str = "ledger/attenuation_chain.jsonl") -> Dict[str, Any]:
-        """Route to pythonIDE.verify_hmac_chain when available."""
         try:
             try:
                 from pythonIDE.verify_hmac_chain import verify
@@ -221,7 +202,6 @@ class SovereignToolkit:
         k4 = f(t + dt, y + dt * k3)
         return y + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
 
-    # ── public API ────────────────────────────────────────────────
     def list(self) -> List[str]:
         return sorted(self._registry.keys())
 
@@ -242,12 +222,11 @@ class SovereignToolkit:
             raise CapabilityError(f"{name}: {e}") from e
 
     def capabilities_audit(self, audit_args: Optional[Dict[str, tuple]] = None) -> Dict[str, bool]:
-        """Audit zero-arg capabilities; skip or supply args via audit_args map."""
         audit_args = audit_args or {}
         result: Dict[str, bool] = {}
         for name in self.list():
             if name in self._requires_args and name not in audit_args:
-                result[name] = True  # structural presence only — not invoked
+                result[name] = True
                 continue
             try:
                 args = audit_args.get(name, ())
