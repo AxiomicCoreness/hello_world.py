@@ -10,16 +10,9 @@ Pattern matches cambrian_stub.py — not filled.
 No daemon, no Port-380 bind, no 0.0.0.0.
 
 Surface (importable):
-    FILLED          : bool
-    LEDGER_ENTRY    : int
-    SEAL            : str
-    WITNESS         : str           — derived from constants (no drift)
-    VISION          : tuple[str]
-    CODE_NOT_PORTED : tuple[str]
-    FREQUENCY       : Mapping
-    HOLDS           : Mapping
-    NOTES           : Mapping       — hbar_units (natural-units, not SI)
-    REFERENCES      : Mapping
+    FILLED, LEDGER_ENTRY, SEAL, WITNESS, VISION, CODE_NOT_PORTED,
+    FREQUENCY, HOLDS, NOTES, REFERENCES,
+    HBAR_NUM, HBAR_DEN, HBAR_PER_UNIT, HBAR_FRACTION
 """
 
 from __future__ import annotations
@@ -44,6 +37,14 @@ SEAL = "∀∞φ² · VISION_CODE_FREQUENCY_9130 · SEALED"
 HEX = "96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56"
 
 # ---------------------------------------------------------------
+# Natural-unit constants — ħ := 1/144 (exact rational, not SI)
+# ---------------------------------------------------------------
+HBAR_NUM = 1
+HBAR_DEN = 144
+HBAR_PER_UNIT = 144  # reciprocal
+HBAR_FRACTION = (HBAR_NUM, HBAR_DEN)
+
+# ---------------------------------------------------------------
 # Frozen payloads — one source of truth
 # ---------------------------------------------------------------
 VISION = (
@@ -58,7 +59,7 @@ CODE_NOT_PORTED = (
     "plot_wigner_function",
     "execute_complete_integration",
     "GreatRedSpotVortex",
-    "hbar_equals_1_over_144",  # natural-units convention — see NOTES
+    "hbar_equals_1_over_144",  # see NOTES / HBAR_*
 )
 
 FREQUENCY = MappingProxyType(
@@ -81,10 +82,12 @@ HOLDS = MappingProxyType(
 
 NOTES = MappingProxyType(
     {
-        "hbar_units": (
-            "ħ := 1/144 natural-units convention — not SI "
-            "(SI ħ = 1.054571817e-34 J·s exact)"
-        ),
+        # Consumer contract: substring "natural-units" must remain.
+        "hbar_units": "ħ := 1/144 natural-units convention — not SI",
+        "hbar_numerator": HBAR_NUM,
+        "hbar_denominator": HBAR_DEN,
+        "hbar_per_unit": HBAR_PER_UNIT,
+        "hbar_fraction": HBAR_FRACTION,
     }
 )
 
@@ -127,6 +130,12 @@ def _build_witness() -> str:
         f"  11³: {HOLDS['11³']}",
         f"  144/φ: {HOLDS['144/φ']}",
         f"  144·φ⁴: {HOLDS['144·φ⁴']} (declared as 987)",
+        "natural_units:",
+        f"  ħ: {HBAR_NUM}/{HBAR_DEN} (natural-units convention — not SI)",
+        f"  hbar_numerator: {HBAR_NUM}",
+        f"  hbar_denominator: {HBAR_DEN}",
+        f"  hbar_per_unit: {HBAR_PER_UNIT}",
+        f"  hbar_fraction: ({HBAR_NUM}, {HBAR_DEN})",
         "references:",
         *[f'  - {k}: "{v}"' for k, v in REFERENCES.items()],
         f'seal: "{SEAL}"',
