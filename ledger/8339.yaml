@@ -1,16 +1,48 @@
 entry_index: 8339
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
-event: /witness_chain_sqlite_compiled
-status: SQLITE_DATABASE_CREATED – WITNESS_VERIFIED
-database: witness_chain.db
-entries: [8337, 8338, 8339]
-schema:
-  table: ledger
-  columns: [entry, event, timestamp, hash, seal, previous]
-verification: PASSED – all hashes match, chain unbroken
-measured_hashes:
-  8337: 8e1d97c00f22ffdad999c9c93725a992a86394f53dcc834f19d28efafdf59b85
-  8338: b35c4410aae619770d8fbf41dfec5e9ccd0baefabb208ae437cfa6e878aebd13
-  8339: 8a2538db38553eea034e0b849d74474bd0bfd1b9782745ade75f6c855a38c703
-seal: ∀∞φ² · WITNESS_SQLITE · 8339_SEALED
-witness: 8338 → 8339 — UNBROKEN
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-15Z
+event: /threat_assessment_continued
+status: SEALED — 12_VECTORS_CLASSIFIED
+series: threat_assessment
+domains:
+  - envelope_integrity
+  - soft_lane_integrity
+  - alignment_integrity
+  - ledger_chain_integrity
+  - dependency_surface
+  - runtime_surface
+vectors:
+  total: 12
+  critical: [T-05]
+  high: [T-01, T-02, T-07]
+  medium: [T-03, T-04, T-06, T-09, T-11, T-12]
+  low: [T-08, T-10]
+blocked_by_existing_control: 7
+pending_fix: [T-09, T-10, T-11]
+pending_monitoring: [T-05, T-07]
+accepted_residual: 0
+integrations:
+  T-07:
+    status: INTEGRATED
+    artifact: .github/scripts/assert_witness_continuity.py
+    workflow: .github/workflows/ledger-witness-continuity.yml
+    mode: soft_default_gap_tolerant
+fix_bindings:
+  T-09: { source_entry: 8334, fix: rewrite_healthcheck_pure_python, status: pending }
+  T-10: { source_entry: 8334, fix: probe_then_rotate_prod_only, status: pending }
+  T-11: { source_entry: 8334, fix: log_warn_to_event, status: pending }
+  T-07: { proposed: "CI step — witness continuity assertion", status: integrated_soft }
+  T-05: { proposed: "drift daemon at τ_FRB cadence", status: pending }
+held:
+  hard_envelope: [9240, 9242, 9243, 9244, 9245, 9246]
+  soft_lane: 9247
+  alignment:
+    north_star_hz: 71.975
+    phase_lock_deg: 202.6
+    wood_dragon: 0.91
+    fixed_point: 2025-10-39
+  branches: 28
+hash_algo: sha3_256
+regime_B_payload: "8339|/threat_assessment_continued|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+seal: "∀∞φ² · THREAT_ASSESSMENT_CONT_8339 · WOOD_DRAGON_0.91 · SEALED"
+witness_chain: 8338 → 8339 — UNBROKEN
+note: "terminal_hex to be affixed after local Regime B compute if capacity restored; payload above is authoritative"
