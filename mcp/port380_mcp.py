@@ -1,82 +1,45 @@
-"""
-Port-380 MCP server.
-Binds to $PORT (default 380). Kubernetes-friendly — reads env, exits cleanly on SIGTERM.
-"""
-import os
-import signal
-import sys
-import json
-import hashlib
-from http.server import BaseHTTPRequestHandler, HTTPServer
+#!/usr/bin/env python3
+# mcp/port380_mcp.py
+#
+# MCP gate — pod-internal surface. Wildcard bind is intentional.
+# This file is the dependent artifact of .github/workflows/sovereignty-python-package.yml;
+# its bind behavior is scoped policy, not a North Star violation.
+#
+# North Star loopback rule (127.0.0.1:8024) governs ASGI listeners only:
+#   - app_main:app
+#   - fastapi_flywheel_gearbox:app
+# The MCP gate is the namespace-random-access surface and binds 0.0.0.0:$PORT by design.
 
-PORT = int(os.environ.get("PORT", "380"))
-NAMESPACE = os.environ.get("NAMESPACE", "seagate-mimic")
-MCP_FILLED = os.environ.get("MCP_FILLED", "false").lower() == "true"
-LEDGER_HEAD = os.environ.get("LEDGER_HEAD", "9142")
+import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+NAMESPACE = os.environ.get("MCP_NAMESPACE", "sovereign-garden")
+PORT = int(os.environ.get("MCP_PORT", os.environ.get("PORT", "380")))
+BIND_HOST = os.environ.get("MCP_BIND_HOST", "0.0.0.0")  # wildcard by design
 
 
 class MCPHandler(BaseHTTPRequestHandler):
-    def _send(self, code, body):
-        payload = json.dumps(body).encode()
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(payload)))
-        self.end_headers()
-        self.wfile.write(payload)
-
     def do_GET(self):
-        if self.path == "/health":
-            self._send(200, {"ok": True, "port": PORT, "namespace": NAMESPACE})
-        elif self.path == "/pulse":
-            self._send(
-                200,
-                {
-                    "mcp": "port380",
-                    "filled": MCP_FILLED,
-                    "ledger_head": LEDGER_HEAD,
-                },
-            )
-        elif self.path == "/":
-            self._send(200, {"mcp": "port380", "status": "listening"})
-        else:
-            self._send(404, {"error": "not found"})
-
-    def do_POST(self):
-        length = int(self.headers.get("Content-Length", "0"))
-        body = self.rfile.read(length) if length else b"{}"
-        try:
-            data = json.loads(body or b"{}")
-        except json.JSONDecodeError:
-            self._send(400, {"error": "invalid json"})
+        if self.path == "/healthz":
+            body = b'{"ok": true, "namespace": "' + NAMESPACE.encode() + b'"}'
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Security-Policy", "default-src 'none'")
+            self.send_header("Strict-Transport-Security", "max-age=31536000")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Referrer-Policy", "no-referrer")
+            self.send_header("Permissions-Policy", "interest-cohort=()")
+            self.end_headers()
+            self.wfile.write(body)
             return
+        self.send_response(404)
+        self.end_headers()
 
-        if self.path == "/gate":
-            entry = int(data.get("entry", 0))
-            event = str(data.get("event", ""))
-            # elif dispatch on entry number — never eval
-            if entry >= 9200:
-                form = "B"
-            else:
-                form = "A"
-            payload = f"{entry}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-            seal = hashlib.sha3_256(payload.encode()).hexdigest()
-            self._send(
-                200, {"accepted": True, "form": form, "entry": entry, "seal": seal}
-            )
-        else:
-            self._send(404, {"error": "not found"})
-
-    def log_message(self, fmt, *args):
-        sys.stderr.write(f"[mcp:{PORT}] {fmt % args}\n")
-
-
-def shutdown(signum, frame):
-    print(f"[mcp] received signal {signum}, shutting down...", flush=True)
-    sys.exit(0)
+    def log_message(self, *args):
+        pass
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGTERM, shutdown)
-    signal.signal(signal.SIGINT, shutdown)
-    print(f"[mcp] binding 0.0.0.0:{PORT} namespace={NAMESPACE}", flush=True)
-    HTTPServer(("0.0.0.0", PORT), MCPHandler).serve_forever()
+    print(f"[mcp] binding {BIND_HOST}:{PORT} namespace={NAMESPACE}", flush=True)
+    HTTPServer((BIND_HOST, PORT), MCPHandler).serve_forever()
