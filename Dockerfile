@@ -1,11 +1,9 @@
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
-    && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r /tmp/requirements.txt
+FROM python:3.12-slim
 WORKDIR /app
-COPY pythonIDE/ ./pythonIDE/
-COPY multibody_simulator/ ./multibody_simulator/
-ENV PYTHONPATH=/app
-CMD ["python", "-m", "pythonIDE.hopper_optimize"]
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app ./app
+EXPOSE 80
+ENV BIND_HOST=0.0.0.0 BIND_PORT=80
+USER 1000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

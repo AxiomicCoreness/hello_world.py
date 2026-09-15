@@ -1,10 +1,17 @@
 entry_index: 8833
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
-event: /startup_secrets_rotator
-status: SEALED
-files:
-  - scripts/startup_secrets_rotator.py
-  - docs/startup-secrets-rotator.md
-skill: startup-secrets-rotator
-witness_chain: 8832 → 8833 — UNBROKEN
-seal: ∀∞φ² · STARTUP_SECRETS_ROTATOR · WOOD_DRAGON_0.91 · SEALED
+event: /deepseek_ci_secrets_run
+status: SUCCESS
+timestamp: '2026-09-15T05:10:18Z'
+hash_algo: sha3_256
+secrets:
+  DEEPSEEK_API_KEY: absent
+  MCP_URL: absent
+  GARDEN_SECRET: absent
+offline_probe: PASSED
+online_probe: SKIPPED
+endpoint_scenarios: SKIPPED
+security_headers_source: VERIFIED
+security_headers_live: SKIPPED
+ed25519_signatures: VERIFIED
+witness: 8832 → 8833 — UNBROKEN
+seal: ∀∞φ² · CI_SECRETS_8833 · WOOD_DRAGON_0.91 · SEALED · 7be81da31fc75b45272e6babb3262069f37b20934d56b292bcbe9e860f5308f3

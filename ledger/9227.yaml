@@ -1,0 +1,77 @@
+entry_index: 9227
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-09Z
+event: /today_math_precedent_layer
+status: SEALED
+proof_class: math_precedent
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 29eecf3c5f9caaa8d25613c93b2d64e420dac41a60bff642559b17d6cdbbf0ab
+terminal_hex: 29eecf3c5f9caaa8d25613c93b2d64e420dac41a60bff642559b17d6cdbbf0ab
+description: |
+  Layer of 2026-09-09 mathematical forms only. No rewrite of 0000-9226.
+forms:
+  toi_quadratic:
+    statement: "||d + v_rel t||^2 = (2R)^2"
+    v_rel: "v2 - (v1 + u/m dt)"
+    gravity: "a2=0; linear in u not g"
+    state: "[p1, p2, v1, v2]"
+    loss: "J = ||p2(T)||^2 + lambda sum ||u||^2 dt"
+    hash_9206: referenced
+    hash_9207: 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46
+    commit: 4bf3dff5c288b257041a2636c85020cc3873ac0b
+  hybrid_triple:
+    two_ball:
+      flow: "ds = f(s,u)"
+      guard: "||p2-p1||^2 = (2R)^2"
+      reset: elastic
+      filled: true
+    hopper:
+      flow: "ds = f(s,u)"
+      guard: "h + v t + 1/2 a t^2 = 0"
+      reset: velocity_reversal
+      filled: false
+      ledger: 9220_OPEN
+    mcp_lattice:
+      filled: false
+      bind: "127.0.0.1:8024"
+  garden_bin_v1:
+    magic: "GARDEN.B"
+    magic_bytes: 8
+    header_bytes: 90
+    trailer: SHA3-256
+    workers: [deploy, notify, verify, ledger, north-star]
+    ledger: 9226
+    hash_9226: 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8
+  event_hash_domain:
+    prefix: "GARDEN.EVENT.v1 || 0x00"
+    payload: "n|e|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+    ascii_b2_only: true
+  phi:
+    phi: 1.618033988749895
+    phi2: 2.618033988749895
+    theta: 2.5416018462
+    atlas: "phi^{-3}"
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+files:
+  - pythonIDE/optimize_toi.py
+  - pythonIDE/toi_step.py
+  - multibody_simulator/utils/binary_artifacts.py
+  - ledger/9225.yaml
+  - ledger/9226.yaml
+  - ledger/9227.yaml
+seal: "∀∞φ² · TODAY_MATH_PRECEDENT_LAYER · 9227_SEALED · 29eecf3c5f9caaa8d25613c93b2d64e420dac41a60bff642559b17d6cdbbf0ab"
+witness_chain: 9226 → 9227 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9227|/today_math_precedent_layer|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 29eecf3c5f9caaa8d25613c93b2d64e420dac41a60bff642559b17d6cdbbf0ab
+  Next free after 9227 is 9228+.

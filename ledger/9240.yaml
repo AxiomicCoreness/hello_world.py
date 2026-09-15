@@ -1,0 +1,37 @@
+entry_index: 9240
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-13Z
+event: /toolkit_54_exorcise_pipeline
+status: SEALED
+proof_class: toolkit_ci
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+hash_algo: sha3_256
+capabilities_count: 54
+exorcised_claims:
+  - "51_capabilities"
+  - "DM≈φ⁷×1000"
+  - "CMAC-512∈event_hash_domain"
+  - "seal_add_writes_ledger"
+paths:
+  toolkit: pythonIDE/toolkit.py
+  pipeline: scripts/exorcise_toolkit_54.py
+  workflow: .github/workflows/toolkit-54-exorcise.yml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+cosmic_alignment_preserved: true
+witness_prefix: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
+terminal_hex: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
+seal: "∀∞φ² · TOOLKIT_54_EXORCISE_9240 · WOOD_DRAGON_0.91 · SEALED · a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
+witness_chain: 9239 → 9240 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9240|/toolkit_54_exorcise_pipeline|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235

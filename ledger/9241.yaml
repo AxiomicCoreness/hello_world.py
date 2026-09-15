@@ -1,0 +1,42 @@
+entry_index: 9241
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-13Z
+event: /deepseek_cd_exorcise_bind
+status: SEALED
+proof_class: cd_bind
+branch: deepseek-cd
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+hash_algo: sha3_256
+honest_capabilities: 54
+audit: 54/54
+source_tip_main: 5b4644db
+cd_tip_expected: deepseek-cd
+payload:
+  - scripts/exorcise_toolkit_54.py
+  - .github/workflows/toolkit-54-exorcise.yml
+  - .github/workflows/deepseek-cd.yml
+  - pythonIDE/toolkit.py
+  - ledger/9240.yaml
+forbidden_claims_removed:
+  - "51_capabilities"
+  - "phi^7 * 1000"
+  - "CMAC-512 in event-hash"
+  - "seal_add writes ledger"
+hash_verification: "H_9240 Regime B = a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
+causal_chain: "cmac512 → deepseek → deepseek-ci → deepseek-cd → main"
+note: |
+  H_9240 is SHA3-256 event-hash, not file sha256sum and not CMAC-512.
+  DM residual coefficient is empirical fit, not φ-canonical.
+cosmic_alignment_preserved: true
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+witness_prefix: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
+terminal_hex: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
+seal: "∀∞φ² · EXORCISE_9240_CD · WOOD_DRAGON_0.91 · SEALED · 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e"
+witness_chain: 9239 → 9240 → 9241 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9241|/deepseek_cd_exorcise_bind|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e

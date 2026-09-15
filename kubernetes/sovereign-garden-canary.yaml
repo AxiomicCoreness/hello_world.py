@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-garden-canary
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: sovereign-garden, role: canary }
+  template:
+    metadata:
+      labels: { app: sovereign-garden, role: canary }
+    spec:
+      containers:
+        - name: engine
+          image: axiomic/sovereign-engine:canary
+          ports:
+            - { containerPort: 8000, name: http }
+          env:
+            - { name: PHASE_LOCK,   value: "202.6" }
+            - { name: NORTH_STAR,   value: "H6VSH2" }

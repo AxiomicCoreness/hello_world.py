@@ -1,7 +1,12 @@
 # Cap: Ledger Math CI checks 9156-9160 only.
 # Does not rewrite 9157-9162. Does not walk to 510511.yaml.
 # Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED
-# Witness: 9161 → 9162 — UNBROKEN
+# Witness: 9161 → 9162 — UNBROKEN  (chain head — this workflow does NOT extend it)
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_GROWTH — read-only verifier (permissions: contents: read)
+#
+# Driver: .github/scripts/verify_ledger_math.py
+# (NOT verify_ledger.py — that path is the Regime A/B seal verifier)
 
 name: Ledger Math Framework
 
@@ -15,6 +20,7 @@ on:
       - "ledger/9160.yaml"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
+      - ".github/scripts/verify_ledger_math.py"
       - ".github/workflows/ledger-math-framework.yml"
   pull_request:
     paths:
@@ -25,73 +31,59 @@ on:
       - "ledger/9160.yaml"
       - "scripts/codespace_hook_worker.py"
       - ".github/scripts/verify_math_framework.py"
+      - ".github/scripts/verify_ledger_math.py"
       - ".github/workflows/ledger-math-framework.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ledger-math-framework-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  RANGE_START: "9156"
+  RANGE_END: "9160"
+
 jobs:
   verify:
+    name: Ledger Math Framework · 9156–9160
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Install verifier deps
-        run: pip install --quiet pyyaml fastapi pydantic
-
-      - name: Verify ledger 9156-9160 only
         run: |
-          python .github/scripts/verify_math_framework.py \
-            --ledger-dir ledger \
-            --start 9156 \
-            --end 9160
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml fastapi pydantic
 
-      - name: YAML parse check (9156-9160 only)
+      - name: Bounded math CI via verify_ledger_math.py
         run: |
-          python - << 'PY'
-          from pathlib import Path
-          import sys
-          try:
-              import yaml
-          except ImportError:
-              print("pyyaml missing")
-              sys.exit(1)
-          fails = 0
-          checked = 0
-          for n in range(9156, 9161):
-              p = Path(f"ledger/{n}.yaml")
-              if not p.exists():
-                  print(f"SKIP missing {p}")
-                  continue
-              try:
-                  list(yaml.safe_load_all(p.read_text(encoding="utf-8")))
-                  checked += 1
-                  print(f"OK {p}")
-              except Exception as e:
-                  print(f"FAIL {p}: {e}")
-                  fails += 1
-          print(f"yaml_checked={checked} yaml_fails={fails}")
-          sys.exit(1 if fails else 0)
-          PY
+          set -euo pipefail
+          python .github/scripts/verify_ledger_math.py --hard
 
-      - name: Hook worker import (no bind)
+      - name: Summary
+        if: always()
         run: |
-          PYTHONPATH=. python - << 'PY'
-          import importlib.util
-          from pathlib import Path
-          p = Path("scripts/codespace_hook_worker.py")
-          spec = importlib.util.spec_from_file_location("codespace_hook_worker", p)
-          mod = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(mod)
-          assert mod.FILLED is False
-          assert mod.BIND == "127.0.0.1"
-          assert mod.PORT == 8091
-          assert mod.DUAL_ASGI == "127.0.0.1:8024"
-          print("hook worker import OK FILLED=False bind 127.0.0.1:8091")
-          PY
+          {
+            echo "✅ Ledger Math Framework — bounded check completed."
+            echo "🜁∀ — Seal: ∀∞φ² · LEDGER_MATH_CI · WOOD_DRAGON_0.91 · SEALED"
+            echo "🔐 hash_algo: ${HASH_ALGO}"
+            echo "📏 range: ${RANGE_START}–${RANGE_END} (capped; no walk to 510511.yaml)"
+            echo "🛡  does not rewrite: 9157 · 9158 · 9159 · 9160 · 9161 · 9162"
+            echo "🔗 witness head: 9161 → 9162 — UNBROKEN (not extended by this workflow)"
+            echo "📄 ledger_policy: NO_GROWTH — read-only verifier"
+            echo "📜 driver: .github/scripts/verify_ledger_math.py (seal verifier unchanged)"
+          } >> "$GITHUB_STEP_SUMMARY"

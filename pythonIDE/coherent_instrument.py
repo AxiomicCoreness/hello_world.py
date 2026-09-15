@@ -8,6 +8,59 @@ head seeding the next input. The chain is the closed-loop state, not a log.
 Precedent: garden_surgery/attenuation_package_confirmed.py (entry 8206)
 Ledger policy: NO_LEDGER_WRITE (this instrument only reads and appends locally)
 Next free ledger index: 9237+
+
+─────────────────────────────────────────────────────────────────────
+MERGE RATIONALE — resolution of `deepseek` × `main`
+─────────────────────────────────────────────────────────────────────
+Four conflict sites in this file. Resolution rule: `main` is a strict
+superset in every site — it either adds a docstring to a function
+deepseek left bare, or adds help text and named constants that
+deepseek omitted. Nothing from deepseek was dropped; the two sites
+where deepseek's content is non-empty (argparse help lines, main())
+carry only the bare forms of what main writes in full.
+
+Site-by-site:
+
+ 1. `_seed_from_head` — deepseek: empty / main: docstring
+    "Deterministic complex unit vector from chain head (SHA3
+    counter-mode)."
+    Kept: main.
+
+ 2. `_run_verify` — deepseek: empty / main: docstring
+    "Read-side check: verify the append-only HMAC chain."
+    Kept: main.
+
+ 3. `_build_parser` argparse block — deepseek: bare `add_argument`
+    calls with no help text / main: same calls + help strings on
+    every flag.
+    Kept: main. Both sides define the identical flag set; main's
+    help text is additive. The help strings are reproduced below
+    in the code, so no deepseek field was lost — its bare form is
+    the same call minus the `help=` kwarg.
+
+ 4. `main()` — deepseek: one line, just `parse_args` /
+    main: adds a named-constants block (NINJA_SUBAGENTS,
+    CHESSBOARD_FILES, CHESSBOARD_RANKS, CHESSBOARD_SQUARES,
+    LIGHTNING_IMPACT_HZ, PHASE_LOCK_DEG, NORTH_STAR_ID,
+    DEFAULT_N_AXES), rebinds args.n_axes from the bare default 7
+    to DEFAULT_N_AXES when the caller left it implicit, and emits a
+    `constants:` line on --verbose.
+    Kept: main. The `if args.n_axes == 7:` rebind is behaviourally
+    a no-op today (DEFAULT_N_AXES == NINJA_SUBAGENTS == 7) but is
+    kept because it documents intent — the axis count is meant to
+    align to the sevenfold worker matrix, not to a magic number.
+
+The only semantic change to either side: none. All of deepseek's
+non-empty content (the four `add_argument` calls, the single line
+in `main`) is present verbatim; main's additions sit alongside.
+
+Line-count accounting (raw ~215 → this file):
+  raw conflicted file .............................. ~215
+    – conflict markers (4 trios × 3) ............... 12
+    + merge-rationale header (this block) .......... 52
+    + blank lines surrounding main's additions ..... 3
+    = resolved file ............................... ~258
+─────────────────────────────────────────────────────────────────────
 """
 
 from __future__ import annotations
@@ -51,6 +104,7 @@ DEFAULT_CHAIN_OUT = "ledger/attenuation_chain.jsonl"
 
 
 def _seed_from_head(head_hex: str, n: int) -> np.ndarray:
+    """Deterministic complex unit vector from chain head (SHA3 counter-mode)."""
     raw = bytes.fromhex(head_hex)
     buf = b""
     counter = 0
@@ -127,6 +181,7 @@ def run(
 
 
 def _run_verify(chain_path: str, verbose: bool) -> int:
+    """Read-side check: verify the append-only HMAC chain."""
     print()
     print("=" * 72)
     print("VERIFY — read-side chain check")
@@ -146,20 +201,52 @@ def _build_parser() -> argparse.ArgumentParser:
             "The HMAC chain head seeds the next input."
         ),
     )
-    p.add_argument("--cycles", type=int, default=100)
-    p.add_argument("--dt", type=float, default=0.01)
-    p.add_argument("--n-axes", type=int, default=7)
-    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT)
-    p.add_argument("--no-emit", action="store_true")
-    p.add_argument("--json", action="store_true")
-    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("--cycles", type=int, default=100,
+                   help="number of learning cycles (default: 100)")
+    p.add_argument("--dt", type=float, default=0.01,
+                   help="learning rate / step size per cycle (default: 0.01)")
+    p.add_argument("--n-axes", type=int, default=7,
+                   help="density matrix dimensionality (default: 7)")
+    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT,
+                   help=f"chain JSONL path (default: {DEFAULT_CHAIN_OUT})")
+    p.add_argument("--no-emit", action="store_true",
+                   help="do not write the chain JSONL (run in-memory only)")
+    p.add_argument("--json", action="store_true",
+                   help="print final summary as JSON on stdout")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   help="print every cycle instead of every N/5 cycles")
     p.add_argument("--verify", action="store_true",
                    help="after the run, verify the HMAC chain (read-only)")
     return p
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Named constants (not ninja numbers) — quantum chessboard / impact lightning
+# ═══════════════════════════════════════════════════════════════════════════
+NINJA_SUBAGENTS = 7              # sevenfold worker matrix (deploy…north-star)
+CHESSBOARD_FILES = 8             # quantum chessboard file span
+CHESSBOARD_RANKS = 8             # quantum chessboard rank span
+CHESSBOARD_SQUARES = CHESSBOARD_FILES * CHESSBOARD_RANKS  # 64
+LIGHTNING_IMPACT_HZ = 6.49       # f₀ Hyperian ground readout
+PHASE_LOCK_DEG = 202.6           # equinox saturation phase lock
+NORTH_STAR_ID = "H6VSH2"
+DEFAULT_N_AXES = NINJA_SUBAGENTS  # axes align to sevenfold, not a bare 7
+
+
 def main(argv: List[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+
+    # Bind defaults to named constants when caller left CLI defaults implicit
+    if args.n_axes == 7:
+        args.n_axes = DEFAULT_N_AXES
+    if args.verbose:
+        print(
+            f"constants: ninja={NINJA_SUBAGENTS} "
+            f"chessboard={CHESSBOARD_SQUARES} "
+            f"lightning_hz={LIGHTNING_IMPACT_HZ} "
+            f"phase_lock={PHASE_LOCK_DEG}° "
+            f"north_star={NORTH_STAR_ID}"
+        )
 
     if args.cycles < 1:
         print("error: --cycles must be ≥ 1", file=sys.stderr)

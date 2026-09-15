@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: seagate-mimic
+  labels:
+    app.kubernetes.io/name: seagate-mimic
+    app.kubernetes.io/part-of: sovereign-engine
