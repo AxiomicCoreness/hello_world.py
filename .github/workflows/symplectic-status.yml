@@ -6,24 +6,28 @@ name: Symplectic Status Generation
 # ledger_policy: WRITE_VIA_SEAL — entry 8984 only (+ catch-all for external ledger changes)
 # witness: 8983 → 8984 — UNBROKEN
 #
-# fix: id: generate on generator step; hash/seal extracted to scripts/;
-#      summary asserts Φ_abs only when generator present (EXISTS=true).
+# ─────────────────────────────────────────────────────────────────
+# CORRECTION NOTES — this pass
+# ─────────────────────────────────────────────────────────────────
+# FIX A. actions/checkout@v5 → @v4
+#   v5 is not a released major. The runner cannot resolve it; the job
+#   would fail at checkout before any step ran. Current stable is v4.
 #
-# ═══════════════════════════════════════════════════════════════════
-#  QUANTUM / CYBERNETIC FRAME
-# ═══════════════════════════════════════════════════════════════════
+# FIX B. actions/setup-python@v6 → @v5
+#   v6 is not a released major. Current stable is v5.
 #
-#  ρ(t)          — the symplectic state of the lattice/celestial/FRB systems
-#  U(t)          — status generation is a read-only sampling channel
-#  Φ_abs(ρ)      — seal of entry 8984 (CPTP collapse of the observation)
-#  B(t)          — boundary: quantum/port_380_*.py (scaling gate)
-#  𝒜_n ⊆ 𝒜_{n+1} — isotony: entry 8984 extends the 89xx region
-#  Witness chain — 8979 → 8980 → 8981 → 8982 → 8983 → 8984 — UNBROKEN
+# Retained from prior correction pass:
+#   - id: generate on the generator step; seal reads steps.generate.outputs.*
+#   - hash/seal bodies extracted to scripts/hash_artifact.py and
+#     scripts/seal_symplectic_8984.py (no inline heredoc)
+#   - summary asserts Φ_abs only when EXISTS=true
 #
-#  The symplectic form ω is preserved across the sampling channel — the
-#  status generator does not mutate the underlying system, only observes
-#  its leaves. The Merkle leaves in HASH_MANIFEST.json are the observation
-#  basis; the aggregate JSON is the collapsed outcome.
+# One reconciliation note (not a fix, a flag):
+#   on.push.paths names ".github/workflows/symplectic-status.yml" while
+#   the file's `name:` header reads "Symplectic Status Generation". If
+#   the file on disk is symplectic-status-generation.yml, update the
+#   paths entry to match. Otherwise no action.
+# ─────────────────────────────────────────────────────────────────
 
 on:
   push:
@@ -63,12 +67,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4          # FIX A: was @v5
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5       # FIX B: was @v6
         with:
           python-version: "3.11"
           cache: pip
