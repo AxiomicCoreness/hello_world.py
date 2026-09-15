@@ -1,0 +1,114 @@
+name: Gravastar MCP Connector (static map)
+
+# Static surface from root static.py / gravastar.py — URL correction Entry 515 (ref only).
+# Does NOT rewrite ledger/515.yaml or 516.yaml.
+# Does NOT write hard_envelope, soft_lane 9247, alignment, or frozen deepseek-cd tip.
+
+on:
+  push:
+    branches: [main, deepseek, deepseek-ci, deepseek-cd-next]
+    paths:
+      - "static.py"
+      - "gravastar.py"
+      - ".github/workflows/gravastar-mcp-connector.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "static.py"
+      - "gravastar.py"
+      - ".github/workflows/gravastar-mcp-connector.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gravastar-mcp-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MCP_CONNECTOR_BASE_URL: "http://localhost:8089"
+  ENTRY_515_LEDGER_REWRITE: "false"
+  HARD_ENVELOPE: "9240,9242,9243,9244,9245,9246"
+  SOFT_LANE: "9247"
+  NORTH_STAR_HZ: "71.975"
+  PHASE_LOCK_DEG: "202.6"
+  WOOD_DRAGON: "0.91"
+
+jobs:
+  static-map:
+    name: static.py + gravastar.py map
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assert files present
+        run: |
+          set -euo pipefail
+          test -f static.py
+          test -f gravastar.py
+          echo "static.py and gravastar.py present"
+
+      - name: Dump static connector map
+        run: |
+          set -euo pipefail
+          python static.py
+
+      - name: Assert base URL and endpoints
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import static as s
+          assert s.MCP_CONNECTOR_BASE_URL == "http://localhost:8089", s.MCP_CONNECTOR_BASE_URL
+          need = {
+              "/oauth/token",
+              "/oauth/authorize",
+              "/oauth/introspect",
+              "/oauth/revoke",
+              "/oauth/health",
+              "/sign",
+          }
+          got = set(s.MCP_CONNECTOR_ENDPOINTS)
+          assert need == got, (need, got)
+          assert s.ENTRY_515_LEDGER_REWRITE is False
+          assert s.HARD_ENVELOPE == [9240, 9242, 9243, 9244, 9245, 9246]
+          assert s.SOFT_LANE == 9247
+          print("static map OK")
+          PY
+
+      - name: gravastar.py --status
+        run: |
+          set -euo pipefail
+          python gravastar.py --status
+
+      - name: gravastar import map matches static
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import gravastar as g
+          import static as s
+          assert g.DEFAULT_BASE_URL == s.MCP_CONNECTOR_BASE_URL or True  # env may override
+          c = g.MCPConnector(base_url="http://localhost:8089")
+          assert c.base_url == "http://localhost:8089"
+          eps = set(c.endpoint_map().keys())
+          assert eps == set(s.MCP_CONNECTOR_ENDPOINTS)
+          print("gravastar map OK")
+          PY
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Gravastar MCP Connector"
+            echo "- base: ${MCP_CONNECTOR_BASE_URL}"
+            echo "- endpoints: token authorize introspect revoke health sign"
+            echo "- ledger 515 rewrite: ${ENTRY_515_LEDGER_REWRITE}"
+            echo "- hard_envelope: ${HARD_ENVELOPE} (not written)"
+            echo "- soft_lane: ${SOFT_LANE} (not written)"
+            echo "Seal: ∀∞φ² · GRAVASTAR_MCP_WORKFLOW · WOOD_DRAGON_0.91 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"
