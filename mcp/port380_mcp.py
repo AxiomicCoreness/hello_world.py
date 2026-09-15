@@ -9,23 +9,31 @@
 #   MCP_NAMESPACE  default sovereign-garden
 # Empty-string MCP_PORT / MCP_BIND_HOST is rejected (not treated as default).
 #
+# --check-config JSON contract (stdout, exit 0 on success):
+#   {"host": "...", "port": 380, "namespace": "...",
+#    "bind_host": "...",  # alias of host
+#    "url": "http://host:port/healthz",
+#    "surface": ["/healthz"],
+#    "legacy_out_of_surface": ["/health", "/pulse"]}
+#
 # CLI (only under if __name__ == "__main__" — import never parses argv):
 #   python mcp/port380_mcp.py
 #   python mcp/port380_mcp.py --check-config
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Tuple
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 
 def parse_bind_env(
-    environ: dict | None = None,
+    environ: Optional[Mapping[str, str]] = None,
 ) -> Tuple[str, int, str]:
-    """Re-runnable bind parse. Used at import *and* by --check-config."""
-    env = environ if environ is not None else os.environ
+    """Re-runnable bind parse. Used by --check-config and serve."""
+    env: Mapping[str, str] = environ if environ is not None else os.environ
 
     if "MCP_NAMESPACE" in env:
         ns = env["MCP_NAMESPACE"]
@@ -39,7 +47,7 @@ def parse_bind_env(
         raw = env["MCP_PORT"]
         if raw == "":
             raise ValueError("MCP_PORT is empty string")
-        port = int(raw)  # ValueError on garbage e.g. abc
+        port = int(raw)
     elif "PORT" in env and env["PORT"] != "":
         port = int(env["PORT"])
     else:
@@ -58,26 +66,21 @@ def parse_bind_env(
     return host, port, namespace
 
 
-# Module-scope defaults for handlers / import-time inspection.
-# Import does not touch sys.argv. Serve path re-validates via parse_bind_env.
+# Module-scope for handler responses only. Import does not touch sys.argv.
 try:
     BIND_HOST, PORT, NAMESPACE = parse_bind_env()
 except ValueError:
-    # Defer hard fail to main/check-config so import of a misconfigured
-    # process still allows --help-style discovery; serve will re-raise.
     BIND_HOST, PORT, NAMESPACE = "0.0.0.0", 380, "sovereign-garden"
-    _IMPORT_PARSE_ERROR = True
-else:
-    _IMPORT_PARSE_ERROR = False
 
 
-def bind_plan(environ: dict | None = None) -> dict:
-    """Always re-parses — does not trust stale module-scope alone."""
+def bind_plan(environ: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
+    """Always re-parses env. JSON keys: host, port, namespace (stable CI contract)."""
     host, port, namespace = parse_bind_env(environ)
     return {
-        "bind_host": host,
+        "host": host,
         "port": port,
         "namespace": namespace,
+        "bind_host": host,  # alias — same value as host
         "url": f"http://{host}:{port}/healthz",
         "surface": ["/healthz"],
         "legacy_out_of_surface": ["/health", "/pulse"],
@@ -112,19 +115,17 @@ class MCPHandler(BaseHTTPRequestHandler):
         pass
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[list] = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
 
     if "--check-config" in argv:
-        import json
-
-        # Explicit re-parse of current os.environ — never trust only import-time.
         try:
-            plan = bind_plan()
+            plan = bind_plan()  # explicit re-parse
         except ValueError as e:
             print(f"check-config FAIL: {e}", file=sys.stderr)
             return 1
-        print(json.dumps(plan, indent=2))
+        # Single JSON object on stdout — CI parses with json.load, no regex
+        print(json.dumps(plan, sort_keys=True))
         return 0
 
     try:
@@ -133,18 +134,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[mcp] bad env: {e}", file=sys.stderr)
         return 1
 
-    # Keep handler constants in sync with re-parsed values
     global BIND_HOST, PORT, NAMESPACE
     BIND_HOST, PORT, NAMESPACE = host, port, namespace
 
-    print(
-        f"[mcp] binding {host}:{port} namespace={namespace}",
-        flush=True,
-    )
+    print(f"[mcp] binding {host}:{port} namespace={namespace}", flush=True)
     HTTPServer((host, port), MCPHandler).serve_forever()
     return 0
 
 
 if __name__ == "__main__":
-    # Guard: import mcp.port380_mcp never runs argv / never binds.
+    # Import of this module never runs argv and never binds.
     sys.exit(main())
