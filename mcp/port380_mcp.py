@@ -2,39 +2,83 @@
 # mcp/port380_mcp.py
 #
 # MCP gate — pod-internal surface. Wildcard bind is intentional.
-# Dependent artifact of sovereign-stack-ci / sovereignty-python-package.
 #
-# Env precedence (CI and prod use the same names — no PORT-only divergence):
-#   MCP_BIND_HOST  default 0.0.0.0   (wildcard by design; override to narrow)
-#   MCP_PORT       default 380       (legacy PORT accepted only as fallback)
+# Env (same names in CI and runtime):
+#   MCP_BIND_HOST  default 0.0.0.0
+#   MCP_PORT       default 380 (legacy PORT fallback only if MCP_PORT unset)
 #   MCP_NAMESPACE  default sovereign-garden
+# Empty-string MCP_PORT / MCP_BIND_HOST is rejected (not treated as default).
 #
-# North Star loopback (127.0.0.1:8024) governs ASGI only (app_main, flywheel).
-# This gate is the mesh-reachable surface: 0.0.0.0:$MCP_PORT by default.
-#
-# CLI:
-#   python mcp/port380_mcp.py              # serve
-#   python mcp/port380_mcp.py --check-config  # print bind plan, exit 0 (no socket)
+# CLI (only under if __name__ == "__main__" — import never parses argv):
+#   python mcp/port380_mcp.py
+#   python mcp/port380_mcp.py --check-config
 
 from __future__ import annotations
 
 import os
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-# --- bind config: MCP_* first, same keys in CI and runtime ---------------
-NAMESPACE = os.environ.get("MCP_NAMESPACE", "sovereign-garden")
-# Prefer MCP_PORT; fall back to PORT only if MCP_PORT unset (compat).
-PORT = int(os.environ["MCP_PORT"] if "MCP_PORT" in os.environ else os.environ.get("PORT", "380"))
-BIND_HOST = os.environ.get("MCP_BIND_HOST", "0.0.0.0")  # wildcard by design
+from typing import Tuple
 
 
-def bind_plan() -> dict:
+def parse_bind_env(
+    environ: dict | None = None,
+) -> Tuple[str, int, str]:
+    """Re-runnable bind parse. Used at import *and* by --check-config."""
+    env = environ if environ is not None else os.environ
+
+    if "MCP_NAMESPACE" in env:
+        ns = env["MCP_NAMESPACE"]
+        if ns == "":
+            raise ValueError("MCP_NAMESPACE is empty string")
+        namespace = ns
+    else:
+        namespace = "sovereign-garden"
+
+    if "MCP_PORT" in env:
+        raw = env["MCP_PORT"]
+        if raw == "":
+            raise ValueError("MCP_PORT is empty string")
+        port = int(raw)  # ValueError on garbage e.g. abc
+    elif "PORT" in env and env["PORT"] != "":
+        port = int(env["PORT"])
+    else:
+        port = 380
+
+    if not (1 <= port <= 65535):
+        raise ValueError(f"port out of range: {port}")
+
+    if "MCP_BIND_HOST" in env:
+        host = env["MCP_BIND_HOST"]
+        if host == "":
+            raise ValueError("MCP_BIND_HOST is empty string")
+    else:
+        host = "0.0.0.0"
+
+    return host, port, namespace
+
+
+# Module-scope defaults for handlers / import-time inspection.
+# Import does not touch sys.argv. Serve path re-validates via parse_bind_env.
+try:
+    BIND_HOST, PORT, NAMESPACE = parse_bind_env()
+except ValueError:
+    # Defer hard fail to main/check-config so import of a misconfigured
+    # process still allows --help-style discovery; serve will re-raise.
+    BIND_HOST, PORT, NAMESPACE = "0.0.0.0", 380, "sovereign-garden"
+    _IMPORT_PARSE_ERROR = True
+else:
+    _IMPORT_PARSE_ERROR = False
+
+
+def bind_plan(environ: dict | None = None) -> dict:
+    """Always re-parses — does not trust stale module-scope alone."""
+    host, port, namespace = parse_bind_env(environ)
     return {
-        "bind_host": BIND_HOST,
-        "port": PORT,
-        "namespace": NAMESPACE,
-        "url": f"http://{BIND_HOST}:{PORT}/healthz",
+        "bind_host": host,
+        "port": port,
+        "namespace": namespace,
+        "url": f"http://{host}:{port}/healthz",
         "surface": ["/healthz"],
         "legacy_out_of_surface": ["/health", "/pulse"],
     }
@@ -68,22 +112,39 @@ class MCPHandler(BaseHTTPRequestHandler):
         pass
 
 
-def main() -> int:
-    if "--check-config" in sys.argv:
+def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+
+    if "--check-config" in argv:
         import json
 
-        print(json.dumps(bind_plan(), indent=2))
+        # Explicit re-parse of current os.environ — never trust only import-time.
+        try:
+            plan = bind_plan()
+        except ValueError as e:
+            print(f"check-config FAIL: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps(plan, indent=2))
         return 0
 
-    plan = bind_plan()
+    try:
+        host, port, namespace = parse_bind_env()
+    except ValueError as e:
+        print(f"[mcp] bad env: {e}", file=sys.stderr)
+        return 1
+
+    # Keep handler constants in sync with re-parsed values
+    global BIND_HOST, PORT, NAMESPACE
+    BIND_HOST, PORT, NAMESPACE = host, port, namespace
+
     print(
-        f"[mcp] binding {plan['bind_host']}:{plan['port']} "
-        f"namespace={plan['namespace']}",
+        f"[mcp] binding {host}:{port} namespace={namespace}",
         flush=True,
     )
-    HTTPServer((BIND_HOST, PORT), MCPHandler).serve_forever()
+    HTTPServer((host, port), MCPHandler).serve_forever()
     return 0
 
 
 if __name__ == "__main__":
+    # Guard: import mcp.port380_mcp never runs argv / never binds.
     sys.exit(main())
