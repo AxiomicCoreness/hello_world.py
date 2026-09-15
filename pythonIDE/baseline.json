@@ -1,7 +1,5 @@
 {
-  "generated_at": "2026-09-15T17:30:40.831015+00:00",
-  "generated_at_legacy": "2026-09-15T17:30:40.525985+00:00",
-  "_generated_at_note": "Later of two concurrent generation passes. Earlier value preserved as _legacy for provenance. Merge policy: append-only, both values retained.",
+  "generated_at": "2026-09-15T17:53:45.957396+00:00",
   "surface": "pythonIDE",
   "not": "pythonista",
   "dual_asgi": "127.0.0.1:8024",
@@ -14,12 +12,5 @@
     "module": "/home/runner/work/hello_world.py/hello_world.py/fastMCP/__init__.py",
     "errors": []
   },
-  "ledger_rewrite": false,
-  "_merge_metadata": {
-    "resolved_on": "2026-09-15",
-    "conflict_count": 1,
-    "conflicted_field": "generated_at",
-    "resolution_rule": "later timestamp active, earlier preserved as _legacy",
-    "fields_dropped": []
-  }
+  "ledger_rewrite": false
 }
