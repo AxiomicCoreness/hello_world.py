@@ -31,6 +31,12 @@ env:
   PHASE_LOCK: "202.6"
   LIGHTNING_IMPACT_HZ: "6.49"
   LEDGER_HEAD: "9142"
+  # Same names as runtime — no CI-only PORT divergence
+  MCP_PORT: "13800"
+  MCP_BIND_HOST: "127.0.0.1"
+  MCP_NAMESPACE: "ci-smoke"
+  # Set to 1 for hard cutover: legacy /health /pulse must be 404
+  MCP_LEGACY_404_HARD: "0"
 
 jobs:
   app:
@@ -64,7 +70,7 @@ jobs:
           PY
 
   mcp:
-    name: mcp/ — compile + /healthz probe (scoped surface)
+    name: mcp/ — check-config + /healthz (same env as runtime)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -72,25 +78,48 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Compile check
         run: python -m py_compile mcp/port380_mcp.py
-      - name: Boot MCP on ephemeral port · probe /healthz only
+
+      - name: Hermetic --check-config (no socket)
         run: |
           set -euo pipefail
-          MCP_PORT=13800 MCP_BIND_HOST=127.0.0.1 MCP_NAMESPACE=ci-smoke \
-            python mcp/port380_mcp.py &
+          python mcp/port380_mcp.py --check-config | tee mcp_plan.json
+          python - <<'PY'
+          import json, os
+          p = json.load(open("mcp_plan.json"))
+          assert p["port"] == int(os.environ["MCP_PORT"]), p
+          assert p["bind_host"] == os.environ["MCP_BIND_HOST"], p
+          assert p["surface"] == ["/healthz"], p
+          print("ok: check-config matches CI env", p)
+          PY
+
+      - name: Live probe /healthz (same MCP_* env)
+        run: |
+          set -euo pipefail
+          python mcp/port380_mcp.py &
           pid=$!
           trap 'kill $pid 2>/dev/null || true' EXIT
           sleep 2
-          code=$(curl -sS -o /tmp/mcp_body -w "%{http_code}" http://127.0.0.1:13800/healthz)
+          code=$(curl -sS -o /tmp/mcp_body -w "%{http_code}" "http://127.0.0.1:${MCP_PORT}/healthz")
           echo "healthz=${code}"
-          cat /tmp/mcp_body || true
-          echo
+          cat /tmp/mcp_body; echo
           test "${code}" = "200"
-          # Contract: /health and /pulse are out of surface post-64315c44
-          code_h=$(curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:13800/health || true)
-          code_p=$(curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:13800/pulse || true)
-          echo "legacy /health=${code_h} /pulse=${code_p} (expect 404)"
+
+          code_h=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:${MCP_PORT}/health" || true)
+          code_p=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:${MCP_PORT}/pulse" || true)
+          echo "legacy /health=${code_h} /pulse=${code_p}"
+
+          if [ "${MCP_LEGACY_404_HARD}" = "1" ]; then
+            test "${code_h}" = "404"
+            test "${code_p}" = "404"
+            echo "ok: hard cutover — legacy routes 404"
+          else
+            if [ "${code_h}" != "404" ] || [ "${code_p}" != "404" ]; then
+              echo "::warning::legacy routes not 404 (transitional; set MCP_LEGACY_404_HARD=1 to fail)"
+            fi
+          fi
 
   k8s:
     name: k8s/ — manifest validation (7 files)
@@ -140,12 +169,10 @@ jobs:
           {
             echo "## Sovereign Stack CI"
             echo "- app/ : ${{ needs.app.result }}"
-            echo "- mcp/ : ${{ needs.mcp.result }} (probe /healthz only post-64315c44)"
+            echo "- mcp/ : ${{ needs.mcp.result }} (MCP_PORT=${MCP_PORT} MCP_BIND_HOST=${MCP_BIND_HOST})"
             echo "- k8s/ : ${{ needs.k8s.result }}"
             echo "- kubernetes/ : ${{ needs.kubernetes.result }}"
-            echo "- north_star: ${NORTH_STAR}"
-            echo "- phase_lock: ${PHASE_LOCK}"
-            echo "- lightning_hz: ${LIGHTNING_IMPACT_HZ}"
-            echo "- mcp contract: /healthz only; ASGI remains 127.0.0.1:8024"
+            echo "- mcp surface: /healthz only; legacy hard=${MCP_LEGACY_404_HARD}"
+            echo "- ASGI North Star: 127.0.0.1:8024"
             echo "Seal: ∀∞φ² · STACK_CI · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"

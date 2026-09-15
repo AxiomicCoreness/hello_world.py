@@ -2,26 +2,54 @@
 # mcp/port380_mcp.py
 #
 # MCP gate — pod-internal surface. Wildcard bind is intentional.
-# This file is the dependent artifact of .github/workflows/sovereignty-python-package.yml;
-# its bind behavior is scoped policy, not a North Star violation.
+# Dependent artifact of sovereign-stack-ci / sovereignty-python-package.
 #
-# North Star loopback rule (127.0.0.1:8024) governs ASGI listeners only:
-#   - app_main:app
-#   - fastapi_flywheel_gearbox:app
-# The MCP gate is the namespace-random-access surface and binds 0.0.0.0:$PORT by design.
+# Env precedence (CI and prod use the same names — no PORT-only divergence):
+#   MCP_BIND_HOST  default 0.0.0.0   (wildcard by design; override to narrow)
+#   MCP_PORT       default 380       (legacy PORT accepted only as fallback)
+#   MCP_NAMESPACE  default sovereign-garden
+#
+# North Star loopback (127.0.0.1:8024) governs ASGI only (app_main, flywheel).
+# This gate is the mesh-reachable surface: 0.0.0.0:$MCP_PORT by default.
+#
+# CLI:
+#   python mcp/port380_mcp.py              # serve
+#   python mcp/port380_mcp.py --check-config  # print bind plan, exit 0 (no socket)
+
+from __future__ import annotations
 
 import os
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
+# --- bind config: MCP_* first, same keys in CI and runtime ---------------
 NAMESPACE = os.environ.get("MCP_NAMESPACE", "sovereign-garden")
-PORT = int(os.environ.get("MCP_PORT", os.environ.get("PORT", "380")))
+# Prefer MCP_PORT; fall back to PORT only if MCP_PORT unset (compat).
+PORT = int(os.environ["MCP_PORT"] if "MCP_PORT" in os.environ else os.environ.get("PORT", "380"))
 BIND_HOST = os.environ.get("MCP_BIND_HOST", "0.0.0.0")  # wildcard by design
+
+
+def bind_plan() -> dict:
+    return {
+        "bind_host": BIND_HOST,
+        "port": PORT,
+        "namespace": NAMESPACE,
+        "url": f"http://{BIND_HOST}:{PORT}/healthz",
+        "surface": ["/healthz"],
+        "legacy_out_of_surface": ["/health", "/pulse"],
+    }
 
 
 class MCPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/healthz":
-            body = b'{"ok": true, "namespace": "' + NAMESPACE.encode() + b'"}'
+            body = (
+                b'{"ok": true, "namespace": "'
+                + NAMESPACE.encode()
+                + b'", "port": '
+                + str(PORT).encode()
+                + b"}"
+            )
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Security-Policy", "default-src 'none'")
@@ -40,6 +68,22 @@ class MCPHandler(BaseHTTPRequestHandler):
         pass
 
 
-if __name__ == "__main__":
-    print(f"[mcp] binding {BIND_HOST}:{PORT} namespace={NAMESPACE}", flush=True)
+def main() -> int:
+    if "--check-config" in sys.argv:
+        import json
+
+        print(json.dumps(bind_plan(), indent=2))
+        return 0
+
+    plan = bind_plan()
+    print(
+        f"[mcp] binding {plan['bind_host']}:{plan['port']} "
+        f"namespace={plan['namespace']}",
+        flush=True,
+    )
     HTTPServer((BIND_HOST, PORT), MCPHandler).serve_forever()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
