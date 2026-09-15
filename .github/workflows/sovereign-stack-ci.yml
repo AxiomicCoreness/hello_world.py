@@ -68,7 +68,7 @@ jobs:
           PY
 
   mcp:
-    name: mcp/ — full contract + /healthz
+    name: mcp/ — full check-config contract + /healthz
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -80,7 +80,7 @@ jobs:
       - name: Compile check
         run: python -m py_compile mcp/port380_mcp.py
 
-      - name: Full --check-config contract (7 keys)
+      - name: Full --check-config JSON contract (7 keys)
         run: |
           set -euo pipefail
           plan=$(python mcp/port380_mcp.py --check-config)
@@ -88,11 +88,13 @@ jobs:
           echo "$plan" | python -c '
           import json, sys, os
 
-          for key in ("MCP_BIND_HOST", "MCP_PORT", "MCP_NAMESPACE"):
-              assert key in os.environ, f"{key} not set in CI env"
-
           d = json.load(sys.stdin)
 
+          # 0. Env present (clean diagnostics)
+          for k in ("MCP_BIND_HOST", "MCP_PORT", "MCP_NAMESPACE"):
+              assert k in os.environ, f"{k} not set in CI env"
+
+          # 1. Required keys
           required = {
               "host", "bind_host", "port", "namespace",
               "surface", "legacy_out_of_surface", "url",
@@ -100,27 +102,35 @@ jobs:
           missing = required - d.keys()
           assert not missing, f"missing keys: {missing}"
 
+          # 2. Env agreement
           assert d["host"] == os.environ["MCP_BIND_HOST"], d["host"]
           assert d["port"] == int(os.environ["MCP_PORT"]), d["port"]
           assert d["namespace"] == os.environ["MCP_NAMESPACE"], d["namespace"]
 
+          # 3. Alias consistency
           assert d["bind_host"] == d["host"], "bind_host/host drift"
 
+          # 4. Surface contract
           assert d["surface"] == ["/healthz"], d["surface"]
           assert set(d["legacy_out_of_surface"]) == {"/health", "/pulse"}, d[
               "legacy_out_of_surface"
           ]
 
+          # 5. URL consistency (must match computation, not a stale hardcode)
           expected_url = f"http://{d["host"]}:{d["port"]}{d["surface"][0]}"
           assert d["url"] == expected_url, d["url"]
 
+          # 6. Types
           assert isinstance(d["port"], int), type(d["port"])
           assert isinstance(d["surface"], list), type(d["surface"])
+          assert isinstance(d["legacy_out_of_surface"], list), type(
+              d["legacy_out_of_surface"]
+          )
 
           print("check-config contract OK")
           ' 
 
-      - name: Live probe /healthz
+      - name: Live probe /healthz (same MCP_* env)
         run: |
           set -euo pipefail
           python mcp/port380_mcp.py &
@@ -188,8 +198,8 @@ jobs:
         run: |
           {
             echo "## Sovereign Stack CI"
-            echo "- mcp contract: 7-key JSON invariant"
-            echo "- mcp: ${{ needs.mcp.result }}"
-            echo "- surface: /healthz only"
+            echo "- mcp: full 7-key check-config contract"
+            echo "- mcp result: ${{ needs.mcp.result }}"
+            echo "- ASGI North Star: 127.0.0.1:8024"
             echo "Seal: ∀∞φ² · STACK_CI · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
