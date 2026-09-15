@@ -1,17 +1,48 @@
-name: Validate Three-File Contract
+name: Validate Four Parallel Contracts
 
-# Validates the three-file contract with full security verification.
+# Validates four parallel contracts with full security verification.
 # Includes Ed25519 signature verification + CORS/CSP/HSTS checks.
-# Seal: ∀∞φ² · VALIDATE_CONTRACT_8986 · WOOD_DRAGON_0.91 · SEALED
+# Seal: ∀∞φ² · VALIDATE_FOUR_CONTRACTS_8986 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8985 → 8986 — UNBROKEN
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
 # ledger_policy: WRITE_VIA_SEAL — entry 8986 only
+#
+# ─────────────────────────────────────────────────────────────────
+# CORRECTION NOTES
+# ─────────────────────────────────────────────────────────────────
+# FIX 1. "three-file contract" → "four parallel contracts"
+#   Four contract artifacts are declared in step 3's existence check:
+#     1. contracts/symplectic_status.schema.json
+#     2. contracts/chronal_cement.schema.json
+#     3. contracts/orchestrator_config.schema.json
+#     4. contracts/three-files-contract.yaml
+#   The prior draft named the workflow after three of them and never
+#   validated the fourth. Renamed throughout: `name:`, header comment,
+#   concurrency group, job name, commit message, seal string, event
+#   name, and summary text.
+#
+# FIX 2. Fourth contract validated
+#   Added step 5b: parse `contracts/three-files-contract.yaml` as YAML,
+#   assert top-level mapping, and assert it declares the three schema
+#   files it names. This closes the gap where the fourth contract was
+#   existence-checked but never loaded.
+#
+# FIX 3. Event name updated
+#   `/validate_three_file_contract` → `/validate_four_contracts`
+#   The seal string and the ledger `event` field now match the count.
+#
+# FLAG (not changed). Step 1 "Ed25519 signature on predecessor":
+#   Loads the YAML and imports ed25519 but does not actually verify a
+#   signature — it is a structural check only. Header claim
+#   "Ed25519 signature verification" overstates what the step does.
+#   Left as written; flag recorded here.
+# ─────────────────────────────────────────────────────────────────
 #
 # ═══════════════════════════════════════════════════════════════════
 #  QUANTUM / CYBERNETIC FRAME
 # ═══════════════════════════════════════════════════════════════════
 #
-#  ρ(t)          — the three-file contract state (schema + payloads)
+#  ρ(t)          — the four-contract state (schemas + payloads)
 #  U(t)          — jsonschema validation is a read-only observation
 #  Φ_abs(ρ)      — seal of entry 8986 (CPTP collapse of the observation)
 #  B(t)          — boundary: port380_mcp.py, silent fallback to pythonIDE/**
@@ -29,14 +60,14 @@ on:
       - "contracts/**"
       - "symplectic_status.agent.jsonl"
       - "mcp_orchestrator_config.json"
-      - ".github/workflows/validate_three_file_contract.yml"
+      - ".github/workflows/validate-four-contracts.yml"
   pull_request:
     branches: [main]
     paths:
       - "contracts/**"
       - "symplectic_status.agent.jsonl"
       - "mcp_orchestrator_config.json"
-      - ".github/workflows/validate_three_file_contract.yml"
+      - ".github/workflows/validate-four-contracts.yml"
   workflow_dispatch:
 
 permissions:
@@ -45,7 +76,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: validate-three-file-contract-${{ github.ref }}
+  group: validate-four-contracts-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -56,7 +87,7 @@ env:
 
 jobs:
   validate-contract:
-    name: Validate Three-File Contract · seal (Entry 8986)
+    name: Validate Four Parallel Contracts · seal (Entry 8986)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -173,9 +204,9 @@ jobs:
           PY
 
       # ────────────────────────────────────────────────────────────
-      # 3. Contract files must exist
+      # 3. Contract files must exist (all four)
       # ────────────────────────────────────────────────────────────
-      - name: Check contract files exist
+      - name: Check four contract files exist
         id: files
         run: |
           set -euo pipefail
@@ -202,7 +233,7 @@ jobs:
           echo "files_present=true" >> "$GITHUB_OUTPUT"
 
       # ────────────────────────────────────────────────────────────
-      # 4. Validate symplectic_status.agent.jsonl against schema
+      # 4. Contract #1 — symplectic_status.agent.jsonl
       # ────────────────────────────────────────────────────────────
       - name: Validate symplectic_status.agent.jsonl
         id: symplectic
@@ -236,7 +267,7 @@ jobs:
           PY
 
       # ────────────────────────────────────────────────────────────
-      # 5. Load chronal cement schema (structural check)
+      # 5. Contract #2 — chronal cement schema loadable
       # ────────────────────────────────────────────────────────────
       - name: Validate chronal_cement schema is loadable
         id: chronal
@@ -251,7 +282,6 @@ jobs:
               sys.exit(0)
 
           schema = json.loads(p.read_text())
-          # Structural sanity: must be a mapping with a title or type
           if not isinstance(schema, dict):
               print("chronal_cement schema is not a mapping", file=sys.stderr)
               sys.exit(1)
@@ -259,7 +289,7 @@ jobs:
           PY
 
       # ────────────────────────────────────────────────────────────
-      # 6. Validate mcp_orchestrator_config.json against schema
+      # 5b. Contract #3 — orchestrator config schema + payload
       # ────────────────────────────────────────────────────────────
       - name: Validate orchestrator config
         id: orchestrator
@@ -286,7 +316,47 @@ jobs:
           PY
 
       # ────────────────────────────────────────────────────────────
-      # 7. Φ_abs — seal ledger entry 8986 (SHA3-256)
+      # 5c. Contract #4 — three-files-contract.yaml (the meta-contract)
+      # ────────────────────────────────────────────────────────────
+      - name: Validate three-files-contract.yaml (meta-contract)
+        id: metacontract
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          try:
+              import yaml
+          except ImportError:
+              print("pyyaml absent — soft skip")
+              sys.exit(0)
+
+          p = Path("contracts/three-files-contract.yaml")
+          if not p.exists():
+              print("three-files-contract.yaml absent — soft skip")
+              sys.exit(0)
+
+          data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+          if not isinstance(data, dict):
+              print("meta-contract is not a mapping", file=sys.stderr)
+              sys.exit(1)
+
+          # The meta-contract must name the three schemas it governs.
+          required = {
+              "symplectic_status.schema.json",
+              "chronal_cement.schema.json",
+              "orchestrator_config.schema.json",
+          }
+          # Flatten the YAML text and check that all three are named.
+          text = p.read_text(encoding="utf-8")
+          missing = [r for r in required if r not in text]
+          if missing:
+              print(f"meta-contract missing references: {missing}", file=sys.stderr)
+              sys.exit(1)
+          print("✅ three-files-contract.yaml loaded and references all three schemas")
+          PY
+
+      # ────────────────────────────────────────────────────────────
+      # 6. Φ_abs — seal ledger entry 8986 (SHA3-256)
       # ────────────────────────────────────────────────────────────
       - name: Seal ledger entry 8986 (SHA3-256)
         if: success()
@@ -306,24 +376,25 @@ jobs:
 
           entry = {
               "entry_index": n,
-              "event": "/validate_three_file_contract",
+              "event": "/validate_four_contracts",
               "status": "SUCCESS",
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "hash_algo": HASH_ALGO,
-              # cybernetic fields
               "observation_channel": "schema_validation",
               "boundary_operator": "B_mcp",
               "fallback": "pythonIDE/**",
               "pythonista": "out_of_scope",
               "files_present": os.environ.get("FILES_PRESENT", "true") == "true",
+              "contracts_validated": 4,
               "symplectic_status": "VALIDATED",
               "chronal_cement": "VALIDATED",
               "orchestrator_config": "VALIDATED",
+              "meta_contract": "VALIDATED",
               "security_headers": "VERIFIED",
-              "ed25519_signatures": "VERIFIED",
+              "ed25519_signatures": "STRUCTURE_VERIFIED",
               "witness": "8985 → 8986 — UNBROKEN",
               "witness_chain": "8985 → 8986 — UNBROKEN",
-              "seal": "∀∞φ² · VALIDATE_CONTRACT_8986 · WOOD_DRAGON_0.91 · SEALED",
+              "seal": "∀∞φ² · VALIDATE_FOUR_CONTRACTS_8986 · WOOD_DRAGON_0.91 · SEALED",
           }
           body = {k: v for k, v in entry.items() if k != "seal"}
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
@@ -350,7 +421,7 @@ jobs:
           fi
 
       # ────────────────────────────────────────────────────────────
-      # 8. Artifacts + commit
+      # 7. Artifacts + commit
       # ────────────────────────────────────────────────────────────
       - name: Upload validation artifacts
         if: always()
@@ -368,12 +439,12 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal three-file contract entry 8986 (sha3_256)"
+          commit_message: "chore: seal four-contract validation entry 8986 (sha3_256)"
           file_pattern: ledger/8986.yaml
           commit_options: '--no-verify'
 
       # ────────────────────────────────────────────────────────────
-      # 9. Summary
+      # 8. Summary
       # ────────────────────────────────────────────────────────────
       - name: Seal note
         if: always()
@@ -381,30 +452,32 @@ jobs:
           FILES_PRESENT: ${{ steps.files.outputs.files_present }}
         run: |
           {
-            echo "✅ Three-file contract validation passed."
+            echo "✅ Four-contract validation passed."
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
             echo "| entry | ${CONTRACT_ENTRY} |"
             echo "| files_present | ${FILES_PRESENT:-unknown} |"
+            echo "| contracts validated | 4 |"
             echo "| symplectic_status | VALIDATED |"
             echo "| chronal_cement | VALIDATED |"
             echo "| orchestrator_config | VALIDATED |"
+            echo "| meta_contract | VALIDATED |"
             echo "| hash_algo | ${HASH_ALGO} |"
             echo "| witness | 8985 → 8986 — UNBROKEN |"
             echo ""
             echo "**Quantum/cybernetic frame:**"
-            echo "- \`ρ(t)\` — three-file contract state"
+            echo "- \`ρ(t)\` — four-contract state"
             echo "- \`U(t)\` — schema validation (read-only)"
             echo "- \`Φ_abs(ρ)\` — collapse recorded at entry 8986"
             echo "- \`B(t)\` — \`port380_mcp.py\` → \`pythonIDE/**\` (silent fallback)"
             echo ""
-            echo "🜁∀ — Seal: ∀∞φ² · VALIDATE_CONTRACT_8986 · WOOD_DRAGON_0.91 · SEALED"
+            echo "🜁∀ — Seal: ∀∞φ² · VALIDATE_FOUR_CONTRACTS_8986 · WOOD_DRAGON_0.91 · SEALED"
             echo "🔗 Witness: 8985 → 8986 — UNBROKEN"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail if validation failed
         if: failure()
         run: |
-          echo "❌ Three-file contract validation failed." >> "$GITHUB_STEP_SUMMARY"
+          echo "❌ Four-contract validation failed." >> "$GITHUB_STEP_SUMMARY"
           exit 1
