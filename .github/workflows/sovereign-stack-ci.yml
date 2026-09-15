@@ -64,7 +64,7 @@ jobs:
           PY
 
   mcp:
-    name: mcp/ — Fast MCP import + bind smoke
+    name: mcp/ — compile + /healthz probe (scoped surface)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -74,17 +74,23 @@ jobs:
           python-version: "3.12"
       - name: Compile check
         run: python -m py_compile mcp/port380_mcp.py
-      - name: Boot MCP on ephemeral port
+      - name: Boot MCP on ephemeral port · probe /healthz only
         run: |
-          PORT=13800 python - <<'PY' &
-          import os, sys, runpy
-          sys.argv = ["port380_mcp.py"]
-          os.environ["PORT"] = "13800"
-          runpy.run_path("mcp/port380_mcp.py", run_name="__main__")
-          PY
+          set -euo pipefail
+          MCP_PORT=13800 MCP_BIND_HOST=127.0.0.1 MCP_NAMESPACE=ci-smoke \
+            python mcp/port380_mcp.py &
+          pid=$!
+          trap 'kill $pid 2>/dev/null || true' EXIT
           sleep 2
-          curl -sS -o /dev/null -w "health=%{http_code}\n" http://127.0.0.1:13800/health
-          curl -sS -o /dev/null -w "pulse=%{http_code}\n"  http://127.0.0.1:13800/pulse
+          code=$(curl -sS -o /tmp/mcp_body -w "%{http_code}" http://127.0.0.1:13800/healthz)
+          echo "healthz=${code}"
+          cat /tmp/mcp_body || true
+          echo
+          test "${code}" = "200"
+          # Contract: /health and /pulse are out of surface post-64315c44
+          code_h=$(curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:13800/health || true)
+          code_p=$(curl -sS -o /dev/null -w "%{http_code}" http://127.0.0.1:13800/pulse || true)
+          echo "legacy /health=${code_h} /pulse=${code_p} (expect 404)"
 
   k8s:
     name: k8s/ — manifest validation (7 files)
@@ -134,11 +140,12 @@ jobs:
           {
             echo "## Sovereign Stack CI"
             echo "- app/ : ${{ needs.app.result }}"
-            echo "- mcp/ : ${{ needs.mcp.result }}"
+            echo "- mcp/ : ${{ needs.mcp.result }} (probe /healthz only post-64315c44)"
             echo "- k8s/ : ${{ needs.k8s.result }}"
             echo "- kubernetes/ : ${{ needs.kubernetes.result }}"
             echo "- north_star: ${NORTH_STAR}"
             echo "- phase_lock: ${PHASE_LOCK}"
             echo "- lightning_hz: ${LIGHTNING_IMPACT_HZ}"
+            echo "- mcp contract: /healthz only; ASGI remains 127.0.0.1:8024"
             echo "Seal: ∀∞φ² · STACK_CI · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
