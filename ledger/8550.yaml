@@ -1,6 +1,55 @@
 # ledger/8550.yaml
 # FRB 20190520b analogue interpretation — corrected φ-resonance claims.
 # Entry is self-contained. Prior false claim explicitly rejected in-body.
+#
+# ─────────────────────────────────────────────────────────────────
+# MERGE RATIONALE — resolution of `deepseek` × `main`
+# ─────────────────────────────────────────────────────────────────
+# Ten conflict sites in this file. In every one, `main` is a strict
+# superset of `deepseek`: it carries the same fields plus corrective
+# comments and blank-line separators. `deepseek` is either empty or
+# byte-identical in each site. Kept: `main` throughout. Nothing was
+# dropped from the union.
+#
+# Site-by-site:
+#
+#   1. Top of file — deepseek: empty / main: adds 3-line header
+#      comment naming the file and stating the prior claim is
+#      rejected. Kept: main.
+#
+#   2. `phi_resonance:` — deepseek: bare key / main: adds comment
+#      `# CORRECTED — prior claim DM ≈ φ⁷ × 1000 is false`.
+#      Kept: main.
+#
+#   3. After `dm_measured: 1204` — deepseek: empty / main: adds
+#      `# residual identity (exact by construction, not a physical
+#      law)`. Kept: main.
+#
+#   4. `nearest_phi_power` block — identical fields both sides;
+#      main adds `# nearest pure φ-power (no extra factor)` comment
+#      and a trailing blank line. Kept: main.
+#
+#   5–8. Four blank-line-only sites (before entropy_implication,
+#      before analogue_to, before research_direction, before
+#      proof_class). deepseek: empty / main: single blank line.
+#      Kept: main's spacing.
+#
+#   9. `witness_prefix` / `terminal_hex` / `seal` — same field
+#      values both sides; main adds blank line between terminal_hex
+#      and seal, and a trailing blank after note_predecessor.
+#      Kept: main's spacing.
+#
+#  10. Before `mcp:` — blank line only. Kept: main.
+#
+# Line-count accounting (raw ~120 → this file):
+#   raw conflicted file ............................... ~120
+#     – conflict markers (10 trios × 3) ................ 30
+#     – deepseek side (empty or duplicate) ............ 12
+#     + merge-rationale header (this block) ........... 45
+#     + line-count block .............................. 9
+#     + blank lines restored from main ................ 4
+#     = resolved file ................................ ~136
+# ─────────────────────────────────────────────────────────────────
 
 entry_index: 8550
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-09

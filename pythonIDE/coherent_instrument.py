@@ -8,6 +8,59 @@ head seeding the next input. The chain is the closed-loop state, not a log.
 Precedent: garden_surgery/attenuation_package_confirmed.py (entry 8206)
 Ledger policy: NO_LEDGER_WRITE (this instrument only reads and appends locally)
 Next free ledger index: 9237+
+
+─────────────────────────────────────────────────────────────────────
+MERGE RATIONALE — resolution of `deepseek` × `main`
+─────────────────────────────────────────────────────────────────────
+Four conflict sites in this file. Resolution rule: `main` is a strict
+superset in every site — it either adds a docstring to a function
+deepseek left bare, or adds help text and named constants that
+deepseek omitted. Nothing from deepseek was dropped; the two sites
+where deepseek's content is non-empty (argparse help lines, main())
+carry only the bare forms of what main writes in full.
+
+Site-by-site:
+
+ 1. `_seed_from_head` — deepseek: empty / main: docstring
+    "Deterministic complex unit vector from chain head (SHA3
+    counter-mode)."
+    Kept: main.
+
+ 2. `_run_verify` — deepseek: empty / main: docstring
+    "Read-side check: verify the append-only HMAC chain."
+    Kept: main.
+
+ 3. `_build_parser` argparse block — deepseek: bare `add_argument`
+    calls with no help text / main: same calls + help strings on
+    every flag.
+    Kept: main. Both sides define the identical flag set; main's
+    help text is additive. The help strings are reproduced below
+    in the code, so no deepseek field was lost — its bare form is
+    the same call minus the `help=` kwarg.
+
+ 4. `main()` — deepseek: one line, just `parse_args` /
+    main: adds a named-constants block (NINJA_SUBAGENTS,
+    CHESSBOARD_FILES, CHESSBOARD_RANKS, CHESSBOARD_SQUARES,
+    LIGHTNING_IMPACT_HZ, PHASE_LOCK_DEG, NORTH_STAR_ID,
+    DEFAULT_N_AXES), rebinds args.n_axes from the bare default 7
+    to DEFAULT_N_AXES when the caller left it implicit, and emits a
+    `constants:` line on --verbose.
+    Kept: main. The `if args.n_axes == 7:` rebind is behaviourally
+    a no-op today (DEFAULT_N_AXES == NINJA_SUBAGENTS == 7) but is
+    kept because it documents intent — the axis count is meant to
+    align to the sevenfold worker matrix, not to a magic number.
+
+The only semantic change to either side: none. All of deepseek's
+non-empty content (the four `add_argument` calls, the single line
+in `main`) is present verbatim; main's additions sit alongside.
+
+Line-count accounting (raw ~215 → this file):
+  raw conflicted file .............................. ~215
+    – conflict markers (4 trios × 3) ............... 12
+    + merge-rationale header (this block) .......... 52
+    + blank lines surrounding main's additions ..... 3
+    = resolved file ............................... ~258
+─────────────────────────────────────────────────────────────────────
 """
 
 from __future__ import annotations

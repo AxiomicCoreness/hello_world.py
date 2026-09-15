@@ -13,6 +13,77 @@ Policy:
 Canonical form (92xx-era / Regime A):
   payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   digest  = SHA3-256(b"GARDEN.EVENT.v1\\x00" + payload.encode("ascii"))
+
+─────────────────────────────────────────────────────────────────────
+MERGE RATIONALE — resolution of `deepseek` × `main`
+─────────────────────────────────────────────────────────────────────
+Twelve conflict sites. Grouped by kind.
+
+SUBSTANTIVE (main is a strict superset — no deepseek content dropped):
+
+  1. Module docstring.
+     deepseek: 3 lines ("read-only ... NO_LEDGER_WRITE. One-time
+               backfill = append NEW entry only (9237+).")
+     main:     full docstring with Policy section and canonical-form
+               template.
+     Kept: main. Its Policy section restates every claim deepseek's
+     header made, plus the canonical-form template.
+
+  2. `from pathlib import Path` (module imports).
+     deepseek: absent
+     main:     present
+     Kept: main's import BUT flagged below — see HONEST FLAG.
+
+  3. pyyaml import error message.
+     deepseek: "pyyaml required"
+     main:     "pyyaml required: python -m pip install pyyaml"
+     Kept: main. Additive remediation hint.
+
+  8. argparse block.
+     deepseek: bare `add_argument` calls
+     main:     same flags + help strings on all three
+     Kept: main. Same flag set, same defaults; help strings are
+     additive. deepseek's bare form is byte-identical to main's
+     minus the `help=` kwarg — no separate information to preserve.
+
+FORMATTING-ONLY (identical values, different whitespace; main's
+form kept — deepseek's differs only by line-wrapping):
+
+  4. `audit_branch` loop head.
+     deepseek: `for path in sorted(_git_list(branch, "ledger")):`
+     main:     `files = _git_list(branch, "ledger")` then
+               `for path in sorted(files):`
+     Behaviourally identical. main's intermediate is easier to
+     inspect under a debugger.
+
+  5. Blank line before `n = entry.get(...)` in `audit_branch`.
+  6. `rows.append({...})` single-line dict vs multi-line dict.
+  7. `_summary` initial dict single-line vs multi-line.
+  9. `json.dumps({...})` call single-line vs multi-line arg form.
+ 10. `print(f"branches = {branches}\n")` vs two prints.
+ 11. Summary-line f-string: one concatenated f-string vs four.
+ 12. `mismatches_only` print call: one-line vs multi-line + a
+     trailing blank line after the loop.
+
+  Sites 6, 7, 9 carry the exact same dict/list literals with only
+  line breaks differing. Sites 5, 10, 11, 12 produce byte-identical
+  stdout. Site 4 is a pure code-shape choice.
+
+HONEST FLAG:
+
+  `from pathlib import Path` (site 2) is not used anywhere in the
+  file — no `Path(...)`, no `.path` attribute access, no type hint
+  referencing it. It appears to be a leftover from a previous
+  version of main. Kept because removing an import that main added
+  would be silently changing main's side; but if you want it gone,
+  say so and the next pass drops it.
+
+Line-count accounting (raw ~248 → this file):
+  raw conflicted file ................................ ~248
+    – conflict markers (12 trios × 3) ................. 36
+    + merge-rationale header (this block) ............. 62
+    = resolved file .................................. ~274
+─────────────────────────────────────────────────────────────────────
 """
 
 from __future__ import annotations
