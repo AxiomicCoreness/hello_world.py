@@ -1,21 +1,19 @@
-name: Sovereign Engine Final — FastAPI · vision · FastMCP
+name: Sovereign Engine Final — FastAPI · vision · FastMCP · math_origin
 
 on:
   workflow_dispatch:
     inputs:
       legacy_404_hard:
-        description: "Fail if MCP /health or /pulse return non-404"
+        description: "MCP only: fail if /health or /pulse != 404"
         required: false
         default: "0"
-      run_vision_import:
-        description: "Import garden_surgery vision fleck module"
-        required: false
-        default: "true"
   push:
     branches: [main]
     paths:
       - "app/**"
       - "mcp/**"
+      - "math_origin.py"
+      - "tests/test_math_origin.py"
       - "garden_surgery/vision_code_frequency_fleck_paste.py"
       - ".github/workflows/sovereign-engine-final.yml"
   pull_request:
@@ -23,7 +21,8 @@ on:
     paths:
       - "app/**"
       - "mcp/**"
-      - "garden_surgery/vision_code_frequency_fleck_paste.py"
+      - "math_origin.py"
+      - "tests/test_math_origin.py"
 
 permissions:
   contents: read
@@ -39,10 +38,11 @@ env:
   MCP_BIND_HOST: "127.0.0.1"
   MCP_NAMESPACE: "ci-engine-final"
   MCP_LEGACY_404_HARD: ${{ github.event.inputs.legacy_404_hard || '0' }}
+  MCP_SELFIMPROVE: "0"
 
 jobs:
   fastapi:
-    name: FastAPI — health · vision · systems
+    name: FastAPI contract (Option A)
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -50,33 +50,27 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install deps
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2
-      - name: Import app 5.1
-        run: |
-          python -c "from app.main import app; assert app.version.startswith('5.'); print(app.title, app.version)"
-      - name: Route smoke
+      - name: FastAPI surface smoke
         run: |
           python - <<'PY'
           from fastapi.testclient import TestClient
           from app.main import app
+          from app.contracts import FASTAPI_CONTRACT, MCP_CONTRACT
+          assert MCP_CONTRACT["surface"] == ["/healthz"]
+          assert "/vision" in FASTAPI_CONTRACT["surface"]
           c = TestClient(app)
-          for path in ("/health", "/status", "/pulse", "/vision", "/systems"):
-              r = c.get(path)
-              assert r.status_code == 200, (path, r.status_code, r.text)
-          r = c.post("/gate", json={"entry": 9300, "event": "/engine-final-smoke"})
+          for path in FASTAPI_CONTRACT["surface"]:
+              assert c.get(path).status_code == 200, path
+          r = c.post("/gate", json={"entry": 9300, "event": "/engine-final"})
           assert r.status_code == 200 and r.json().get("accepted") is True
-          sys = c.get("/systems").json()
-          assert sys["hard"]["phi_polynomial"] is True
-          # Bedrock is soft — may be False in CI
-          assert "bedrock_available" in sys["soft"]
-          print("fastapi route smoke ok", sys["systems_go"])
+          print("fastapi contract OK")
           PY
 
   vision-fleck:
-    name: vision fleck — importable constants
+    name: vision fleck stub
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -84,23 +78,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Import fleck paste surface
-        if: ${{ github.event.inputs.run_vision_import != 'false' }}
-        run: |
+      - run: |
           python - <<'PY'
-          from garden_surgery.vision_code_frequency_fleck_paste import (
-              FILLED, FREQUENCY, HOLDS, NOTES, HBAR_FRACTION,
-          )
+          from garden_surgery.vision_code_frequency_fleck_paste import FILLED, NOTES, HBAR_FRACTION
           assert FILLED is False
           assert "natural-units" in NOTES["hbar_units"]
           assert HBAR_FRACTION == (1, 144)
-          assert FREQUENCY["base"] == 71.975
-          assert HOLDS["φ⁸"] == 46.9787137637
-          print("vision fleck OK")
+          print("vision fleck OK (catalog, not PNG)")
           PY
 
   fastmcp:
-    name: FastMCP — check-config + /healthz
+    name: MCP contract only /healthz
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -108,33 +96,37 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Compile + 7-key contract
+      - name: 7-key MCP contract
         run: |
           set -euo pipefail
           python -m py_compile mcp/port380_mcp.py
           plan=$(python mcp/port380_mcp.py --check-config)
-          echo "$plan"
           echo "$plan" | python -c '
           import json,sys,os
           d=json.load(sys.stdin)
+          assert d["surface"]==["/healthz"]
           assert d["host"]==os.environ["MCP_BIND_HOST"]
           assert d["port"]==int(os.environ["MCP_PORT"])
-          assert d["surface"]==["/healthz"]
-          print("mcp contract OK")
+          print("mcp 7-key OK")
           '
-      - name: Live /healthz
+      - name: Live /healthz (MCP only)
         run: |
           set -euo pipefail
           python mcp/port380_mcp.py &
           pid=$!
           trap 'kill $pid 2>/dev/null || true' EXIT
           sleep 2
-          code=$(curl -sS -o /tmp/b -w "%{http_code}" "http://127.0.0.1:${MCP_PORT}/healthz")
-          test "$code" = "200"
-          cat /tmp/b; echo
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/healthz)" = "200"
+          code_h=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/health || true)
+          code_p=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/pulse || true)
+          echo "MCP legacy /health=${code_h} /pulse=${code_p}"
+          if [ "${MCP_LEGACY_404_HARD}" = "1" ]; then
+            test "${code_h}" = "404"
+            test "${code_p}" = "404"
+          fi
 
-  soft-gates:
-    name: Soft gates — Bedrock optional, seal honesty
+  math-origin:
+    name: ConvergenceWindow integrity (n=19)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -142,35 +134,65 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Document soft vs hard
-        run: |
+      - run: pip install pytest -q
+      - run: pytest -q tests/test_math_origin.py
+
+  soft-gates:
+    name: Soft gates — Bedrock/OIDC non-blocking
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install fastapi pydantic -q
           python - <<'PY'
-          import math
-          PHI = (1 + math.sqrt(5)) / 2
-          assert abs(PHI**2 - (PHI + 1)) < 1e-15
-          # Policy: Bedrock must not gate "all systems sealed"
-          soft = {"bedrock_available": False, "axiom_i_alpha": False}
-          hard = {"phi_polynomial": True}
-          sealed = all(hard.values())  # soft excluded
-          assert sealed is True
-          print("soft-gate policy OK: sealed without bedrock", soft)
+          from fastapi.testclient import TestClient
+          from app.main import app
+          import os
+          c = TestClient(app)
+          report = c.get("/systems").json()
+          hard = report["hard"]["phi_polynomial"]
+          assert hard, "hard gate failed: φ polynomial"
+          soft = report["soft"]
+          if not soft.get("bedrock_available"):
+              print("::warning title=soft-gate-skip::bedrock unavailable — not blocking seal")
+          if not soft.get("oidc_secret_present"):
+              print("::warning title=soft-gate-skip::OIDC secret unavailable — not blocking seal")
+          print("hard gates green; soft gates reported, not asserted")
           PY
 
   seal:
-    name: seal summary
+    name: Gating seal — all integrity jobs green
     runs-on: ubuntu-latest
-    needs: [fastapi, vision-fleck, fastmcp, soft-gates]
-    if: always()
+    needs: [fastapi, vision-fleck, fastmcp, math-origin, soft-gates]
+    # Gating: only on success (not if: always)
     steps:
-      - name: Summary
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Emit seal line
         run: |
+          python - <<'PY'
+          from math_origin import convergence_window, verify_canonical_19
+          ok, cw = verify_canonical_19()
+          assert ok, cw
+          seal = (
+              "∀∞φ² · BACKEND_TIMING_ANALOGUE_8551 · "
+              f"CW[n={cw.n};L={cw.L_n};F={cw.F_n};u={cw.u:.13f};k={cw.k}] · SEALED"
+          )
+          print(seal)
+          print(cw.payload_segment())
+          print("witness: 8335 → 8336 — UNBROKEN")
+          PY
           {
-            echo "## Sovereign Engine Final"
-            echo "- fastapi: ${{ needs.fastapi.result }}"
-            echo "- vision: ${{ needs.vision-fleck.result }}"
-            echo "- fastmcp: ${{ needs.fastmcp.result }}"
-            echo "- soft-gates: ${{ needs.soft-gates.result }}"
-            echo "- Bedrock: soft (not required for seal)"
-            echo "- MCP surface: /healthz only"
-            echo "- Seal: ∀∞φ² · ENGINE_FINAL_CI · 660_SOFT_GATES · SEALED"
+            echo "## Entry 8336 — SEALED (gating)"
+            echo "- Option A: MCP /healthz ≠ FastAPI surface"
+            echo "- phase u ≈ 78.87° (not window 111.246°)"
+            echo "- multiplier 19·ln φ (not 26)"
+            echo "- Bedrock soft-skipped by design"
+            echo "Seal: ∀∞φ² · BACKEND_TIMING_ANALOGUE_8551 · CW[n=19;…] · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"

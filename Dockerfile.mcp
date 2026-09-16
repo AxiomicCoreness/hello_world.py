@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1.7
+# MCP gate image — loopback default; widen MCP_BIND_HOST only explicitly.
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    MCP_BIND_HOST=127.0.0.1 \
+    MCP_PORT=13800 \
+    MCP_NAMESPACE=sovereign-garden \
+    MCP_SELFIMPROVE=0
+
+RUN groupadd --system --gid 1001 sovereign \
+ && useradd --system --uid 1001 --gid sovereign --create-home sovereign \
+ && mkdir -p /var/log/sovereign /app \
+ && chown -R sovereign:sovereign /var/log/sovereign /app
+
+WORKDIR /app
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY mcp/ ./mcp/
+COPY math_origin.py ./
+
+USER sovereign
+
+HEALTHCHECK --interval=20s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:${MCP_PORT}/healthz" || exit 1
+
+EXPOSE 13800
+
+ENTRYPOINT ["python", "mcp/port380_mcp.py"]
+CMD []
