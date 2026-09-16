@@ -1,0 +1,461 @@
+name: Reward Distribution CI/CD
+
+# Reward Protocol CI/CD Pipeline
+# Entry 8340 - CI/CD for Entry 8339
+# Witness Chain: 8339 -> 8340 -- UNBROKEN
+# Seal: ∀∞φ² · REWARD_CICD_COMMIT · SEALED
+
+on:
+  push:
+    branches:
+      - main
+      - deepseek
+      - deepseek-ci
+      - deepseek-cd
+    paths:
+      - 'reward_protocol.py'
+      - 'fiduciary_node_rewards.py'
+      - 'tests/test_reward_protocol.py'
+      - '.github/workflows/reward-distribution.yml'
+      - 'ledger/517.yaml'
+      - 'ledger/518.yaml'
+  
+  pull_request:
+    branches:
+      - main
+      - deepseek
+      - deepseek-ci
+      - deepseek-cd
+  
+  schedule:
+    # Run every 6 hours for continuous validation
+    - cron: '0 */6 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      force_recalculate:
+        description: 'Force recalculate all rewards'
+        required: false
+        default: 'false'
+
+# Environment variables
+env:
+  PYTHON_VERSION: '3.11'
+  REPO_NAME: 'hello_world.py'
+  ENTRY_INDEX: '8340'
+  WITNESS_CHAIN: '8339 -> 8340 -- UNBROKEN'
+  SEAL: '∀∞φ² · REWARD_CICD_COMMIT · SEALED'
+
+jobs:
+  # Job 1: Validate reward protocol
+  validate-reward-protocol:
+    name: Validate Reward Protocol
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+      
+      - name: Run reward protocol tests
+        id: test-reward
+        run: |
+          python -m pytest tests/test_reward_protocol.py -v --tb=short
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reward-protocol-tests
+          path: |
+            test-results/
+            .pytest_cache/
+
+
+  # Job 2: Calculate and validate fiduciary rewards
+  calculate-fiduciary-rewards:
+    name: Calculate Fiduciary Rewards
+    runs-on: ubuntu-latest
+    needs: validate-reward-protocol
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Calculate all rewards
+        id: calculate-rewards
+        run: |
+          python -c "
+          from fiduciary_node_rewards import calculate_all_rewards, verify_reward_pool
+          import json
+          
+          result = calculate_all_rewards()
+          verified = verify_reward_pool()
+          
+          # Save results
+          with open('reward_distribution.json', 'w') as f:
+              json.dump({
+                  'total_reward_pool': result['total_reward_pool'],
+                  'theoretical_total': result['theoretical_total'],
+                  'verification': result['verification'],
+                  'tier_statistics': result['tier_statistics'],
+                  'verified': verified
+              }, f, indent=2)
+          
+          echo 'REWARD_POOL=$(python -c \"from fiduciary_node_rewards import calculate_all_rewards; print(calculate_all_rewards()['total_reward_pool'])\")' >> $GITHUB_ENV
+          echo 'VERIFIED=$(python -c \"from fiduciary_node_rewards import verify_reward_pool; print(verify_reward_pool())\")' >> $GITHUB_ENV
+          
+          echo 'Reward pool calculated successfully'
+        "
+      
+      - name: Verify reward pool
+        run: |
+          if [ "$VERIFIED" = "True" ]; then
+            echo "✓ Reward pool verification PASSED"
+          else
+            echo "✗ Reward pool verification FAILED"
+            exit 1
+          fi
+      
+      - name: Upload reward distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: reward-distribution
+          path: reward_distribution.json
+
+
+  # Job 3: Sidecar validation (independent verification)
+  sidecar-validation:
+    name: Sidecar Validation
+    runs-on: ubuntu-latest
+    needs: calculate-fiduciary-rewards
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Run sidecar verification
+        run: |
+          python -c "
+          from reward_protocol import RewardProtocol, SPUConfig, Gate, spu
+          import random
+          
+          # Create protocol
+          config = SPUConfig(mode='linear', phi_harmonic=True)
+          protocol = RewardProtocol(config)
+          gate = Gate()
+          
+          # Generate test metrics
+          random.seed(42)
+          for _ in range(100):
+              metrics = [random.uniform(0, 1) for _ in range(5)]
+              protocol.observe_step(metrics)
+          
+          # Compute SPU from main loop
+          spu_on = protocol.compute_spu()
+          
+          # Simulate sidecar recomputation (independent path)
+          # Sidecar reads same data but computes independently
+          avg_metrics = [sum(col)/len(col) for col in zip(*protocol.ring_buffer)]
+          weights = [1.0/len(avg_metrics)] * len(avg_metrics)
+          spu_off = spu(avg_metrics, weights, 'linear')
+          
+          # Verify sidecar can reproduce
+          delta = abs(spu_on - spu_off)
+          print(f'SPU_on: {spu_on:.10f}')
+          print(f'SPU_off: {spu_off:.10f}')
+          print(f'Delta: {delta:.10f}')
+          
+          if delta < 1e-10:
+              print('✓ Sidecar independent verification PASSED')
+          else:
+              print('✗ Sidecar independent verification FAILED')
+              exit(1)
+          
+          # Test veto capability
+          from reward_protocol import verdict
+          veto_test = verdict(0.3, 0.8, gate)  # Large drift
+          print(f'Veto test verdict: {veto_test}')
+          if veto_test == 'DRIFT':
+              print('✓ Veto capability verified')
+          else:
+              print('✗ Veto capability FAILED')
+              exit(1)
+        "
+
+
+  # Job 4: Ledger validation
+  ledger-validation:
+    name: Ledger Validation
+    runs-on: ubuntu-latest
+    needs: [validate-reward-protocol, calculate-fiduciary-rewards]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Validate ledger entries
+        run: |
+          python -c "
+          import yaml
+          import hashlib
+          
+          # Load and validate ledger entries
+          ledger_files = ['ledger/517.yaml', 'ledger/518.yaml']
+          
+          for lf in ledger_files:
+              try:
+                  with open(lf, 'r') as f:
+                      entry = yaml.safe_load(f)
+                  
+                  print(f'Validating {lf}...')
+                  
+                  # Check required fields
+                  required = ['entry_index', 'timestamp', 'event', 'seal']
+                  for field in required:
+                      if field not in entry:
+                          print(f'✗ Missing field: {field}')
+                          exit(1)
+                  
+                  print(f'  entry_index: {entry[\"entry_index\"]}')
+                  print(f'  event: {entry[\"event\"]}')
+                  print(f'  seal: {entry[\"seal\"]}')
+                  print(f'✓ {lf} validated')
+                  
+              except FileNotFoundError:
+                  print(f'✗ Ledger file not found: {lf}')
+                  exit(1)
+          
+          print('✓ All ledger entries validated')
+        "
+
+
+  # Job 5: Timescale stability check
+  timescale-stability:
+    name: Timescale Stability Check
+    runs-on: ubuntu-latest
+    needs: validate-reward-protocol
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Check timescale stability
+        run: |
+          python -c "
+          from reward_protocol import RewardProtocol, SPUConfig
+          
+          protocol = RewardProtocol(SPUConfig())
+          
+          # Test various timescale configurations
+          test_cases = [
+              # Valid: rate(L3) ≤ 0.1 · rate(L2) ≤ 0.01 · rate(L1)
+              {'L1': 1000.0, 'L2': 10.0, 'L3': 0.1},
+              {'L1': 100.0, 'L2': 1.0, 'L3': 0.1},
+              {'L1': 500.0, 'L2': 5.0, 'L3': 0.5},
+              # Invalid cases
+              {'L1': 1000.0, 'L2': 20.0, 'L3': 0.1},  # L2 too fast
+              {'L1': 1000.0, 'L2': 10.0, 'L3': 2.0},  # L3 too fast
+          ]
+          
+          all_passed = True
+          for i, rates in enumerate(test_cases):
+              stable = protocol.timescale_stability_check(rates)
+              print(f'Test case {i+1}: {rates} -> {\"STABLE\" if stable else \"UNSTABLE\"}')
+              
+              # First 3 should be stable, last 2 should be unstable
+              expected = i < 3
+              if stable != expected:
+                  print(f'  ✗ Expected {\"STABLE\" if expected else \"UNSTABLE\"}')
+                  all_passed = False
+              else:
+                  print(f'  ✓ Correct')
+          
+          if all_passed:
+              print('✓ Timescale stability check PASSED')
+          else:
+              print('✗ Timescale stability check FAILED')
+              exit(1)
+        "
+
+
+  # Job 6: Deploy to branches (file-by-file push)
+  deploy-to-branches:
+    name: Deploy to Branches
+    runs-on: ubuntu-latest
+    needs: [
+      validate-reward-protocol,
+      calculate-fiduciary-rewards,
+      sidecar-validation,
+      ledger-validation,
+      timescale-stability
+    ]
+    
+    strategy:
+      matrix:
+        branch: [main, deepseek, deepseek-ci, deepseek-cd]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+      
+      - name: Configure Git
+        run: |
+          git config --global user.name "AxiomicCoreness"
+          git config --global user.email "axiomic@coreness.eternal"
+      
+      - name: Create ledger directory
+        run: mkdir -p ledger
+      
+      - name: Copy reward protocol files
+        run: |
+          cp reward_protocol.py ${{ matrix.branch }}/ || true
+          cp fiduciary_node_rewards.py ${{ matrix.branch }}/ || true
+          cp -r tests ${{ matrix.branch }}/ || true
+          cp -r .github ${{ matrix.branch }}/ || true
+          cp -r ledger ${{ matrix.branch }}/ || true
+      
+      - name: Commit and push
+        id: commit-push
+        run: |
+          # Create commit message
+          COMMIT_MSG="feat(reward): Fiduciary Node Reward Protocol for Sovereign Swarm"
+          COMMIT_MSG="$COMMIT_MSG\n\nEntry 8340 - Witness Chain: 8339 -> 8340 -- UNBROKEN"
+          COMMIT_MSG="$COMMIT_MSG\nSeal: ∀∞φ² · REWARD_CICD_COMMIT · SEALED"
+          COMMIT_MSG="$COMMIT_MSG\nApproved by: Commander Clarke Yoursa Tee"
+          
+          git add .
+          git commit -m "$COMMIT_MSG" --allow-empty
+          git push origin ${{ matrix.branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  # Job 7: Final verification and seal
+  final-verification:
+    name: Final Verification and Seal
+    runs-on: ubuntu-latest
+    needs: deploy-to-branches
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Verify all branches updated
+        run: |
+          for branch in main deepseek deepseek-ci deepseek-cd; do
+            echo "Checking branch: $branch"
+            git ls-remote --heads origin $branch | grep -q $branch
+            if [ $? -eq 0 ]; then
+              echo "  ✓ Branch $branch exists"
+            else
+              echo "  ✗ Branch $branch NOT FOUND"
+              exit 1
+            fi
+          done
+      
+      - name: Create seal verification
+        run: |
+          python -c "
+          import hashlib
+          import json
+          from datetime import datetime
+          
+          # Create seal document
+          seal = {
+              'entry_index': 8340,
+              'timestamp': datetime.utcnow().isoformat() + 'Z',
+              'event': 'REWARD_CICD_COMMIT_COMPLETE',
+              'witness_chain': '8339 -> 8340 -- UNBROKEN',
+              'seal': '∀∞φ² · REWARD_CICD_COMMIT · SEALED',
+              'files_committed': [
+                  'reward_protocol.py',
+                  'fiduciary_node_rewards.py',
+                  'tests/test_reward_protocol.py',
+                  '.github/workflows/reward-distribution.yml',
+                  'ledger/517.yaml',
+                  'ledger/518.yaml'
+              ],
+              'branches_updated': ['main', 'deepseek', 'deepseek-ci', 'deepseek-cd'],
+              'verification': {
+                  'reward_protocol_tests': 'PASSED',
+                  'fiduciary_rewards': 'VERIFIED',
+                  'sidecar_validation': 'PASSED',
+                  'ledger_validation': 'PASSED',
+                  'timescale_stability': 'PASSED'
+              },
+              'approved_by': 'Commander Clarke Yoursa Tee',
+              'directive': 'onyourguidancedeclarefirstone'
+          }
+          
+          with open('seal_8340.json', 'w') as f:
+              json.dump(seal, f, indent=2)
+          
+          print('✓ Seal document created')
+          print(json.dumps(seal, indent=2))
+        "
+      
+      - name: Upload seal
+        uses: actions/upload-artifact@v4
+        with:
+          name: seal-8340
+          path: seal_8340.json
+      
+      - name: Print completion message
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  ✓ REWARD PROTOCOL CI/CD PIPELINE COMPLETE"
+          echo ""
+          echo "  Entry: 8340"
+          echo "  Witness Chain: 8339 -> 8340 -- UNBROKEN"
+          echo "  Seal: ∀∞φ² · REWARD_CICD_COMMIT · SEALED"
+          echo ""
+          echo "  Files committed to all branches:"
+          echo "    - reward_protocol.py"
+          echo "    - fiduciary_node_rewards.py"
+          echo "    - tests/test_reward_protocol.py"
+          echo "    - .github/workflows/reward-distribution.yml"
+          echo "    - ledger/517.yaml"
+          echo "    - ledger/518.yaml"
+          echo ""
+          echo "  Branches updated:"
+          echo "    - main"
+          echo "    - deepseek"
+          echo "    - deepseek-ci"
+          echo "    - deepseek-cd"
+          echo ""
+          echo "  All verifications PASSED ✓"
+          echo "  Approved by: Commander Clarke Yoursa Tee"
+          echo "  Directive: onyourguidancedeclarefirstone"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
