@@ -1,0 +1,62 @@
+# FastMCP / MCP gate — machine-readable firing sequence (stub)
+# Option A: MCP surface ≠ FastAPI surface
+# Readable by humans and by sequence runners (no sockets opened by parsing this file).
+
+version: 1
+name: fastmcp_firing_sequence
+mode: stub
+live_bind: false
+
+env_defaults:
+  MCP_BIND_HOST: "127.0.0.1"
+  MCP_PORT: "13800"
+  MCP_NAMESPACE: "sovereign-garden"
+  MCP_SELFIMPROVE: "0"
+  AUTO_FILE: "0"
+
+contract:
+  surface: ["/healthz"]
+  legacy_out_of_surface: ["/health", "/pulse"]
+  check_config: "python mcp/port380_mcp.py --check-config"
+
+# Ordered steps — each step is declarative; runners execute only if mode != stub
+# or FORCE_LIVE=1 is set outside this file.
+sequence:
+  - id: 10_env
+    action: assert_env
+    keys: [MCP_BIND_HOST, MCP_PORT, MCP_NAMESPACE]
+    reject_empty: true
+
+  - id: 20_check_config
+    action: run
+    cmd: ["python", "mcp/port380_mcp.py", "--check-config"]
+    expect:
+      json_keys: [host, port, namespace, bind_host, url, surface, legacy_out_of_surface]
+      surface: ["/healthz"]
+
+  - id: 30_math_origin
+    action: run
+    cmd: ["python", "-c", "from math_origin import verify_canonical_19; ok,_=verify_canonical_19(); assert ok"]
+    optional: false
+
+  - id: 40_fastapi_contract
+    action: note
+    text: "FastAPI surface is separate — /health /status /pulse /vision /systems; not MCP"
+
+  - id: 50_healthz_probe
+    action: http_get
+    url: "http://127.0.0.1:${MCP_PORT}/healthz"
+    expect_status: 200
+    requires_daemon: true
+    skip_if_stub: true
+
+  - id: 60_patent_automation
+    action: skip
+    reason: "auto_file=false; no USPTO/EPO live submit from this sequence"
+
+  - id: 70_selfimprove
+    action: skip
+    reason: "MCP_SELFIMPROVE!=1"
+
+halt_on_fail: true
+seal_line: "∀∞φ² · FASTMCP_FIRING_STUB · SURFACE_/healthz · SEALED"
