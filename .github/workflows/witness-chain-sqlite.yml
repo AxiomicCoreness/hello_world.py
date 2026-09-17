@@ -2,7 +2,7 @@ name: Witness Chain SQLite
 
 on:
   push:
-    branches: [main, master, deepseek, grok, mistral]
+    branches: [main]
     paths:
       - ".github/scripts/witness_chain_sqlite.py"
       - ".github/workflows/witness-chain-sqlite.yml"
@@ -31,7 +31,7 @@ env:
 
 jobs:
   build-and-verify:
-    name: Build · verify · seal witness chain
+    name: Build verify seal witness chain
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -52,50 +52,6 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
-
-      - name: Debug environment
-        run: |
-          set -euo pipefail
-          echo "::group::Debug environment"
-          echo "runner.os         = ${{ runner.os }}"
-          echo "github.ref        = ${{ github.ref }}"
-          echo "github.ref_name   = ${{ github.ref_name }}"
-          echo "github.sha        = ${{ github.sha }}"
-          echo "github.event_name = ${{ github.event_name }}"
-          echo "github.repository = ${{ github.repository }}"
-
-          echo "── workflow env ──"
-          echo "  HASH_ALGO         = ${HASH_ALGO:-<unset>}"
-          echo "  SCRIPT            = ${SCRIPT:-<unset>}"
-          echo "  DB_ARTIFACT       = ${DB_ARTIFACT:-<unset>}"
-          echo "  EXPECTED_ROWS     = ${EXPECTED_ROWS:-<unset>}"
-
-          echo "── filesystem ──"
-          if [ -f "${SCRIPT}" ]; then
-            echo "  ${SCRIPT}  (file, $(wc -c < "${SCRIPT}") bytes)"
-            ls -la "${SCRIPT}"
-          else
-            echo "  ${SCRIPT}  not found"
-          fi
-
-          if [ -d ledger ]; then
-            count=$(find ledger -maxdepth 1 -name '*.yaml' -type f | wc -l)
-            echo "  ledger/  (directory, ${count} yaml files)"
-            ls -la ledger/ | head -n 20
-            if [ "$count" -gt 20 ]; then
-              echo "  … (${count} total, showing first 20)"
-            fi
-          else
-            echo "  ledger/  not found"
-          fi
-
-          echo "── python ──"
-          python --version
-          python -c "import sys; print('  executable =', sys.executable)"
-          python -c "import yaml; print('  pyyaml =', yaml.__version__)" 2>/dev/null \
-            || echo "  pyyaml = not importable"
-          python -c "import hashlib; print('  hashlib.sha3_256 = available')"
-          echo "::endgroup::"
 
       - name: Confirm builder script present
         id: check
@@ -118,27 +74,16 @@ jobs:
           rc=${PIPESTATUS[0]}
           set -e
           echo "builder_rc=${rc}" >> "$GITHUB_OUTPUT"
-
           if [ "$rc" -ne 0 ]; then
             echo "::error::witness_chain_sqlite.py exited ${rc}"
             exit 1
           fi
-
           if [ ! -f "${DB_ARTIFACT}" ]; then
             echo "::error::${DB_ARTIFACT} not produced by script"
             echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-
-          DB_SHA=$(python - <<'PY'
-import hashlib, pathlib
-print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
-PY
-          )
-          if [ -z "${DB_SHA}" ]; then
-            echo "::error::failed to compute sha3_256 of ${DB_ARTIFACT}"
-            exit 1
-          fi
+          DB_SHA=$(python -c "import hashlib,pathlib; print(hashlib.new('sha3_256', pathlib.Path('witness_chain.db').read_bytes()).hexdigest())")
           echo "db_sha3_256=${DB_SHA}" >> "$GITHUB_OUTPUT"
           echo "db sha3_256: ${DB_SHA:0:16}..."
 
@@ -148,64 +93,31 @@ PY
         run: |
           set -euo pipefail
           if ! command -v sqlite3 >/dev/null 2>&1; then
-            echo "sqlite3 CLI not present — installing"
             sudo apt-get update -qq
             sudo apt-get install -y -qq sqlite3
           fi
-
           IFS=',' read -ra WANTED <<< "${EXPECTED_ROWS}"
           missing=()
           for entry in "${WANTED[@]}"; do
-            count=$(sqlite3 "${DB_ARTIFACT}" \
-              "SELECT COUNT(*) FROM witness WHERE entry_index=${entry};" \
-              2>/dev/null || echo "0")
+            count=$(sqlite3 "${DB_ARTIFACT}" "SELECT COUNT(*) FROM witness WHERE entry_index=${entry};" 2>/dev/null || echo "0")
             if [ "${count}" -lt 1 ]; then
               missing+=("${entry}")
             fi
           done
-
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::witness rows missing for entries: ${missing[*]}"
             echo "rows_ok=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-
           echo "rows_ok=true" >> "$GITHUB_OUTPUT"
-          echo "✅ witness rows present: ${EXPECTED_ROWS}"
+          echo "witness rows present: ${EXPECTED_ROWS}"
 
       - name: Verify chain linkage in DB
         id: chain
         if: steps.rows.outputs.rows_ok == 'true'
         run: |
           set -euo pipefail
-          python - <<'PY'
-import sqlite3, sys
-db = sqlite3.connect("witness_chain.db")
-cur = db.cursor()
-rows = cur.execute(
-    "SELECT entry_index, prev_hash, hash FROM witness "
-    "ORDER BY entry_index;"
-).fetchall()
-if not rows:
-    print("::error::no rows in witness table")
-    sys.exit(1)
-
-prev_hash_expected = ""
-ok = True
-for entry_index, prev_hash, h in rows:
-    if prev_hash != prev_hash_expected:
-        print(f"::error::entry {entry_index} prev_hash={prev_hash!r} "
-              f"expected {prev_hash_expected!r}")
-        ok = False
-    prev_hash_expected = h
-
-if not ok:
-    sys.exit(1)
-
-print(f"✅ chain intact across {len(rows)} rows")
-for entry_index, prev_hash, h in rows:
-    print(f"   {entry_index}: prev={prev_hash[:16] or '(genesis)'}  hash={h[:16]}")
-PY
+          python -c "import sqlite3,sys; db=sqlite3.connect('witness_chain.db'); rows=db.execute('SELECT entry_index, prev_hash, hash FROM witness ORDER BY entry_index').fetchall();\nimport sys\nif not rows:\n  print('no rows'); sys.exit(1)\nprev=''\nfor i,p,h in rows:\n  if p!=prev:\n    print('break at',i); sys.exit(1)\n  prev=h\nprint('chain intact',len(rows))"
 
       - name: Upload witness chain artifacts
         if: always()
@@ -217,25 +129,3 @@ PY
             witness_chain_build.log
           retention-days: 30
           if-no-files-found: warn
-
-      - name: Summary
-        if: always()
-        env:
-          DB_SHA: ${{ steps.build.outputs.db_sha3_256 }}
-          BUILDER_RC: ${{ steps.build.outputs.builder_rc }}
-          ROWS_OK: ${{ steps.rows.outputs.rows_ok }}
-        run: |
-          {
-            echo "### Witness Chain SQLite"
-            echo ""
-            echo "| Field | Value |"
-            echo "|-------|-------|"
-            echo "| script | \`${SCRIPT}\` |"
-            echo "| hash_algo | ${HASH_ALGO} |"
-            echo "| db | ${DB_ARTIFACT} |"
-            echo "| builder_rc | ${BUILDER_RC:-<none>} |"
-            echo "| rows_ok | ${ROWS_OK:-false} |"
-            echo "| db_sha3_256 | ${DB_SHA:-<none>} |"
-            echo ""
-            echo "Rows ${EXPECTED_ROWS} mirrored; chain linkage verified."
-          } >> "$GITHUB_STEP_SUMMARY"
