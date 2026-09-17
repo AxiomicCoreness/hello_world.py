@@ -6,6 +6,14 @@ on:
     paths:
       - ".github/scripts/witness_chain_sqlite.py"
       - ".github/workflows/witness-chain-sqlite.yml"
+      - "ledger/8337.yaml"
+      - "ledger/8338.yaml"
+      - "ledger/8339.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/scripts/witness_chain_sqlite.py"
+      - ".github/workflows/witness-chain-sqlite.yml"
   workflow_dispatch:
 
 permissions:
@@ -19,6 +27,7 @@ env:
   HASH_ALGO: sha3_256
   SCRIPT: .github/scripts/witness_chain_sqlite.py
   DB_ARTIFACT: witness_chain.db
+  EXPECTED_ROWS: "8337,8338,8339"
 
 jobs:
   build-and-verify:
@@ -44,24 +53,125 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
 
-      - name: Run witness chain builder
-        id: build
+      - name: Confirm builder script present
+        id: check
         run: |
           set -euo pipefail
-          python "${SCRIPT}" 2>&1 | tee witness_chain_build.log
+          if [ ! -f "${SCRIPT}" ]; then
+            echo "::error::${SCRIPT} not found"
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
 
-          if [ -f witness_chain.db ]; then
-            DB_SHA=$(python - <<'PY'
+      - name: Run witness chain builder
+        id: build
+        if: steps.check.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          # Capture the exit code of the Python process, not of tee.
+          # `set -o pipefail` propagates the failing pipe element, but
+          # we also want a numeric rc for the summary, so PIPESTATUS
+          # is used to separate the two.
+          set +e
+          python "${SCRIPT}" 2>&1 | tee witness_chain_build.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "builder_rc=${rc}" >> "$GITHUB_OUTPUT"
+
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::witness_chain_sqlite.py exited ${rc}"
+            exit 1
+          fi
+
+          if [ ! -f "${DB_ARTIFACT}" ]; then
+            echo "::error::${DB_ARTIFACT} not produced by script"
+            echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          # Heredoc body MUST be flush with column zero. Any indentation
+          # inside the heredoc becomes part of the Python source and
+          # raises IndentationError, which silently produces an empty
+          # digest in the output.
+          DB_SHA=$(python - <<'PY'
 import hashlib, pathlib
 print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
 PY
-            )
-            echo "db_sha3_256=${DB_SHA}" >> "$GITHUB_OUTPUT"
-            echo "db sha3_256: ${DB_SHA:0:16}..."
-          else
-            echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
-            echo "⚠️ witness_chain.db not produced by script"
+          )
+          if [ -z "${DB_SHA}" ]; then
+            echo "::error::failed to compute sha3_256 of ${DB_ARTIFACT}"
+            exit 1
           fi
+          echo "db_sha3_256=${DB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "db sha3_256: ${DB_SHA:0:16}..."
+
+      - name: Assert witness rows present
+        id: rows
+        if: steps.build.outputs.db_sha3_256 != ''
+        run: |
+          set -euo pipefail
+          if ! command -v sqlite3 >/dev/null 2>&1; then
+            echo "sqlite3 CLI not present — installing"
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq sqlite3
+          fi
+
+          IFS=',' read -ra WANTED <<< "${EXPECTED_ROWS}"
+          missing=()
+          for entry in "${WANTED[@]}"; do
+            count=$(sqlite3 "${DB_ARTIFACT}" \
+              "SELECT COUNT(*) FROM witness WHERE entry_index=${entry};" \
+              2>/dev/null || echo "0")
+            if [ "${count}" -lt 1 ]; then
+              missing+=("${entry}")
+            fi
+          done
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::witness rows missing for entries: ${missing[*]}"
+            echo "rows_ok=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "rows_ok=true" >> "$GITHUB_OUTPUT"
+          echo "✅ witness rows present: ${EXPECTED_ROWS}"
+
+      - name: Verify chain linkage in DB
+        id: chain
+        if: steps.rows.outputs.rows_ok == 'true'
+        run: |
+          set -euo pipefail
+          # Each row's prev_hash must equal the previous row's hash.
+          # This is the arithmetic form of "8337 → 8338 → 8339 UNBROKEN".
+          python - <<'PY'
+import sqlite3, sys
+db = sqlite3.connect("witness_chain.db")
+cur = db.cursor()
+rows = cur.execute(
+    "SELECT entry_index, prev_hash, hash FROM witness "
+    "ORDER BY entry_index;"
+).fetchall()
+if not rows:
+    print("::error::no rows in witness table")
+    sys.exit(1)
+
+prev_hash_expected = ""
+ok = True
+for entry_index, prev_hash, h in rows:
+    if prev_hash != prev_hash_expected:
+        print(f"::error::entry {entry_index} prev_hash={prev_hash!r} "
+              f"expected {prev_hash_expected!r}")
+        ok = False
+    prev_hash_expected = h
+
+if not ok:
+    sys.exit(1)
+
+print(f"✅ chain intact across {len(rows)} rows")
+for entry_index, prev_hash, h in rows:
+    print(f"   {entry_index}: prev={prev_hash[:16] or '(genesis)'}  hash={h[:16]}")
+PY
 
       - name: Upload witness chain artifacts
         if: always()
@@ -78,6 +188,8 @@ PY
         if: always()
         env:
           DB_SHA: ${{ steps.build.outputs.db_sha3_256 }}
+          BUILDER_RC: ${{ steps.build.outputs.builder_rc }}
+          ROWS_OK: ${{ steps.rows.outputs.rows_ok }}
         run: |
           {
             echo "### Witness Chain SQLite"
@@ -87,7 +199,9 @@ PY
             echo "| script | \`${SCRIPT}\` |"
             echo "| hash_algo | ${HASH_ALGO} |"
             echo "| db | ${DB_ARTIFACT} |"
+            echo "| builder_rc | ${BUILDER_RC:-<none>} |"
+            echo "| rows_ok | ${ROWS_OK:-false} |"
             echo "| db_sha3_256 | ${DB_SHA:-<none>} |"
             echo ""
-            echo "Rows 8337 · 8338 · 8339 mirrored; chain_ok and hash_ok verified."
+            echo "Rows ${EXPECTED_ROWS} mirrored; chain linkage verified."
           } >> "$GITHUB_STEP_SUMMARY"
