@@ -65,22 +65,21 @@ except ImportError:
 REQUIRED_FIELDS = ("entry_index", "event", "seal", "witness_chain")
 
 # Series prefixes we recognise. Each series is independent.
-# Add new ones here as the ledger grows.
+# Ordered longest-first so 4-digit prefixes match before 2-digit ones.
 KNOWN_SERIES_PREFIXES = (
-    "83",  # reward / CI narrative
-    "91",  # self-improvement / MCP
-    "92",  # soft / held
-    "51",  # legacy 51x design notes
-    "00",  # genesis
+    "5105",  # legacy 5105x design notes
+    "83",    # reward / CI narrative
+    "91",    # self-improvement / MCP
+    "92",    # soft / held
+    "51",    # legacy 51x design notes
+    "00",    # genesis
 )
 
-# Witness chain pattern: "NNNN → MMMM — UNBROKEN"
-WITNESS_RE = re.compile(r"^\s*(\d{3,5})\s*[→>-]+\s*(\d{3,5})")
+# Witness chain pattern: "NNNN → MMMM — UNBROKEN" (arrow, hyphen, en/em dash)
+WITNESS_RE = re.compile(r"^\s*(\d{3,6})\s*[→>\-–—]+?\s*(\d{3,6})")
 
 # Anchors that mark genesis of a series (no preceding entry required).
-GENESIS_ANCHORS = {
-    "0000",
-}
+GENESIS_ANCHORS = frozenset({"0000", "0001", "1", "GENESIS"})
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -117,31 +116,40 @@ def _load_yaml_file(path: str) -> List[Dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
         text = f.read()
     if not HAVE_YAML:
-        raise RuntimeError("PyYAML required to load ledger YAML files")
+        # Tiny fallback: try to load as a single JSON document.
+        try:
+            obj = json.loads(text)
+            return [obj] if isinstance(obj, dict) else []
+        except json.JSONDecodeError:
+            raise RuntimeError(
+                f"PyYAML required to load non-JSON YAML: {path}"
+            )
     docs = list(yaml.safe_load_all(text))
     return [d for d in docs if isinstance(d, dict) and d]
 
 
 def _series_of(index: str) -> str:
     """Return the series prefix for an index.
-    
-    Uses KNOWN_SERIES_PREFIXES for matching to avoid collisions
-    between e.g. 5105 and 510510.
+
+    Uses KNOWN_SERIES_PREFIXES (ordered longest-first) for matching to
+    avoid collisions between e.g. 5105 and 510510.
     """
     z = index.zfill(4)
     for p in KNOWN_SERIES_PREFIXES:
         if z.startswith(p):
             return p
-    return z[:2]
+    return z[:2] if len(z) >= 2 else z
 
 
-def load_entries(ledger_dir: str, wanted_series: Optional[List[str]] = None) -> List[Entry]:
+def load_entries(ledger_dir: str,
+                 wanted_series: Optional[List[str]] = None) -> List[Entry]:
+    wanted = set(wanted_series) if wanted_series else None
     entries: List[Entry] = []
     for path in _iter_yaml_files(ledger_dir):
         try:
             docs = _load_yaml_file(path)
         except Exception as e:
-            print(f"::error::failed to parse {path}: {e}")
+            print(f"::error file={path}::failed to parse: {e}")
             continue
         for doc in docs:
             raw_index = doc.get("entry_index")
@@ -149,7 +157,7 @@ def load_entries(ledger_dir: str, wanted_series: Optional[List[str]] = None) -> 
                 continue
             index = str(raw_index).zfill(4)
             series = _series_of(index)
-            if wanted_series and series not in wanted_series:
+            if wanted and series not in wanted:
                 continue
             entries.append(Entry(
                 path=path,
@@ -167,7 +175,8 @@ def load_entries(ledger_dir: str, wanted_series: Optional[List[str]] = None) -> 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Deterministic JSON: sorted keys, tight separators, no ASCII escapes
     (matches the producer-side json.dumps(plan, sort_keys=True) contract)."""
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return json.dumps(data, sort_keys=True,
+                      separators=(",", ":"), ensure_ascii=False)
 
 
 def compute_seal(data: Dict[str, Any]) -> str:
@@ -178,11 +187,11 @@ def compute_seal(data: Dict[str, Any]) -> str:
 
 def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
     """Match the seal field against the computed digest.
-    
+
     Accepts two regimes:
     - Regime A: seal == digest (exact match)
-    - Regime B: seal ends with digest as final token
-    
+    - Regime B: seal ends with digest as final whitespace-delimited token
+
     This is stricter than substring matching to avoid false positives.
     """
     seal = data.get("seal", "")
@@ -190,7 +199,6 @@ def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
         return False
     if seal == computed:
         return True
-    # Match only the final whitespace-delimited hex token.
     parts = seal.split()
     if parts:
         tail = parts[-1]
@@ -207,7 +215,8 @@ def check_required_fields(entries: List[Entry]) -> int:
     for e in entries:
         missing = [f for f in REQUIRED_FIELDS if f not in e.data]
         if missing:
-            print(f"::error file={e.path}::entry {e.index} missing fields: {missing}")
+            print(f"::error file={e.path}::entry {e.index} "
+                  f"missing fields: {missing}")
             bad += 1
     return bad
 
@@ -221,20 +230,16 @@ def check_seals(entries: List[Entry], strict: bool = False) -> int:
         e.seal_ok = ok
         if not ok:
             bad += 1
-            if strict:
-                print(f"::error file={e.path}::entry {e.index} seal mismatch")
-                print(f"        expected digest: {computed}")
-                print(f"        seal field:      {e.data.get('seal')}")
-            else:
-                print(f"::warning file={e.path}::entry {e.index} seal mismatch")
-                print(f"        expected digest: {computed}")
-                print(f"        seal field:      {e.data.get('seal')}")
+            lvl = "error" if strict else "warning"
+            print(f"::{lvl} file={e.path}::entry {e.index} seal mismatch")
+            print(f"        expected digest: {computed}")
+            print(f"        seal field:      {e.data.get('seal')}")
     return bad
 
 
 def check_chains(entries: List[Entry]) -> int:
     """Verify witness-chain continuity per series.
-    
+
     Enforces strict consecutiveness within each series:
     Each entry's witness_chain must be "PPPP → NNNN" where:
     - NNNN equals the entry's own index
@@ -251,12 +256,12 @@ def check_chains(entries: List[Entry]) -> int:
         print(f"── series {series}: {len(group)} entries "
               f"({group[0].index}..{group[-1].index})")
 
-        # Walk forward; require strict consecutive arrows within the series.
         for i, e in enumerate(group):
             m = WITNESS_RE.match(str(e.data.get("witness_chain", "")))
             if not m:
                 print(f"::error file={e.path}::entry {e.index} "
-                      f"unparseable witness_chain: {e.data.get('witness_chain')!r}")
+                      f"unparseable witness_chain: "
+                      f"{e.data.get('witness_chain')!r}")
                 bad += 1
                 continue
             prev, nxt = m.group(1).zfill(4), m.group(2).zfill(4)
@@ -269,28 +274,28 @@ def check_chains(entries: List[Entry]) -> int:
                 bad += 1
                 continue
 
-            # If i > 0, the previous entry's arrow must point here.
-            if i > 0:
+            if i == 0:
+                # First entry: previous must be a genesis anchor.
+                if prev not in GENESIS_ANCHORS:
+                    # Allow "0000" style too.
+                    if not (len(prev) == 4 and int(prev) <= 1):
+                        print(f"::error file={e.path}::entry {e.index} "
+                              f"first in series but prev {prev} is not a "
+                              f"genesis anchor")
+                        bad += 1
+            else:
+                # Subsequent entries: prev must equal previous index.
                 prev_entry = group[i - 1]
+                if prev != prev_entry.index:
+                    print(f"::error file={e.path}::entry {e.index} "
+                          f"prev {prev} != previous entry "
+                          f"{prev_entry.index}")
+                    bad += 1
                 if prev_entry.chain_next != e.index:
                     print(f"::error file={e.path}::entry {e.index} "
-                          f"previous series entry {prev_entry.index} "
-                          f"points at {prev_entry.chain_next}, expected {e.index}")
+                          f"previous entry {prev_entry.index} chain-next "
+                          f"is {prev_entry.chain_next}, expected {e.index}")
                     bad += 1
-
-            # The 'prev' side must be a genesis anchor or the previous entry.
-            if e.index not in GENESIS_ANCHORS:
-                if i == 0:
-                    # First entry in series must have prev in genesis anchors
-                    if prev not in GENESIS_ANCHORS:
-                        print(f"::error file={e.path}::entry {e.index} "
-                              f"first in series but prev {prev} not in genesis anchors")
-                        bad += 1
-                else:
-                    if prev != group[i - 1].index:
-                        print(f"::error file={e.path}::entry {e.index} "
-                              f"prev {prev} != previous entry {group[i - 1].index}")
-                        bad += 1
     return bad
 
 
@@ -300,7 +305,8 @@ def check_reward_pool(entries: List[Entry]) -> int:
     try:
         from fiduciary_node_rewards import verify_reward_pool  # type: ignore
     except Exception:
-        print("── reward-pool check skipped (fiduciary_node_rewards not importable)")
+        print("── reward-pool check skipped "
+              "(fiduciary_node_rewards not importable)")
         return 0
 
     try:
@@ -312,7 +318,9 @@ def check_reward_pool(entries: List[Entry]) -> int:
     declared_ok = False
     declared_value = None
     for e in entries:
-        v = e.data.get("reward_pool") or e.data.get("declared_pool") or e.data.get("pool", {}).get("declared_value")
+        v = (e.data.get("reward_pool")
+             or e.data.get("declared_pool")
+             or (e.data.get("pool") or {}).get("declared_value"))
         if v is not None:
             try:
                 declared_value = float(v)
@@ -321,10 +329,11 @@ def check_reward_pool(entries: List[Entry]) -> int:
             except (TypeError, ValueError):
                 pass
 
-    print(f"── reward pool: verify_reward_pool -> ok={ok}, total={total:.10f}")
+    print(f"── reward pool: verify_reward_pool -> ok={ok}, "
+          f"total={total:.10f}")
     if declared_value is not None:
-        print(f"                declared value in ledger: {declared_value:.10f} "
-              f"(match={declared_ok})")
+        print(f"                declared value in ledger: "
+              f"{declared_value:.10f} (match={declared_ok})")
 
     return 0 if ok else 1
 
@@ -334,15 +343,18 @@ def check_reward_pool(entries: List[Entry]) -> int:
 # ──────────────────────────────────────────────────────────────────────
 
 def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Verify sovereign ledger chains.")
-    ap.add_argument("--root", default=".", help="Repository root (default: .)")
+    ap = argparse.ArgumentParser(
+        description="Verify sovereign ledger chains.")
+    ap.add_argument("--root", default=".",
+                    help="Repository root (default: .)")
     ap.add_argument("--ledger-dir", default=None,
                     help="Ledger directory (default: <root>/ledger)")
     ap.add_argument("--series", action="append", default=None,
-                    help="Restrict to a series prefix (e.g. --series 83). "
-                         "May be passed multiple times.")
+                    help="Restrict to a series prefix "
+                         "(e.g. --series 83). Repeat for multiple.")
     ap.add_argument("--strict-seals", action="store_true",
-                    help="Treat seal mismatches as errors (default: warnings)")
+                    help="Treat seal mismatches as errors "
+                         "(default: warnings)")
     ap.add_argument("--no-reward-check", action="store_true",
                     help="Skip the fiduciary_node_rewards cross-check")
     args = ap.parse_args(argv)
