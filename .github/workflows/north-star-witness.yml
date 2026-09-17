@@ -19,10 +19,21 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: north-star-witness-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  NORTH_STAR_HZ: "71.975"
+  PHASE_LOCK_DEG: "202.6"
+
 jobs:
   north-star:
     name: North Star · 71.975 Hz · scoped alignment
     runs-on: ubuntu-latest
+    timeout-minutes: 8
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,41 +41,92 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
 
       - name: Install deps
-        run: pip install pyyaml
-
-      - name: Emit — latest ledger digests
         run: |
           set -euo pipefail
-          LATEST=$(ls ledger/*.yaml | sort -V | tail -1)
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
+      - name: Resolve latest ledger entry by entry_index
+        id: latest
+        run: |
+          set -euo pipefail
+          LATEST=$(python - <<'PY'
+          import pathlib, yaml
+          best = (None, None)
+          for p in pathlib.Path("ledger").glob("*.yaml"):
+              try:
+                  d = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+                  idx = d.get("entry_index")
+                  if isinstance(idx, int) and (best[0] is None or idx > best[0]):
+                      best = (idx, p)
+              except Exception:
+                  pass
+          print(best[1] if best[1] else "")
+          PY
+          )
+          if [ -z "$LATEST" ]; then
+            echo "⚠️ no ledger entries with an integer entry_index — soft skip"
+            echo "latest=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "Latest ledger: $LATEST"
-          python .github/scripts/verify_ledger.py --emit "$LATEST"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - name: Emit — latest ledger digests
+        if: steps.latest.outputs.latest != ''
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger.py --emit "${{ steps.latest.outputs.latest }}"
 
       - name: Soft verify — all ledger entries (warn only)
         run: |
           set -euo pipefail
-          python .github/scripts/verify_ledger.py --soft ledger/*.yaml
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          python .github/scripts/verify_ledger.py --soft "${entries[@]}" \
+            || echo "⚠️ soft verify returned non-zero (informational only)"
 
       - name: Hard verify — sealed set
         run: |
           set -euo pipefail
+          fail=0
           # Hard: 9240, 9242, 9243, 9244, 9245
-          # Soft intentional: 9241 (H_9241 = 33ba0b83…e16f5e) — hard only if file present
-          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml ledger/9244.yaml ledger/9245.yaml; do
+          # Soft intentional: 9241 (H_9241 = 33ba0b83…e16f5e) — hard only if present
+          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml \
+                   ledger/9244.yaml ledger/9245.yaml; do
             if [ -f "$f" ]; then
-              python .github/scripts/verify_ledger.py --hard "$f"
+              if ! python .github/scripts/verify_ledger.py --hard "$f"; then
+                echo "❌ hard verify failed: $f"
+                fail=1
+              fi
             else
               echo "⚠️ $f missing — soft skip"
             fi
           done
+
           if [ -f ledger/9241.yaml ]; then
             echo "9241 present — hard verify (optional soft gap closed)"
-            python .github/scripts/verify_ledger.py --hard ledger/9241.yaml
+            if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
+              echo "❌ hard verify failed: ledger/9241.yaml"
+              fail=1
+            fi
           else
             echo "9241 absent — intentional soft gap (documented in 9245)"
           fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "❌ one or more sealed-set entries failed hard verification"
+            exit 1
+          fi
+          echo "✅ sealed set verified"
 
       - name: Scoped vocabulary guard (fail-closed, path-limited)
         run: |
