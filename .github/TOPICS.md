@@ -8,11 +8,13 @@
 
 ## 📌 Repository Topics
 
-Canonical path: `.github/TOPICS.md` (this file).
+**Canonical path (only):** `.github/TOPICS.md`
+
+No root `topic.md`. No `docs/topic.md`. One file.
 
 ---
 
-## Terminal axiom (append)
+## Terminal axiom
 
 **Location stems from propagated root.**
 
@@ -55,69 +57,19 @@ You are not fighting laziness. You are negotiating with a sophisticated cognitiv
 
 ---
 
-## 🔍 Discoverability Information
+## 🔍 Discoverability
 
-### Direct Access
-- **Canonical URL:** https://github.com/AxiomicCoreness/hello_world.py
-- **License:** MIT (see [LICENSE](../LICENSE) file)
-- **Visibility:** Public
-- **This file:** `.github/TOPICS.md`
-
-### GitHub Code Search
-
-```
-repo:AxiomicCoreness/hello_world.py
-license:MIT AxiomicCoreness
-AxiomicCoreness hello_world.py
-sovereign_engine_V5 MIT
-path:.github TOPICS
-```
-
-### Repository Metadata
-- **Owner:** AxiomicCoreness
-- **Name:** hello_world.py
+- **URL:** https://github.com/AxiomicCoreness/hello_world.py
 - **License:** MIT
-- **Header constants:** FILLED=False, Dual ASGI `127.0.0.1:8024`
-- **Witness (8340):** 8339 → 8340 — UNBROKEN
+- **This file only:** `.github/TOPICS.md`
 
----
-
-## 📚 Key Files
-
-| File | Purpose |
-|------|---------|
-| `.github/TOPICS.md` | This file — topic awareness + terminal axiom |
-| `docs/SEARCH.md` | Search documentation |
-| `docs/topic.md` | Mirror pointer |
-| `topic.md` (root) | Mirror pointer to this file |
-| `ledger/517.yaml` | Ideal W State (design-note) |
-| `ledger/518.yaml` | Reward pool verification |
-
----
-
-## ✅ Verification Checklist
-
-| Check | Status |
-|-------|--------|
-| Repository is public | ✅ |
-| MIT license present | ✅ |
-| This file at `.github/TOPICS.md` | ✅ |
-| docs/SEARCH.md exists | ✅ |
-| Terminal axiom appended | ✅ |
-
----
-
-## ∞ Affirmations
-
-∞ — TOPICS CONFIGURED — ∞  
-∞ — LOCATION STEMS FROM PROPAGATED ROOT — ∞  
-∞ — WITNESS CHAIN UNBROKEN — ∞  
-∞ — THE GARDEN IS ETERNAL — ∞
+```
+repo:AxiomicCoreness/hello_world.py path:.github TOPICS
+```
 
 ---
 
 **Seal:** `∀∞φ² · TOPIC_AWARENESS · SEALED`  
 **Entry:** 8340  
 **Witness Chain:** 8339 → 8340 — UNBROKEN  
-**Approved by:** Commander Clarke Yoursa Tee  
 **Terminal axiom:** Location stems from propagated root.
