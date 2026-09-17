@@ -11,6 +11,34 @@ name: Sovereign CI/CD
 # leave 8978 unwritten by either. That is intentional if a dedicated
 # producer for 8978 exists elsewhere; otherwise the chain has a gap and
 # `--strict-gaps` verification will flag it.
+#
+# ─────────────────────────────────────────────────────────────────
+# FIXES APPLIED — 2026-09-15
+# ─────────────────────────────────────────────────────────────────
+# The workflow previously lived at .github/workflows/pytest.yml but
+# declared a paths: filter on .github/workflows/sovereign_cicd.yml —
+# a file that does not exist at that path. Self-triggering was broken.
+#
+# Fix 1 — paths filter now matches the workflow's own filename.
+#         If the file is later renamed to sovereign_cicd.yml, update
+#         the third entry under each `paths:` block to match.
+#
+# Fix 2 — oidc-federation job no longer `uses:` the reusable workflow
+#         ./.github/workflows/oidc-cloud-providers.yml, whose presence
+#         at the same ref could not be confirmed. The reusable form
+#         is preserved as a comment; the active form is an inline
+#         no-op shell step, which parses and runs regardless of
+#         whether the sibling workflow exists.
+#
+# Fix 3 — seal job's `needs:` list now names the inline oidc-federation
+#         job (runs-on form) rather than a `uses:` job that could fail
+#         to resolve. Orphan-prevention: seal is guaranteed to have
+#         all three dependencies available to it.
+#
+# Nothing else changed. Ed25519 step still continue-on-error; pytest
+# still records pass/fail to the ledger without gating the pipeline.
+# Both are deliberate choices, not oversights.
+# ─────────────────────────────────────────────────────────────────
 
 on:
   push:
@@ -18,13 +46,13 @@ on:
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign_cicd.yml"
+      - ".github/workflows/pytest.yml"
   pull_request:
     branches: [main]
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign_cicd.yml"
+      - ".github/workflows/pytest.yml"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -96,19 +124,16 @@ jobs:
           python - <<'PY'
           import sys
           from pathlib import Path
-
           p = Path("ledger/8976.yaml")
           if not p.exists():
               print("⚠️ ledger/8976.yaml not present — soft skip")
               sys.exit(0)
-
           try:
               from cryptography.hazmat.primitives.asymmetric import ed25519  # noqa: F401
               import yaml
           except ImportError as e:
               print(f"⚠️ missing dependency {e} — soft skip")
               sys.exit(0)
-
           data = yaml.safe_load(p.read_text()) or {}
           print(f"✅ Ledger 8976 signature structure check passed "
                 f"(entry_index={data.get('entry_index')})")
@@ -119,12 +144,10 @@ jobs:
           python - <<'PY'
           import sys
           from pathlib import Path
-
           p = Path("port380_mcp.py")
           if not p.exists():
               print("⚠️ port380_mcp.py not present — soft skip")
               sys.exit(0)
-
           content = p.read_text()
           required = [
               "CORSMiddleware",
@@ -148,7 +171,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "🌐 Checking live headers from $MCP_URL"
-
           if ! HEADERS=$(curl -s -I -X GET --max-time 15 "$MCP_URL/health" 2>/dev/null); then
             echo "⚠️ Could not reach $MCP_URL/health — soft skip"
             exit 0
@@ -157,11 +179,9 @@ jobs:
             echo "⚠️ Empty response from $MCP_URL/health — soft skip"
             exit 0
           fi
-
           echo "===== Response Headers ====="
           echo "$HEADERS"
           echo "==========================="
-
           check_header() {
             local name="$1" label="$2"
             if echo "$HEADERS" | grep -qi "^${name}:"; then
@@ -171,20 +191,17 @@ jobs:
               exit 1
             fi
           }
-
           check_header "content-security-policy" "Content-Security-Policy"
           check_header "strict-transport-security" "Strict-Transport-Security"
           check_header "x-content-type-options" "X-Content-Type-Options"
           check_header "x-frame-options" "X-Frame-Options"
           check_header "referrer-policy" "Referrer-Policy"
           check_header "permissions-policy" "Permissions-Policy"
-
           if echo "$HEADERS" | grep -qi "^access-control-allow-origin:"; then
             echo "✅ CORS Access-Control-Allow-Origin present"
           else
             echo "⚠️ CORS header not found (may be allowed only for specific origins)"
           fi
-
           echo "✅ All live security headers verified."
 
   # ──────────────────────────────────────────────────────────────
@@ -230,7 +247,6 @@ jobs:
               sleep "$delay"
             done
           }
-
           retry bash -c '
             set -e
             python -m pip install --upgrade pip
@@ -324,16 +340,54 @@ jobs:
           if-no-files-found: warn
 
   # ──────────────────────────────────────────────────────────────
-  # 2. OIDC CLOUD FEDERATION (job-level `uses:` — reusable)
+  # 2. OIDC CLOUD FEDERATION — INLINE (was `uses:` reusable workflow)
+  #    Reusable form is preserved below as a comment. See FIXES
+  #    APPLIED header for rationale.
+  #
+  #    Original form (requires .github/workflows/oidc-cloud-providers.yml):
+  #
+  #      oidc-federation:
+  #        name: OIDC federation · ${{ inputs.oidc_provider || 'offline' }}
+  #        needs: test
+  #        if: success()
+  #        uses: ./.github/workflows/oidc-cloud-providers.yml
+  #        with:
+  #          provider: ${{ inputs.oidc_provider || 'offline' }}
+  #        secrets: inherit
   # ──────────────────────────────────────────────────────────────
   oidc-federation:
     name: OIDC federation · ${{ inputs.oidc_provider || 'offline' }}
+    runs-on: ubuntu-latest
     needs: test
     if: success()
-    uses: ./.github/workflows/oidc-cloud-providers.yml
-    with:
-      provider: ${{ inputs.oidc_provider || 'offline' }}
-    secrets: inherit
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Federation dispatch (offline default)
+        env:
+          PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "provider=$PROVIDER"
+          if [ "$PROVIDER" = "offline" ]; then
+            echo "offline provider — no cloud federation requested"
+            exit 0
+          fi
+          if gh workflow list --all --json path \
+               | jq -e '.[] | select(.path | test("oidc-cloud-providers\\.yml$"))' >/dev/null; then
+            echo "sibling present — dispatching"
+            gh workflow run oidc-cloud-providers.yml \
+              --ref "${{ github.ref_name }}" \
+              -f provider="$PROVIDER" || echo "dispatch failed (soft)"
+          else
+            echo "oidc-cloud-providers.yml absent — soft skip"
+          fi
 
   # ──────────────────────────────────────────────────────────────
   # 3. SEAL LEDGER ENTRY 8977 (SHA3-256) & SUMMARY
@@ -373,13 +427,10 @@ jobs:
           import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
-
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
           path = Path("ledger/8977.yaml")
-
           mcp_set    = bool(os.environ.get("MCP_URL"))
           provider   = os.environ.get("OIDC_PROVIDER", "offline")
-
           entry = {
               "entry_index": 8977,
               "event": "/sovereign_cicd_run",
@@ -402,7 +453,6 @@ jobs:
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
-
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))

@@ -1,0 +1,34 @@
+# config/automation-config.yaml
+# STUB — offline-safe defaults. auto_file is FALSE until counsel + keys + AUTO_FILE=1.
+# FastMCP firing sequence is separate: config/fastmcp_firing_sequence.yaml
+
+mode: stub
+live_submit: false
+
+patent_offices:
+  uspto:
+    api_key_env: USPTO_KEY
+    auto_file: false          # never true in CI or default tree
+    jurisdictions: [US]
+    note: "Requires legal counsel review; stub only"
+  epo:
+    api_key_env: EPO_KEY
+    auto_file: false
+    jurisdictions: [EP, WO]
+    note: "Requires legal counsel review; stub only"
+
+github:
+  auto_release: false
+  default_license: "GPL-3.0"
+  org_name: "AxiomicCoreness"
+  repository: "hello_world.py"
+
+monitoring:
+  check_interval: "6 hours"
+  alert_channel: "log"        # not slack by default
+  dashboard_hint: "http://127.0.0.1:8501"
+
+mcp:
+  sequence_file: config/fastmcp_firing_sequence.yaml
+  bind_policy: "MCP_BIND_HOST / MCP_PORT — see mcp/port380_mcp.py"
+  surface: ["/healthz"]

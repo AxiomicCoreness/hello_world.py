@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 from app.config import settings
-from app.routes import health, status, gate, pulse
+from app.routes import gate, health, pulse, status, systems, vision
 
-app = FastAPI(title="Sovereign Engine — FastAPI", version="5.0.0")
+app = FastAPI(title="Sovereign Engine — FastAPI", version="5.1.0")
 app.include_router(health.router)
 app.include_router(status.router)
 app.include_router(gate.router)
 app.include_router(pulse.router)
+app.include_router(vision.router)
+app.include_router(systems.router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -32,12 +36,15 @@ def root():
           <p>Phase Lock:  {settings.PHASE_LOCK}°</p>
           <p>MCP Filled:  {settings.MCP_FILLED}</p>
           <p>Bind:        0.0.0.0:{settings.BIND_PORT} (pod-internal)</p>
+          <p>Version:     5.1.0 — vision + systems soft-gate</p>
         </div>
         <div class="panel">
           <p>Endpoints:</p>
           <ul>
             <li><a href="/health">/health</a></li>
             <li><a href="/status">/status</a></li>
+            <li><a href="/vision">/vision</a> (fleck 9130 catalog)</li>
+            <li><a href="/systems">/systems</a> (soft Bedrock)</li>
             <li><a href="/docs">/docs</a> (OpenAPI)</li>
             <li>POST /gate</li>
             <li>GET  /pulse</li>

@@ -1,5 +1,49 @@
 name: Toolkit 54 Exorcise
 
+# Removes the four defects flagged on the toolkit: count mismatch
+# (54 registered, 51 claimed), capabilities_audit() argsless calls,
+# five stubs (merkle_root, seal_add, seal_get, witness_verify,
+# ledger_length), and CMAC-512 / DM φ⁷×1000 misframings.
+#
+# hash_algo: sha3_256 (FIPS 202)
+# ledger_policy: NO_LEDGER_WRITE — exorcise does not write the ledger
+# bind_policy: 127.0.0.1 only · wildcard refused
+# mcp: unfilled · dual_asgi 127.0.0.1:8024
+#
+# ─────────────────────────────────────────────────────────────────
+# CORRECTION NOTES
+# ─────────────────────────────────────────────────────────────────
+# FIX 1. Added `permissions: contents: read`
+#   The original file had no permissions block, so the run inherited
+#   the repository default token policy. Sovereign lanes declare the
+#   minimum explicitly. Exorcise is read-only on the tree.
+#
+# FIX 2. Added top-level `env:` block
+#   HASH_ALGO / LEDGER_DIR / TOOLKIT_FILE named explicitly, so the
+#   workflow does not rely on defaults and matches sibling lanes.
+#
+# FLAG A (not changed). `deepseek-cd` in branches:
+#   Earlier in this session deepseek-cd was declared frozen
+#   (tip 4016ec29…, "skipped" in sync). Keeping it in the push
+#   trigger means a push to that branch would still fire this lane.
+#   If the intent is to observe-but-not-mutate on a frozen branch,
+#   the trigger is correct as written. If the intent is to never fire
+#   on the frozen lane, remove `deepseek-cd` from branches.
+#   Left in, per your paste.
+#
+# FLAG B (not changed). `pip install --quiet pyyaml || true`:
+#   The `|| true` swallows install failure. If exorcise_toolkit_54.py
+#   imports yaml, a silent pip failure produces a confusing downstream
+#   error. If it does not import yaml, the step is dead weight.
+#   Left as written, since "minimal deps" is your declared intent.
+#
+# FLAG C (not changed). Summary asserts DM rejected / CMAC-512 false /
+#   seal_add stub / NO_LEDGER_WRITE, but no step in this workflow
+#   verifies those facts. If the exorcise script's exit code is the
+#   only signal, a partial pass can still print all four as confirmed.
+#   No fix applied because the script's output contract is not shown.
+# ─────────────────────────────────────────────────────────────────
+
 on:
   push:
     branches: [main, deepseek, deepseek-ci, deepseek-cd]
@@ -9,33 +53,79 @@ on:
       - ".github/workflows/toolkit-54-exorcise.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: toolkit-54-exorcise-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+  TOOLKIT_FILE: pythonIDE/toolkit.py
+  EXORCISE_SCRIPT: scripts/exorcise_toolkit_54.py
+
 jobs:
   exorcise:
+    name: Toolkit 54 · exorcise · verify count · seal summary
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+
       - name: Install minimal deps
         run: pip install --quiet pyyaml || true
-      - name: Run 54-capability exorcise pipeline
+
+      - name: Confirm exorcise script present
+        id: check
         run: |
           set -euo pipefail
-          PYTHONPATH=. python scripts/exorcise_toolkit_54.py
+          if [ -f "${EXORCISE_SCRIPT}" ]; then
+            echo "exists=true"  >> "$GITHUB_OUTPUT"
+            echo "✅ ${EXORCISE_SCRIPT} present"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::error::${EXORCISE_SCRIPT} not found on this branch"
+            exit 1
+          fi
+
+      - name: Run 54-capability exorcise pipeline
+        id: exorcise
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python "${EXORCISE_SCRIPT}"
+
       - name: Summary
         if: always()
+        env:
+          EXISTS: ${{ steps.check.outputs.exists }}
+          EXORCISE_RESULT: ${{ steps.exorcise.outcome }}
         run: |
+          EXISTS="${EXISTS:-false}"
+          EXORCISE_RESULT="${EXORCISE_RESULT:-unknown}"
           {
             echo "### Toolkit 54 Exorcise"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| toolkit file | \`${TOOLKIT_FILE}\` |"
+            echo "| exorcise script | \`${EXORCISE_SCRIPT}\` |"
+            echo "| script present | ${EXISTS} |"
+            echo "| exorcise result | ${EXORCISE_RESULT} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo ""
             echo "- honest count: **54** (not 51)"
             echo "- DM φ⁷×1000: **rejected**"
             echo "- CMAC-512 ∈ event-hash: **false**"
             echo "- seal_add ledger write: **stub / NO_LEDGER_WRITE**"
             echo "- MCP: unfilled · 127.0.0.1:8024"
+            echo ""
+            echo "🜁∀ — seal: ∀∞φ² · TOOLKIT_54_EXORCISE · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"

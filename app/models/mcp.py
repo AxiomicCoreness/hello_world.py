@@ -1,3 +1,18 @@
+"""
+app/models/gate.py
+
+Pydantic models for the Port-380 MCP gate and pulse endpoints.
+
+GateRequest  — POST body for /gate
+GateResponse — response shape returned by the gate handler
+PulseResponse — response shape returned by /pulse
+
+These are transport DTOs only. No ledger reads, no environment reads,
+no I/O at import time.
+"""
+
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 
 

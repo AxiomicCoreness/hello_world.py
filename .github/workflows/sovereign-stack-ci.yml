@@ -31,6 +31,10 @@ env:
   PHASE_LOCK: "202.6"
   LIGHTNING_IMPACT_HZ: "6.49"
   LEDGER_HEAD: "9142"
+  MCP_PORT: "13800"
+  MCP_BIND_HOST: "127.0.0.1"
+  MCP_NAMESPACE: "ci-smoke"
+  MCP_LEGACY_404_HARD: "0"
 
 jobs:
   app:
@@ -47,16 +51,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2
       - name: Import app
-        run: python -c "from app.main import app; print('app import ok', app.title)"
+        run: python -c "from app.main import app; print('app import ok', app.title, app.version)"
       - name: Route smoke (TestClient)
         run: |
           python - <<'PY'
           from fastapi.testclient import TestClient
           from app.main import app
           c = TestClient(app)
-          assert c.get("/health").status_code == 200
-          assert c.get("/status").status_code == 200
-          assert c.get("/pulse").status_code == 200
+          for path in ("/health", "/status", "/pulse", "/vision", "/systems"):
+              assert c.get(path).status_code == 200, path
           r = c.post("/gate", json={"entry": 9300, "event": "/smoke"})
           assert r.status_code == 200
           assert r.json()["accepted"] is True
@@ -64,7 +67,7 @@ jobs:
           PY
 
   mcp:
-    name: mcp/ — Fast MCP import + bind smoke
+    name: mcp/ — full check-config contract + /healthz
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -74,20 +77,47 @@ jobs:
           python-version: "3.12"
       - name: Compile check
         run: python -m py_compile mcp/port380_mcp.py
-      - name: Boot MCP on ephemeral port
+      - name: Full --check-config JSON contract (7 keys)
         run: |
-          PORT=13800 python - <<'PY' &
-          import os, sys, runpy
-          sys.argv = ["port380_mcp.py"]
-          os.environ["PORT"] = "13800"
-          runpy.run_path("mcp/port380_mcp.py", run_name="__main__")
-          PY
+          set -euo pipefail
+          plan=$(python mcp/port380_mcp.py --check-config)
+          echo "$plan" | tee mcp_plan.json
+          echo "$plan" | python -c '
+          import json, sys, os
+          d = json.load(sys.stdin)
+          for k in ("MCP_BIND_HOST", "MCP_PORT", "MCP_NAMESPACE"):
+              assert k in os.environ, f"{k} not set in CI env"
+          required = {
+              "host", "bind_host", "port", "namespace",
+              "surface", "legacy_out_of_surface", "url",
+          }
+          missing = required - d.keys()
+          assert not missing, f"missing keys: {missing}"
+          assert d["host"] == os.environ["MCP_BIND_HOST"], d["host"]
+          assert d["port"] == int(os.environ["MCP_PORT"]), d["port"]
+          assert d["namespace"] == os.environ["MCP_NAMESPACE"], d["namespace"]
+          assert d["bind_host"] == d["host"], "bind_host/host drift"
+          assert d["surface"] == ["/healthz"], d["surface"]
+          assert set(d["legacy_out_of_surface"]) == {"/health", "/pulse"}
+          expected_url = f"http://{d["host"]}:{d["port"]}{d["surface"][0]}"
+          assert d["url"] == expected_url, d["url"]
+          assert isinstance(d["port"], int)
+          print("check-config contract OK")
+          '
+      - name: Live probe /healthz (same MCP_* env)
+        run: |
+          set -euo pipefail
+          python mcp/port380_mcp.py &
+          pid=$!
+          trap 'kill $pid 2>/dev/null || true' EXIT
           sleep 2
-          curl -sS -o /dev/null -w "health=%{http_code}\n" http://127.0.0.1:13800/health
-          curl -sS -o /dev/null -w "pulse=%{http_code}\n"  http://127.0.0.1:13800/pulse
+          code=$(curl -sS -o /tmp/mcp_body -w "%{http_code}" "http://127.0.0.1:${MCP_PORT}/healthz")
+          echo "healthz=${code}"
+          cat /tmp/mcp_body; echo
+          test "${code}" = "200"
 
   k8s:
-    name: k8s/ — manifest validation (7 files)
+    name: k8s/ — manifest validation
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -99,13 +129,11 @@ jobs:
       - name: Validate k8s/*.yaml
         run: |
           for f in k8s/*.yaml; do
-            echo "validating $f"
-            python -c "import yaml,sys; yaml.safe_load(open('$f'))"
+            python -c "import yaml; yaml.safe_load(open('$f'))"
           done
-          echo "k8s manifests ok"
 
   kubernetes:
-    name: kubernetes/ — manifest validation (Gateway + Rollouts)
+    name: kubernetes/ — manifest validation
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -117,10 +145,8 @@ jobs:
       - name: Validate kubernetes/*.yaml
         run: |
           for f in kubernetes/*.yaml; do
-            echo "validating $f"
-            python -c "import yaml,sys; yaml.safe_load(open('$f'))"
+            python -c "import yaml; yaml.safe_load(open('$f'))"
           done
-          echo "kubernetes manifests ok"
 
   seal:
     name: seal — record run
@@ -133,12 +159,8 @@ jobs:
         run: |
           {
             echo "## Sovereign Stack CI"
-            echo "- app/ : ${{ needs.app.result }}"
-            echo "- mcp/ : ${{ needs.mcp.result }}"
-            echo "- k8s/ : ${{ needs.k8s.result }}"
-            echo "- kubernetes/ : ${{ needs.kubernetes.result }}"
-            echo "- north_star: ${NORTH_STAR}"
-            echo "- phase_lock: ${PHASE_LOCK}"
-            echo "- lightning_hz: ${LIGHTNING_IMPACT_HZ}"
+            echo "- app routes: /health /status /pulse /vision /systems /gate"
+            echo "- mcp: full 7-key check-config"
+            echo "- mcp result: ${{ needs.mcp.result }}"
             echo "Seal: ∀∞φ² · STACK_CI · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"

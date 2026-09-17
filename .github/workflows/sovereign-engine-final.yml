@@ -1,0 +1,198 @@
+name: Sovereign Engine Final — FastAPI · vision · FastMCP · math_origin
+
+on:
+  workflow_dispatch:
+    inputs:
+      legacy_404_hard:
+        description: "MCP only: fail if /health or /pulse != 404"
+        required: false
+        default: "0"
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "mcp/**"
+      - "math_origin.py"
+      - "tests/test_math_origin.py"
+      - "garden_surgery/vision_code_frequency_fleck_paste.py"
+      - ".github/workflows/sovereign-engine-final.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "mcp/**"
+      - "math_origin.py"
+      - "tests/test_math_origin.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sovereign-engine-final-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NORTH_STAR_HZ: "71.975"
+  PHASE_LOCK: "202.6"
+  MCP_PORT: "13800"
+  MCP_BIND_HOST: "127.0.0.1"
+  MCP_NAMESPACE: "ci-engine-final"
+  MCP_LEGACY_404_HARD: ${{ github.event.inputs.legacy_404_hard || '0' }}
+  MCP_SELFIMPROVE: "0"
+
+jobs:
+  fastapi:
+    name: FastAPI contract (Option A)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2
+      - name: FastAPI surface smoke
+        run: |
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+          from app.contracts import FASTAPI_CONTRACT, MCP_CONTRACT
+          assert MCP_CONTRACT["surface"] == ["/healthz"]
+          assert "/vision" in FASTAPI_CONTRACT["surface"]
+          c = TestClient(app)
+          for path in FASTAPI_CONTRACT["surface"]:
+              assert c.get(path).status_code == 200, path
+          r = c.post("/gate", json={"entry": 9300, "event": "/engine-final"})
+          assert r.status_code == 200 and r.json().get("accepted") is True
+          print("fastapi contract OK")
+          PY
+
+  vision-fleck:
+    name: vision fleck stub
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python - <<'PY'
+          from garden_surgery.vision_code_frequency_fleck_paste import FILLED, NOTES, HBAR_FRACTION
+          assert FILLED is False
+          assert "natural-units" in NOTES["hbar_units"]
+          assert HBAR_FRACTION == (1, 144)
+          print("vision fleck OK (catalog, not PNG)")
+          PY
+
+  fastmcp:
+    name: MCP contract only /healthz
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 7-key MCP contract
+        run: |
+          set -euo pipefail
+          python -m py_compile mcp/port380_mcp.py
+          plan=$(python mcp/port380_mcp.py --check-config)
+          echo "$plan" | python -c '
+          import json,sys,os
+          d=json.load(sys.stdin)
+          assert d["surface"]==["/healthz"]
+          assert d["host"]==os.environ["MCP_BIND_HOST"]
+          assert d["port"]==int(os.environ["MCP_PORT"])
+          print("mcp 7-key OK")
+          '
+      - name: Live /healthz (MCP only)
+        run: |
+          set -euo pipefail
+          python mcp/port380_mcp.py &
+          pid=$!
+          trap 'kill $pid 2>/dev/null || true' EXIT
+          sleep 2
+          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/healthz)" = "200"
+          code_h=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/health || true)
+          code_p=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/pulse || true)
+          echo "MCP legacy /health=${code_h} /pulse=${code_p}"
+          if [ "${MCP_LEGACY_404_HARD}" = "1" ]; then
+            test "${code_h}" = "404"
+            test "${code_p}" = "404"
+          fi
+
+  math-origin:
+    name: ConvergenceWindow integrity (n=19)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest -q
+      - run: pytest -q tests/test_math_origin.py
+
+  soft-gates:
+    name: Soft gates — Bedrock/OIDC non-blocking
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install fastapi pydantic -q
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+          import os
+          c = TestClient(app)
+          report = c.get("/systems").json()
+          hard = report["hard"]["phi_polynomial"]
+          assert hard, "hard gate failed: φ polynomial"
+          soft = report["soft"]
+          if not soft.get("bedrock_available"):
+              print("::warning title=soft-gate-skip::bedrock unavailable — not blocking seal")
+          if not soft.get("oidc_secret_present"):
+              print("::warning title=soft-gate-skip::OIDC secret unavailable — not blocking seal")
+          print("hard gates green; soft gates reported, not asserted")
+          PY
+
+  seal:
+    name: Gating seal — all integrity jobs green
+    runs-on: ubuntu-latest
+    needs: [fastapi, vision-fleck, fastmcp, math-origin, soft-gates]
+    # Gating: only on success (not if: always)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Emit seal line
+        run: |
+          python - <<'PY'
+          from math_origin import convergence_window, verify_canonical_19
+          ok, cw = verify_canonical_19()
+          assert ok, cw
+          seal = (
+              "∀∞φ² · BACKEND_TIMING_ANALOGUE_8551 · "
+              f"CW[n={cw.n};L={cw.L_n};F={cw.F_n};u={cw.u:.13f};k={cw.k}] · SEALED"
+          )
+          print(seal)
+          print(cw.payload_segment())
+          print("witness: 8335 → 8336 — UNBROKEN")
+          PY
+          {
+            echo "## Entry 8336 — SEALED (gating)"
+            echo "- Option A: MCP /healthz ≠ FastAPI surface"
+            echo "- phase u ≈ 78.87° (not window 111.246°)"
+            echo "- multiplier 19·ln φ (not 26)"
+            echo "- Bedrock soft-skipped by design"
+            echo "Seal: ∀∞φ² · BACKEND_TIMING_ANALOGUE_8551 · CW[n=19;…] · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"

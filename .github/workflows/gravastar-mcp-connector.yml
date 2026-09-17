@@ -1,0 +1,148 @@
+name: gravastar-mcp-connector
+
+# Matches root static.py / gravastar.py (MCP_CONNECTOR_* fields).
+# ∀k fix_step_k ⇒ ¬write(hard_envelope|soft_lane|alignment|frozen_lane)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "static.py"
+      - "gravastar.py"
+      - ".github/workflows/gravastar-mcp-connector.yml"
+  pull_request:
+    paths:
+      - "static.py"
+      - "gravastar.py"
+      - ".github/workflows/gravastar-mcp-connector.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connector-static-map:
+    name: static map + gravastar --status
+    runs-on: ubuntu-latest
+
+    env:
+      MCP_CONNECTOR_BASE_URL: http://localhost:8089
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Assert static.py + gravastar.py exist
+        run: |
+          set -euo pipefail
+          test -f static.py     || { echo "missing static.py"; exit 1; }
+          test -f gravastar.py  || { echo "missing gravastar.py"; exit 1; }
+          echo "ok: static.py and gravastar.py present at repo root"
+
+      - name: Run static.py (dump connector_static)
+        run: |
+          set -euo pipefail
+          python static.py | tee static_out.json
+          test -s static_out.json
+          echo "ok: static.py produced output"
+
+      - name: Assert base URL and endpoint set
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib, sys
+          sys.path.insert(0, str(pathlib.Path.cwd()))
+          import static as S
+
+          base = getattr(S, "MCP_CONNECTOR_BASE_URL", None)
+          assert base == "http://localhost:8089", f"base URL mismatch: {base!r}"
+
+          raw = getattr(S, "MCP_CONNECTOR_ENDPOINTS", None)
+          assert raw is not None, "MCP_CONNECTOR_ENDPOINTS missing from static.py"
+          values = set(raw.values()) if isinstance(raw, dict) else set(raw)
+
+          required = {
+              "/oauth/token",
+              "/oauth/authorize",
+              "/oauth/introspect",
+              "/oauth/revoke",
+              "/oauth/health",
+              "/sign",
+          }
+          assert required.issubset(values), (
+              f"endpoint set mismatch\n  expected: {sorted(required)}\n  got: {sorted(values)}"
+          )
+
+          for name in ("ENTRY_515_LEDGER_REWRITE", "ENTRY_516_LEDGER_REWRITE"):
+              if hasattr(S, name):
+                  assert getattr(S, name) is False, f"{name} must be False"
+
+          print("ok: base URL + six endpoints + non-write flags verified")
+          PY
+
+      - name: Run gravastar.py --status --json
+        run: |
+          set -euo pipefail
+          python gravastar.py --status --json | tee gravastar_out.json
+          test -s gravastar_out.json
+          echo "ok: gravastar.py --status --json produced output"
+
+      - name: Cross-check static map against gravastar map
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, pathlib, sys
+
+          cwd = pathlib.Path.cwd()
+          sys.path.insert(0, str(cwd))
+          import static as S
+
+          s = json.loads((cwd / "static_out.json").read_text())
+          g = json.loads((cwd / "gravastar_out.json").read_text())
+
+          expected_base = "http://localhost:8089"
+          sb = str(s.get("base_url") or S.MCP_CONNECTOR_BASE_URL).rstrip("/")
+          gb = str(g.get("base_url") or "").rstrip("/")
+          assert sb == expected_base, f"static base mismatch: {sb}"
+          assert gb == expected_base, f"gravastar base mismatch: {gb}"
+
+          se = set(s.get("endpoints") or S.MCP_CONNECTOR_ENDPOINTS)
+          ge_raw = g.get("endpoints") or {}
+          ge = set(ge_raw.keys()) if isinstance(ge_raw, dict) else set(ge_raw)
+
+          required = {
+              "/oauth/token",
+              "/oauth/authorize",
+              "/oauth/introspect",
+              "/oauth/revoke",
+              "/oauth/health",
+              "/sign",
+          }
+          assert required.issubset(se), f"static endpoints incomplete: {sorted(se)}"
+          assert required.issubset(ge), f"gravastar endpoints incomplete: {sorted(ge)}"
+
+          assert s.get("entry_515", {}).get("ledger_rewrite") is False
+          assert g.get("ledger_515_rewrite") is False
+          assert g.get("hard_envelope_touched") is False
+          assert g.get("soft_lane_touched") is False
+
+          print("ok: static map and gravastar map agree (base + endpoints)")
+          PY
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## gravastar-mcp-connector"
+            echo ""
+            echo "- static.py:    \`python static.py\`"
+            echo "- gravastar.py: \`python gravastar.py --status --json\`"
+            echo "- base:         http://localhost:8089"
+            echo "- endpoints:    /oauth/token, /oauth/authorize, /oauth/introspect, /oauth/revoke, /oauth/health, /sign"
+            echo "- non-writes:   515/516 · hard envelope · soft 9247 · alignment · deepseek-cd tip"
+          } >> "$GITHUB_STEP_SUMMARY"
