@@ -1,17 +1,35 @@
 name: fastMCP + pythonIDE baseline
 
+# Single-ref baseline probe, matrixed over Python versions.
+# Commits baseline artifacts back to main. Does NOT rewrite the ledger —
+# artifacts only.
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE — writes pythonIDE/** only, never ledger/**
+# role: baseline persistence lane
+#
+# Invariants:
+#   - MCP is parked: FILLED=false
+#   - Dual ASGI bind is 127.0.0.1:8024 (loopback only)
+#   - baseline.json is valid JSON when generated
+#   - generated_at is NOT committed (avoids bot-commit churn); it is
+#     preserved in the uploaded artifact only
+#
+# Matrix axis is python-version, not ref. The repo has one branch (main);
+# a ref-matrix would produce one working leg and one 404 leg on every run.
+
 on:
   push:
-    branches: [main, deepseek]
+    branches: [main]
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "15 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
+# Ref-scoped: prevents two overlapping runs on main from racing the commit.
 concurrency:
-  group: fastmcp-pythonide-baseline
+  group: fastmcp-pythonide-baseline-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -21,25 +39,25 @@ env:
 
 jobs:
   probe:
-    name: Baseline · ${{ matrix.ref }}
+    name: Baseline · py${{ matrix.python-version }}
     runs-on: ubuntu-latest
     timeout-minutes: 8
     strategy:
       fail-fast: false
       matrix:
-        ref: [main, deepseek]
+        python-version: ["3.11", "3.12"]
 
     steps:
-      - name: Check out repository (${{ matrix.ref }})
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.ref }}
+          ref: main
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Install probe deps
@@ -57,7 +75,7 @@ jobs:
 
           MANIFEST="k8s/agent-service.yaml"
           if [ ! -f "$MANIFEST" ]; then
-            echo "soft skip: $MANIFEST not present on ${{ matrix.ref }}"
+            echo "soft skip: $MANIFEST not present"
             exit 0
           fi
 
@@ -89,10 +107,33 @@ jobs:
           set -euo pipefail
           SCRIPT="pythonIDE/update_baseline.py"
           if [ ! -f "$SCRIPT" ]; then
-            echo "::error::$SCRIPT not found on ${{ matrix.ref }}"
+            echo "::error::$SCRIPT not found"
             exit 1
           fi
           python "$SCRIPT"
+
+      # Strip volatile fields from the committed baseline.json so the
+      # auto-commit step only fires when something substantive changed.
+      # The pre-strip copy is preserved for the artifact upload.
+      - name: Strip volatile fields (keep artifact copy)
+        run: |
+          set -euo pipefail
+          if [ ! -f "${BASELINE_FILE}" ]; then
+            echo "soft skip: ${BASELINE_FILE} not generated"
+            exit 0
+          fi
+          cp "${BASELINE_FILE}" "${BASELINE_FILE}.artifact"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          p = Path(os.environ["BASELINE_FILE"])
+          data = json.loads(p.read_text())
+          for volatile in ("generated_at", "timestamp", "run_id", "sha"):
+              data.pop(volatile, None)
+          p.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+          print(f"stripped volatile fields from {p}")
+          PY
 
       - name: Validate baseline.json (if generated)
         run: |
@@ -118,32 +159,41 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pythonide-fastmcp-${{ matrix.ref }}-${{ github.run_id }}
+          name: pythonide-fastmcp-py${{ matrix.python-version }}-${{ github.run_id }}
           path: |
-            pythonIDE/baseline.json
+            pythonIDE/baseline.json.artifact
             pythonIDE/last_fastmcp.log
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Commit baseline on matrix ref
-        if: success()
+      # Bot commit: skips pre-commit hooks by intent. pythonIDE/** is a
+      # machine-generated lane; hooks that guard ledger/** and app/** must
+      # not run against it.
+      #
+      # Only the 3.11 leg commits. If both matrix legs committed, the
+      # second would race the first and produce a no-op or a reject.
+      - name: Commit baseline on main (3.11 leg only)
+        if: success() && matrix.python-version == '3.11'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          branch: ${{ matrix.ref }}
-          commit_message: "chore: pythonIDE fastMCP baseline (${{ matrix.ref }}) — no ledger rewrite"
+          branch: main
+          commit_message: "chore: pythonIDE fastMCP baseline — no ledger rewrite"
           file_pattern: |
             pythonIDE/baseline.json
             pythonIDE/last_fastmcp.log
           commit_options: '--no-verify'
+          skip_dirty_check: false
+          skip_fetch: false
           token: ${{ github.token }}
 
       - name: Summary
         if: always()
         run: |
           {
-            echo "fastMCP + pythonIDE baseline — ref=${{ matrix.ref }}"
+            echo "fastMCP + pythonIDE baseline — ref=main · py${{ matrix.python-version }}"
             echo "hash_algo: ${HASH_ALGO}"
             echo "MCP FILLED=false · Dual ASGI 127.0.0.1:8024"
             echo "ledger_policy: NO_LEDGER_WRITE — pythonIDE/** only"
-            echo "artifacts: pythonIDE/baseline.json, pythonIDE/last_fastmcp.log"
+            echo "commit_policy: volatile fields stripped; 3.11 leg only"
+            echo "artifacts: pythonIDE/baseline.json.artifact, pythonIDE/last_fastmcp.log"
           } >> "$GITHUB_STEP_SUMMARY"
