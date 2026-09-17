@@ -2,7 +2,7 @@ name: Witness Chain SQLite
 
 on:
   push:
-    branches: [main]
+    branches: [main, master, deepseek, grok, mistral]
     paths:
       - ".github/scripts/witness_chain_sqlite.py"
       - ".github/workflows/witness-chain-sqlite.yml"
@@ -69,10 +69,6 @@ jobs:
         if: steps.check.outputs.present == 'true'
         run: |
           set -euo pipefail
-          # Capture the exit code of the Python process, not of tee.
-          # `set -o pipefail` propagates the failing pipe element, but
-          # we also want a numeric rc for the summary, so PIPESTATUS
-          # is used to separate the two.
           set +e
           python "${SCRIPT}" 2>&1 | tee witness_chain_build.log
           rc=${PIPESTATUS[0]}
@@ -90,10 +86,6 @@ jobs:
             exit 1
           fi
 
-          # Heredoc body MUST be flush with column zero. Any indentation
-          # inside the heredoc becomes part of the Python source and
-          # raises IndentationError, which silently produces an empty
-          # digest in the output.
           DB_SHA=$(python - <<'PY'
 import hashlib, pathlib
 print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
@@ -142,8 +134,6 @@ PY
         if: steps.rows.outputs.rows_ok == 'true'
         run: |
           set -euo pipefail
-          # Each row's prev_hash must equal the previous row's hash.
-          # This is the arithmetic form of "8337 → 8338 → 8339 UNBROKEN".
           python - <<'PY'
 import sqlite3, sys
 db = sqlite3.connect("witness_chain.db")
