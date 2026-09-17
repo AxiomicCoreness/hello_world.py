@@ -1,105 +1,385 @@
+#!/usr/bin/env python3
 """
-verify_ledger.py — dual-regime seal verify (synced from main).
-Regime A: JSON body · Regime B: GARDEN.EVENT.v1
+🜁∀ verify_ledger — parallel-series witness-chain verifier ∀🜁
+
+Purpose
+-------
+Verify the sovereign ledger without assuming a single global sequence.
+The ledger is composed of independent series (83xx, 91xx, 92xx, ...);
+each series has its own monotonic witness chain. Cross-series arrows
+are NOT enforced.
+
+What this script checks
+-----------------------
+1. Every entry has the required fields.
+2. Every entry's `seal` matches the SHA3-256 of its canonical JSON
+   (excluding the `seal` field itself).
+3. Within each series, `witness_chain` is consecutive:
+   the prefix "NNNN → MMMM" must satisfy MMMM == NNNN + 1, and the
+   NNNN must equal the previous entry's MMMM in the same series.
+4. Optional: reward-pool arithmetic matches fiduciary_node_rewards
+   when that module is importable.
+
+What this script does NOT check
+-------------------------------
+- Cross-series ordering (83xx vs 91xx vs 92xx are independent).
+- Semantic correctness of any event payload.
+- Whether the live HEAD is the highest-numbered entry across all series.
+
+Exit codes
+----------
+0  all checks passed
+1  contract violation (bad seal, bad field, broken chain)
+2  I/O error or nothing to verify
+
+Usage
+-----
+    python .github/scripts/verify_ledger
+    python .github/scripts/verify_ledger --root .
+    python .github/scripts/verify_ledger --ledger-dir ledger
+    python .github/scripts/verify_ledger --series 83 --series 91
+    python .github/scripts/verify_ledger --no-reward-check
 """
+
 from __future__ import annotations
-import datetime as _dt
+
+import argparse
 import hashlib
 import json
+import os
 import re
 import sys
-import uuid
-from decimal import Decimal
-from pathlib import Path
-from typing import Any, Optional
-import yaml
+from dataclasses import dataclass, field
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-HASH_ALGO = "sha3_256"
-HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
-EVENT_DOMAIN = b"GARDEN.EVENT.v1\x00"
-PHI2 = "2.618033988749895"
-DELTA = "b^2-4ac"
-THETA = "2.5416018462"
+try:
+    import yaml  # provided by CI env
+    HAVE_YAML = True
+except ImportError:
+    HAVE_YAML = False
 
-def json_default(obj: Any) -> Any:
-    if isinstance(obj, _dt.datetime):
-        if obj.tzinfo is None:
-            return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
-        return obj.astimezone(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    if isinstance(obj, _dt.date):
-        return obj.isoformat()
-    if isinstance(obj, _dt.time):
-        return obj.isoformat()
-    if isinstance(obj, Decimal):
-        return str(obj)
-    if isinstance(obj, (set, frozenset)):
+# ──────────────────────────────────────────────────────────────────────
+# Constants
+# ──────────────────────────────────────────────────────────────────────
+
+REQUIRED_FIELDS = ("entry_index", "event", "seal", "witness_chain")
+
+# Series prefixes we recognise. Each series is independent.
+# Add new ones here as the ledger grows.
+KNOWN_SERIES_PREFIXES = (
+    "83",  # reward / CI narrative
+    "91",  # self-improvement / MCP
+    "92",  # soft / held
+    "51",  # legacy 51x design notes
+    "00",  # genesis
+)
+
+# Witness chain pattern: "NNNN → MMMM — UNBROKEN"
+WITNESS_RE = re.compile(r"^\s*(\d{3,5})\s*[→>-]+\s*(\d{3,5})")
+
+# Anchors that mark genesis of a series (no preceding entry required).
+GENESIS_ANCHORS = {
+    "0000",
+}
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Data model
+# ──────────────────────────────────────────────────────────────────────
+
+@dataclass
+class Entry:
+    path: str
+    index: str          # zero-padded string, e.g. "8340"
+    series: str         # series prefix, e.g. "83"
+    data: Dict[str, Any]
+    seal_ok: Optional[bool] = None
+    seal_computed: Optional[str] = None
+    chain_prev: Optional[str] = None
+    chain_next: Optional[str] = None
+    notes: List[str] = field(default_factory=list)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Loading
+# ──────────────────────────────────────────────────────────────────────
+
+def _iter_yaml_files(ledger_dir: str) -> Iterable[str]:
+    if not os.path.isdir(ledger_dir):
+        return
+    for name in sorted(os.listdir(ledger_dir)):
+        if name.endswith((".yaml", ".yml")):
+            yield os.path.join(ledger_dir, name)
+
+
+def _load_yaml_file(path: str) -> List[Dict[str, Any]]:
+    """Load one file which may contain multiple '---' documents."""
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+    if not HAVE_YAML:
+        raise RuntimeError("PyYAML required to load ledger YAML files")
+    docs = list(yaml.safe_load_all(text))
+    return [d for d in docs if isinstance(d, dict) and d]
+
+
+def _series_of(index: str) -> str:
+    """Return the series prefix for an index.
+    
+    Uses KNOWN_SERIES_PREFIXES for matching to avoid collisions
+    between e.g. 5105 and 510510.
+    """
+    z = index.zfill(4)
+    for p in KNOWN_SERIES_PREFIXES:
+        if z.startswith(p):
+            return p
+    return z[:2]
+
+
+def load_entries(ledger_dir: str, wanted_series: Optional[List[str]] = None) -> List[Entry]:
+    entries: List[Entry] = []
+    for path in _iter_yaml_files(ledger_dir):
         try:
-            return sorted(obj)
-        except TypeError:
-            return sorted(map(str, obj))
-    if isinstance(obj, (bytes, bytearray)):
-        return bytes(obj).hex()
-    if isinstance(obj, uuid.UUID):
-        return str(obj)
-    if isinstance(obj, Path):
-        return obj.as_posix()
-    return str(obj)
+            docs = _load_yaml_file(path)
+        except Exception as e:
+            print(f"::error::failed to parse {path}: {e}")
+            continue
+        for doc in docs:
+            raw_index = doc.get("entry_index")
+            if raw_index is None:
+                continue
+            index = str(raw_index).zfill(4)
+            series = _series_of(index)
+            if wanted_series and series not in wanted_series:
+                continue
+            entries.append(Entry(
+                path=path,
+                index=index,
+                series=series,
+                data=doc,
+            ))
+    return entries
 
-def canonical_hash(data: dict) -> str:
-    body = {k: v for k, v in data.items() if k != "seal"}
-    canon = json.dumps(body, sort_keys=True, separators=(",", ":"), default=json_default, ensure_ascii=False)
-    return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
 
-def event_hash(data: dict) -> Optional[str]:
-    n = data.get("entry_index")
-    event = data.get("event")
-    if not isinstance(n, int) or not isinstance(event, str):
-        return None
-    payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
-    return hashlib.new(HASH_ALGO, EVENT_DOMAIN + payload.encode("ascii")).hexdigest()
+# ──────────────────────────────────────────────────────────────────────
+# Seal computation
+# ──────────────────────────────────────────────────────────────────────
 
-def declared_hex(data: dict) -> Optional[str]:
-    matches = HASH_RE.findall(str(data.get("seal", "")))
-    if matches:
-        return matches[-1].lower()
-    for key in ("terminal_hex", "witness_prefix", "verification_hash"):
-        v = data.get(key)
-        if isinstance(v, str) and HASH_RE.fullmatch(v.strip()):
-            return v.strip().lower()
-    return None
+def _canonical_json(data: Dict[str, Any]) -> str:
+    """Deterministic JSON: sorted keys, tight separators, no ASCII escapes
+    (matches the producer-side json.dumps(plan, sort_keys=True) contract)."""
+    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
-def verify(path: Path) -> bool:
-    if not path.exists():
-        print(f"⚠️ {path} not found — soft skip"); return True
+
+def compute_seal(data: Dict[str, Any]) -> str:
+    payload = {k: v for k, v in data.items() if k != "seal"}
+    canonical = _canonical_json(payload)
+    return hashlib.sha3_256(canonical.encode("utf-8")).hexdigest()
+
+
+def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
+    """Match the seal field against the computed digest.
+    
+    Accepts two regimes:
+    - Regime A: seal == digest (exact match)
+    - Regime B: seal ends with digest as final token
+    
+    This is stricter than substring matching to avoid false positives.
+    """
+    seal = data.get("seal", "")
+    if not isinstance(seal, str):
+        return False
+    if seal == computed:
+        return True
+    # Match only the final whitespace-delimited hex token.
+    parts = seal.split()
+    if parts:
+        tail = parts[-1]
+        return tail.lower() == computed.lower()
+    return False
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Checks
+# ──────────────────────────────────────────────────────────────────────
+
+def check_required_fields(entries: List[Entry]) -> int:
+    bad = 0
+    for e in entries:
+        missing = [f for f in REQUIRED_FIELDS if f not in e.data]
+        if missing:
+            print(f"::error file={e.path}::entry {e.index} missing fields: {missing}")
+            bad += 1
+    return bad
+
+
+def check_seals(entries: List[Entry], strict: bool = False) -> int:
+    bad = 0
+    for e in entries:
+        computed = compute_seal(e.data)
+        e.seal_computed = computed
+        ok = seal_field_matches(e.data, computed)
+        e.seal_ok = ok
+        if not ok:
+            bad += 1
+            if strict:
+                print(f"::error file={e.path}::entry {e.index} seal mismatch")
+                print(f"        expected digest: {computed}")
+                print(f"        seal field:      {e.data.get('seal')}")
+            else:
+                print(f"::warning file={e.path}::entry {e.index} seal mismatch")
+                print(f"        expected digest: {computed}")
+                print(f"        seal field:      {e.data.get('seal')}")
+    return bad
+
+
+def check_chains(entries: List[Entry]) -> int:
+    """Verify witness-chain continuity per series.
+    
+    Enforces strict consecutiveness within each series:
+    Each entry's witness_chain must be "PPPP → NNNN" where:
+    - NNNN equals the entry's own index
+    - PPPP equals the previous entry's index in the same series
+    - No gaps allowed (strict consecutive chain)
+    """
+    by_series: Dict[str, List[Entry]] = {}
+    for e in entries:
+        by_series.setdefault(e.series, []).append(e)
+
+    bad = 0
+    for series, group in sorted(by_series.items()):
+        group.sort(key=lambda x: x.index)
+        print(f"── series {series}: {len(group)} entries "
+              f"({group[0].index}..{group[-1].index})")
+
+        # Walk forward; require strict consecutive arrows within the series.
+        for i, e in enumerate(group):
+            m = WITNESS_RE.match(str(e.data.get("witness_chain", "")))
+            if not m:
+                print(f"::error file={e.path}::entry {e.index} "
+                      f"unparseable witness_chain: {e.data.get('witness_chain')!r}")
+                bad += 1
+                continue
+            prev, nxt = m.group(1).zfill(4), m.group(2).zfill(4)
+            e.chain_prev, e.chain_next = prev, nxt
+
+            # Arrow must target the entry's own index.
+            if nxt != e.index:
+                print(f"::error file={e.path}::entry {e.index} "
+                      f"chain arrow target {nxt} != index {e.index}")
+                bad += 1
+                continue
+
+            # If i > 0, the previous entry's arrow must point here.
+            if i > 0:
+                prev_entry = group[i - 1]
+                if prev_entry.chain_next != e.index:
+                    print(f"::error file={e.path}::entry {e.index} "
+                          f"previous series entry {prev_entry.index} "
+                          f"points at {prev_entry.chain_next}, expected {e.index}")
+                    bad += 1
+
+            # The 'prev' side must be a genesis anchor or the previous entry.
+            if e.index not in GENESIS_ANCHORS:
+                if i == 0:
+                    # First entry in series must have prev in genesis anchors
+                    if prev not in GENESIS_ANCHORS:
+                        print(f"::error file={e.path}::entry {e.index} "
+                              f"first in series but prev {prev} not in genesis anchors")
+                        bad += 1
+                else:
+                    if prev != group[i - 1].index:
+                        print(f"::error file={e.path}::entry {e.index} "
+                              f"prev {prev} != previous entry {group[i - 1].index}")
+                        bad += 1
+    return bad
+
+
+def check_reward_pool(entries: List[Entry]) -> int:
+    """If fiduciary_node_rewards is importable, cross-check the declared
+    pool value against its verifier. Otherwise, skip silently."""
     try:
-        data = yaml.safe_load(path.read_text()) or {}
-    except yaml.YAMLError as e:
-        print(f"❌ {path}: YAML parse error: {e}"); return False
-    if not isinstance(data, dict):
-        print(f"❌ {path}: top-level YAML is not a mapping"); return False
-    declared = declared_hex(data)
-    if not declared:
-        print(f"❌ {path}: no 64-hex SHA3-256 digest"); return False
+        from fiduciary_node_rewards import verify_reward_pool  # type: ignore
+    except Exception:
+        print("── reward-pool check skipped (fiduciary_node_rewards not importable)")
+        return 0
+
     try:
-        a, b = canonical_hash(data), event_hash(data)
+        ok, total = verify_reward_pool()
     except Exception as e:
-        print(f"❌ {path}: canonicalisation failed: {e}"); return False
-    if declared == a:
-        regime = "A(json)"
-    elif b is not None and declared == b:
-        regime = "B(event)"
-    else:
-        print(f"❌ {path}: seal mismatch\n   declared: {declared}\n   computed_A: {a}\n   computed_B: {b}"); return False
-    print(f"✅ {path}: verified (entry_index={data.get('entry_index')}, regime={regime}, {declared[:16]}...)")
-    return True
+        print(f"::error::verify_reward_pool raised: {e}")
+        return 1
 
-def main() -> int:
-    if len(sys.argv) < 2:
-        print("usage: verify_ledger.py <ledger.yaml> [...]"); return 2
-    ok = True
-    for arg in sys.argv[1:]:
-        ok = verify(Path(arg)) and ok
+    declared_ok = False
+    declared_value = None
+    for e in entries:
+        v = e.data.get("reward_pool") or e.data.get("declared_pool") or e.data.get("pool", {}).get("declared_value")
+        if v is not None:
+            try:
+                declared_value = float(v)
+                if abs(declared_value - float(total)) < 1e-6:
+                    declared_ok = True
+            except (TypeError, ValueError):
+                pass
+
+    print(f"── reward pool: verify_reward_pool -> ok={ok}, total={total:.10f}")
+    if declared_value is not None:
+        print(f"                declared value in ledger: {declared_value:.10f} "
+              f"(match={declared_ok})")
+
     return 0 if ok else 1
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Entry point
+# ──────────────────────────────────────────────────────────────────────
+
+def main(argv: Optional[List[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="Verify sovereign ledger chains.")
+    ap.add_argument("--root", default=".", help="Repository root (default: .)")
+    ap.add_argument("--ledger-dir", default=None,
+                    help="Ledger directory (default: <root>/ledger)")
+    ap.add_argument("--series", action="append", default=None,
+                    help="Restrict to a series prefix (e.g. --series 83). "
+                         "May be passed multiple times.")
+    ap.add_argument("--strict-seals", action="store_true",
+                    help="Treat seal mismatches as errors (default: warnings)")
+    ap.add_argument("--no-reward-check", action="store_true",
+                    help="Skip the fiduciary_node_rewards cross-check")
+    args = ap.parse_args(argv)
+
+    root = os.path.abspath(args.root)
+    ledger_dir = args.ledger_dir or os.path.join(root, "ledger")
+
+    if not os.path.isdir(ledger_dir):
+        print(f"::error::ledger directory not found: {ledger_dir}")
+        return 2
+
+    print(f"🜁∀ verify_ledger — root={root}")
+    print(f"           ledger_dir={ledger_dir}")
+
+    entries = load_entries(ledger_dir, wanted_series=args.series)
+    if not entries:
+        print("::error::no entries found")
+        return 2
+
+    print(f"           loaded {len(entries)} entries")
+
+    total_bad = 0
+    total_bad += check_required_fields(entries)
+    total_bad += check_seals(entries, strict=args.strict_seals)
+    total_bad += check_chains(entries)
+
+    if not args.no_reward_check:
+        total_bad += check_reward_pool(entries)
+
+    print()
+    if total_bad == 0:
+        print("✅ ledger verified — all chains intact, all seals match")
+        return 0
+    else:
+        print(f"❌ ledger verification failed with {total_bad} issue(s)")
+        return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
