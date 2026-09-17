@@ -8,7 +8,7 @@ name: Argo CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master, deepseek, grok, mistral]
     paths:
       - "argocd/**"
       - "tests/test_argo.py"
@@ -30,7 +30,7 @@ on:
         default: "manual-argo-ci"
 
 permissions:
-  contents: write   # required to commit ledger/8924.yaml
+  contents: write
 
 concurrency:
   group: argo-ci-${{ github.ref }}
@@ -44,20 +44,52 @@ env:
   LEDGER_DIR: ledger
 
 jobs:
-  # ──────────────────────────────────────────────────────────────
-  # 0. CRYPTOGRAPHIC & SECURITY HEADER VERIFICATION (prerequisite)
-  # ──────────────────────────────────────────────────────────────
   verify-integrity:
     runs-on: ubuntu-latest
     name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Debug environment
+        run: |
+          set -euo pipefail
+          echo "::group::Debug environment"
+          echo "runner.os         = ${{ runner.os }}"
+          echo "github.ref        = ${{ github.ref }}"
+          echo "github.ref_name   = ${{ github.ref_name }}"
+          echo "github.sha        = ${{ github.sha }}"
+          echo "github.event_name = ${{ github.event_name }}"
+
+          echo "── workflow env ──"
+          echo "  ARGO_APP          = ${ARGO_APP:-<unset>}"
+          echo "  HASH_ALGO         = ${HASH_ALGO:-<unset>}"
+          echo "  LEDGER_DIR        = ${LEDGER_DIR:-<unset>}"
+          echo "  WOOD_DRAGON_TAU   = ${WOOD_DRAGON_TAU:-<unset>}"
+          echo "  PHASE_LOCK        = ${PHASE_LOCK:-<unset>}"
+
+          echo "── filesystem ──"
+          for d in argocd ledger tests; do
+            if [ -d "$d" ]; then
+              count=$(find "$d" -maxdepth 1 -type f | wc -l)
+              echo "  $d/  (${count} files)"
+            else
+              echo "  $d/  not found"
+            fi
+          done
+
+          echo "── tooling ──"
+          python --version
+          if command -v yq >/dev/null 2>&1; then yq --version; else echo "yq not on PATH"; fi
+          if command -v kubectl >/dev/null 2>&1; then kubectl version --client; else echo "kubectl not on PATH"; fi
+          echo "::endgroup::"
 
       - name: Install deps
         run: |
@@ -65,34 +97,88 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
-      - name: Verify Ed25519 signatures on ledger entries (structure)
+      - name: Verify Ed25519 signatures on ledger entries
         run: |
           python - <<'PY'
-          from cryptography.hazmat.primitives.asymmetric import ed25519  # noqa: F401
-          import yaml
+          import base64, sys, yaml
           from pathlib import Path
+          from cryptography.hazmat.primitives.asymmetric import ed25519
+          from cryptography.exceptions import InvalidSignature
 
           targets = ["ledger/8923.yaml"]
+          checked = 0
           for t in targets:
               p = Path(t)
               if not p.exists():
                   print(f"⚠️ {t} not found — soft skip")
                   continue
-              with p.open() as f:
-                  data = yaml.safe_load(f) or {}
-              print(f"✅ Ledger {p.stem} signature verified (structure)")
+              data = yaml.safe_load(p.read_text()) or {}
+              sig_b64 = data.get("signature")
+              msg     = data.get("signed_payload")
+              pub_b64 = data.get("public_key")
+              if not (sig_b64 and msg and pub_b64):
+                  print(f"⚠️ {p.stem}: no signature fields — NOT_CHECKED")
+                  continue
+              try:
+                  pub = ed25519.Ed25519PublicKey.from_public_bytes(
+                      base64.b64decode(pub_b64))
+                  pub.verify(base64.b64decode(sig_b64), msg.encode("utf-8"))
+                  print(f"✅ Ed25519 verified: {p.stem}")
+                  checked += 1
+              except InvalidSignature:
+                  print(f"❌ Ed25519 INVALID: {p}", file=sys.stderr)
+                  sys.exit(1)
+          print(f"checked {checked} signed entr{'y' if checked == 1 else 'ies'}")
           PY
 
       - name: Verify SHA3-256 seals on all present ledger entries
         run: |
           set -euo pipefail
           shopt -s nullglob
+
           entries=(ledger/*.yaml)
           if [ ${#entries[@]} -eq 0 ]; then
             echo "⚠️ no ledger entries present — soft skip"
             exit 0
           fi
-          python .github/scripts/verify_ledger.py "${entries[@]}"
+
+          VERIFIER=".github/scripts/verify_ledger.py"
+          if [ ! -f "$VERIFIER" ]; then
+            echo "::error::$VERIFIER not found"
+            exit 1
+          fi
+
+          regime_b=()
+          regime_a=()
+          for f in "${entries[@]}"; do
+            if grep -qE '^(witness_prefix|terminal_hex):' "$f"; then
+              regime_a+=("$f")
+            else
+              regime_b+=("$f")
+            fi
+          done
+
+          echo "── Regime B (body-hash seals): ${#regime_b[@]} file(s)"
+          for f in "${regime_b[@]}"; do echo "   $f"; done
+
+          echo "── Regime A (event-hash seals): ${#regime_a[@]} file(s)"
+          for f in "${regime_a[@]}"; do echo "   $f"; done
+
+          fail=0
+          for f in "${regime_b[@]}"; do
+            if ! python "$VERIFIER" "$f"; then
+              echo "::error::seal verification failed: $f"
+              fail=1
+            fi
+          done
+
+          if [ ${#regime_a[@]} -gt 0 ]; then
+            echo "note: Regime A entries are verified by ledger_math_ci.py"
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Verify security headers in FastAPI middleware
         run: |
@@ -123,9 +209,6 @@ jobs:
           print('✅ All security headers present in port380_mcp.py')
           PY
 
-  # ──────────────────────────────────────────────────────────────
-  # 1. MANIFEST VALIDATION
-  # ──────────────────────────────────────────────────────────────
   validate-manifests:
     name: Argo · Manifest hard validate
     runs-on: ubuntu-latest
@@ -136,10 +219,10 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
 
       - name: Install PyYAML
         run: |
@@ -230,7 +313,7 @@ jobs:
               sys.exit(1)
           PY
 
-      - name: kubectl client-side dry-run (optional tool)
+      - name: kubectl client-side dry-run (CRDs excluded)
         run: |
           set -euo pipefail
           if ! command -v kubectl >/dev/null 2>&1; then
@@ -239,13 +322,14 @@ jobs:
             sudo mv kubectl /usr/local/bin/
           fi
           for f in argocd/*.yaml; do
+            if grep -qE '^kind:\s*(Rollout|HTTPRoute|Application)$' "$f"; then
+              echo "skip schema dry-run (CRD): $f"
+              continue
+            fi
             kubectl apply --dry-run=client -f "$f" >/dev/null
             echo "dry-run OK $f"
           done
 
-  # ──────────────────────────────────────────────────────────────
-  # 2. PURE UNIT TESTS
-  # ──────────────────────────────────────────────────────────────
   pure-tests:
     name: Argo · Pure unit tests
     runs-on: ubuntu-latest
@@ -254,10 +338,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
 
       - name: Install test deps
         run: |
@@ -272,40 +356,67 @@ jobs:
           set -euo pipefail
           pytest tests/test_argo_manifests.py -q --tb=short
 
-      - name: Collection-safe live tests (skip without cluster)
+      - name: Collection-safe live tests
         env:
           PYTHONPATH: "."
         run: |
           set -euo pipefail
-          # Collection must succeed; skip is acceptable; import errors are not.
-          pytest tests/test_argo.py tests/test_rollout.py -q --tb=line \
-            -m "not integration" \
-            || pytest tests/test_argo.py tests/test_rollout.py -q --tb=line \
-            || true
-          python -c "import tests.test_argo" 2>/dev/null || true
-          echo "live tests path completed (skip without cluster = success)"
 
-  # ──────────────────────────────────────────────────────────────
-  # 3. SEAL & LEDGER ENTRY (Entry 8924) — SHA3-256
-  # ──────────────────────────────────────────────────────────────
+          if [ ! -f tests/test_argo.py ] && [ ! -f tests/test_rollout.py ]; then
+            echo "no live test files present — soft skip"
+            exit 0
+          fi
+
+          if [ -z "${KUBECONFIG:-}" ] && [ ! -f "$HOME/.kube/config" ]; then
+            echo "no kubeconfig — running non-integration tests only"
+            pytest tests/test_argo.py tests/test_rollout.py \
+              -q --tb=short -m "not integration"
+          else
+            pytest tests/test_argo.py tests/test_rollout.py \
+              -q --tb=short
+          fi
+
   seal:
     name: Argo · Seal (SHA3-256)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [validate-manifests, pure-tests]
     if: success()
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
 
       - name: Install PyYAML
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
+
+      - name: Verify predecessor ledger entry 8923
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/8923.yaml ]; then
+            echo "::error::ledger/8923.yaml missing — cannot seal 8924"
+            exit 1
+          fi
+          python - <<'PY'
+          import sys, yaml
+          from pathlib import Path
+
+          p = Path("ledger/8923.yaml")
+          d = yaml.safe_load(p.read_text()) or {}
+          if d.get("entry_index") != 8923:
+              print(f"::error::8923 entry_index mismatch: {d.get('entry_index')!r}",
+                    file=sys.stderr)
+              sys.exit(1)
+          print(f"✅ predecessor 8923 present (event={d.get('event')!r})")
+          PY
 
       - name: Seal ledger entry 8924 (SHA3-256)
         run: |
@@ -318,6 +429,17 @@ jobs:
 
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
           path = Path("ledger/8924.yaml")
+          prev_path = Path("ledger/8923.yaml")
+
+          prev_hash = ""
+          if prev_path.exists():
+              try:
+                  prev = yaml.safe_load(prev_path.read_text()) or {}
+                  seal = prev.get("seal", "") or ""
+                  if "·" in seal:
+                      prev_hash = seal.rsplit("·", 1)[-1].strip()
+              except Exception as e:
+                  print(f"⚠️ predecessor read error: {e}")
 
           entry = {
               "entry_index": 8924,
@@ -328,6 +450,7 @@ jobs:
               "argo_app": os.environ.get("ARGO_APP", "sovereign-garden"),
               "wood_dragon_tau": os.environ.get("WOOD_DRAGON_TAU", "0.91"),
               "phase_lock": os.environ.get("PHASE_LOCK", "202.6"),
+              "prev_hash": prev_hash,
               "witness": "8923 → 8924 — UNBROKEN",
               "seal": "∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED",
           }
@@ -341,12 +464,18 @@ jobs:
                                     allow_unicode=True))
           print("📋 Ledger entry 8924 written.")
           print(f"✅ Sealed 8924 · {HASH_ALGO}:{h[:16]}...")
+          print(f"   prev_hash = {prev_hash[:16] or '(none)'}")
           PY
 
       - name: Verify ledger entry 8924 (SHA3-256)
         run: |
           set -euo pipefail
-          python .github/scripts/verify_ledger.py ledger/8924.yaml
+          if [ -f .github/scripts/verify_ledger.py ]; then
+            python .github/scripts/verify_ledger.py ledger/8924.yaml
+          else
+            echo "::error::.github/scripts/verify_ledger.py not found"
+            exit 1
+          fi
 
       - name: Upload ledger entry
         if: always()
@@ -354,14 +483,18 @@ jobs:
         with:
           name: ledger-8924
           path: ledger/8924.yaml
-          retention-days: 90   # GitHub max 90 days; comment: desired 3600 days
+          retention-days: 90
+          if-no-files-found: warn
 
       - name: Commit ledger entry 8924
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal argo-ci entry 8924 (sha3_256)"
           file_pattern: ledger/8924.yaml
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          commit_options: '--no-verify'
 
       - name: Seal note
         if: always()
@@ -371,5 +504,5 @@ jobs:
             echo "🜁∀ — Seal: ∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED"
             echo "🔗 Witness: 8923 → 8924 — UNBROKEN"
             echo "🔐 hash_algo: sha3_256 (FIPS 202)"
-            echo "📦 Artifact retention: 3600 days (max 90 in GitHub, stored externally)"
+            echo "📦 Artifact retention: 90 days (GitHub cap)"
           } >> "$GITHUB_STEP_SUMMARY"
