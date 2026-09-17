@@ -1,16 +1,15 @@
 {
-  "generated_at": "2026-09-17T17:09:39.494874+00:00",
-  "surface": "pythonIDE",
-  "not": "pythonista",
   "dual_asgi": "127.0.0.1:8024",
-  "mcp_filled": false,
   "fastmcp": {
-    "ok": true,
-    "filled": false,
     "bind_host": "127.0.0.1",
     "bind_port": 8024,
+    "errors": [],
+    "filled": false,
     "module": "/home/runner/work/hello_world.py/hello_world.py/fastMCP/__init__.py",
-    "errors": []
+    "ok": true
   },
-  "ledger_rewrite": false
+  "ledger_rewrite": false,
+  "mcp_filled": false,
+  "not": "pythonista",
+  "surface": "pythonIDE"
 }
