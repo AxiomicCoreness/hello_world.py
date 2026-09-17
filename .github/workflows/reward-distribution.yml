@@ -1,3 +1,4 @@
+---
 name: reward-distribution
 
 on:
@@ -10,32 +11,73 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: reward-distribution-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
+    name: Validate reward pool
     runs-on: ubuntu-latest
+    timeout-minutes: 8
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
+          cache: pip
 
       - name: Install dependencies
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          pip install --quiet pytest
+          python -m pip install --quiet pytest
 
       - name: Run test suite
-        run: python -m pytest tests/ -q
+        run: |
+          set -euo pipefail
+          python -m pytest tests/ -q
 
       - name: Compute reward pool
-        run: python -m fiduciary_node_rewards
+        id: pool
+        run: |
+          set -euo pipefail
+          python -m fiduciary_node_rewards
 
       - name: Sanity check pool
         run: |
+          set -euo pipefail
           python - <<'PY'
+          import json, sys
+          from decimal import Decimal
           from fiduciary_node_rewards import total_pool
+
           t = total_pool()
-          assert t > 0, "reward pool must be positive"
+          assert isinstance(t, (int, float, Decimal)), f"unexpected type: {type(t)}"
+          assert 0 < t < 1e9, f"reward pool out of expected range: {t}"
           print(f"reward_pool = {t:.10f}")
+
+          with open("reward_pool.json", "w") as f:
+              json.dump({"reward_pool": str(t)}, f)
           PY
+
+      - name: Upload reward pool
+        uses: actions/upload-artifact@v4
+        with:
+          name: reward-pool
+          path: reward_pool.json
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Reward Distribution"
+            echo ""
+            echo "- Python: 3.12"
+            echo "- Tests: \`python -m pytest tests/ -q\`"
+            echo "- Pool artifact: \`reward-pool\`"
+          } >> "$GITHUB_STEP_SUMMARY"
