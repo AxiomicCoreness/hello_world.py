@@ -53,6 +53,50 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
 
+      - name: Debug environment
+        run: |
+          set -euo pipefail
+          echo "::group::Debug environment"
+          echo "runner.os         = ${{ runner.os }}"
+          echo "github.ref        = ${{ github.ref }}"
+          echo "github.ref_name   = ${{ github.ref_name }}"
+          echo "github.sha        = ${{ github.sha }}"
+          echo "github.event_name = ${{ github.event_name }}"
+          echo "github.repository = ${{ github.repository }}"
+
+          echo "── workflow env ──"
+          echo "  HASH_ALGO         = ${HASH_ALGO:-<unset>}"
+          echo "  SCRIPT            = ${SCRIPT:-<unset>}"
+          echo "  DB_ARTIFACT       = ${DB_ARTIFACT:-<unset>}"
+          echo "  EXPECTED_ROWS     = ${EXPECTED_ROWS:-<unset>}"
+
+          echo "── filesystem ──"
+          if [ -f "${SCRIPT}" ]; then
+            echo "  ${SCRIPT}  (file, $(wc -c < "${SCRIPT}") bytes)"
+            ls -la "${SCRIPT}"
+          else
+            echo "  ${SCRIPT}  not found"
+          fi
+
+          if [ -d ledger ]; then
+            count=$(find ledger -maxdepth 1 -name '*.yaml' -type f | wc -l)
+            echo "  ledger/  (directory, ${count} yaml files)"
+            ls -la ledger/ | head -n 20
+            if [ "$count" -gt 20 ]; then
+              echo "  … (${count} total, showing first 20)"
+            fi
+          else
+            echo "  ledger/  not found"
+          fi
+
+          echo "── python ──"
+          python --version
+          python -c "import sys; print('  executable =', sys.executable)"
+          python -c "import yaml; print('  pyyaml =', yaml.__version__)" 2>/dev/null \
+            || echo "  pyyaml = not importable"
+          python -c "import hashlib; print('  hashlib.sha3_256 = available')"
+          echo "::endgroup::"
+
       - name: Confirm builder script present
         id: check
         run: |
