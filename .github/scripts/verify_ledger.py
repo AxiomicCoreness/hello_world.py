@@ -316,7 +316,7 @@ def verify(path: Path, mode: str) -> bool:
 
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except yaml.YAMLError as e:
+    except (yaml.YAMLError, ValueError) as e:
         print(f"❌ {path}: YAML parse error: {e}")
         return False if mode == "hard" else True
 
