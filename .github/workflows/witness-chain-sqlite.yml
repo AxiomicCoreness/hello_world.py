@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: witness-chain-sqlite-${{ github.ref }}
@@ -28,14 +28,14 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install deps
@@ -48,18 +48,19 @@ jobs:
         id: build
         run: |
           set -euo pipefail
-          python "${SCRIPT}" | tee witness_chain_build.log
+          python "${SCRIPT}" 2>&1 | tee witness_chain_build.log
 
           if [ -f witness_chain.db ]; then
             DB_SHA=$(python - <<'PY'
-          import hashlib, pathlib
-          print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
-          PY
+import hashlib, pathlib
+print(hashlib.new("sha3_256", pathlib.Path("witness_chain.db").read_bytes()).hexdigest())
+PY
             )
             echo "db_sha3_256=${DB_SHA}" >> "$GITHUB_OUTPUT"
             echo "db sha3_256: ${DB_SHA:0:16}..."
           else
             echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
+            echo "⚠️ witness_chain.db not produced by script"
           fi
 
       - name: Upload witness chain artifacts
