@@ -1,34 +1,5 @@
 name: Symplectic Status Generation
 
-# Observes the symplectic state, generates status artifacts, deploys the
-# Port-380 scaling gate, and seals entry 8984 binding both artifact hashes.
-# hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
-# ledger_policy: WRITE_VIA_SEAL — entry 8984 only (+ catch-all for external ledger changes)
-# witness: 8983 → 8984 — UNBROKEN
-#
-# ─────────────────────────────────────────────────────────────────
-# CORRECTION NOTES — this pass
-# ─────────────────────────────────────────────────────────────────
-# FIX A. actions/checkout@v5 → @v4
-#   v5 is not a released major. The runner cannot resolve it; the job
-#   would fail at checkout before any step ran. Current stable is v4.
-#
-# FIX B. actions/setup-python@v6 → @v5
-#   v6 is not a released major. Current stable is v5.
-#
-# Retained from prior correction pass:
-#   - id: generate on the generator step; seal reads steps.generate.outputs.*
-#   - hash/seal bodies extracted to scripts/hash_artifact.py and
-#     scripts/seal_symplectic_8984.py (no inline heredoc)
-#   - summary asserts Φ_abs only when EXISTS=true
-#
-# One reconciliation note (not a fix, a flag):
-#   on.push.paths names ".github/workflows/symplectic-status.yml" while
-#   the file's `name:` header reads "Symplectic Status Generation". If
-#   the file on disk is symplectic-status-generation.yml, update the
-#   paths entry to match. Otherwise no action.
-# ─────────────────────────────────────────────────────────────────
-
 on:
   push:
     paths:
@@ -41,13 +12,13 @@ on:
       - "quantum/port_380_*.py"
       - "scripts/hash_artifact.py"
       - "scripts/seal_symplectic_8984.py"
-      - ".github/workflows/symplectic-status.yml"
+      - ".github/workflows/symplectic-status-generation.yml"   # FIX 5: match file name
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"
 
 permissions:
-  contents: write   # required for the auto-commit of status artifacts + ledger
+  contents: write
   id-token: write
 
 concurrency:
@@ -67,14 +38,14 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4          # FIX A: was @v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5       # FIX B: was @v6
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"        # FIX 3
           cache: pip
 
       - name: Install dependencies
@@ -83,9 +54,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet jsonschema pyyaml
 
-      # ────────────────────────────────────────────────────────────
-      # 0. SHA3-256 integrity gate (read-only)
-      # ────────────────────────────────────────────────────────────
       - name: Verify SHA3-256 seals on present ledger entries
         run: |
           set -euo pipefail
@@ -103,9 +71,6 @@ jobs:
             echo "no verify_ledger.py — soft skip"
           fi
 
-      # ────────────────────────────────────────────────────────────
-      # 1. Detect generator presence
-      # ────────────────────────────────────────────────────────────
       - name: Check if symplectic_status.py exists
         id: check_script
         run: |
@@ -118,15 +83,17 @@ jobs:
             echo "symplectic_status.py not found — soft skip generation"
           fi
 
-      # ────────────────────────────────────────────────────────────
-      # 2. Run the symplectic status generator
-      # ────────────────────────────────────────────────────────────
       - name: Run symplectic status generator
         id: generate
         if: steps.check_script.outputs.exists == 'true'
         run: |
           set -euo pipefail
           python symplectic_status.py
+
+          if [ ! -f scripts/hash_artifact.py ]; then
+            echo "⚠️ scripts/hash_artifact.py absent — soft skip hashing"   # FIX 4
+            exit 0
+          fi
 
           for artifact in symplectic_status.json symplectic_status.agent.jsonl; do
             if [ -f "$artifact" ]; then
@@ -137,35 +104,47 @@ jobs:
             fi
           done
 
-      # ────────────────────────────────────────────────────────────
-      # 3. Validate aggregate JSON against schema (non-blocking)
-      # ────────────────────────────────────────────────────────────
       - name: Validate aggregate JSON against schema (non-blocking)
         id: schema
         if: steps.check_script.outputs.exists == 'true'
         run: |
           set -euo pipefail
-          echo "validated=false" >> "$GITHUB_OUTPUT"
+          VAL=$(python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          try:
+              import jsonschema
+          except ImportError as e:
+              print("⚠️ jsonschema not installed — soft skip", file=sys.stderr)
+              print("false")
+              sys.exit(0)
 
-          if [ ! -f symplectic_status.json ]; then
-            echo "symplectic_status.json absent — soft skip validation"
-            exit 0
-          fi
-          if [ ! -f schemas/symplectic-status.json ]; then
-            echo "schemas/symplectic-status.json absent — soft skip validation"
-            exit 0
-          fi
+          inst = Path("symplectic_status.json")
+          schema = Path("schemas/symplectic-status.json")
+          if not inst.exists() or not schema.exists():
+              print("⚠️ instance or schema missing — soft skip", file=sys.stderr)
+              print("false")
+              sys.exit(0)
 
-          if python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json; then
-            echo "validated=true" >> "$GITHUB_OUTPUT"
+          try:
+              jsonschema.validate(
+                  json.loads(inst.read_text()),
+                  json.loads(schema.read_text()),
+              )
+              print("true")
+          except jsonschema.ValidationError as e:
+              print(f"⚠️ validation failed: {e.message} — non-blocking", file=sys.stderr)
+              print("false")
+          except jsonschema.SchemaError as e:
+              print(f"⚠️ schema itself invalid: {e.message} — non-blocking", file=sys.stderr)
+              print("false")
+          PY
+          )
+          echo "validated=${VAL:-false}" >> "$GITHUB_OUTPUT"
+          if [ "$VAL" = "true" ]; then
             echo "✅ symplectic_status.json validated against schema"
-          else
-            echo "schema validation failed — schema may be incomplete; continuing (non-blocking)"
           fi
 
-      # ────────────────────────────────────────────────────────────
-      # 4. Show agent JSONL head
-      # ────────────────────────────────────────────────────────────
       - name: Show agent JSONL head
         if: steps.check_script.outputs.exists == 'true'
         run: |
@@ -177,29 +156,16 @@ jobs:
             echo "symplectic_status.agent.jsonl not found — soft skip"
           fi
 
-      # ────────────────────────────────────────────────────────────
-      # 5. Deploy Port-380 scaling gate (if script exists)
-      # ────────────────────────────────────────────────────────────
-      - name: Deploy Port-380 Scaling Gate (if script exists)
-        if: steps.check_script.outputs.exists == 'true'
-        run: |
-          set -euo pipefail
-          if [ -f quantum/install_k8s.sh ]; then
-            chmod +x quantum/install_k8s.sh
-            ./quantum/install_k8s.sh || echo "install_k8s.sh returned non-zero (soft)"
-          else
-            echo "quantum/install_k8s.sh not found — soft skip deployment"
-          fi
-
-      # ────────────────────────────────────────────────────────────
-      # 6. Φ_abs — seal ledger entry 8984 (SHA3-256)
-      # ────────────────────────────────────────────────────────────
       - name: Seal ledger entry 8984 (SHA3-256)
-        if: steps.check_script.outputs.exists == 'true'
+        if: steps.check_script.outputs.exists == 'true' && hashFiles('scripts/seal_symplectic_8984.py') != ''   # FIX 4
         env:
           STATUS_JSON_SHA: ${{ steps.generate.outputs.symplectic_status_json_sha3_256 }}
           AGENT_JSONL_SHA: ${{ steps.generate.outputs.symplectic_status_agent_jsonl_sha3_256 }}
           SCHEMA_VALIDATED: ${{ steps.schema.outputs.validated }}
+          # FIX 8: also export the alternate spellings the script may read
+          SYMPLECTIC_STATUS_JSON_SHA3_256: ${{ steps.generate.outputs.symplectic_status_json_sha3_256 }}
+          SYMPLECTIC_STATUS_AGENT_JSONL_SHA3_256: ${{ steps.generate.outputs.symplectic_status_agent_jsonl_sha3_256 }}
+          SYMPLECTIC_STATUS_SCHEMA_VALIDATED: ${{ steps.schema.outputs.validated }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -217,9 +183,21 @@ jobs:
             echo "no verify_ledger.py — soft skip"
           fi
 
-      # ────────────────────────────────────────────────────────────
-      # 7. Commit artifacts if changed
-      # ────────────────────────────────────────────────────────────
+      - name: Deploy Port-380 Scaling Gate (if script exists)   # FIX 7: after seal
+        if: steps.check_script.outputs.exists == 'true'
+        run: |
+          set -euo pipefail
+          if [ ! -f quantum/install_k8s.sh ]; then
+            echo "quantum/install_k8s.sh not found — soft skip deployment"
+            exit 0
+          fi
+          if ! command -v kubectl >/dev/null 2>&1; then
+            echo "⚠️ kubectl absent — soft skip Port-380 deployment"
+            exit 0
+          fi
+          timeout 120 bash quantum/install_k8s.sh \
+            || echo "install_k8s.sh returned non-zero or timed out (soft)"
+
       - name: Commit artifacts if changed
         if: steps.check_script.outputs.exists == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -228,14 +206,11 @@ jobs:
           file_pattern: |
             symplectic_status.json
             symplectic_status.agent.jsonl
-            credit_ledger.json
-            HASH_MANIFEST.json
             ledger/8984.yaml
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
           commit_options: '--no-verify'
 
-      # ────────────────────────────────────────────────────────────
-      # 8. Summary — Φ_abs only when generator actually ran
-      # ────────────────────────────────────────────────────────────
       - name: Summary
         if: always()
         env:
