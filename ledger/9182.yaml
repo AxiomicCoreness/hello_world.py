@@ -1,0 +1,33 @@
+entry_index: 9182
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T14:36:00Z
+event: /docs_phase_lock_definition
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: a2a096e5dc067a87bf3e4060ee0843f998a1a03664c19fed839571fa7f3b3acd
+terminal_hex: a2a096e5dc067a87bf3e4060ee0843f998a1a03664c19fed839571fa7f3b3acd
+chain_hex: 3fb8ccf35046e5f1ca2f933298c3ad6a9987c79dae74e263c2441cef251892f2
+description: |
+  New file docs/phase_lock_definition.md. Completes the missing docs path.
+  Does not rewrite 0220 or 9167-9181. Does not change BIN bytes or tests.
+files:
+  - docs/phase_lock_definition.md
+  - ledger/9182.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · PHASE_LOCK_DOC · 9182_SEALED · a2a096e5dc067a87bf3e4060ee0843f998a1a03664c19fed839571fa7f3b3acd"
+witness_chain: 9181 → 9182 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9182|/docs_phase_lock_definition|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = a2a096e5dc067a87bf3e4060ee0843f998a1a03664c19fed839571fa7f3b3acd
+  Next free index after 9182 is 9183+.

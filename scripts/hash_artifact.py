@@ -12,6 +12,6 @@ if len(sys.argv) < 2:
 
 p = pathlib.Path(sys.argv[1])
 if not p.is_file():
-    sys.exit(0)
+    sys.exit(0)  # absent → no output
 
 print(hashlib.new("sha3_256", p.read_bytes()).hexdigest())

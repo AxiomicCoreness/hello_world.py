@@ -1,0 +1,49 @@
+# T-07 mitigation — witness continuity (gap-tolerant)
+# Does not rewrite hard envelope. Read-only over ledger/.
+name: Ledger Witness Continuity (T-07)
+
+on:
+  push:
+    branches: [main, deepseek, deepseek-ci, deepseek-cd-next]
+    paths:
+      - "ledger/**"
+      - ".github/scripts/assert_witness_continuity.py"
+      - ".github/workflows/ledger-witness-continuity.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ledger/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ledger-witness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  continuity:
+    name: T-07 witness continuity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet pyyaml
+      - name: Soft lane (warn only)
+        run: python .github/scripts/assert_witness_continuity.py --soft
+      - name: Emit report
+        run: python .github/scripts/assert_witness_continuity.py --emit
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## T-07 Witness Continuity"
+            echo "- gap-tolerant (parallel series allowed)"
+            echo "- hard envelope read-only"
+            echo "- soft mode default on push"
+            echo "Seal: ∀∞φ² · T07_WITNESS_CI · WOOD_DRAGON_0.91 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"

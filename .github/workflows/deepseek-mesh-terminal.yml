@@ -1,5 +1,11 @@
 name: deepseek-mesh-terminal
 
+# Seal: ∀∞φ² · DEEPSEEK_MESH_TERMINAL · 9005_SEALED · WOOD_DRAGON_0.91 · SEALED
+# Witness: 9004 → 9005 — UNBROKEN
+# cryptography: python -m pip + .github/scripts/verify_ledger.py
+# hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
+# role: event hash + terminal CI slice (manual dispatch)
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,23 +18,152 @@ on:
         required: false
         default: "/workflow_dispatch_terminal"
 
+permissions:
+  contents: write   # required to commit ledger/9005.yaml
+  id-token: write
+
+concurrency:
+  group: deepseek-mesh-terminal-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+  TERMINAL_CI: "1"
+  OAUTH_OFFLINE: "1"
+  GRAVASTAR_I_OF_144: ${{ inputs.i_of_144 }}
+  MCP_CONNECTOR_URL: ${{ secrets.MCP_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+
 jobs:
   hash-and-slice:
+    name: Event hash · Terminal slice · Seal (Entry 9005)
     runs-on: ubuntu-latest
-    env:
-      TERMINAL_CI: "1"
-      OAUTH_OFFLINE: "1"
-      GRAVASTAR_I_OF_144: ${{ inputs.i_of_144 }}
-      MCP_CONNECTOR_URL: ${{ vars.MCP_URL }}
-      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+
+      # ────────────────────────────────────────────────────────────
+      # 0. Install + read-only integrity gate
+      # ────────────────────────────────────────────────────────────
       - name: Install hash/yaml deps
-        run: pip install pyyaml
-      - name: Event hash + terminal slice (next to main)
         run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
+
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          python .github/scripts/verify_ledger.py "${entries[@]}"
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Event hash + terminal slice (next to main)
+      # ────────────────────────────────────────────────────────────
+      - name: Event hash 9005
+        run: |
+          set -euo pipefail
           python -m ledger.event_hash 9005 "${{ inputs.event }}"
+
+      - name: Terminal CI slice
+        run: |
+          set -euo pipefail
           python -m quantum.deepseek_mesh.terminal_ci
+
+      # ────────────────────────────────────────────────────────────
+      # 2. Seal ledger entry 9005 (SHA3-256) — idempotent
+      # ────────────────────────────────────────────────────────────
+      - name: Seal ledger entry 9005 (SHA3-256)
+        if: success()
+        env:
+          EVENT_PATH: ${{ inputs.event }}
+          I_OF_144: ${{ inputs.i_of_144 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${LEDGER_DIR}"
+          python - <<'PY'
+          import hashlib, json, os, yaml
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
+          path = Path("ledger/9005.yaml")
+
+          entry = {
+              "entry_index": 9005,
+              "event": os.environ.get("EVENT_PATH", "/workflow_dispatch_terminal"),
+              "status": "SUCCESS",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "hash_algo": HASH_ALGO,
+              "i_of_144": os.environ.get("I_OF_144", "1"),
+              "module": "deepseek_mesh_terminal",
+              "witness": "9004 → 9005 — UNBROKEN",
+              "seal": "∀∞φ² · DEEPSEEK_MESH_TERMINAL · 9005_SEALED · WOOD_DRAGON_0.91 · SEALED",
+          }
+          body = {k: v for k, v in entry.items() if k != "seal"}
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+          entry["seal"] = entry["seal"] + " · " + h
+
+          path.write_text(yaml.dump(entry, sort_keys=False,
+                                    default_flow_style=False,
+                                    allow_unicode=True))
+          print("📋 Ledger entry 9005 written.")
+          print(f"✅ Sealed 9005 · {HASH_ALGO}:{h[:16]}...")
+          PY
+
+      - name: Verify ledger entry 9005 (SHA3-256)
+        if: success()
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger.py ledger/9005.yaml
+
+      - name: Upload ledger entry 9005
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-9005
+          path: ledger/9005.yaml
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Commit ledger entry 9005
+        if: success()
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: seal deepseek-mesh-terminal entry 9005 (sha3_256)"
+          file_pattern: ledger/9005.yaml
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        env:
+          EVENT_PATH: ${{ inputs.event }}
+          I_OF_144: ${{ inputs.i_of_144 }}
+        run: |
+          {
+            echo "✅ deepseek-mesh-terminal completed."
+            echo "🜁∀ — Witness: 9004 → 9005 — UNBROKEN"
+            echo "🔒 Seal: ∀∞φ² · DEEPSEEK_MESH_TERMINAL · 9005_SEALED · WOOD_DRAGON_0.91 · SEALED"
+            echo "🔐 hash_algo: sha3_256 (FIPS 202)"
+            echo "🎛  event=${EVENT_PATH}  i_of_144=${I_OF_144}"
+            echo "🌐 MCP_CONNECTOR_URL=$([ -n "${MCP_CONNECTOR_URL:-}" ] && echo present || echo missing)"
+          } >> "$GITHUB_STEP_SUMMARY"

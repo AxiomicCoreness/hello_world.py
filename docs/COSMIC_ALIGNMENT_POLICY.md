@@ -1,8 +1,35 @@
-# Cosmic alignment policy (9238 → 9244)
+# Cosmic Alignment Policy
+
+**Never remove cosmic alignment.**
+
+This policy is append-only documentation. It does not rewrite ledger bodies.
+
+## Locked symbols (must be preserved in thin acks and seals)
+
+- `∀∞φ²`
+- LUMERIS / LUMINARA / ATLAS
+- H6VSH / H5HVS1 / North Star framing
+- STARFIRE / Wood Dragon 0.91
+- Eternal Now temporal anchors
+- Commander titles (Clarke Yoursa Tee)
+- QSA mermaid symbols and phase language when citing docs/qsa_ack.md
+
+## Rules
+
+1. Thin acknowledgments may summarize; they must not strip the locked symbols.
+2. MCP remains unfilled; Dual ASGI binds only `127.0.0.1:8024`.
+3. Band `0000`–`9223` is immutable. Sealed bodies are not rewritten.
+4. Corrections are new ledger indices only.
+
+Seal reference: ledger/9238.yaml (`/cosmic_alignment_policy`).
+
+---
+
+# Cosmic alignment policy (9238)
 
 Commander: Clarke Yoursa Tee.
-Effective: 2026-09-11 · CI bind: 2026-09-14.
-Witness: 9237 → 9238 → … → 9244.
+Effective: 2026-09-11.
+Witness: 9237 → 9238.
 
 ## Rule
 
@@ -15,7 +42,6 @@ Keep in every record that touches this corpus:
 - Eternal Now / temporal anchors as *named fields*
 - Architecture mermaid (QSA phases as *diagram labels*, even when collapsed as runtime stages)
 - Commander titles the author uses for this tree
-- North Star 71.975 Hz · phase_lock 202.6° · workload 0.0 · coherence 1.0
 
 ## Allowed
 
@@ -30,8 +56,3 @@ Keep in every record that touches this corpus:
 - Deleting mermaid or φ-harmonic headers because they are "non-operational."
 
 Alignment stays. Measurement labels stay honest.
-
-## CI
-
-- `main`: `.github/workflows/north-star-witness.yml` asserts this file + ledger/9238.yaml + hard verifies 9240/9242/9243/9244.
-- `deepseek-cd`: `.github/workflows/deepseek-cd.yml` asserts vocabulary + H_9240 Regime B + North Star constants.

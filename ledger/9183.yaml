@@ -1,0 +1,37 @@
+entry_index: 9183
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T14:37:00Z
+event: /docs_phase_lock_yaml_examples
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7
+terminal_hex: 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7
+chain_hex: 9c19e4e10d47b856cb22ff61ef1304741ef502f69378b54b0eef65a3e420fb7f
+description: |
+  YAML configuration examples under docs/examples/.
+  docs/phase_lock_definition.md gains an examples section.
+  ledger/9182.yaml is not rewritten. BIN layers unchanged.
+files:
+  - docs/phase_lock_definition.md
+  - docs/examples/phase_lock.example.yaml
+  - docs/examples/dual_asgi.example.yaml
+  - docs/examples/ledger_append.example.yaml
+  - ledger/9183.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · PHASE_LOCK_YAML_EX · 9183_SEALED · 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7"
+witness_chain: 9182 → 9183 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9183|/docs_phase_lock_yaml_examples|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7
+  Next free index after 9183 is 9184+.

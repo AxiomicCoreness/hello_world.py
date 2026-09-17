@@ -3,7 +3,7 @@
 
 Form:
   H = SHA3-256(  "GARDEN.EVENT.v1"  ||  0x00  ||  payload )
-  payload = index|event|φ²|Δ=b²-4ac|θ=φ·π/2
+  payload = index|event|phi2|delta=b^2-4ac|theta
 
 Does not replace genesis_hash on 510510.yaml.
 """
@@ -16,9 +16,9 @@ from typing import Any, Dict
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI2 = PHI * PHI
-THETA = PHI * math.pi / 2.0  # ≈ 2.5416 rad ≈ 145.6°; Layer-314 uses 202.6° phase lock
+THETA = PHI * math.pi / 2.0
 DOMAIN = "GARDEN.EVENT.v1"
-FORMULA = "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
+FORMULA = "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta=b^2-4ac|theta)"
 
 
 def payload(index: int, event: str) -> str:
@@ -41,9 +41,13 @@ def event_hash_block(index: int, event: str) -> Dict[str, Any]:
         "phi": PHI,
         "phi2": PHI2,
         "theta_rad": THETA,
-        "discriminant": "Δ = b² − 4ac",
+        "discriminant": "delta = b^2 - 4ac",
         "hex": event_hash(index, event),
     }
+
+
+def compute(index: int, event: str) -> Dict[str, Any]:
+    return event_hash_block(index, event)
 
 
 def attach(entry: Dict[str, Any]) -> Dict[str, Any]:

@@ -1,0 +1,45 @@
+entry_index: 9180
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-04T14:08:00Z
+event: /pr25_merged_deepseek_append_only
+status: SEALED
+proof_class: architectural_mapping
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
+terminal_hex: 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
+chain_hex: 4905fa466435e5ef3792859e3b21694af0a1f7147eded5508f876d59e91e4b76
+description: |
+  Pull request 25 merged deepseek-ci into deepseek (merge commit,
+  not squash). ledger/9176.yaml and 9177.yaml were not rewritten.
+  Historical branches (tensor, eridanus, node24, codespace) were
+  not force-updated. MCP FILLED=False. Dual ASGI 127.0.0.1:8024.
+pr:
+  number: 25
+  url: "https://github.com/AxiomicCoreness/hello_world.py/pull/25"
+  head: deepseek-ci
+  base: deepseek
+  merge_sha: f66e31b197bacb7a9b86348cb5acdb5586544cb5
+  expected_head: 20bf9721c4f941ddc011902ec1875b33af08a48b
+pointers:
+  H_9176: 9bbb38f86173ef6abe53de0c5b5e43438ab42463c4f7315daf40e827c8120a61
+  H_9177: 16431245bec6c101fad0030f7d26f502a4e08d7a6bb3c8c75e147cceebf5b5b4
+  stub_9177_commit: 4f6a4ad3574ea77a9e900cdda8640e1451db699f
+rewrite_9176: false
+rewrite_9177: false
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · PR25_MERGED · 9180_SEALED · 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31"
+witness_chain: 9179 → 9180 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9180|/pr25_merged_deepseek_append_only|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 5c35200d5115b3e859f4aa426e0f330849f68e173a38b19df4b079beeafa4a31
+  Next free index after 9180 is 9181+.

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-garden-stable
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: stable
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: sovereign-garden, role: stable }
+  template:
+    metadata:
+      labels: { app: sovereign-garden, role: stable }
+    spec:
+      containers:
+        - name: engine
+          image: axiomic/sovereign-engine:stable
+          ports:
+            - { containerPort: 8000, name: http }
+          env:
+            - { name: PHASE_LOCK,   value: "202.6" }
+            - { name: NORTH_STAR,   value: "H6VSH2" }

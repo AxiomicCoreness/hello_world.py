@@ -1,0 +1,37 @@
+entry_index: 9213
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T20:58:00Z
+event: /multibody_jax_toi_two_ball
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: e1afae2d8a307fb922d8c6a2ec01e27b21264670ddaaa11074fa15e9ee94e495
+terminal_hex: e1afae2d8a307fb922d8c6a2ec01e27b21264670ddaaa11074fa15e9ee94e495
+chain_hex: 916dbc64802027fef1d0f4b15270b2010de24027c6882f17b50af93c8cb8c409
+description: |
+  JAX two-ball TOI in multibody_simulator/two_ball_toi.py.
+  Matches pythonIDE/toi_step.py kinematics. Does not rewrite 9212.yaml.
+files:
+  - multibody_simulator/two_ball_toi.py
+  - multibody_simulator/examples/two_ball.py
+  - multibody_simulator/tests/test_toi.py
+  - ledger/9213.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · MULTIBODY_JAX_TOI · 9213_SEALED · e1afae2d8a307fb922d8c6a2ec01e27b21264670ddaaa11074fa15e9ee94e495"
+witness_chain: 9212 → 9213 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9213|/multibody_jax_toi_two_ball|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = e1afae2d8a307fb922d8c6a2ec01e27b21264670ddaaa11074fa15e9ee94e495
+  Chain prev=c4ac038a702a015f4cf4064e2ed8f372b8f53ef5c47c08e4fc453c9a59ae5ef0
+  SHA3-256 chain = 916dbc64802027fef1d0f4b15270b2010de24027c6882f17b50af93c8cb8c409
+  Next free after 9213 is 9214+.

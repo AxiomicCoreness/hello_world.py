@@ -1,0 +1,47 @@
+entry_index: 9228
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-09Z
+event: /log_map_math_precedent
+status: SEALED
+proof_class: math_precedent
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 277c1dde28adb359bfacc347fd2310afa08417e5c906835f538a021ea1a2f24a
+terminal_hex: 277c1dde28adb359bfacc347fd2310afa08417e5c906835f538a021ea1a2f24a
+description: |
+  Logarithmic overlay of 9227 forms. 9227 YAML not rewritten.
+log_map:
+  ln_phi: 0.48121182505960347
+  ln_phi2: 0.9624236501192069
+  chi_exp_neg_phi: 0.19828815286220622
+  toi:
+    note: "gamma stays linear-time; log overlay is chi = e^{-phi} only"
+    a2: 0.0
+    v_rel_linear_in_u: true
+  event_domain:
+    delta_ascii: "b^2"
+    unicode_b2: rejected
+  hybrid:
+    two_ball: filled
+    hopper: open_9220
+    mcp: unfilled
+  pointers:
+    layer_9227: 29eecf3c5f9caaa8d25613c93b2d64e420dac41a60bff642559b17d6cdbbf0ab
+    h_9207: 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46
+    h_9226: 5c6c38de33e50c9a5dd3007b0711459061611432df226f3e3f0d56e662a155f8
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · LOG_MAP_MATH_PRECEDENT · 9228_SEALED · 277c1dde28adb359bfacc347fd2310afa08417e5c906835f538a021ea1a2f24a"
+witness_chain: 9227 → 9228 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9228|/log_map_math_precedent|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 277c1dde28adb359bfacc347fd2310afa08417e5c906835f538a021ea1a2f24a
+  Next free after 9228 is 9229+.

@@ -1,0 +1,38 @@
+entry_index: 9219
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:28:00Z
+event: /container_onboard_engine_dockerfile
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: eb1ab4bdd59f455812a91b983366d70c46a14f9cfba2202059efa1be10a3e991
+terminal_hex: eb1ab4bdd59f455812a91b983366d70c46a14f9cfba2202059efa1be10a3e991
+chain_hex: 97e154afbad7f73e8c8a58c1541768231caa019e3fff5324d755d7502648d74c
+description: |
+  Root Dockerfile (JAX CPU) + hopper_optimize with u=4 < g so TOI can fire.
+  Does not rewrite 9218. Does not record a container run (9220 not used).
+  Does not bind 0.0.0.0. CMD is optimizer, not uvicorn.
+files:
+  - Dockerfile
+  - multibody_simulator/examples/hopper_optimize.py
+  - pythonIDE/hopper_optimize.py
+  - ledger/9219.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · ONBOARD_ENGINE_DOCKERFILE · 9219_SEALED · eb1ab4bdd59f455812a91b983366d70c46a14f9cfba2202059efa1be10a3e991"
+witness_chain: 9218 → 9219 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9219|/container_onboard_engine_dockerfile|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = eb1ab4bdd59f455812a91b983366d70c46a14f9cfba2202059efa1be10a3e991
+  Chain prev=9a114325f9d835f5de0281c4785c8e9adf85531a4cfe5856b224475ff04ebe49
+  SHA3-256 chain = 97e154afbad7f73e8c8a58c1541768231caa019e3fff5324d755d7502648d74c
+  Next free after 9219 is 9220+.

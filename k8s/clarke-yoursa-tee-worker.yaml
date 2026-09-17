@@ -1,0 +1,75 @@
+# k8s/clarke-yoursa-tee-worker.yaml — ledger 9199
+# SIMD batch worker Service+Deployment. Specification only.
+# Does not rewrite k8s/agent-service.yaml (9164) or dual-asyncio-cicd (9179).
+# replicas=0. MCP FILLED=false. Never 0.0.0.0. Does not occupy 8024.
+apiVersion: v1
+kind: Service
+metadata:
+  name: clarke-yoursa-tee-worker
+  namespace: garden-codespace
+  labels:
+    app: clarke-yoursa-tee-worker
+    garden.ledger: "9199"
+    garden.simd: "batch"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/simd_kubectl_clarke_yoursa_tee_worker"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+spec:
+  type: ClusterIP
+  selector:
+    app: clarke-yoursa-tee-worker
+  ports:
+    - name: worker
+      port: 8092
+      targetPort: 8092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clarke-yoursa-tee-worker
+  namespace: garden-codespace
+  labels:
+    app: clarke-yoursa-tee-worker
+    garden.ledger: "9199"
+    garden.simd: "batch"
+    mcp.garden/filled: "false"
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: clarke-yoursa-tee-worker
+  template:
+    metadata:
+      labels:
+        app: clarke-yoursa-tee-worker
+        garden.simd: "batch"
+        mcp.garden/filled: "false"
+    spec:
+      containers:
+        - name: simd-worker
+          image: python:3.11-slim
+          command: ["python", "-c", "print('FILLED=False SIMD_BATCH'); raise SystemExit(0)"]
+          ports:
+            - containerPort: 8092
+          env:
+            - name: BIND
+              value: "127.0.0.1"
+            - name: PORT
+              value: "8092"
+            - name: DUAL_ASGI
+              value: "127.0.0.1:8024"
+            - name: FILLED
+              value: "false"
+            - name: SIMD_BATCH
+              value: "1"
+            - name: WORKER_NAME
+              value: "clarke_yoursa_tee_worker"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 128Mi
+            limits:
+              cpu: "200m"
+              memory: 256Mi

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-13Z
 event: /toolkit_54_exorcise_pipeline
 status: SEALED
 proof_class: toolkit_ci
-branch: deepseek-cd
+branch: main
 commander: Clarke Yoursa Tee
 language: sovereign_standard_english
 hash_algo: sha3_256

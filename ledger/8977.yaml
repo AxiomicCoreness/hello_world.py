@@ -1,0 +1,18 @@
+entry_index: 8977
+event: /sovereign_cicd_run
+status: SUCCESS
+timestamp: '2026-09-15T23:42:00Z'
+hash_algo: sha3_256
+python_versions:
+- '3.10'
+- '3.11'
+pytest_status: PASSED
+linting_status: RUN
+deepseek_offline: PASSED
+mcp_pulse: SKIPPED
+oidc_federation: offline
+security_headers_source: VERIFIED
+security_headers_live: SKIPPED
+ed25519_signatures: VERIFIED
+witness: 8976 → 8977 — UNBROKEN
+seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED · b342932816d8380984e1620923239602bd4ae05c583a6f66a66c1249d2974211

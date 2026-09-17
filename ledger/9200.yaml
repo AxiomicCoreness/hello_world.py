@@ -1,0 +1,38 @@
+entry_index: 9200
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-06T14:42:00Z
+event: /fastmcp_pythonide_baseline_ci
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 87fbafca6ec35186fe8556f0960dcfb8a04e054cc6289ab3f9e13247bb5fc0d3
+terminal_hex: 87fbafca6ec35186fe8556f0960dcfb8a04e054cc6289ab3f9e13247bb5fc0d3
+chain_hex: b8115bbf135da0496a8258c31ca2103e77b327d0f85ca735629c0db775953f05
+description: |
+  GitHub Actions probe for fastMCP plus pythonIDE baseline updater.
+  Triggers: push main/deepseek, every 6 hours, workflow_dispatch.
+  Does not rewrite 9179-9199 YAML. MCP remains unfilled.
+files:
+  - pythonIDE/update_baseline.py
+  - pythonIDE/baseline.json
+  - .github/workflows/fastmcp-pythonide-baseline.yml
+  - ledger/9200.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · FASTMCP_PYTHONIDE_BASELINE · 9200_SEALED · 87fbafca6ec35186fe8556f0960dcfb8a04e054cc6289ab3f9e13247bb5fc0d3"
+witness_chain: 9199 → 9200 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9200|/fastmcp_pythonide_baseline_ci|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 87fbafca6ec35186fe8556f0960dcfb8a04e054cc6289ab3f9e13247bb5fc0d3
+  Chain prev=5ad1d66764c9b951514cbc6fe7e84d3a0b69f813cb28aefff662514e8da64426
+  SHA3-256 chain = b8115bbf135da0496a8258c31ca2103e77b327d0f85ca735629c0db775953f05
+  Next free after 9200 is 9201+.

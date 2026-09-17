@@ -12,6 +12,7 @@ import math
 import sys
 from pathlib import Path
 
+# package / script import
 try:
     from pythonIDE.toolkit import SovereignToolkit, PHI
 except ImportError:
@@ -19,10 +20,10 @@ except ImportError:
     from pythonIDE.toolkit import SovereignToolkit, PHI  # type: ignore
 
 EXORCISED = [
-    "claim:51_capabilities",
-    "claim:DM≈φ⁷×1000",
-    "claim:CMAC-512∈event_hash_domain",
-    "claim:seal_add_writes_ledger",
+    "claim:51_capabilities",  # honest count is 54
+    "claim:DM≈φ⁷×1000",  # residual only: φ⁷×41.468…
+    "claim:CMAC-512∈event_hash_domain",  # transport/symbolic only
+    "claim:seal_add_writes_ledger",  # stub, NO_LEDGER_WRITE
 ]
 
 AUDIT_ARGS = {
@@ -60,9 +61,11 @@ def main() -> int:
     if n != 54:
         print(f"FAIL: expected 54, got {n}")
         return 1
+
     print("exorcised false claims:")
     for c in EXORCISED:
         print(f"  - {c}")
+
     audit = tk.capabilities_audit(AUDIT_ARGS)
     failed = [k for k, v in audit.items() if not v]
     passed = sum(1 for v in audit.values() if v)
@@ -70,11 +73,15 @@ def main() -> int:
     if failed:
         print("FAIL:", failed)
         return 1
+
+    # smoke a few pure calls
     assert abs(tk.call("golden_ratio") - PHI) < 1e-12
     assert tk.call("fibonacci", 10) == 55
     root = tk.call("merkle_root", ["a", "b"])
     assert isinstance(root, str) and len(root) == 64
-    print(f"stubs (labeled): {tk.stubs()}")
+
+    stubs = tk.stubs()
+    print(f"stubs (labeled): {stubs}")
     print(f"health: {tk.call('health')}")
     print("CMAC-512 ∉ event-hash domain — OK")
     print("DM φ⁷×1000 rejected — residual form only — OK")

@@ -1,0 +1,36 @@
+entry_index: 9223
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:51:00Z
+event: /fastmcp_ci_cd_gate
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 6b10fde568a3a76352abb8cdc303bed57e7e3bd151408752b0166fa8c7697943
+terminal_hex: 6b10fde568a3a76352abb8cdc303bed57e7e3bd151408752b0166fa8c7697943
+chain_hex: ba5f28496ad29addd0cca69003dec6c82f84d247dd85cbb9e210b675399031aa
+description: |
+  Added .github/workflows/fastmcp-ci.yml. Existing fastmcp-pythonide-baseline.yml kept.
+  Push/PR/schedule/dispatch. pytest bind. No 0.0.0.0. MCP unfilled.
+  9200-9222 YAML not rewritten.
+files:
+  - .github/workflows/fastmcp-ci.yml
+  - ledger/9223.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · FASTMCP_CI_CD_GATE · 9223_SEALED · 6b10fde568a3a76352abb8cdc303bed57e7e3bd151408752b0166fa8c7697943"
+witness_chain: 9222 → 9223 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9223|/fastmcp_ci_cd_gate|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 6b10fde568a3a76352abb8cdc303bed57e7e3bd151408752b0166fa8c7697943
+  Chain prev=12fef51f5904d7d05feebd5ee1636312a2e1ff2f28aef134ca63e320898c5796
+  SHA3-256 chain = ba5f28496ad29addd0cca69003dec6c82f84d247dd85cbb9e210b675399031aa
+  Next free after 9223 is 9224+.

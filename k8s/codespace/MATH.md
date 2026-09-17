@@ -34,3 +34,9 @@ Test packing: C - R_start = (2 vCPU, 4 Gi). Two start-class workspaces saturate 
 Production 32 Gi admits at most eight start-class memory request footprints under quota.
 
 Policy locks: Dual ASGI 127.0.0.1:8024. MCP FILLED=false. Fusion 515 and Hyperion 516 sealed. Next index 9158+.
+
+## Packing formula (9194 note)
+
+start-class request = 2 compute units (vCPU).
+test cluster request budget = 4 compute units.
+n_workspaces_sat = floor(C_cpu / R_start_cpu) = floor(4/2) = 2.

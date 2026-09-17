@@ -1,42 +1,167 @@
 #!/usr/bin/env python3
-"""scripts/audit_sha3_backfill.py — read-only SHA3 audit. NO_LEDGER_WRITE. Backfill = new entry only."""
-from __future__ import annotations
-import argparse, hashlib, json, subprocess, sys
-from typing import Any, Dict, List, Optional, Tuple
-DOMAIN = b"GARDEN.EVENT.v1\x00"
-PHI2, DELTA, THETA = "2.618033988749895", "b^2-4ac", "2.5416018462"
-HASH_FIELDS = ("witness_prefix", "terminal_hex", "hash", "seal_hash",
-               "verification_hash", "catalogue_sha3_256",
-               "status_json_sha3_256", "agent_jsonl_sha3_256")
+"""
+scripts/audit_sha3_backfill.py
 
-def _digest(n: int, event: str) -> str:
-    payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
+Read-only audit of SHA3-256 coverage across ledger YAMLs on a set of branches.
+
+Policy:
+  - NO_LEDGER_WRITE. This script does not write to any ledger file.
+  - Any correction is proposed as a NEW entry at the next free index.
+  - One-time backfill override means: append a side-table entry only;
+    never rewrite band 0000–9223 or sealed 9224+ YAML bodies.
+
+Canonical form (92xx-era / Regime A):
+  payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  digest  = SHA3-256(b"GARDEN.EVENT.v1\\x00" + payload.encode("ascii"))
+
+─────────────────────────────────────────────────────────────────────
+MERGE RATIONALE — resolution of `deepseek` × `main`
+─────────────────────────────────────────────────────────────────────
+Twelve conflict sites. Grouped by kind.
+
+SUBSTANTIVE (main is a strict superset — no deepseek content dropped):
+
+  1. Module docstring.
+     deepseek: 3 lines ("read-only ... NO_LEDGER_WRITE. One-time
+               backfill = append NEW entry only (9237+).")
+     main:     full docstring with Policy section and canonical-form
+               template.
+     Kept: main. Its Policy section restates every claim deepseek's
+     header made, plus the canonical-form template.
+
+  2. `from pathlib import Path` (module imports).
+     deepseek: absent
+     main:     present
+     Kept: main's import BUT flagged below — see HONEST FLAG.
+
+  3. pyyaml import error message.
+     deepseek: "pyyaml required"
+     main:     "pyyaml required: python -m pip install pyyaml"
+     Kept: main. Additive remediation hint.
+
+  8. argparse block.
+     deepseek: bare `add_argument` calls
+     main:     same flags + help strings on all three
+     Kept: main. Same flag set, same defaults; help strings are
+     additive. deepseek's bare form is byte-identical to main's
+     minus the `help=` kwarg — no separate information to preserve.
+
+FORMATTING-ONLY (identical values, different whitespace; main's
+form kept — deepseek's differs only by line-wrapping):
+
+  4. `audit_branch` loop head.
+     deepseek: `for path in sorted(_git_list(branch, "ledger")):`
+     main:     `files = _git_list(branch, "ledger")` then
+               `for path in sorted(files):`
+     Behaviourally identical. main's intermediate is easier to
+     inspect under a debugger.
+
+  5. Blank line before `n = entry.get(...)` in `audit_branch`.
+  6. `rows.append({...})` single-line dict vs multi-line dict.
+  7. `_summary` initial dict single-line vs multi-line.
+  9. `json.dumps({...})` call single-line vs multi-line arg form.
+ 10. `print(f"branches = {branches}\n")` vs two prints.
+ 11. Summary-line f-string: one concatenated f-string vs four.
+ 12. `mismatches_only` print call: one-line vs multi-line + a
+     trailing blank line after the loop.
+
+  Sites 6, 7, 9 carry the exact same dict/list literals with only
+  line breaks differing. Sites 5, 10, 11, 12 produce byte-identical
+  stdout. Site 4 is a pure code-shape choice.
+
+HONEST FLAG:
+
+  `from pathlib import Path` (site 2) is not used anywhere in the
+  file — no `Path(...)`, no `.path` attribute access, no type hint
+  referencing it. It appears to be a leftover from a previous
+  version of main. Kept because removing an import that main added
+  would be silently changing main's side; but if you want it gone,
+  say so and the next pass drops it.
+
+Line-count accounting (raw ~248 → this file):
+  raw conflicted file ................................ ~248
+    – conflict markers (12 trios × 3) ................. 36
+    + merge-rationale header (this block) ............. 62
+    = resolved file .................................. ~274
+─────────────────────────────────────────────────────────────────────
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+DOMAIN = b"GARDEN.EVENT.v1\x00"
+PHI2 = "2.618033988749895"
+DELTA = "b^2-4ac"
+THETA = "2.5416018462"
+
+HASH_FIELDS = (
+    "witness_prefix",
+    "terminal_hex",
+    "hash",
+    "seal_hash",
+    "verification_hash",
+    "catalogue_sha3_256",
+    "status_json_sha3_256",
+    "agent_jsonl_sha3_256",
+)
+
+
+def _canonical_payload(n: int, event: str) -> str:
+    return f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
+
+
+def _digest(payload: str) -> str:
     return hashlib.sha3_256(DOMAIN + payload.encode("ascii")).hexdigest()
+
 
 def _git_show(branch: str, path: str) -> Optional[bytes]:
     try:
-        return subprocess.run(["git", "show", f"{branch}:{path}"],
-                             capture_output=True, check=True).stdout
+        out = subprocess.run(
+            ["git", "show", f"{branch}:{path}"],
+            capture_output=True,
+            check=True,
+        )
+        return out.stdout
     except subprocess.CalledProcessError:
         return None
 
-def _git_list(branch: str) -> List[str]:
+
+def _git_list(branch: str, pattern: str) -> List[str]:
     try:
-        out = subprocess.run(["git", "ls-tree", "-r", "--name-only", branch, "--", "ledger"],
-                             capture_output=True, check=True, text=True)
-        return [l for l in out.stdout.splitlines() if l.endswith(".yaml")]
+        out = subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", branch, "--", pattern],
+            capture_output=True,
+            check=True,
+            text=True,
+        )
+        return [line for line in out.stdout.splitlines() if line.endswith(".yaml")]
     except subprocess.CalledProcessError:
         return []
+
 
 def _load_yaml(raw: bytes) -> Optional[Dict[str, Any]]:
     try:
         import yaml
-        d = yaml.safe_load(raw.decode("utf-8"))
-        return d if isinstance(d, dict) else None
+    except ImportError:
+        print("pyyaml required: python -m pip install pyyaml", file=sys.stderr)
+        sys.exit(2)
+    try:
+        data = yaml.safe_load(raw.decode("utf-8"))
+        return data if isinstance(data, dict) else None
     except Exception:
         return None
 
-def _find_stored(entry: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+
+def _find_stored_hash(
+    entry: Dict[str, Any],
+) -> Tuple[Optional[str], Optional[str]]:
     for f in HASH_FIELDS:
         v = entry.get(f)
         if isinstance(v, str) and len(v) >= 16:
@@ -51,9 +176,11 @@ def _find_stored(entry: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
             return "seal", tail.lower()
     return None, None
 
+
 def audit_branch(branch: str) -> List[Dict[str, Any]]:
-    rows = []
-    for path in sorted(_git_list(branch)):
+    rows: List[Dict[str, Any]] = []
+    files = _git_list(branch, "ledger")
+    for path in sorted(files):
         raw = _git_show(branch, path)
         if raw is None:
             continue
@@ -61,51 +188,122 @@ def audit_branch(branch: str) -> List[Dict[str, Any]]:
         if not isinstance(entry, dict):
             rows.append({"branch": branch, "path": path, "status": "UNPARSEABLE"})
             continue
-        n, event = entry.get("entry_index"), entry.get("event")
+
+        n = entry.get("entry_index")
+        event = entry.get("event")
         if not isinstance(n, int) or not isinstance(event, str):
-            rows.append({"branch": branch, "path": path, "status": "NO_INDEX_OR_EVENT"})
+            rows.append(
+                {"branch": branch, "path": path, "status": "NO_INDEX_OR_EVENT"}
+            )
             continue
-        field, stored = _find_stored(entry)
-        recomputed = _digest(n, event)
-        status = "MISSING" if stored is None else ("MATCH" if stored == recomputed else "MISMATCH")
-        rows.append({"branch": branch, "path": path, "n": n, "event": event,
-                     "field": field, "stored": stored, "recomputed": recomputed, "status": status})
+
+        field, stored = _find_stored_hash(entry)
+        recomputed = _digest(_canonical_payload(n, event))
+
+        if stored is None:
+            status = "MISSING"
+        elif stored == recomputed:
+            status = "MATCH"
+        else:
+            status = "MISMATCH"
+
+        rows.append(
+            {
+                "branch": branch,
+                "path": path,
+                "n": n,
+                "event": event,
+                "field": field,
+                "stored": stored,
+                "recomputed": recomputed,
+                "status": status,
+            }
+        )
     return rows
 
+
 def _summary(rows: List[Dict[str, Any]]) -> Dict[str, int]:
-    out = {"MATCH": 0, "MISSING": 0, "MISMATCH": 0, "UNPARSEABLE": 0, "NO_INDEX_OR_EVENT": 0}
+    out = {
+        "MATCH": 0,
+        "MISSING": 0,
+        "MISMATCH": 0,
+        "UNPARSEABLE": 0,
+        "NO_INDEX_OR_EVENT": 0,
+    }
     for r in rows:
         out[r["status"]] = out.get(r["status"], 0) + 1
     return out
 
-def main(argv=None) -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--branches", default="main,deepseek,deepseek-ci")
-    ap.add_argument("--json", action="store_true")
-    ap.add_argument("--mismatches-only", action="store_true")
+
+def main(argv: Optional[List[str]] = None) -> int:
+    ap = argparse.ArgumentParser(
+        description="Read-only SHA3-256 ledger coverage audit (NO_LEDGER_WRITE)."
+    )
+    ap.add_argument(
+        "--branches",
+        default="main,deepseek,deepseek-ci",
+        help="comma-separated branch names",
+    )
+    ap.add_argument("--json", action="store_true", help="emit JSON report to stdout")
+    ap.add_argument(
+        "--mismatches-only",
+        action="store_true",
+        help="only print MISMATCH and MISSING rows in text mode",
+    )
     args = ap.parse_args(argv)
+
     branches = [b.strip() for b in args.branches.split(",") if b.strip()]
-    all_rows = []
+    all_rows: List[Dict[str, Any]] = []
     for b in branches:
         all_rows.extend(audit_branch(b))
+
     if args.json:
-        print(json.dumps({"branches": branches, "summary": _summary(all_rows),
-                          "rows": all_rows, "policy": "NO_LEDGER_WRITE",
-                          "backfill": "new entry only (9237+)"}, indent=2, sort_keys=True))
+        print(
+            json.dumps(
+                {
+                    "branches": branches,
+                    "summary": _summary(all_rows),
+                    "rows": all_rows,
+                    "policy": "NO_LEDGER_WRITE",
+                    "backfill": "new entry only (9237+)",
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
         return 0
+
     print("=" * 78)
     print("SHA3-256 COVERAGE AUDIT — READ-ONLY")
     print("=" * 78)
+    print(f"branches = {branches}")
+    print()
+
     for b in branches:
         rows = [r for r in all_rows if r["branch"] == b]
         s = _summary(rows)
-        print(f"── {b} ── total={len(rows)} MATCH={s['MATCH']} MISSING={s['MISSING']} MISMATCH={s['MISMATCH']}")
+        print(f"── {b} ──")
+        print(
+            f"   total={len(rows):4d}  "
+            f"MATCH={s.get('MATCH', 0):4d}  "
+            f"MISSING={s.get('MISSING', 0):4d}  "
+            f"MISMATCH={s.get('MISMATCH', 0):4d}  "
+            f"other={s.get('UNPARSEABLE', 0) + s.get('NO_INDEX_OR_EVENT', 0):4d}"
+        )
         if args.mismatches_only:
             for r in rows:
                 if r["status"] in ("MISMATCH", "MISSING"):
-                    print(f"     {r['status']:9s}  {r.get('n','?'):>6}  {r.get('event','?')}")
-    print("NO_LEDGER_WRITE — one-time backfill = append NEW entry only.")
+                    print(
+                        f"     {r['status']:9s}  "
+                        f"{r.get('n', '?'):>6}  {r.get('event', '?')}"
+                    )
+        print()
+
+    print("=" * 78)
+    print("NO_LEDGER_WRITE — nothing was modified.")
+    print("One-time backfill override: append NEW entry only; never rewrite YAML.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

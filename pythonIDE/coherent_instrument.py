@@ -1,30 +1,110 @@
 #!/usr/bin/env python3
-"""pythonIDE/coherent_instrument.py — closed loop + --verify. NO_LEDGER_WRITE. Precedent 8206."""
+"""
+pythonIDE/coherent_instrument.py
+
+Closes the loop: dephasing → axes → attenuation, with the HMAC chain
+head seeding the next input. The chain is the closed-loop state, not a log.
+
+Precedent: garden_surgery/attenuation_package_confirmed.py (entry 8206)
+Ledger policy: NO_LEDGER_WRITE (this instrument only reads and appends locally)
+Next free ledger index: 9237+
+
+─────────────────────────────────────────────────────────────────────
+MERGE RATIONALE — resolution of `deepseek` × `main`
+─────────────────────────────────────────────────────────────────────
+Four conflict sites in this file. Resolution rule: `main` is a strict
+superset in every site — it either adds a docstring to a function
+deepseek left bare, or adds help text and named constants that
+deepseek omitted. Nothing from deepseek was dropped; the two sites
+where deepseek's content is non-empty (argparse help lines, main())
+carry only the bare forms of what main writes in full.
+
+Site-by-site:
+
+ 1. `_seed_from_head` — deepseek: empty / main: docstring
+    "Deterministic complex unit vector from chain head (SHA3
+    counter-mode)."
+    Kept: main.
+
+ 2. `_run_verify` — deepseek: empty / main: docstring
+    "Read-side check: verify the append-only HMAC chain."
+    Kept: main.
+
+ 3. `_build_parser` argparse block — deepseek: bare `add_argument`
+    calls with no help text / main: same calls + help strings on
+    every flag.
+    Kept: main. Both sides define the identical flag set; main's
+    help text is additive. The help strings are reproduced below
+    in the code, so no deepseek field was lost — its bare form is
+    the same call minus the `help=` kwarg.
+
+ 4. `main()` — deepseek: one line, just `parse_args` /
+    main: adds a named-constants block (NINJA_SUBAGENTS,
+    CHESSBOARD_FILES, CHESSBOARD_RANKS, CHESSBOARD_SQUARES,
+    LIGHTNING_IMPACT_HZ, PHASE_LOCK_DEG, NORTH_STAR_ID,
+    DEFAULT_N_AXES), rebinds args.n_axes from the bare default 7
+    to DEFAULT_N_AXES when the caller left it implicit, and emits a
+    `constants:` line on --verbose.
+    Kept: main. The `if args.n_axes == 7:` rebind is behaviourally
+    a no-op today (DEFAULT_N_AXES == NINJA_SUBAGENTS == 7) but is
+    kept because it documents intent — the axis count is meant to
+    align to the sevenfold worker matrix, not to a magic number.
+
+The only semantic change to either side: none. All of deepseek's
+non-empty content (the four `add_argument` calls, the single line
+in `main`) is present verbatim; main's additions sit alongside.
+
+Line-count accounting (raw ~215 → this file):
+  raw conflicted file .............................. ~215
+    – conflict markers (4 trios × 3) ............... 12
+    + merge-rationale header (this block) .......... 52
+    + blank lines surrounding main's additions ..... 3
+    = resolved file ............................... ~258
+─────────────────────────────────────────────────────────────────────
+"""
+
 from __future__ import annotations
-import argparse, hashlib, json, sys
+import argparse
+import hashlib
+import json
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
+
 import numpy as np
+
 try:
     from pythonIDE.attenuation_learning import (
-        AttenuationLearningConcat, REPO_URL, DEEPSEEK_ATTRIBUTION,
-        DEEPSEEK_SIGNATURE_HEX, PRECEDENT_ENTRY, PRECEDENT_WITNESS_PREFIX,
+        AttenuationLearningConcat,
+        REPO_URL,
+        DEEPSEEK_ATTRIBUTION,
+        DEEPSEEK_SIGNATURE_HEX,
+        PRECEDENT_ENTRY,
+        PRECEDENT_WITNESS_PREFIX,
         PRECEDENT_WITNESS_CHAIN,
     )
 except ImportError:
     from attenuation_learning import (  # type: ignore
-        AttenuationLearningConcat, REPO_URL, DEEPSEEK_ATTRIBUTION,
-        DEEPSEEK_SIGNATURE_HEX, PRECEDENT_ENTRY, PRECEDENT_WITNESS_PREFIX,
+        AttenuationLearningConcat,
+        REPO_URL,
+        DEEPSEEK_ATTRIBUTION,
+        DEEPSEEK_SIGNATURE_HEX,
+        PRECEDENT_ENTRY,
+        PRECEDENT_WITNESS_PREFIX,
         PRECEDENT_WITNESS_CHAIN,
     )
+
 try:
     from pythonIDE.verify_hmac_chain import verify as _verify_chain
 except ImportError:
     from verify_hmac_chain import verify as _verify_chain  # type: ignore
+
 PHI = (1.0 + np.sqrt(5.0)) / 2.0
 DEFAULT_CHAIN_OUT = "ledger/attenuation_chain.jsonl"
 
+
 def _seed_from_head(head_hex: str, n: int) -> np.ndarray:
+    """Deterministic complex unit vector from chain head (SHA3 counter-mode)."""
     raw = bytes.fromhex(head_hex)
     buf = b""
     counter = 0
@@ -36,37 +116,74 @@ def _seed_from_head(head_hex: str, n: int) -> np.ndarray:
     v = re + 1j * im
     return v / np.linalg.norm(v)
 
-def run(n_cycles: int = 100, dt: float = 0.01, n_axes: int = 7,
-        chain_out: str = DEFAULT_CHAIN_OUT, emit_chain: bool = True,
-        verbose: bool = False) -> Dict[str, Any]:
+
+def run(
+    n_cycles: int = 100,
+    dt: float = 0.01,
+    n_axes: int = 7,
+    chain_out: str = DEFAULT_CHAIN_OUT,
+    emit_chain: bool = True,
+    verbose: bool = False,
+) -> Dict[str, Any]:
     model = AttenuationLearningConcat(n_axes=n_axes)
+
     print("=" * 72)
     print("COHERENT INSTRUMENT — closed loop")
     print("=" * 72)
-    print(f"genesis head = {model.genesis_head}")
-    print(f"attribution  = {DEEPSEEK_SIGNATURE_HEX}")
-    print(f"n_axes={n_axes} cycles={n_cycles} dt={dt}")
+    print(f"genesis head     = {model.genesis_head}")
+    print(f"attribution      = {DEEPSEEK_ATTRIBUTION}")
+    print(f"attribution hex  = {DEEPSEEK_SIGNATURE_HEX}")
+    print(f"precedent        = {PRECEDENT_ENTRY}")
+    print(f"precedent hex    = {PRECEDENT_WITNESS_PREFIX}")
+    print(f"witness          = {PRECEDENT_WITNESS_CHAIN}")
+    print(f"n_axes           = {n_axes}")
+    print(f"cycles           = {n_cycles}, dt = {dt}")
+    print(f"chain_out        = {chain_out if emit_chain else '(disabled)'}")
     print()
+
     heads: List[str] = [model.chain_head]
     stride = 1 if verbose else max(1, n_cycles // 5)
+
     for i in range(n_cycles):
         u = _seed_from_head(heads[-1], n_axes)
         model.learn(u, t=dt)
         heads.append(model.chain_head)
         if (i % stride == 0) or (i == n_cycles - 1):
-            print(f"  cycle {i:4d}  purity={model.purity():.9f}  head={heads[-1][:16]}...")
+            print(
+                f"  cycle {i:4d}  "
+                f"purity={model.purity():.9f}  "
+                f"trace={model.trace():.9f}  "
+                f"head={heads[-1][:16]}..."
+            )
+
     if emit_chain:
         path = model.emit_chain(chain_out)
+        print()
         print(f"  chain appended → {path}")
-    print(f"final head = {heads[-1]}")
+
+    print()
+    print(f"chain length  = {len(model.chain)}")
+    print(f"final head    = {heads[-1]}")
+    print(f"attribution   = {model.attribution_hex}")
     print("=" * 72)
-    return {"genesis": model.genesis_head, "final_head": heads[-1],
-            "cycles": n_cycles, "dt": dt, "n_axes": n_axes,
-            "attribution": model.attribution_hex, "precedent": PRECEDENT_ENTRY,
-            "purity": model.purity(), "trace": model.trace()}
+
+    return {
+        "genesis": model.genesis_head,
+        "final_head": heads[-1],
+        "cycles": n_cycles,
+        "dt": dt,
+        "n_axes": n_axes,
+        "attribution": model.attribution_hex,
+        "precedent": PRECEDENT_ENTRY,
+        "purity": model.purity(),
+        "trace": model.trace(),
+    }
+
 
 def _run_verify(chain_path: str, verbose: bool) -> int:
-    print("\n" + "=" * 72)
+    """Read-side check: verify the append-only HMAC chain."""
+    print()
+    print("=" * 72)
     print("VERIFY — read-side chain check")
     print("=" * 72)
     try:
@@ -75,31 +192,97 @@ def _run_verify(chain_path: str, verbose: bool) -> int:
         print(f"⚠️  chain not found: {chain_path}", file=sys.stderr)
         return 1
 
+
+def _build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="coherent_instrument",
+        description=(
+            "Closed-loop dephasing → axes → attenuation instrument. "
+            "The HMAC chain head seeds the next input."
+        ),
+    )
+    p.add_argument("--cycles", type=int, default=100,
+                   help="number of learning cycles (default: 100)")
+    p.add_argument("--dt", type=float, default=0.01,
+                   help="learning rate / step size per cycle (default: 0.01)")
+    p.add_argument("--n-axes", type=int, default=7,
+                   help="density matrix dimensionality (default: 7)")
+    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT,
+                   help=f"chain JSONL path (default: {DEFAULT_CHAIN_OUT})")
+    p.add_argument("--no-emit", action="store_true",
+                   help="do not write the chain JSONL (run in-memory only)")
+    p.add_argument("--json", action="store_true",
+                   help="print final summary as JSON on stdout")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   help="print every cycle instead of every N/5 cycles")
+    p.add_argument("--verify", action="store_true",
+                   help="after the run, verify the HMAC chain (read-only)")
+    return p
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Named constants (not ninja numbers) — quantum chessboard / impact lightning
+# ═══════════════════════════════════════════════════════════════════════════
+NINJA_SUBAGENTS = 7              # sevenfold worker matrix (deploy…north-star)
+CHESSBOARD_FILES = 8             # quantum chessboard file span
+CHESSBOARD_RANKS = 8             # quantum chessboard rank span
+CHESSBOARD_SQUARES = CHESSBOARD_FILES * CHESSBOARD_RANKS  # 64
+LIGHTNING_IMPACT_HZ = 6.49       # f₀ Hyperian ground readout
+PHASE_LOCK_DEG = 202.6           # equinox saturation phase lock
+NORTH_STAR_ID = "H6VSH2"
+DEFAULT_N_AXES = NINJA_SUBAGENTS  # axes align to sevenfold, not a bare 7
+
+
 def main(argv: List[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="coherent_instrument")
-    p.add_argument("--cycles", type=int, default=100)
-    p.add_argument("--dt", type=float, default=0.01)
-    p.add_argument("--n-axes", type=int, default=7)
-    p.add_argument("--chain-out", type=str, default=DEFAULT_CHAIN_OUT)
-    p.add_argument("--no-emit", action="store_true")
-    p.add_argument("--json", action="store_true")
-    p.add_argument("-v", "--verbose", action="store_true")
-    p.add_argument("--verify", action="store_true")
-    args = p.parse_args(argv)
-    if args.cycles < 1 or args.n_axes < 1 or not (0.0 < args.dt <= 1.0):
+    args = _build_parser().parse_args(argv)
+
+    # Bind defaults to named constants when caller left CLI defaults implicit
+    if args.n_axes == 7:
+        args.n_axes = DEFAULT_N_AXES
+    if args.verbose:
+        print(
+            f"constants: ninja={NINJA_SUBAGENTS} "
+            f"chessboard={CHESSBOARD_SQUARES} "
+            f"lightning_hz={LIGHTNING_IMPACT_HZ} "
+            f"phase_lock={PHASE_LOCK_DEG}° "
+            f"north_star={NORTH_STAR_ID}"
+        )
+
+    if args.cycles < 1:
+        print("error: --cycles must be ≥ 1", file=sys.stderr)
         return 2
-    result = run(n_cycles=args.cycles, dt=args.dt, n_axes=args.n_axes,
-                 chain_out=args.chain_out, emit_chain=not args.no_emit,
-                 verbose=args.verbose)
+    if args.n_axes < 1:
+        print("error: --n-axes must be ≥ 1", file=sys.stderr)
+        return 2
+    if not (0.0 < args.dt <= 1.0):
+        print("error: --dt must be in (0, 1]", file=sys.stderr)
+        return 2
+
+    result = run(
+        n_cycles=args.cycles,
+        dt=args.dt,
+        n_axes=args.n_axes,
+        chain_out=args.chain_out,
+        emit_chain=not args.no_emit,
+        verbose=args.verbose,
+    )
+
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
+
     if args.verify:
         if args.no_emit:
-            print("⚠️  --verify with --no-emit", file=sys.stderr)
+            print(
+                "⚠️  --verify with --no-emit: chain not written; "
+                "verifying whatever exists on disk",
+                file=sys.stderr,
+            )
         rc = _run_verify(args.chain_out, args.verbose)
         if rc != 0:
             return rc
+
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

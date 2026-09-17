@@ -1,0 +1,37 @@
+entry_index: 9220
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T21:37:00Z
+event: /hopper_optimize_docker_suite
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030
+terminal_hex: 491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030
+chain_hex: 5af25fc970cc20bff64bd17cadaee6569a40159bb943c3a765d6f51792774eb7
+description: |
+  Dockerfile + requirements + pythonIDE/hopper_optimize.py using hopper_toi.
+  Not a measured docker run. hits>0 not recorded. 9219 YAML not rewritten.
+files:
+  - Dockerfile
+  - requirements.txt
+  - pythonIDE/hopper_optimize.py
+  - ledger/9220.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · HOPPER_OPTIMIZE_DOCKER_SUITE · 9220_SEALED · 491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030"
+witness_chain: 9219 → 9220 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9220|/hopper_optimize_docker_suite|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030
+  Chain prev=eb1ab4bdd59f455812a91b983366d70c46a14f9cfba2202059efa1be10a3e991
+  SHA3-256 chain = 5af25fc970cc20bff64bd17cadaee6569a40159bb943c3a765d6f51792774eb7
+  Next free after 9220 is 9221+.

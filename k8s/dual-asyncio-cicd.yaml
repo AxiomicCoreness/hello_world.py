@@ -1,6 +1,6 @@
 # k8s/dual-asyncio-cicd.yaml — ledger 9179
 # Specification only. Does not rewrite k8s/agent-service.yaml (9164).
-# replicas=0. MCP FILLED=false. Never 0.0.0.0.
+# replicas=0. MCP FILLED=false. Loopback binding only.
 # Dual ASGI 127.0.0.1:8024 is not occupied.
 # Container command is a fixed argv, not a shell command interpreter.
 apiVersion: apps/v1

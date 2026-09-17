@@ -1,0 +1,35 @@
+entry_index: 9230
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-09Z
+event: /local_search_optimizer_stub
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
+terminal_hex: 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
+description: |
+  Loopback-only optimizer stub path. Does not rewrite 9229.
+  Body remains pythonIDE/search_engine_optimizer.py.
+  No FastMCP activation. MCP FILLED=False.
+pointer:
+  prior_event: /search_engine_optimizer
+  prior_index: 9229
+  prior_hash: 3eda7b08615192dc8a097e65e67a3133db7dd69d801e312f953ae6e6fb8e075a
+  body: pythonIDE/search_engine_optimizer.py
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · LOCAL_SEARCH_OPTIMIZER_STUB · 9230_SEALED · 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727"
+witness_chain: 9229 → 9230 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9230|/local_search_optimizer_stub|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
+  Next free after 9230 is 9231+.

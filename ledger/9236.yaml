@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-11Z
 event: /growth_state_diagrams
 status: SEALED
 proof_class: docs
-branch: deepseek-ci
+branch: main
 commander: Clarke Yoursa Tee
 language: sovereign_standard_english
 witness_prefix: b8632d42ca593fcf4af3534cb6d4501298ca4dab2dcaac9f6f1435160b304ea4

@@ -1,0 +1,76 @@
+{
+  "entry_index": 8200,
+  "timestamp": "2026-09-03T00:00:00Z",
+  "event": "/prometheus_metrics_snapshot_deduplicated",
+  "status": "CAPTURED",
+  "description": "Essential deduplicated Prometheus snapshot; duplicate creation timestamps and histogram buckets omitted.",
+  "metrics": {
+    "python": {
+      "implementation": "CPython",
+      "version": "3.11.16",
+      "gc_objects_collected_total": {
+        "generation_0": 849.0,
+        "generation_1": 45.0,
+        "generation_2": 0.0
+      },
+      "gc_objects_uncollectable_total": {
+        "generation_0": 0.0,
+        "generation_1": 0.0,
+        "generation_2": 0.0
+      },
+      "gc_collections_total": {
+        "generation_0": 134.0,
+        "generation_1": 12.0,
+        "generation_2": 1.0
+      }
+    },
+    "process": {
+      "virtual_memory_bytes": 211460096.0,
+      "resident_memory_bytes": 41250816.0,
+      "start_time_seconds": 1788459268.44,
+      "cpu_seconds_total": 1.43,
+      "open_fds": 9.0,
+      "max_fds": 1048576.0
+    },
+    "http_requests_total": {
+      "GET /health 200": 21.0,
+      "GET / 200": 1.0,
+      "GET /tags 200": 1.0,
+      "GET /ledger 200": 1.0
+    },
+    "http_request_duration_seconds": {
+      "GET /health": {
+        "count": 21.0,
+        "sum": 0.21850729499874433
+      },
+      "GET /": {
+        "count": 1.0,
+        "sum": 0.018834927000170865
+      },
+      "GET /tags": {
+        "count": 1.0,
+        "sum": 0.4632683200006795
+      },
+      "GET /ledger": {
+        "count": 1.0,
+        "sum": 0.14779766500032565
+      }
+    },
+    "sovereign_tags_active": 10.0,
+    "sovereign_ledger_entries": 1.0
+  },
+  "deduplication": {
+    "removed_metric_families": [
+      "sovereign_http_requests_created",
+      "sovereign_http_request_duration_seconds_created"
+    ],
+    "removed_histogram_series": "duration buckets; count and sum retained",
+    "source_is_single_scrape": true
+  },
+  "witness_chain": {
+    "previous": 8199,
+    "current": 8200,
+    "status": "UNBROKEN"
+  },
+  "seal": "PROMETHEUS_METRICS_SNAPSHOT_DEDUPLICATED_8200_SEALED"
+}

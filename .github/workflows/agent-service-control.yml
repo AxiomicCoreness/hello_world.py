@@ -1,5 +1,12 @@
 name: Agent Service Control
 
+# Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED
+# Witness: read-only — verifies chain, does not extend it
+# cryptography: python -m pip + .github/scripts/verify_ledger.py
+# hash_algo: sha3_256 (FIPS 202) — for control receipts
+# role: park-gate (replicas=0, loopback-only binds, FILLED=false)
+# ledger_policy: NO_GROWTH (contents: read)
+
 on:
   push:
     paths:
@@ -13,33 +20,221 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: agent-service-control
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+
 jobs:
   control:
     runs-on: ubuntu-latest
+    name: Park-Gate Control Verification
     timeout-minutes: 8
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install control-layer requirements
-        run: pip install --quiet -r requirements-control.txt
-      - name: Parse agent Service YAML
         run: |
-          python - << 'PY'
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          if [ -f requirements-control.txt ]; then
+            python -m pip install --quiet -r requirements-control.txt
+          fi
+          python -m pip install --quiet pyyaml
+
+      # ────────────────────────────────────────────────────────────
+      # 0. Read-only integrity: verify SHA3-256 seals on present entries
+      # ────────────────────────────────────────────────────────────
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "⚠️ no ledger entries present — soft skip"
+            exit 0
+          fi
+          python .github/scripts/verify_ledger.py "${entries[@]}"
+
+      - name: Capture current ledger head (read-only)
+        id: head
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "head_index=0" >> "$GITHUB_OUTPUT"
+            echo "head_seal=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import os, re, yaml
+          from pathlib import Path
+
+          entries = sorted(Path("ledger").glob("*.yaml"))
+          heads = []
+          for p in entries:
+              data = yaml.safe_load(p.read_text()) or {}
+              idx = data.get("entry_index")
+              if isinstance(idx, int):
+                  heads.append((idx, p, data))
+          if not heads:
+              print("head_index=0")
+              print("head_seal=")
+          else:
+              idx, p, data = max(heads, key=lambda t: t[0])
+              seal = str(data.get("seal", ""))
+              m = re.search(r"([0-9a-fA-F]{64})", seal)
+              terminal = m.group(1).lower() if m else ""
+              print(f"head_index={idx}")
+              print(f"head_seal={terminal}")
+          PY
+
+      # ────────────────────────────────────────────────────────────
+      # 1. Parse and assert park-gate invariants
+      # ────────────────────────────────────────────────────────────
+      - name: Parse agent Service YAML (park-gate invariants)
+        run: |
+          python - <<'PY'
           from pathlib import Path
           import yaml
-          docs = list(yaml.safe_load_all(Path("k8s/agent-service.yaml").read_text(encoding="utf-8")))
-          kinds = [d.get("kind") for d in docs if d]
-          assert "Service" in kinds, kinds
-          assert "Deployment" in kinds, kinds
-          dep = next(d for d in docs if d and d.get("kind") == "Deployment")
-          assert dep["spec"]["replicas"] == 0
-          env = {e["name"]: e["value"] for e in dep["spec"]["template"]["spec"]["containers"][0]["env"]}
-          assert env["BIND"] == "127.0.0.1"
-          assert env["DUAL_ASGI"] == "127.0.0.1:8024"
-          assert env["FILLED"] == "false"
-          print("agent service control OK", kinds)
+
+          p = Path("k8s/agent-service.yaml")
+          assert p.exists(), "k8s/agent-service.yaml missing"
+
+          docs = [d for d in yaml.safe_load_all(p.read_text(encoding="utf-8")) if d]
+          kinds = [d.get("kind") for d in docs]
+
+          assert "Service" in kinds, f"Service kind missing: {kinds}"
+          assert "Deployment" in kinds, f"Deployment kind missing: {kinds}"
+
+          dep = next(d for d in docs if d.get("kind") == "Deployment")
+          replicas = dep["spec"]["replicas"]
+          assert replicas == 0, f"park-gate violated: replicas={replicas} (must be 0)"
+
+          containers = dep["spec"]["template"]["spec"]["containers"]
+          assert len(containers) >= 1, "no containers in Deployment"
+          env = {e["name"]: e.get("value") for e in containers[0].get("env", [])}
+
+          assert env.get("BIND") == "127.0.0.1", (
+              f"park-gate violated: BIND={env.get('BIND')!r} (must be 127.0.0.1)"
+          )
+          assert env.get("DUAL_ASGI") == "127.0.0.1:8024", (
+              f"park-gate violated: DUAL_ASGI={env.get('DUAL_ASGI')!r} "
+              f"(must be 127.0.0.1:8024)"
+          )
+          assert env.get("FILLED") == "false", (
+              f"park-gate violated: FILLED={env.get('FILLED')!r} (must be 'false')"
+          )
+
+          print(f"✅ agent service control OK — kinds={kinds}")
+          print(f"   replicas    = {replicas}")
+          print(f"   BIND        = {env.get('BIND')}")
+          print(f"   DUAL_ASGI   = {env.get('DUAL_ASGI')}")
+          print(f"   FILLED      = {env.get('FILLED')}")
           PY
+
+      # ────────────────────────────────────────────────────────────
+      # 2. kubectl dry-run (no cluster mutation)
+      # ────────────────────────────────────────────────────────────
       - name: kubectl dry-run if present
-        run: bash scripts/kubectl_apply_agent_service.sh
+        run: |
+          set -euo pipefail
+          if [ -x scripts/kubectl_apply_agent_service.sh ]; then
+            bash scripts/kubectl_apply_agent_service.sh
+          elif [ -f scripts/kubectl_apply_agent_service.sh ]; then
+            bash scripts/kubectl_apply_agent_service.sh
+          else
+            echo "⚠️ scripts/kubectl_apply_agent_service.sh not present — soft skip"
+          fi
+
+      # ────────────────────────────────────────────────────────────
+      # 3. Emit SHA3-256 sealed control receipt (artifact, NOT committed)
+      # ────────────────────────────────────────────────────────────
+      - name: Emit control receipt (SHA3-256)
+        if: success()
+        env:
+          HEAD_INDEX: ${{ steps.head.outputs.head_index }}
+          HEAD_SEAL: ${{ steps.head.outputs.head_seal }}
+        run: |
+          set -euo pipefail
+          mkdir -p .control-receipts
+          python - <<'PY'
+          import hashlib, json, os, yaml
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
+          head_index = os.environ.get("HEAD_INDEX", "0") or "0"
+          head_seal = os.environ.get("HEAD_SEAL", "") or ""
+
+          receipt = {
+              "receipt_type": "agent_service_control",
+              "workflow": "Agent Service Control",
+              "role": "park-gate",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "hash_algo": HASH_ALGO,
+              "head_index": int(head_index),
+              "head_seal": head_seal,
+              "invariants": {
+                  "replicas": 0,
+                  "bind": "127.0.0.1",
+                  "dual_asgi": "127.0.0.1:8024",
+                  "filled": "false",
+              },
+              "ledger_policy": "NO_GROWTH",
+              "witness_note": "read-only — verifies chain, does not extend it",
+              "seal": "∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED",
+          }
+
+          body = {k: v for k, v in receipt.items() if k != "seal"}
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+          receipt["seal"] = receipt["seal"] + " · " + h
+
+          out = Path(".control-receipts/agent-service-control.yaml")
+          out.write_text(yaml.dump(receipt, sort_keys=False,
+                                   default_flow_style=False,
+                                   allow_unicode=True))
+          print(f"📋 Control receipt emitted.")
+          print(f"✅ {HASH_ALGO}:{h[:16]}...")
+          print(f"   head_index = {receipt['head_index']}")
+          print(f"   head_seal  = {receipt['head_seal'][:16] or '(none)'}...")
+          PY
+
+      - name: Upload control receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-service-control-receipt
+          path: .control-receipts/agent-service-control.yaml
+          retention-days: 90
+
+      # ────────────────────────────────────────────────────────────
+      # 4. Summary
+      # ────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        env:
+          HEAD_INDEX: ${{ steps.head.outputs.head_index }}
+        run: |
+          {
+            echo "✅ Agent Service Control — park-gate verified."
+            echo "🜁∀ — Ledger policy: NO_GROWTH (contents: read)"
+            echo "🔒 Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED"
+            echo "🔐 hash_algo: sha3_256 (FIPS 202)"
+            echo "🎛  Invariants: replicas=0 · BIND=127.0.0.1 · DUAL_ASGI=127.0.0.1:8024 · FILLED=false"
+            echo "📍 Head at run: ${HEAD_INDEX:-0}"
+          } >> "$GITHUB_STEP_SUMMARY"

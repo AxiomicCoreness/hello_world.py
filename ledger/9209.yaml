@@ -1,0 +1,35 @@
+entry_index: 9209
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-08T16:39:00Z
+event: /toi_shooter_clip_plot
+status: SEALED
+proof_class: code
+branch: main
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+witness_prefix: 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8
+terminal_hex: 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8
+chain_hex: e527a101052a3bab8ec61e0ec2e5dddc18fc37c95aa40add76e16a1dec349329
+description: |
+  optimize_toi.py gains grad clip and optional TOI_PLOT=1 png.
+  Does not rewrite ledger/9207.yaml. Fabricated epoch table is not a measured run.
+files:
+  - pythonIDE/optimize_toi.py
+  - ledger/9209.yaml
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+seal: "∀∞φ² · TOI_SHOOTER_CLIP_PLOT · 9209_SEALED · 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8"
+witness_chain: 9208 → 9209 — UNBROKEN
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1 || 0x00 ||
+  9209|/toi_shooter_clip_plot|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8
+  Chain prev=1ff59bb59d114fbd3fb3f47a4fcefa5a9214f5ae62bd75169874d280e8698b1e
+  SHA3-256 chain = e527a101052a3bab8ec61e0ec2e5dddc18fc37c95aa40add76e16a1dec349329
+  Next free after 9209 is 9210+.

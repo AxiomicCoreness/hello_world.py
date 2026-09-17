@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden-multistage
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  replicas: 5
+  selector:
+    matchLabels: { app: sovereign-garden }
+  template:
+    metadata:
+      labels: { app: sovereign-garden }
+    spec:
+      containers:
+        - name: engine
+          image: axiomic/sovereign-engine:latest
+          ports:
+            - { containerPort: 8000 }
+  strategy:
+    canary:
+      steps:
+        - setHeaderRoute:
+            name: stage-early
+            match:
+              - headerName: X-Canary-Stage
+                headerValue: { exact: "early" }
+        - setWeight: 20
+        - pause: { duration: 30s }
+        - setHeaderRoute:
+            name: stage-mid
+            match:
+              - headerName: X-Canary-Stage
+                headerValue: { exact: "mid" }
+        - setWeight: 40
+        - pause: { duration: 30s }
+        - setWeight: 60
+        - pause: { duration: 30s }
+        - setWeight: 80
+        - pause: { duration: 30s }
+        - setWeight: 100
+        - setHeaderRoute: { name: stage-early, match: [] }
+        - setHeaderRoute: { name: stage-mid,   match: [] }

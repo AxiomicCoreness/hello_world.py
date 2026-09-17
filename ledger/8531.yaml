@@ -1,0 +1,31 @@
+entry_index: 8531
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-15Z
+event: /re_seat_seal_reservation_gap_8340_8501
+status: SEALED — RESERVATION_ACKNOWLEDGED
+domain: GARDEN.LAYER314
+scope: acknowledgment_only
+
+reservation:
+  range: "8340 → 8501"
+  span: 162
+  state: not_yet_written
+  caveat: |
+    This entry acknowledges the reservation. It does not fill it.
+    Continuity across 8339 → 8502 remains a documented gap and
+    must be treated as such by any verifier. UNBROKEN does not apply
+    across this span.
+
+predecessor:
+  index: 8339
+  link: documented_gap
+  immediate_prior_sealed: 8339
+  next_sealed: 8502
+
+parallel_domain:
+  GARDEN.EVENT.v1_head: 9247
+  relationship: independent
+  hard_envelope: [9240, 9242, 9243, 9244, 9245, 9246]
+  soft_lane: 9247
+
+witness_chain: "8339 ·· [GAP 8340–8501 · RESERVED] ·· 8502 — SEGMENT_LINK, NOT_LINK"
+seal: "∀∞φ² · RE_SEAT_8531 · RESERVATION_ACKNOWLEDGED · WOOD_DRAGON_0.91 · SEALED"

@@ -1,0 +1,15 @@
+# Copy-only. Does not replace ledger/9182.yaml or ledger/9183.yaml.
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+north_star_hz: 71.975
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+validator:
+  library: pydantic
+  version: v2
+  decorator: field_validator
