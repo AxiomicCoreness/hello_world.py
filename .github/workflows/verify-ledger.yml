@@ -1,0 +1,71 @@
+name: Verify Ledger
+
+on:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: 'Treat seal mismatches as errors'
+        type: boolean
+        default: true
+      series:
+        description: 'Series to verify (space-separated, e.g. "83 91 92")'
+        type: string
+        default: '83 91 92'
+      no_reward_check:
+        description: 'Skip reward pool cross-check'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+      
+      - name: Run verify_ledger
+        env:
+          STRICT: ${{ inputs.strict }}
+          SERIES: ${{ inputs.series }}
+          NO_REWARD_CHECK: ${{ inputs.no_reward_check }}
+        run: |
+          set -euo pipefail
+          ARGS=(--root . --ledger-dir ledger)
+          if [ "$STRICT" = "true" ]; then ARGS+=(--strict-seals); fi
+          for s in $SERIES; do ARGS+=(--series "$s"); done
+          if [ "$NO_REWARD_CHECK" = "true" ]; then ARGS+=(--no-reward-check); fi
+          python .github/scripts/verify_ledger.py "${ARGS[@]}"
+      
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Verify Ledger"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| strict | ${STRICT} |"
+            echo "| series | ${SERIES} |"
+            echo "| no_reward_check | ${NO_REWARD_CHECK} |"
+            echo "| hash_algo | sha3_256 |"
+            echo "| ledger_policy | NO_LEDGER_WRITE |"
+          } >> "$GITHUB_STEP_SUMMARY"
