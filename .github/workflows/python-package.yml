@@ -1,111 +1,47 @@
-name: Sovereign Python Package
-
-# deepseek-cd coherence: package lane is soft on this branch.
-# Hard CD witness lives in deepseek-cd.yml (North Star 71.975 Hz + H_9240 Regime B).
-# Seal pointer: SOVEREIGN_PACKAGE_8980 · do not rewrite sealed ledger bodies.
+name: Python Package
 
 on:
   push:
-    branches: [main, master, deepseek, grok, mistral]
+    branches:
+      - main
+      - deepseek
+      - deepseek-ci
+      - deepseek-cd
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
-    inputs:
-      oidc_provider:
-        description: 'OIDC cloud provider to federate'
-        type: choice
-        options: [offline, github, aws, gcp, azure]
-        default: offline
+    branches:
+      - main
 
 permissions:
   contents: read
-  id-token: write
-
-env:
-  MCP_URL: ${{ vars.MCP_URL }}
-  MCP_CONNECTOR_URL: ${{ vars.MCP_CONNECTOR_URL }}
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
 jobs:
-  verify-integrity:
+  test:
     runs-on: ubuntu-latest
-    name: Verify Ledger Signatures & Security Headers
-    timeout-minutes: 5
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install deps
-        run: pip install --quiet cryptography pyyaml || true
-      - name: Soft verify ledger (Regime A/B)
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          VERIFIER=".github/scripts/verify_ledger.py"
-          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          if [ -f "$VERIFIER" ]; then
-            for f in ledger/9240.yaml ledger/8979.yaml ledger/8980.yaml; do
-              [ -f "$f" ] && python "$VERIFIER" "$f" || true
-            done
-          else
-            echo "verifier missing — soft skip"
-          fi
-      - name: Headers source probe (soft)
-        continue-on-error: true
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import sys
-          p = Path("port380_mcp.py")
-          if not p.exists():
-              print("port380_mcp.py missing — soft skip")
-              sys.exit(0)
-          content = p.read_text()
-          required = ["CORSMiddleware","SecurityHeadersMiddleware","Content-Security-Policy","Strict-Transport-Security","X-Content-Type-Options","X-Frame-Options","Referrer-Policy","Permissions-Policy"]
-          missing = [h for h in required if h not in content]
-          if missing:
-              print("missing", missing)
-              sys.exit(1)
-          print("headers present")
-          PY
 
-  api-smoke:
-    runs-on: ubuntu-latest
-    needs: verify-integrity
-    strategy:
-      fail-fast: false
-      matrix:
-        provider: [grok, mistral, deepseek]
-    steps:
-      - name: Smoke gated
-        run: echo "provider ${{ matrix.provider }} key-gated; skip if unset" && exit 0
-
-  build:
-    runs-on: ubuntu-latest
-    needs: verify-integrity
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: deps
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -q flake8 pytest || true
-      - name: pytest soft
-        run: pytest -q --tb=line || true
+          pip install pytest
 
-  seal:
-    runs-on: ubuntu-latest
-    needs: [verify-integrity, api-smoke, build]
-    if: always()
-    steps:
-      - name: Summary
+      - name: Run reward protocol tests
         run: |
-          echo "Sovereign Python Package soft-complete on this tip" >> "$GITHUB_STEP_SUMMARY"
-          echo "North Star lane for deepseek-cd is deepseek-cd.yml (71.975 Hz)" >> "$GITHUB_STEP_SUMMARY"
+          python -m pytest tests/test_reward_protocol.py -v
+
+      - name: Compute reward pool
+        run: |
+          python -m fiduciary_node_rewards
+
+      - name: Verify reward pool
+        run: |
+          python -c "from fiduciary_node_rewards import verify_reward_pool; ok, total = verify_reward_pool(); print(f'Pool: {total:.10f}, OK: {ok}'); assert ok, 'Reward pool verification failed'"
