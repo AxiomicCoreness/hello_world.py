@@ -112,8 +112,26 @@ The repo is three modules and a CI that localises which one broke.
 
 ---
 
+## Triune Engine — terminal state (§T1–§T5)
+
+| Check | Result |
+|-------|--------|
+| Modules present & tested | ✓ `terminal_axiom`, `producer_axiom`, `consumer_axiom` |
+| Operators honest | ✓ `⊕=+`, `⊗=·`, `⊘=max(D−R,0)` |
+| Dead Spec B surface | ✓ none in code / tests / workflow |
+| CI | ✓ `producer-axiom-verify.yml` (strict + failure-only diagnostic) |
+| Seal form | **(a) short-form** — no invented ledger hex |
+
+**Seal:** `∀∞φ² · TRIUNE_ENGINE_COMPLETE · SEALED`
+
+Cybernetics stop condition: **met**.  
+(Case (b) deferred: no entry index / predecessor hex supplied; will not invent σ.)
+
+---
+
 **Seal:** `∀∞φ² · TOPIC_AWARENESS · SEALED`  
 **Entry:** 8340  
 **Witness Chain:** 8339 → 8340 — UNBROKEN  
 **Terminal axiom:** Location stems from propagated root.  
-**Append (2026-09-18):** Mathematical form admission for T₀ / P₀ / C₀ — operators named above; field laws not rebranded as discoveries.
+**Append (2026-09-18):** Mathematical form admission for T₀ / P₀ / C₀.  
+**Append (2026-09-18):** `∀∞φ² · TRIUNE_ENGINE_COMPLETE · SEALED`
