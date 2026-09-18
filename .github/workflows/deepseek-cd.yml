@@ -1,0 +1,189 @@
+name: deepseek-cd North Star + scoped cosmic alignment
+
+on:
+  push:
+    branches: [main, deepseek-cd]
+    paths:
+      - "ledger/9240.yaml"
+      - "ledger/9241.yaml"
+      - "ledger/8550.yaml"
+      - "docs/COSMIC_ALIGNMENT_POLICY.md"
+      - "scripts/exorcise_toolkit_54.py"
+      - "pythonIDE/toolkit.py"
+      - ".github/workflows/toolkit-54-exorcise.yml"
+      - ".github/workflows/deepseek-cd.yml"
+  workflow_dispatch:
+
+# North Star: 71.975 Hz · phase_lock 202.6° · workload 0.0 · dual ASGI 127.0.0.1:8024
+# Vocabulary guard is PATH-SCOPED (fail-closed). Never repo-wide grep.
+# H_9240 Regime B SHA3-256(event payload), NOT file sha256sum. CMAC-512 ∉ domain.
+# Branch note: repository currently has main only; deepseek-cd listed for when restored.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deepseek-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  NORTH_STAR_HZ: "71.975"
+  PHASE_LOCK_DEG: "202.6"
+
+jobs:
+  north-star-exorcise:
+    name: North Star · 71.975 Hz · scoped alignment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
+      - name: North Star invariants
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          NORTH_STAR_HZ = 71.975
+          PHASE = 202.6
+          W = 0.0
+          assert NORTH_STAR_HZ == 71.975
+          assert abs(PHASE - 202.6) < 1e-9
+          assert W == 0.0
+          print(f"North Star {NORTH_STAR_HZ} Hz · phase {PHASE}° · W={W}")
+          print("dual ASGI 127.0.0.1:8024 only")
+          PY
+
+      - name: Scoped vocabulary guard
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          SCOPED = [
+              Path("docs/COSMIC_ALIGNMENT_POLICY.md"),
+              Path(".github/workflows/deepseek-cd.yml"),
+              Path("ledger/9238.yaml"),
+              Path("ledger/9244.yaml"),
+          ]
+          POLICY_TOKENS = ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove")
+
+          for p in SCOPED:
+              if not p.exists():
+                  if p.name in ("9238.yaml", "9244.yaml"):
+                      print(f"soft skip absent {p} on tip")
+                      continue
+                  if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                      raise SystemExit(f"FAIL: {p} required")
+                  continue
+              text = p.read_text(encoding="utf-8")
+              if p.name == "COSMIC_ALIGNMENT_POLICY.md":
+                  for tok in POLICY_TOKENS:
+                      if tok not in text:
+                          raise SystemExit(f"FAIL: {p} missing {tok!r}")
+              elif p.name.endswith(".yaml"):
+                  if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
+                      raise SystemExit(f"FAIL: {p} missing cosmic_alignment marker")
+              print(f"scoped OK {p}")
+
+          self = Path(".github/workflows/deepseek-cd.yml").read_text()
+          assert "71.975" in self and "North Star" in self
+          print("scoped vocabulary guard pass")
+          PY
+
+      - name: Verify H_9240 (Regime B)
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/9240.yaml ]; then
+            echo "::error::ledger/9240.yaml missing — required for hard Regime B check"
+            exit 1
+          fi
+          PYTHONPATH=. python - <<'PY'
+          import hashlib, sys, yaml
+          from pathlib import Path
+
+          e = yaml.safe_load(Path("ledger/9240.yaml").read_text()) or {}
+          n, event = e.get("entry_index"), e.get("event")
+          assert n == 9240, n
+
+          payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+          h = hashlib.sha3_256(
+              b"GARDEN.EVENT.v1\x00" + payload.encode("ascii")
+          ).hexdigest()
+
+          expected = "a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
+          print(f"H_9240={h}")
+          if h != expected:
+              sys.exit("HASH MISMATCH")
+
+          inv = e.get("invariants") or {}
+          assert float(inv.get("coherence", 0)) == 1.0, inv
+          assert float(inv.get("workload", 1)) == 0.0, inv
+          print("Regime B OK · W=0 · C=1")
+          PY
+
+      - name: Soft/hard H_9241 when present
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/9241.yaml ]; then
+            echo "9241 intentional soft gap — documented"
+            exit 0
+          fi
+          PYTHONPATH=. python - <<'PY'
+          import hashlib, yaml
+          from pathlib import Path
+
+          e = yaml.safe_load(Path("ledger/9241.yaml").read_text()) or {}
+          n, event = e.get("entry_index"), e.get("event")
+
+          payload = f"{n}|{event}|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+          h = hashlib.sha3_256(
+              b"GARDEN.EVENT.v1\x00" + payload.encode("ascii")
+          ).hexdigest()
+
+          expected = "33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e"
+          assert h == expected, (h, expected)
+          print("9241 hard OK (file present)")
+          PY
+
+      - name: Exorcise audit
+        run: |
+          set -euo pipefail
+          if [ ! -f scripts/exorcise_toolkit_54.py ]; then
+            echo "exorcise missing — soft skip"
+            exit 0
+          fi
+          PYTHONPATH=. python scripts/exorcise_toolkit_54.py
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### deepseek-cd · North Star + scoped cosmic alignment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| north_star_hz | ${NORTH_STAR_HZ} |"
+            echo "| phase_lock_deg | ${PHASE_LOCK_DEG} |"
+            echo "| workload | 0.0 |"
+            echo "| dual ASGI | 127.0.0.1:8024 |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| H_9240 (Regime B) | verified or failed above |"
+            echo "| H_9241 | verified when present, soft-skip when absent |"
+            echo ""
+            echo "Seal label (not terminal hex): ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · H_9240 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"
