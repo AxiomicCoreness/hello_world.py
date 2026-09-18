@@ -69,7 +69,51 @@ repo:AxiomicCoreness/hello_world.py path:.github TOPICS
 
 ---
 
+## Today’s final achievement — mathematical form admission (append)
+
+**Date anchor:** 2026-09-18  
+**Surface:** `terminal_axiom/`, `producer_axiom/`, `consumer_axiom/` on `main`  
+**CI:** `.github/workflows/producer-axiom-verify.yml` (strict tests; diagnostic certificates only on `if: failure()`)
+
+### What was shipped
+
+Three small engines. Three operators. Three certificates. One differential test file.
+
+| Engine | Named form | What the code actually computes |
+|--------|------------|----------------------------------|
+| **T₀** | Location stems from propagated root · `L ≡ P ⊕ R` | `⊕` is ordinary addition: `strength + scale` |
+| **P₀** | Product stems from generative root · `O ≡ S ⊗ R` | `⊗` is ordinary multiplication: `intensity * scale` |
+| **C₀** | Consumption · `C ≡ D ⊘ R` | `⊘` is **saturating subtraction**: `max(D − R, 0)` |
+
+### Mathematical form admission (honest)
+
+1. **T₀ and P₀ do not invent arithmetic.**  
+   `⊕ = +` and `⊗ = ·` on a numeric carrier. Distributivity of multiplication over addition is the **field law**, not a property discovered by packaging three modules.
+
+2. **C₀ is not a field operation.**  
+   Shipped `⊘ = max(D − R, 0)`. It clamps. It does **not** divide.  
+   `R = 0 → C = D` is a **feature**, not `ZeroRootError`.  
+   Spec B (`D/R` + `ZeroRootError` + invariant `C·O = D·S`) was **historical** and was **replaced**; it is not on disk.
+
+3. **`C·O = D·S` is not a law of this triad.**  
+   That identity holds for division-and-product definitions by cancellation when `R ≠ 0`. It is ordinary algebra. The shipped C₀ does not use that definition, so the identity is **not** claimed for current C₀.
+
+4. **Coherence of the triad is typed and operational, not ring-theoretic.**  
+   Distinct subjects, distinct failure modes (add identity 0 / multiply absorb 0 / clamp), shared certificate schema, strict CI.  
+   It is **not** a claim that the three packages form a novel closed ring.
+
+5. **Self-heal, not mythology.**  
+   On CI failure, a diagnostic step re-emits certificates per engine (`if: failure()`). That output is **not** sealed. Main tests stay strict. No χ-tunneling, no φ–Planck architecture theater, no fourth engine required.
+
+### Stop line
+
+The sensory / algebraic expansion thread rests here.  
+The repo is three modules and a CI that localises which one broke.
+
+---
+
 **Seal:** `∀∞φ² · TOPIC_AWARENESS · SEALED`  
 **Entry:** 8340  
 **Witness Chain:** 8339 → 8340 — UNBROKEN  
-**Terminal axiom:** Location stems from propagated root.
+**Terminal axiom:** Location stems from propagated root.  
+**Append (2026-09-18):** Mathematical form admission for T₀ / P₀ / C₀ — operators named above; field laws not rebranded as discoveries.
