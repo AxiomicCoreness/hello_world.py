@@ -7,10 +7,7 @@ on:
       - "producer_axiom/**"
       - "terminal_axiom/**"
       - "consumer_axiom/**"
-      - "tests/test_producer_axiom.py"
-      - "tests/test_terminal_axiom.py"
-      - "tests/test_consumer_axiom.py"
-      - "tests/test_axiom_differential.py"
+      - "tests/test_*.py"
       - ".github/workflows/producer-axiom-verify.yml"
   pull_request:
     branches: [main]
@@ -26,7 +23,7 @@ permissions:
 
 jobs:
   verify:
-    name: T0 + P0 + C0 engines
+    name: Triune T0 + P0 + C0
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -42,25 +39,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
 
-      - name: Test terminal_axiom (T0)
+      - name: Test all engines + differential
         run: |
           set -euo pipefail
-          PYTHONPATH=. pytest tests/test_terminal_axiom.py -v
-
-      - name: Test producer_axiom (P0)
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. pytest tests/test_producer_axiom.py -v
-
-      - name: Test consumer_axiom (C0)
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. pytest tests/test_consumer_axiom.py -v
-
-      - name: Differential T0/P0/C0
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. pytest tests/test_axiom_differential.py -v
+          PYTHONPATH=. pytest tests/test_terminal_axiom.py tests/test_producer_axiom.py tests/test_consumer_axiom.py tests/test_axiom_differential.py -v
 
       - name: Emit certificates
         run: |

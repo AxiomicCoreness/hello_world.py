@@ -1,15 +1,30 @@
-"""Terminal axiom package — Location stems from propagated root."""
+"""Terminal axiom — T₀ Location / ⊕."""
 
-from .axiom import TerminalAxiom, AXIOM_TEXT, VALENCE, MANEUVERS
+from .axiom import (
+    AXIOM_TEXT,
+    VALENCE,
+    IDENTITY_ADD,
+    Propagation,
+    Root,
+    Location,
+    axiom_t0,
+    TerminalAxiom,
+    MANEUVERS,
+)
 from .verification import verify, certificate
 
 __all__ = [
-    "TerminalAxiom",
     "AXIOM_TEXT",
     "VALENCE",
+    "IDENTITY_ADD",
+    "Propagation",
+    "Root",
+    "Location",
+    "axiom_t0",
+    "TerminalAxiom",
     "MANEUVERS",
     "verify",
     "certificate",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

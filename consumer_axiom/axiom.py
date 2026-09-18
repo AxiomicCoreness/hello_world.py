@@ -1,98 +1,62 @@
-"""Consumer Axiom: Spec B.
+"""Consumer Axiom — C₀ with concrete ⊘ (saturating subtraction).
 
-C₀: ⊘ = D / R
+C₀: ∃! C ∈ ℝ⁺ ∣ C ≡ D ⊘ R
+⊘ = max(D - R, 0)
+Identity (demand): ∞ → full residual consumption under finite supply
+R = 0 → C = D (feature, not error)
+Failure mode: clamp negative residual to 0
 
-  Rate C = Demand D divided by Root scale R.
-  Identity: R.scale = 1 → C.value = D.value
-  R.scale = 0 → ZeroRootError at division time (construction allowed).
-
-Invariant (default #1):
-  C · O = D · S
-  with O = S · R  (product-completion of stream and root).
-  Hence C·O = (D/R)·(S·R) = D·S.
-
-Negatives allowed. domain is informational only.
+Independent of T₀ (+) and P₀ (*): new domain ℝ⁺, new clamp semantics.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
-AXIOM_TEXT = "Rate stems from demand over root"
-VALENCE = "CONSUMING_POSITIVE_PROVEN"
-IDENTITY_SCALE = 1.0
+AXIOM_TEXT = "Consumption stems from saturating demand over root"
+VALENCE = "SATURATING_POSITIVE_PROVEN"
+IDENTITY_DEMAND = float("inf")
 
 
-class ZeroRootError(ZeroDivisionError):
-    """Raised when dividing by Root with scale == 0."""
+@dataclass(frozen=True)
+class Consumption:
+    amount: float
+
+    def __le__(self, other: "Consumption") -> bool:
+        return self.amount <= other.amount
 
 
 @dataclass(frozen=True)
 class Demand:
-    """Demand magnitude D."""
+    amount: float
 
-    value: float
-    domain: str = ""  # informational only
+
+@dataclass(frozen=True)
+class Supply:
+    """Available root/supply amount."""
+
+    amount: float
 
 
 @dataclass(frozen=True)
 class Root:
-    """Root scale R. scale=0 is constructible; fails at ⊘."""
+    """Alias for supply-as-root (scale == amount)."""
 
     scale: float
-    domain: str = ""
+    pattern: str = ""
+
+    def as_supply(self) -> Supply:
+        return Supply(amount=self.scale)
 
 
-@dataclass(frozen=True)
-class Rate:
-    """Rate C = D ⊘ R."""
-
-    value: float
-    domain: str = ""
-
-
-@dataclass(frozen=True)
-class Stream:
-    """Stream intensity S (lineage factor)."""
-
-    intensity: float = 1.0
-
-
-@dataclass(frozen=True)
-class Output:
-    """Output O = S · R."""
-
-    value: float
-
-
-def axiom_c0(demand: Demand, root: Root) -> Rate:
-    """C₀: Rate = Demand ⊘ Root.
-
-    Raises ZeroRootError if root.scale == 0.
-    Identity: root.scale == 1 → rate.value == demand.value.
-    """
-    if root.scale == 0.0:
-        raise ZeroRootError("C0: division by zero root (R.scale == 0)")
-    domain = demand.domain or root.domain
-    return Rate(value=demand.value / root.scale, domain=domain)
-
-
-def output_from(stream: Stream, root: Root) -> Output:
-    """O = S · R (product-completion used by the invariant)."""
-    return Output(value=stream.intensity * root.scale)
-
-
-def invariant_holds(
-    demand: Demand,
-    root: Root,
-    stream: Stream,
-    *,
-    tol: float = 1e-12,
-) -> bool:
-    """Check C · O == D · S (when R ≠ 0)."""
-    rate = axiom_c0(demand, root)
-    out = output_from(stream, root)
-    left = rate.value * out.value
-    right = demand.value * stream.intensity
-    return abs(left - right) <= tol
+def axiom_c0(demand: Demand, supply: Supply | Root) -> Consumption:
+    """C₀: C = max(D - R, 0)."""
+    if isinstance(supply, Root):
+        r = float(supply.scale)
+    else:
+        r = float(supply.amount)
+    d = float(demand.amount)
+    raw = d - r
+    if raw != raw:  # NaN guard
+        return Consumption(amount=0.0)
+    return Consumption(amount=max(raw, 0.0))

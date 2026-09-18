@@ -1,21 +1,53 @@
-"""Terminal axiom core.
+"""Terminal axiom core — T₀ with concrete ⊕.
 
 T₀: Location stems from propagated root.
-Valence: CLOSED_POSITIVE_PROVEN.
+L ≡ P ⊕ R  where ⊕ is addition on numeric strength/scale.
+Identity for ⊕: 0.
+
+Narrative structure (MANEUVERS) retained; arithmetic is peer-real.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 AXIOM_TEXT = "Location stems from propagated root"
 VALENCE = "CLOSED_POSITIVE_PROVEN"
+IDENTITY_ADD = 0.0
+
+
+@dataclass(frozen=True)
+class Propagation:
+    """Propagation strength P."""
+
+    strength: float = 0.0
+
+
+@dataclass(frozen=True)
+class Root:
+    """Root with pattern tag and numeric scale."""
+
+    pattern: str = "recognizable"
+    scale: float = 0.0
+
+
+@dataclass(frozen=True)
+class Location:
+    """Settled location in R^3 (first coord carries ⊕ result)."""
+
+    coords: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+
+
+def axiom_t0(propagation: Propagation, root: Root) -> Location:
+    """T₀: L = P ⊕ R  (plain addition)."""
+    total = float(propagation.strength) + float(root.scale)
+    return Location(coords=(total, 0.0, 0.0))
 
 
 @dataclass(frozen=True)
 class TerminalAxiom:
-    """Settled fact derived from definitive source."""
+    """Narrative shell — settled fact metadata."""
 
     axiom: str = AXIOM_TEXT
     valence: str = VALENCE
@@ -38,6 +70,8 @@ class TerminalAxiom:
                 "The root is established. "
                 "The location is known."
             ),
+            "operator": "oplus",
+            "identity": IDENTITY_ADD,
         }
 
 

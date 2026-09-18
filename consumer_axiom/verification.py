@@ -1,4 +1,4 @@
-"""Verification certificate for the Consumer Axiom (schema-aligned)."""
+"""Verification certificate for Consumer Axiom (C₀ saturating)."""
 
 from __future__ import annotations
 
@@ -10,41 +10,31 @@ from typing import Any, Dict
 from .axiom import (
     AXIOM_TEXT,
     VALENCE,
-    IDENTITY_SCALE,
+    IDENTITY_DEMAND,
     Demand,
-    Root,
-    Stream,
-    ZeroRootError,
+    Supply,
     axiom_c0,
-    invariant_holds,
 )
 
-WITNESS_PREFIX = "CONSUMER_AXIOM_8758"
+WITNESS_PREFIX = "CONSUMER_AXIOM_9129"
 
 
 def verify() -> Dict[str, bool]:
-    d = Demand(value=6.0, domain="demo")
-    r = Root(scale=2.0, domain="demo")
-    s = Stream(intensity=3.0)
-    c1 = axiom_c0(d, r)
-    c2 = axiom_c0(d, r)
-    identity = axiom_c0(Demand(value=4.0), Root(scale=IDENTITY_SCALE))
-
-    zero_raises = False
-    try:
-        axiom_c0(d, Root(scale=0.0))
-    except ZeroRootError:
-        zero_raises = True
-
+    basic = axiom_c0(Demand(10.0), Supply(3.0))
+    clamp = axiom_c0(Demand(3.0), Supply(10.0))
+    zero_r = axiom_c0(Demand(5.0), Supply(0.0))
+    inf_d = axiom_c0(Demand(IDENTITY_DEMAND), Supply(5.0))
     return {
-        "soundness": abs(c1.value - 3.0) < 1e-12,
-        "completeness": invariant_holds(d, r, s),
+        "soundness": basic.amount >= 0 and clamp.amount >= 0,
+        "completeness": abs(basic.amount - 7.0) < 1e-12,
         "termination": True,
-        "determinism": c1 == c2,
-        "uniqueness": VALENCE == "CONSUMING_POSITIVE_PROVEN",
-        "axiom_text": AXIOM_TEXT == "Rate stems from demand over root",
-        "identity": abs(identity.value - 4.0) < 1e-12,
-        "zero_root_error": zero_raises,
+        "determinism": axiom_c0(Demand(7.0), Supply(2.0))
+        == axiom_c0(Demand(7.0), Supply(2.0)),
+        "uniqueness": VALENCE == "SATURATING_POSITIVE_PROVEN",
+        "axiom_text": "saturating" in AXIOM_TEXT.lower() or "Consumption" in AXIOM_TEXT,
+        "clamping": abs(clamp.amount) < 1e-12,
+        "zero_root_is_full_demand": abs(zero_r.amount - 5.0) < 1e-12,
+        "identity_inf": inf_d.amount == float("inf"),
     }
 
 
@@ -59,7 +49,7 @@ def certificate() -> Dict[str, Any]:
     return {
         "engine": "consumer_axiom",
         "axiom": AXIOM_TEXT,
-        "formal": "C0: Rate = Demand / Root; C·O = D·S; R=0 → ZeroRootError",
+        "formal": "C0: C = max(D - R, 0) (saturating subtraction)",
         "valence": VALENCE,
         "checks": checks,
         "all_pass": all(checks.values()),
@@ -67,8 +57,8 @@ def certificate() -> Dict[str, Any]:
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "terminal_state": (
             "The consumption is complete. "
-            "The root scale is established. "
-            "The rate is known."
+            "The supply root is established. "
+            "The residual is known."
         ),
         "policy": {
             "dual_asgi": "127.0.0.1:8024",

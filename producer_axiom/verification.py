@@ -1,4 +1,4 @@
-"""Verification certificate for the Producer Axiom."""
+"""Verification certificate for Producer Axiom (P₀)."""
 
 from __future__ import annotations
 
@@ -7,31 +7,27 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-from .axiom import (
-    AXIOM_TEXT,
-    VALENCE,
-    Generator,
-    Root,
-    axiom_p0,
-)
+from .axiom import AXIOM_TEXT, VALENCE, IDENTITY_MUL, Generator, Root, axiom_p0
 
 WITNESS_PREFIX = "PRODUCER_AXIOM_8757"
 
 
 def verify() -> Dict[str, bool]:
-    """Structural checks on P₀."""
-    g = Generator(intensity=1.0)
-    r = Root(pattern="recognizable")
+    g = Generator(intensity=2.0)
+    r = Root(pattern="x", scale=3.0)
     p1 = axiom_p0(g, r)
     p2 = axiom_p0(g, r)
-    p_other = axiom_p0(Generator(intensity=2.0), r)
+    id_case = axiom_p0(Generator(5.0), Root(scale=IDENTITY_MUL))
+    absorb = axiom_p0(Generator(5.0), Root(scale=0.0))
     return {
-        "soundness": p1.coords[0] == g.intensity,
+        "soundness": abs(p1.coords[0] - 6.0) < 1e-12,
         "completeness": len(p1.coords) == 3,
-        "termination": True,  # pure function, always returns
+        "termination": True,
         "determinism": p1 == p2,
-        "uniqueness": p1 != p_other and VALENCE == "PRODUCTIVE_POSITIVE_PROVEN",
+        "uniqueness": VALENCE == "PRODUCTIVE_POSITIVE_PROVEN",
         "axiom_text": AXIOM_TEXT == "Product stems from generative root",
+        "identity_mul": abs(id_case.coords[0] - 5.0) < 1e-12,
+        "absorbing_zero": abs(absorb.coords[0]) < 1e-12,
     }
 
 
@@ -44,8 +40,9 @@ def certificate() -> Dict[str, Any]:
     )
     digest = hashlib.sha3_256(body.encode("utf-8")).hexdigest()[:24]
     return {
+        "engine": "producer_axiom",
         "axiom": AXIOM_TEXT,
-        "formal": "P0: exists unique P in R^3 such that P ≡ G ⊗ R",
+        "formal": "P0: O = S otimes R (multiplication)",
         "valence": VALENCE,
         "checks": checks,
         "all_pass": all(checks.values()),

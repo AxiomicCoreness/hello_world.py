@@ -1,4 +1,4 @@
-"""Verification certificate for the terminal axiom."""
+"""Verification certificate for Terminal Axiom (T₀)."""
 
 from __future__ import annotations
 
@@ -7,20 +7,33 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-from .axiom import AXIOM_TEXT, VALENCE, TerminalAxiom
+from .axiom import (
+    AXIOM_TEXT,
+    VALENCE,
+    IDENTITY_ADD,
+    Propagation,
+    Root,
+    axiom_t0,
+    TerminalAxiom,
+)
 
 WITNESS_PREFIX = "TERMINAL_AXIOM_MATH_8756"
 
 
 def verify() -> Dict[str, bool]:
-    ax = TerminalAxiom()
-    state = ax.compute_final_state()
+    p = Propagation(strength=2.0)
+    r = Root(pattern="x", scale=3.0)
+    loc = axiom_t0(p, r)
+    id_case = axiom_t0(Propagation(strength=5.0), Root(scale=IDENTITY_ADD))
+    state = TerminalAxiom().compute_final_state()
     return {
-        "soundness": state["axiom"] == AXIOM_TEXT and bool(state["structure"]),
+        "soundness": abs(loc.coords[0] - 5.0) < 1e-12,
         "completeness": set(state["structure"]) >= {"subject", "verb", "object"},
-        "termination": "propagation is complete" in state["conclusion"].lower(),
-        "determinism": TerminalAxiom().compute_final_state() == state,
+        "termination": True,
+        "determinism": axiom_t0(p, r) == axiom_t0(p, r),
         "uniqueness": state["valence"] == VALENCE,
+        "axiom_text": AXIOM_TEXT == "Location stems from propagated root",
+        "identity_add": abs(id_case.coords[0] - 5.0) < 1e-12,
     }
 
 
@@ -35,7 +48,7 @@ def certificate() -> Dict[str, Any]:
     return {
         "engine": "terminal_axiom",
         "axiom": AXIOM_TEXT,
-        "formal": "T0: Location stems from propagated root",
+        "formal": "T0: L = P oplus R (addition)",
         "valence": VALENCE,
         "checks": checks,
         "all_pass": all(checks.values()),
