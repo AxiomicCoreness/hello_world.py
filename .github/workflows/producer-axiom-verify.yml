@@ -5,13 +5,17 @@ on:
     branches: [main]
     paths:
       - "producer_axiom/**"
+      - "terminal_axiom/**"
       - "tests/test_producer_axiom.py"
+      - "tests/test_terminal_axiom.py"
       - ".github/workflows/producer-axiom-verify.yml"
   pull_request:
     branches: [main]
     paths:
       - "producer_axiom/**"
+      - "terminal_axiom/**"
       - "tests/test_producer_axiom.py"
+      - "tests/test_terminal_axiom.py"
   workflow_dispatch:
 
 permissions:
@@ -19,6 +23,7 @@ permissions:
 
 jobs:
   verify:
+    name: Terminal + Producer engines
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -34,12 +39,22 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest
 
-      - name: Run tests
+      - name: Test terminal_axiom (T0)
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. pytest tests/test_terminal_axiom.py -v
+
+      - name: Test producer_axiom (P0)
         run: |
           set -euo pipefail
           PYTHONPATH=. pytest tests/test_producer_axiom.py -v
 
-      - name: Emit certificate
+      - name: Emit terminal certificate
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python -c "from terminal_axiom.verification import main; main()"
+
+      - name: Emit producer certificate
         run: |
           set -euo pipefail
           PYTHONPATH=. python -c "from producer_axiom.verification import main; main()"
