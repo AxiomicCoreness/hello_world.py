@@ -1,0 +1,45 @@
+name: Producer Axiom Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "producer_axiom/**"
+      - "tests/test_producer_axiom.py"
+      - ".github/workflows/producer-axiom-verify.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "producer_axiom/**"
+      - "tests/test_producer_axiom.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. pytest tests/test_producer_axiom.py -v
+
+      - name: Emit certificate
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python -c "from producer_axiom.verification import main; main()"
