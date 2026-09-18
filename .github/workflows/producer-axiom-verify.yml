@@ -6,16 +6,19 @@ on:
     paths:
       - "producer_axiom/**"
       - "terminal_axiom/**"
+      - "consumer_axiom/**"
       - "tests/test_producer_axiom.py"
       - "tests/test_terminal_axiom.py"
+      - "tests/test_consumer_axiom.py"
+      - "tests/test_axiom_differential.py"
       - ".github/workflows/producer-axiom-verify.yml"
   pull_request:
     branches: [main]
     paths:
       - "producer_axiom/**"
       - "terminal_axiom/**"
-      - "tests/test_producer_axiom.py"
-      - "tests/test_terminal_axiom.py"
+      - "consumer_axiom/**"
+      - "tests/test_*.py"
   workflow_dispatch:
 
 permissions:
@@ -23,7 +26,7 @@ permissions:
 
 jobs:
   verify:
-    name: Terminal + Producer engines
+    name: T0 + P0 + C0 engines
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -49,12 +52,19 @@ jobs:
           set -euo pipefail
           PYTHONPATH=. pytest tests/test_producer_axiom.py -v
 
-      - name: Emit terminal certificate
+      - name: Test consumer_axiom (C0)
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. pytest tests/test_consumer_axiom.py -v
+
+      - name: Differential T0/P0/C0
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. pytest tests/test_axiom_differential.py -v
+
+      - name: Emit certificates
         run: |
           set -euo pipefail
           PYTHONPATH=. python -c "from terminal_axiom.verification import main; main()"
-
-      - name: Emit producer certificate
-        run: |
-          set -euo pipefail
           PYTHONPATH=. python -c "from producer_axiom.verification import main; main()"
+          PYTHONPATH=. python -c "from consumer_axiom.verification import main; main()"
