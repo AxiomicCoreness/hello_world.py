@@ -18,27 +18,29 @@ def test_types_distinct():
 
 
 def test_operators_compute_differently():
-    # ⊕ addition
     assert axiom_t0(Propagation(2.0), TRoot(scale=3.0)).coords[0] == 5.0
-    # ⊗ multiplication
     assert axiom_p0(Generator(2.0), PRoot(scale=3.0)).coords[0] == 6.0
-    # ⊘ saturating subtraction
     assert axiom_c0(Demand(3.0), Supply(1.0)).amount == 2.0
     assert axiom_c0(Demand(1.0), Supply(5.0)).amount == 0.0
 
 
 def test_failure_modes_distinct():
-    # T0: identity 0 on root scale — no clamp
     assert axiom_t0(Propagation(5.0), TRoot(scale=0.0)).coords[0] == 5.0
-    # P0: absorbing zero scale
     assert axiom_p0(Generator(5.0), PRoot(scale=0.0)).coords[0] == 0.0
-    # C0: clamp when D < R; R=0 means C=D
     assert axiom_c0(Demand(1.0), Supply(5.0)).amount == 0.0
     assert axiom_c0(Demand(5.0), Supply(0.0)).amount == 5.0
 
 
+def test_c0_never_raises_on_zero_root():
+    """Saturating C0: R=0 is C=D, not ZeroRootError (that was Spec B division)."""
+    c = axiom_c0(Demand(5.0), Supply(0.0))
+    assert c.amount == 5.0
+    # T0 / P0 also do not raise on zero scale
+    assert axiom_t0(Propagation(1.0), TRoot(scale=0.0)).coords[0] == 1.0
+    assert axiom_p0(Generator(1.0), PRoot(scale=0.0)).coords[0] == 0.0
+
+
 def test_oplus_not_same_as_fraction_only_story():
-    # Uses axiom_t0 / axiom_c0 — if deleted packages, this fails
     left_add = axiom_t0(Propagation(6.0), TRoot(scale=9.0)).coords[0]
     assert left_add == 15.0
     residual = axiom_c0(Demand(left_add), Supply(3.0)).amount

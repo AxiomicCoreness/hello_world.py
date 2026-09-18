@@ -50,3 +50,13 @@ jobs:
           PYTHONPATH=. python -c "from terminal_axiom.verification import main; main()"
           PYTHONPATH=. python -c "from producer_axiom.verification import main; main()"
           PYTHONPATH=. python -c "from consumer_axiom.verification import main; main()"
+
+      # Diagnostic only: localise which engine broke. Not a retry. Not sealed.
+      - name: Certificates (diagnostic)
+        if: failure()
+        run: |
+          for engine in terminal_axiom producer_axiom consumer_axiom; do
+            echo "--- $engine ---"
+            PYTHONPATH=. python -c "from ${engine}.verification import main; main()" \
+              || echo "  certificate emit failed for $engine"
+          done
