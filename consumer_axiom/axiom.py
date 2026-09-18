@@ -1,17 +1,16 @@
-"""Consumer Axiom — C₀ with concrete ⊘ (saturating subtraction).
+"""Consumer Axiom: strict form.
 
 C₀: ∃! C ∈ ℝ⁺ ∣ C ≡ D ⊘ R
-⊘ = max(D - R, 0)   # NOT Spec B division D/R
-Identity (demand): ∞ → residual is ∞ under finite supply
-R = 0 → C = D (feature, not ZeroRootError)
-Failure mode: clamp negative residual to 0
 
-Independent of T₀ (+) and P₀ (*): new domain ℝ⁺, new clamp semantics.
+Where:
+  C = Consumption (satisfied residual, non-negative)
+  D = Demand (required amount)
+  R = Root / supply (available amount)
+  ⊘ = saturating subtraction: max(D - R, 0)
 
-Note on field identities: if a future revision restored ⊘ as D/R with
-O = S·R, then C·O = D·S would hold by cancellation when R ≠ 0. That would
-be the field identity, not a discovered law of the triad. The shipped ⊘
-is saturating subtraction; it does not participate in that cancellation.
+R = 0 → C = D (feature).
+This is a clamp operation, not a field operation.
+No division, no ZeroRootError, no field identities.
 """
 
 from __future__ import annotations
@@ -55,7 +54,7 @@ class Root:
 
 
 def axiom_c0(demand: Demand, supply: Supply | Root) -> Consumption:
-    """C₀: C = max(D - R, 0). Saturating subtraction; never raises on R=0."""
+    """C₀: C = max(D - R, 0). Never raises on R = 0."""
     if isinstance(supply, Root):
         r = float(supply.scale)
     else:

@@ -32,15 +32,14 @@ def test_failure_modes_distinct():
 
 
 def test_c0_never_raises_on_zero_root():
-    """Saturating C0: R=0 is C=D, not ZeroRootError (that was Spec B division)."""
+    """C0 clamp: R=0 yields C=D."""
     c = axiom_c0(Demand(5.0), Supply(0.0))
     assert c.amount == 5.0
-    # T0 / P0 also do not raise on zero scale
     assert axiom_t0(Propagation(1.0), TRoot(scale=0.0)).coords[0] == 1.0
     assert axiom_p0(Generator(1.0), PRoot(scale=0.0)).coords[0] == 0.0
 
 
-def test_oplus_not_same_as_fraction_only_story():
+def test_oplus_uses_engine_not_bare_fraction():
     left_add = axiom_t0(Propagation(6.0), TRoot(scale=9.0)).coords[0]
     assert left_add == 15.0
     residual = axiom_c0(Demand(left_add), Supply(3.0)).amount
