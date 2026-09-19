@@ -45,6 +45,16 @@ name: Sovereign CI/CD
 #         context is not available in `if:` at any scope. The empty
 #         check is now the first line of the shell script; the secret
 #         is declared in the step's `env:` (where the context is legal).
+#
+# Fix 10 — Ed25519 step carries `id: ed25519`; the seal step reads
+#          `steps.ed25519.outcome` and writes it to the ledger entry's
+#          `ed25519_signatures` field. Previously the field was the
+#          hardcoded string "VERIFIED" regardless of what the step did.
+#
+# Canonicalization note — the seal step uses the default
+# `json.dumps(..., sort_keys=True, separators=(",", ":"))`, which is
+# `ensure_ascii=True`. Any verifier must use the same form. Do not add
+# `ensure_ascii=False` to the verifier unless the writer is also changed.
 # ─────────────────────────────────────────────────────────────────
 
 on:
@@ -129,6 +139,7 @@ jobs:
           done
 
       - name: Verify Ed25519 signatures on ledger entries (soft)
+        id: ed25519
         continue-on-error: true
         run: |
           python - <<'PY'
@@ -446,6 +457,7 @@ jobs:
           UPSTREAM_VERIFY: ${{ needs.verify-integrity.result }}
           UPSTREAM_TEST: ${{ needs.test.result }}
           UPSTREAM_OIDC: ${{ needs.oidc-federation.result }}
+          UPSTREAM_ED25519: ${{ steps.ed25519.outcome }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -483,7 +495,7 @@ jobs:
               "oidc_federation": provider,
               "security_headers_source": "VERIFIED",
               "security_headers_live": "VERIFIED" if mcp_set else "SKIPPED",
-              "ed25519_signatures": "VERIFIED",
+              "ed25519_signatures": os.environ.get("UPSTREAM_ED25519", "NOT_RUN"),
               "witness": "8976 → 8977 — UNBROKEN",
               "seal": "∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED",
           }
@@ -499,6 +511,7 @@ jobs:
           print(f"✅ Sealed 8977 · {HASH_ALGO}:{h[:16]}...")
           print(f"   status = {status}")
           print(f"   upstreams = {upstreams}")
+          print(f"   ed25519 = {entry['ed25519_signatures']}")
           PY
 
       - name: Verify ledger entry 8977 (SHA3-256)
@@ -537,6 +550,7 @@ jobs:
         env:
           OIDC_PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
           MCP_URL: ${{ secrets.MCP_URL }}
+          ED25519_OUTCOME: ${{ steps.ed25519.outcome }}
         run: |
           {
             echo "### Sovereign CI/CD (Entry 8977)"
@@ -548,6 +562,7 @@ jobs:
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| test | ${{ needs.test.result }} |"
             echo "| oidc-federation | ${{ needs.oidc-federation.result }} |"
+            echo "| ed25519 | ${ED25519_OUTCOME:-not_run} |"
             echo "| oidc_provider | ${OIDC_PROVIDER} |"
             echo "| mcp_pulse | $([ -n "${MCP_URL:-}" ] && echo SENT || echo SKIPPED) |"
             echo "| witness | 8976 → 8977 — UNBROKEN |"
