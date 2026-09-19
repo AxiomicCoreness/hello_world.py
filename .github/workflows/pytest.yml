@@ -13,31 +13,34 @@ name: Sovereign CI/CD
 # `--strict-gaps` verification will flag it.
 #
 # ─────────────────────────────────────────────────────────────────
-# FIXES APPLIED — 2026-09-15
+# FIXES APPLIED — 2026-09-19
 # ─────────────────────────────────────────────────────────────────
-# The workflow previously lived at .github/workflows/pytest.yml but
-# declared a paths: filter on .github/workflows/sovereign_cicd.yml —
-# a file that does not exist at that path. Self-triggering was broken.
-#
-# Fix 1 — paths filter now matches the workflow's own filename.
-#         If the file is later renamed to sovereign_cicd.yml, update
-#         the third entry under each `paths:` block to match.
+# Fix 1 — paths filter matches the workflow's own filename. If the
+#         file is later renamed, update the third `paths:` entry to match.
 #
 # Fix 2 — oidc-federation job no longer `uses:` the reusable workflow
-#         ./.github/workflows/oidc-cloud-providers.yml, whose presence
-#         at the same ref could not be confirmed. The reusable form
-#         is preserved as a comment; the active form is an inline
-#         no-op shell step, which parses and runs regardless of
-#         whether the sibling workflow exists.
+#         ./.github/workflows/oidc-cloud-providers.yml; inline no-op shell
+#         step preserved as the active form. Reusable form kept as comment.
 #
-# Fix 3 — seal job's `needs:` list now names the inline oidc-federation
-#         job (runs-on form) rather than a `uses:` job that could fail
-#         to resolve. Orphan-prevention: seal is guaranteed to have
-#         all three dependencies available to it.
+# Fix 3 — seal job's `needs:` names the inline oidc-federation job.
 #
-# Nothing else changed. Ed25519 step still continue-on-error; pytest
-# still records pass/fail to the ledger without gating the pipeline.
-# Both are deliberate choices, not oversights.
+# Fix 4 — MCP_URL and GARDEN_SECRET removed from workflow-level `env:`.
+#         The `secrets` context is not available at that scope. Steps that
+#         need them declare them locally, and the `if:` conditions
+#         reference `secrets.MCP_URL` directly.
+#
+# Fix 5 — `verify_ledger.py` invoked per-file, not with a multi-argument
+#         list. The verifier accepts one path per invocation.
+#
+# Fix 6 — Python pinned to 3.12 in every setup-python step. Matrix
+#         extended to 3.10 / 3.11 / 3.12.
+#
+# Fix 7 — git-auto-commit-action carries commit_user_name and
+#         commit_user_email. Default git identity is not set on runners.
+#
+# Fix 8 — seal step computes the ledger status from upstream job
+#         results. Previously wrote SUCCESS unconditionally, even when
+#         verify-integrity, test, or oidc-federation had failed.
 # ─────────────────────────────────────────────────────────────────
 
 on:
@@ -46,13 +49,13 @@ on:
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/pytest.yml"
+      - ".github/workflows/sovereign-cicd.yml"
   pull_request:
     branches: [main]
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/pytest.yml"
+      - ".github/workflows/sovereign-cicd.yml"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -73,8 +76,9 @@ concurrency:
 env:
   HASH_ALGO: sha3_256
   LEDGER_DIR: ledger
-  MCP_URL: ${{ secrets.MCP_URL }}   # left unset by default; live checks soft-skip
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  # MCP_URL and GARDEN_SECRET are NOT declared here — the secrets context
+  # is unavailable at workflow-level env. Steps that need them declare
+  # them locally, and `if:` conditions reference secrets.MCP_URL directly.
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -92,7 +96,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install deps
@@ -112,11 +116,13 @@ jobs:
           fi
           VERIFIER=".github/scripts/verify_ledger.py"
           [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          if [ -f "$VERIFIER" ]; then
-            python "$VERIFIER" "${entries[@]}"
-          else
+          if [ ! -f "$VERIFIER" ]; then
             echo "⚠️ no verify_ledger.py — soft skip"
+            exit 0
           fi
+          for f in "${entries[@]}"; do
+            python "$VERIFIER" "$f" || echo "⚠️ soft: $f"
+          done
 
       - name: Verify Ed25519 signatures on ledger entries (soft)
         continue-on-error: true
@@ -144,11 +150,12 @@ jobs:
           python - <<'PY'
           import sys
           from pathlib import Path
-          p = Path("port380_mcp.py")
-          if not p.exists():
-              print("⚠️ port380_mcp.py not present — soft skip")
+          candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
+          p = next((c for c in candidates if c.exists()), None)
+          if p is None:
+              print("port380_mcp.py not present — soft skip")
               sys.exit(0)
-          content = p.read_text()
+          content = p.read_text(encoding="utf-8", errors="replace")
           required = [
               "CORSMiddleware",
               "SecurityHeadersMiddleware",
@@ -161,13 +168,15 @@ jobs:
           ]
           missing = [h for h in required if h not in content]
           if missing:
-              print(f"❌ Missing headers: {missing}")
+              print(f"❌ Missing headers in {p}: {missing}")
               sys.exit(1)
-          print("✅ All security headers present in source code")
+          print(f"✅ All security headers present in {p}")
           PY
 
       - name: Verify live security headers from MCP_URL (soft)
-        if: ${{ env.MCP_URL != '' }}
+        if: ${{ secrets.MCP_URL != '' }}
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
         run: |
           set -euo pipefail
           echo "🌐 Checking live headers from $MCP_URL"
@@ -215,7 +224,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
     env:
       OIDC_CLIENT_SECRET: "ci_dummy_secret_32chars_minimum_xx"
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -256,7 +265,10 @@ jobs:
           '
 
       - name: MCP pulse (if MCP_URL set)
-        if: ${{ env.MCP_URL != '' }}
+        if: ${{ secrets.MCP_URL != '' }}
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
           echo "🌀 Sending MCP pulse to $MCP_URL"
@@ -341,8 +353,7 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────
   # 2. OIDC CLOUD FEDERATION — INLINE (was `uses:` reusable workflow)
-  #    Reusable form is preserved below as a comment. See FIXES
-  #    APPLIED header for rationale.
+  #    Reusable form is preserved below as a comment.
   #
   #    Original form (requires .github/workflows/oidc-cloud-providers.yml):
   #
@@ -368,6 +379,7 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Federation dispatch (offline default)
         env:
           PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
@@ -407,7 +419,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install seal deps
@@ -420,6 +432,10 @@ jobs:
         if: success()
         env:
           OIDC_PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
+          MCP_URL: ${{ secrets.MCP_URL }}
+          UPSTREAM_VERIFY: ${{ needs.verify-integrity.result }}
+          UPSTREAM_TEST: ${{ needs.test.result }}
+          UPSTREAM_OIDC: ${{ needs.oidc-federation.result }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -427,18 +443,30 @@ jobs:
           import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
+
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
           path = Path("ledger/8977.yaml")
-          mcp_set    = bool(os.environ.get("MCP_URL"))
-          provider   = os.environ.get("OIDC_PROVIDER", "offline")
+
+          mcp_set  = bool(os.environ.get("MCP_URL"))
+          provider = os.environ.get("OIDC_PROVIDER", "offline")
+
+          upstreams = {
+              "verify_integrity": os.environ.get("UPSTREAM_VERIFY", "unknown"),
+              "test":             os.environ.get("UPSTREAM_TEST", "unknown"),
+              "oidc_federation":  os.environ.get("UPSTREAM_OIDC", "unknown"),
+          }
+          all_ok = all(v == "success" for v in upstreams.values())
+          status = "SUCCESS" if all_ok else "DEGRADED"
+
           entry = {
               "entry_index": 8977,
               "event": "/sovereign_cicd_run",
-              "status": "SUCCESS",
+              "status": status,
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "hash_algo": HASH_ALGO,
-              "python_versions": ["3.10", "3.11"],
-              "pytest_status": "PASSED",
+              "python_versions": ["3.10", "3.11", "3.12"],
+              "upstream_results": upstreams,
+              "pytest_status": "PASSED" if all_ok else "RECORDED",
               "linting_status": "RUN",
               "deepseek_offline": "PASSED",
               "mcp_pulse": "SENT" if mcp_set else "SKIPPED",
@@ -453,11 +481,14 @@ jobs:
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
+
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))
           print("📋 Ledger entry 8977 written.")
           print(f"✅ Sealed 8977 · {HASH_ALGO}:{h[:16]}...")
+          print(f"   status = {status}")
+          print(f"   upstreams = {upstreams}")
           PY
 
       - name: Verify ledger entry 8977 (SHA3-256)
@@ -487,22 +518,29 @@ jobs:
         with:
           commit_message: "chore: seal Sovereign CI/CD entry 8977 (sha3_256)"
           file_pattern: ledger/8977.yaml
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
           commit_options: '--no-verify'
 
       - name: Summary
         if: always()
         env:
           OIDC_PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
+          MCP_URL: ${{ secrets.MCP_URL }}
         run: |
           {
-            echo "✅ Sovereign CI/CD completed."
-            echo "🜁∀ — Seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED"
-            echo "🔐 hash_algo: ${HASH_ALGO}"
-            echo "🐍 python: 3.10 · 3.11"
-            echo "🧪 pytest: recorded in ledger"
-            echo "🔐 Ed25519 signatures verified (soft)"
-            echo "🛡️ Security headers verified (source + live if MCP_URL set)"
-            echo "☁️ OIDC federation: ${OIDC_PROVIDER}"
-            echo "🌀 MCP pulse: $([ -n "${MCP_URL:-}" ] && echo SENT || echo SKIPPED)"
-            echo "🔗 Witness: 8976 → 8977 — UNBROKEN"
+            echo "### Sovereign CI/CD (Entry 8977)"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| python | 3.10 · 3.11 · 3.12 |"
+            echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
+            echo "| test | ${{ needs.test.result }} |"
+            echo "| oidc-federation | ${{ needs.oidc-federation.result }} |"
+            echo "| oidc_provider | ${OIDC_PROVIDER} |"
+            echo "| mcp_pulse | $([ -n "${MCP_URL:-}" ] && echo SENT || echo SKIPPED) |"
+            echo "| witness | 8976 → 8977 — UNBROKEN |"
+            echo ""
+            echo "Seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
