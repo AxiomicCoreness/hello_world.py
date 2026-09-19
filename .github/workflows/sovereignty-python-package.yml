@@ -1,8 +1,8 @@
 name: Sovereign Python Package
 
 # Read-only CI lane — headers source probe, ledger YAML parse, Python matrix,
-# offline federate, and a job-local seal of the run.
-# Dual target: this file + /python_package_ci_correction (ledger/9233.yaml).
+# offline federate, and a job-local summary of the run.
+# Dual target: this file + /python_package_ci_correction (job-local ledger/9233.yaml).
 # quantum/cybernetic frame: U(t) only — no Φ_abs collapse, no ledger write.
 # permissions: contents: read
 # cancel-in-progress: false — do not kill in-flight runs.
@@ -12,13 +12,13 @@ name: Sovereign Python Package
 # ─────────────────────────────────────────────────────────────────
 # FIX 1. paths filter vs seal job collision
 #   Removed `ledger/9233.yaml` from on.push.paths.
-#   The seal job writes a *job-local* summary to that path in the
+#   The summary job writes a *job-local* file to that path in the
 #   workspace; including it in the trigger made the workflow re-fire
 #   on a file it then stomps (in the workspace only). The repo copy
 #   was never modified, but the trigger was misleading. Removed.
 #
 # FIX 2. heredoc indent fragility
-#   Replaced the `cat … << 'EOF'` heredoc in the seal job with
+#   Replaced the `cat … << 'EOF'` heredoc in the summary job with
 #   `printf`-based emission. No leading-indent dependency; malformed
 #   output is no longer possible from a mixed-indent edit.
 #   The two Python heredocs in verify-integrity are left as-is:
@@ -31,11 +31,17 @@ name: Sovereign Python Package
 #   rc=1/2/3/4 → hard fail. Real failures still gate; empty tree
 #   does not.
 #
-# Preserved from prior draft:
+# FIX 4. action pins
 #   actions/checkout@v4        (v5 is not a released major)
 #   actions/setup-python@v5    (v6 is not a released major)
+#
+# FIX 5. matrix expanded to match repository Python pin
+#   Repository-wide pin is 3.12. Added "3.12" to the matrix so the
+#   package is tested on the version that workflows and Docker use.
+#
+# Preserved from prior draft:
 #   federate job inlined       (no composite action present in tree)
-#   seal job: job-local only   (policy: NO_LEDGER_WRITE)
+#   summary job: job-local only (policy: NO_LEDGER_WRITE)
 # ─────────────────────────────────────────────────────────────────
 
 on:
@@ -63,14 +69,26 @@ jobs:
     name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
-          python-version: "3.11"
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
 
       - name: headers source probe
         run: |
-          python3 - << 'PY'
+          python3 - <<'PY'
           from pathlib import Path
           import sys
           p = Path("port380_mcp.py")
@@ -95,7 +113,7 @@ jobs:
 
       - name: ledger yaml parse 8979 + 9233
         run: |
-          python3 - << 'PY'
+          python3 - <<'PY'
           from pathlib import Path
           try:
               import yaml
@@ -118,20 +136,28 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    name: Build · Python matrix
     needs: verify-integrity
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: deps
+          cache: pip
+
+      - name: Install deps
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          pip install pytest pyyaml
+          python -m pip install --quiet pytest pyyaml
+
       - name: pytest skip-clean
         # Real gate: rc=1/2/3/4 fails the job.
         # rc=5 (no tests collected) is a soft pass — clean tree is not a failure.
@@ -148,10 +174,13 @@ jobs:
 
   federate:
     runs-on: ubuntu-latest
+    name: Federate · offline
     needs: build
     if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: offline federate (inlined)
         env:
           PROVIDER: offline
@@ -167,8 +196,9 @@ jobs:
           #   with:
           #     provider: offline
 
-  seal:
+  summary:
     runs-on: ubuntu-latest
+    name: Summary · job-local
     needs: [verify-integrity, build, federate]
     if: always()
     timeout-minutes: 5
@@ -191,7 +221,7 @@ jobs:
             printf '  federate: %s\n' "$R_FED"
             printf 'policy: NO_LEDGER_WRITE\n'
             printf 'note: job-local summary only; not committed\n'
-            printf 'witness: 9232 → 9233 — UNBROKEN\n'
+            printf 'witness: 9232 -> 9233 -- UNBROKEN\n'
           } > ledger/9233.yaml
           echo "Ledger summary written to ledger/9233.yaml (job workspace only)."
 
@@ -208,5 +238,5 @@ jobs:
             echo "| federate | ${{ needs.federate.result }} |"
             echo ""
             echo "- Policy: NO_LEDGER_WRITE"
-            echo "- Seal: job-local only (ledger/9233.yaml in workspace)"
+            echo "- Summary: job-local only (ledger/9233.yaml in workspace)"
           } >> "$GITHUB_STEP_SUMMARY"
