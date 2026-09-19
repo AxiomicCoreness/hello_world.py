@@ -1,5 +1,11 @@
 name: debug-environment
 
+# Diagnostic workflow — prints runner state, secret presence (never the
+# values), and filesystem layout. Read-only; writes nothing; commits nothing.
+#
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE
+
 on:
   workflow_dispatch:
   push:
@@ -8,14 +14,22 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: debug-environment-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+
 jobs:
   debug:
+    name: Debug environment
     runs-on: ubuntu-latest
-    env:
-      HASH_ALGO: sha3_256
-      LEDGER_DIR: ledger
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Debug environment
         env:
@@ -73,3 +87,19 @@ jobs:
             echo "  scripts/  not found"
           fi
           echo "::endgroup::"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### debug-environment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| runner.os | ${{ runner.os }} |"
+            echo "| github.ref | \`${{ github.ref }}\` |"
+            echo "| github.sha | \`${{ github.sha }}\` |"
+            echo "| github.event_name | ${{ github.event_name }} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| ledger_policy | NO_LEDGER_WRITE |"
+          } >> "$GITHUB_STEP_SUMMARY"
