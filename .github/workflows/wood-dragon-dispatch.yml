@@ -27,17 +27,17 @@ env:
   TERMINAL_CI: "1"
   WOOD_DRAGON_CI: "1"
   OAUTH_OFFLINE: "1"
-  # ── STACK-CI FIX ──────────────────────────────────────────────
-  # MCP_PORT / MCP_BIND_HOST / MCP_NAMESPACE / MCP_LEGACY_404_HARD
-  # are declared here so the MCP pulse step and any dispatcher that
-  # shells out to mcp/port380_mcp.py see the same contract that
-  # sovereign-stack-ci.yml asserts. Without these, the dispatcher
-  # falls back to module defaults and the terminal hash diverges
-  # from the stack CI's recorded value.
   MCP_PORT: "13800"
   MCP_BIND_HOST: "127.0.0.1"
   MCP_NAMESPACE: "wood-dragon-dispatch"
   MCP_LEGACY_404_HARD: "0"
+  # ── FIX ───────────────────────────────────────────────────────
+  # Project the secret into a workflow-level env var so it can be
+  # tested in a step-level `if:`. GitHub rejects `secrets.*` inside
+  # `if:` expressions.
+  MCP_URL: ${{ secrets.MCP_URL }}
+  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
 
 jobs:
   hash-and-dispatch:
@@ -59,16 +59,11 @@ jobs:
 
       - name: Export dispatch context
         env:
-          MCP_URL: ${{ secrets.MCP_URL }}
-          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
-          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           I_OF_144: ${{ inputs.i_of_144 }}
         run: |
           set -euo pipefail
           {
-            echo "MCP_CONNECTOR_URL=$MCP_URL"
-            echo "GARDEN_SECRET=$GARDEN_SECRET"
-            echo "MISTRAL_API_KEY=$MISTRAL_API_KEY"
+            echo "MCP_CONNECTOR_URL=${MCP_URL:-}"
             echo "GRAVASTAR_I_OF_144=${I_OF_144:-1}"
           } >> "$GITHUB_ENV"
 
@@ -77,22 +72,9 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
-          # ── STACK-CI FIX ────────────────────────────────────────
-          # The stack CI installs fastapi/uvicorn/pydantic for the
-          # app and mcp smoke jobs. The dispatcher imports the MCP
-          # module indirectly when MCP_CONNECTOR_URL is set, so those
-          # pins must match. Keep the same versions the stack CI uses
-          # to avoid "works in stack CI, fails in dispatch" drift.
           python -m pip install --quiet \
             fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2
 
-      # ── PRIOR FIX ──────────────────────────────────────────────
-      # Multi-file verify_ledger.py invocation replaced with a
-      # per-file loop. The previous form passed every ledger/*.yaml
-      # as a positional argument to a script that only accepts one
-      # path, producing an argparse error on any repo with more than
-      # one ledger entry. The loop also tolerates per-file failures
-      # without aborting the whole step, matching the "soft" intent.
       - name: Verify SHA3-256 seals on present ledger entries
         run: |
           set -euo pipefail
@@ -112,16 +94,10 @@ jobs:
             echo "no verify_ledger.py — soft skip"
           fi
 
-      # ── PRIOR FIX ──────────────────────────────────────────────
-      # `sort` without LC_ALL=C is locale-dependent; the resulting
-      # branch list — and therefore terminals_sha3_256 — differed
-      # between runners. Pin the collation so the terminal hash is
-      # reproducible across ubuntu-latest images.
       - name: Enumerate branch terminals
         id: terminals
         run: |
           set -euo pipefail
-
           if git ls-remote --heads origin >/dev/null 2>&1; then
             BRANCHES=$(git ls-remote --heads origin \
               | awk '{print $2}' \
@@ -132,29 +108,18 @@ jobs:
               | sed 's#^origin/##' \
               | LC_ALL=C sort -u)
           fi
-
           COUNT=$(printf '%s\n' "$BRANCHES" | grep -c . || echo 0)
-
           printf '%s\n' "$BRANCHES" | python -c "
           import json, sys
           branches = [l.strip() for l in sys.stdin if l.strip()]
           print(json.dumps(branches))
           " > /tmp/terminals.json
-
           echo "terminal_count=${COUNT}" >> "$GITHUB_OUTPUT"
           echo "last_observed_count=26" >> "$GITHUB_OUTPUT"
-
           echo "── branch terminals (count=${COUNT}) ──"
           printf '%s\n' "$BRANCHES" | head -50
           echo "──────────────────────────────────────"
 
-      # ── STACK-CI FIX ───────────────────────────────────────────
-      # Sanity check that the MCP contract is readable from this
-      # workflow's environment. The stack CI's mcp job asserts the
-      # same 7-key contract; reproducing the assertion here means
-      # a drift in either direction (this file loosening the env,
-      # or mcp/port380_mcp.py changing its key names) fails fast
-      # rather than silently producing a different pulse body.
       - name: MCP check-config contract (parity with stack CI)
         id: mcp_contract
         run: |
@@ -218,26 +183,23 @@ jobs:
             --event "${{ inputs.event }}" \
             || echo "wood_dragon_dispatch returned non-zero (soft)"
 
+      # ── FIX ────────────────────────────────────────────────────
+      # Previously: if: ${{ secrets.MCP_URL != '' }} — rejected by
+      # GitHub. Now: if: ${{ env.MCP_URL != '' }} — allowed, and
+      # identical in semantics because MCP_URL is projected from the
+      # secret at workflow-level env.
       - name: MCP pulse (if MCP_URL set)
-        if: ${{ secrets.MCP_URL != '' }}
+        if: ${{ env.MCP_URL != '' }}
         run: |
           set -euo pipefail
           if ! command -v jq >/dev/null 2>&1; then
             sudo apt-get update -qq
             sudo apt-get install -y -qq jq
           fi
-
           HDR_ARGS=(-H "Content-Type: application/json")
           if [ -n "${GARDEN_SECRET:-}" ]; then
             HDR_ARGS+=(-H "X-Garden-Secret: ${GARDEN_SECRET}")
           fi
-
-          # ── STACK-CI FIX ──────────────────────────────────────
-          # Include the MCP contract fields in the pulse body so
-          # the receiving endpoint can correlate the dispatch with
-          # the stack CI's recorded contract. Without this, the
-          # pulse has no way to detect that the dispatcher ran under
-          # a different MCP_* environment than the one it tested.
           BODY=$(jq -n \
             --arg src "wood-dragon-dispatch" \
             --argjson entry 9007 \
@@ -258,7 +220,6 @@ jobs:
               },
               note: "each branch is a terminal"
             }')
-
           curl -sS --max-time 20 -X POST "${HDR_ARGS[@]}" -d "$BODY" \
             "${MCP_CONNECTOR_URL%/}/pulse" \
             || echo "MCP pulse failed (non-fatal)"
@@ -274,20 +235,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
-
           TERMINALS_JSON=$(cat /tmp/terminals.json 2>/dev/null || echo "[]")
           export TERMINALS_JSON
           export TERMINAL_COUNT LAST_OBSERVED EVENT_PATH I_OF_144 MCP_CONTRACT_OK
-
           python - <<'PY'
           import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
-
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
           n = int(os.environ.get("DISPATCH_ENTRY", "9007"))
           path = Path(f"ledger/{n}.yaml")
-
           terminals_raw = os.environ.get("TERMINALS_JSON", "[]")
           try:
               terminals = json.loads(terminals_raw)
@@ -295,13 +252,11 @@ jobs:
               terminals = []
           if not isinstance(terminals, list):
               terminals = []
-
           terminals_canon = json.dumps(terminals, sort_keys=True,
                                        separators=(",", ":"))
           terminals_sha = hashlib.new(
               HASH_ALGO, terminals_canon.encode("utf-8")
           ).hexdigest()
-
           prev_path = Path("ledger/9006.yaml")
           prev_hash = ""
           if prev_path.exists():
@@ -312,15 +267,8 @@ jobs:
                       prev_hash = seal.rsplit("·", 1)[-1].strip()
               except Exception as e:
                   print(f"⚠️ could not read predecessor: {e}")
-
           mcp_set = bool(os.environ.get("MCP_CONNECTOR_URL"))
           mcp_ok = os.environ.get("MCP_CONTRACT_OK", "false") == "true"
-
-          # ── STACK-CI FIX ──────────────────────────────────────
-          # Record the MCP contract details in the ledger entry.
-          # This makes the dispatch entry auditable against the
-          # stack CI's mcp job: if the two ever diverge, the
-          # ledger shows which environment produced the seal.
           entry = {
               "entry_index": n,
               "event": os.environ.get("EVENT_PATH", "/workflow_dispatch_wood_dragon_mistral"),
@@ -346,7 +294,6 @@ jobs:
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
-
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))
@@ -420,17 +367,6 @@ jobs:
             echo "| mcp_port | ${MCP_PORT} |"
             echo "| mcp_namespace | ${MCP_NAMESPACE} |"
             echo "| witness | 9006 → 9007 — UNBROKEN |"
-            echo ""
-            echo "**Quantum/cybernetic frame:**"
-            echo "- Each branch is a terminal T_k in the dispatch mesh"
-            echo "- \`U_dispatch\` routes one event per dispatch"
-            echo "- \`Φ_abs(ρ)\` — collapse recorded at entry 9007"
-            echo "- \`𝒜_n ⊆ 𝒜_{n+1}\` — entry 9007 extends the 90xx region"
-            echo ""
-            echo "**Stack-CI parity:**"
-            echo "- MCP_* env matches \`sovereign-stack-ci.yml\` mcp job"
-            echo "- 7-key check-config contract asserted in this workflow"
-            echo "- ledger records \`mcp_contract_ok\` for audit"
             echo ""
             echo "🜁∀ — Seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
