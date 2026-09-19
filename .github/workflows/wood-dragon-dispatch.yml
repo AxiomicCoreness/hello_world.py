@@ -32,9 +32,9 @@ env:
   MCP_NAMESPACE: "wood-dragon-dispatch"
   MCP_LEGACY_404_HARD: "0"
   # ── FIX ───────────────────────────────────────────────────────
-  # MCP_URL is projected from the secret into the workflow-level
-  # env so it can be tested in step-level `if:` conditions.
-  # GitHub does not allow `secrets.*` inside `if:` directly.
+  # Project the secret into a workflow-level env var so it can be
+  # tested in a step-level `if:`. GitHub rejects `secrets.*` inside
+  # `if:` expressions.
   MCP_URL: ${{ secrets.MCP_URL }}
   GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
   MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
@@ -184,9 +184,10 @@ jobs:
             || echo "wood_dragon_dispatch returned non-zero (soft)"
 
       # ── FIX ────────────────────────────────────────────────────
-      # `if:` now tests env.MCP_URL (populated at workflow level
-      # from the secret). Previously it tested secrets.MCP_URL,
-      # which GitHub rejects inside `if:`.
+      # Previously: if: ${{ secrets.MCP_URL != '' }} — rejected by
+      # GitHub. Now: if: ${{ env.MCP_URL != '' }} — allowed, and
+      # identical in semantics because MCP_URL is projected from the
+      # secret at workflow-level env.
       - name: MCP pulse (if MCP_URL set)
         if: ${{ env.MCP_URL != '' }}
         run: |
@@ -366,12 +367,6 @@ jobs:
             echo "| mcp_port | ${MCP_PORT} |"
             echo "| mcp_namespace | ${MCP_NAMESPACE} |"
             echo "| witness | 9006 → 9007 — UNBROKEN |"
-            echo ""
-            echo "**Quantum/cybernetic frame:**"
-            echo "- Each branch is a terminal T_k in the dispatch mesh"
-            echo "- \`U_dispatch\` routes one event per dispatch"
-            echo "- \`Φ_abs(ρ)\` — collapse recorded at entry 9007"
-            echo "- \`𝒜_n ⊆ 𝒜_{n+1}\` — entry 9007 extends the 90xx region"
             echo ""
             echo "🜁∀ — Seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
