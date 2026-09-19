@@ -33,6 +33,7 @@ jobs:
     name: North Star · verify ledger + scoped alignment
     runs-on: ubuntu-latest
     timeout-minutes: 8
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -123,11 +124,13 @@ jobs:
             fi
           done
           if [ -f ledger/9241.yaml ]; then
+            echo "9241 present — hard verify"
             if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
               fail=1
             fi
           fi
           if [ "$fail" -ne 0 ]; then
+            echo "❌ one or more sealed-set entries failed hard verification"
             exit 1
           fi
           echo "✅ sealed set verified"
@@ -194,6 +197,7 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3
+
     steps:
       - name: Emit witness summary
         env:

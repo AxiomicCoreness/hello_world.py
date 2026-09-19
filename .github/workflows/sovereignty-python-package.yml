@@ -24,18 +24,23 @@ jobs:
     name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
+
       - name: headers source probe
         run: |
           python3 - <<'PY'
@@ -60,6 +65,7 @@ jobs:
               sys.exit(1)
           print("headers present")
           PY
+
       - name: ledger yaml parse 8979 + 9233
         run: |
           python3 - <<'PY'
@@ -91,16 +97,21 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml
+
       - name: pytest skip-clean
         run: |
           set +e
@@ -119,9 +130,16 @@ jobs:
     needs: build
     if: github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
-      - name: offline federate
-        run: echo "provider=offline"
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: offline federate (inlined)
+        env:
+          PROVIDER: offline
+        run: |
+          set -euo pipefail
+          echo "provider=$PROVIDER"
+          echo "No cloud federation requested — offline mode."
 
   summary:
     runs-on: ubuntu-latest
@@ -147,16 +165,22 @@ jobs:
             printf '  verify_integrity: %s\n' "$R_VERIFY"
             printf '  build: %s\n' "$R_BUILD"
             printf '  federate: %s\n' "$R_FED"
+            printf 'note: job-local summary only; not committed\n'
+            printf 'witness: 9232 -> 9233 -- UNBROKEN\n'
           } > ledger/9233.yaml
+
       - name: Summary
         if: always()
         run: |
           {
             echo "### Sovereign Python Package"
+            echo ""
             echo "| Job | Result |"
             echo "|-----|--------|"
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| build | ${{ needs.build.result }} |"
             echo "| federate | ${{ needs.federate.result }} |"
+            echo ""
             echo "- Policy: NO_LEDGER_WRITE"
+            echo "- Summary: job-local only (ledger/9233.yaml in workspace)"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,47 @@
+# Section IV genesis — sink deployment (replicas=0)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-sink
+  namespace: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/section_iv_argo_sink_deployment"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+    garden.subprocess: "false"
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: argo-sink
+  template:
+    metadata:
+      labels:
+        app: argo-sink
+        mcp.garden/filled: "false"
+    spec:
+      containers:
+        - name: argo-sink
+          image: python:3.11-slim
+          workingDir: /src
+          command: ["python", "pythonIDE/argo_sink.py"]
+          env:
+            - name: BIND
+              value: "127.0.0.1"
+            - name: DUAL_ASGI
+              value: "127.0.0.1:8024"
+            - name: FILLED
+              value: "false"
+            - name: LEDGER_GENESIS
+              value: "9195"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 128Mi
+            limits:
+              cpu: "200m"
+              memory: 256Mi

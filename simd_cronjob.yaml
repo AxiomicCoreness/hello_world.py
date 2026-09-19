@@ -1,0 +1,53 @@
+# simd_cronjob.yaml — periodic ledger validation (declarative)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: simd-ledger-validation
+  namespace: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/simd_ledger_validation"
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+spec:
+  schedule: "15 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: simd-ledger-validation
+            mcp.garden/filled: "false"
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: validator
+              image: python:3.12-slim
+              workingDir: /src
+              command: ["sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  python -m pip install --quiet pyyaml
+                  python scripts/codeblock --quiet
+              volumeMounts:
+                - name: repo
+                  mountPath: /src
+                  readOnly: true
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: 64Mi
+                limits:
+                  cpu: "200m"
+                  memory: 128Mi
+          volumes:
+            - name: repo
+              emptyDir: {}

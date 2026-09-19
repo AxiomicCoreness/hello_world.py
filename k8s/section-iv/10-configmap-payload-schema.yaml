@@ -1,0 +1,30 @@
+# Section IV genesis — ARGO payload schema
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-payload-schema
+  namespace: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+    mcp.garden/filled: "false"
+data:
+  payload.schema.json: |
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "GardenARGOControlPayload",
+      "type": "object",
+      "required": ["ledger_entry", "witness_chain", "node_id", "t_epoch"],
+      "properties": {
+        "ledger_entry": {"type": "integer", "minimum": 0},
+        "witness_chain": {"type": "string"},
+        "node_id": {"type": "integer", "minimum": 0, "maximum": 11},
+        "t_epoch": {"type": "string"},
+        "phase_lock_deg": {"type": "number", "const": 202.6},
+        "north_star_hz": {"type": "number", "const": 71.975},
+        "workload": {"type": "number", "const": 0.0},
+        "channels": {"type": "object", "additionalProperties": true},
+        "integrity": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    }

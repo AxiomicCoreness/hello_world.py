@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""scripts/codeblock — autonomous ledger validator (read-only)."""
+from __future__ import annotations
+import argparse
+import re
+import sys
+from pathlib import Path
+from typing import Dict, Optional
+
+try:
+    import yaml
+except ImportError:
+    print("pyyaml required", file=sys.stderr)
+    sys.exit(2)
+
+HEX64 = re.compile(r"[0-9a-f]{64}")
+
+
+def terminal_hex(entry: dict) -> Optional[str]:
+    seal = entry.get("seal")
+    if not isinstance(seal, str):
+        return None
+    matches = HEX64.findall(seal)
+    return matches[-1] if matches else None
+
+
+def load_dir(ledger_dir: Path) -> Dict[int, dict]:
+    entries: Dict[int, dict] = {}
+    for path in sorted(ledger_dir.glob("*.yaml")):
+        with path.open(encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+        if not isinstance(data, dict):
+            continue
+        idx = data.get("entry_index")
+        if isinstance(idx, int):
+            entries[idx] = data
+    return entries
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dir", default="ledger")
+    ap.add_argument("--quiet", action="store_true")
+    args = ap.parse_args()
+    ledger_dir = Path(args.dir)
+    if not ledger_dir.is_dir():
+        print(f"::error::ledger directory not found: {ledger_dir}")
+        return 2
+    try:
+        entries = load_dir(ledger_dir)
+    except yaml.YAMLError:
+        return 1
+    if not entries:
+        return 2
+    failures = 0
+    for idx in sorted(entries):
+        entry = entries[idx]
+        hex_here = terminal_hex(entry)
+        if hex_here is None:
+            if not args.quiet:
+                print(f"entry {idx}: no terminal hex (documentation or unsealed)")
+            continue
+        prev = entry.get("prev_hash")
+        if prev is None:
+            if not args.quiet:
+                print(f"entry {idx}: terminal hex present, no prev_hash")
+            continue
+        pred = entries.get(idx - 1)
+        if pred is None:
+            continue
+        pred_hex = terminal_hex(pred)
+        if pred_hex is None:
+            continue
+        if prev != pred_hex:
+            print(f"::error::entry {idx}: prev_hash mismatch")
+            failures += 1
+        elif not args.quiet:
+            print(f"entry {idx}: chain intact")
+    if failures:
+        return 1
+    if not args.quiet:
+        print(f"PASS: {len(entries)} entries scanned")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
