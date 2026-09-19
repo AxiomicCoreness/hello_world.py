@@ -1,0 +1,13 @@
+# Section IV genesis — namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.event: "/section_iv_argo_sink_namespace"
+    garden.bind_0000: "false"
+    garden.dual_asgi: "127.0.0.1:8024"
