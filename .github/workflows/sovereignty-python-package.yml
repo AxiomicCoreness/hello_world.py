@@ -2,7 +2,7 @@ name: Sovereign Python Package
 
 on:
   push:
-    branches: [main, master, deepseek]
+    branches: [main, master, deepseek, grok, mistral]
     paths:
       - ".github/workflows/sovereignty-python-package.yml"
       - "port380_mcp.py"
@@ -21,6 +21,8 @@ concurrency:
 jobs:
   verify-integrity:
     runs-on: ubuntu-latest
+    name: Verify Ledger Signatures & Security Headers
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,7 +31,6 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: |
       - name: Install deps
         run: |
           set -euo pipefail
@@ -46,11 +47,15 @@ jobs:
               print("port380_mcp.py absent — skip")
               sys.exit(0)
           content = p.read_text(encoding="utf-8", errors="replace")
-          required = ["Content-Security-Policy", "Strict-Transport-Security", "X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy"]
+          required = [
+              "Content-Security-Policy",
+              "Strict-Transport-Security",
+              "X-Content-Type-Options",
+              "X-Frame-Options",
+              "Referrer-Policy",
+              "Permissions-Policy",
+          ]
           missing = [h for h in required if h not in content]
-          if missing and os.environ.get("SOFT_HEADERS", "1") == "0":
-              sys.exit(1)
-          print("headers probe done", missing or "ok")
           if missing:
               print(f"missing headers in {p}: {missing}")
               if os.environ.get("SOFT_HEADERS", "1") == "0":
@@ -59,7 +64,7 @@ jobs:
               sys.exit(0)
           print(f"headers present in {p}")
           PY
-      - name: ledger yaml parse 8979 + 9233
+      - name: ledger yaml parse
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -78,6 +83,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    name: Build · Python matrix
     needs: verify-integrity
     strategy:
       fail-fast: false
@@ -89,43 +95,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: |
-          python -m pip install --upgrade pip
-          python -m pip install --quiet pytest pyyaml
-      - name: pytest soft
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml
-      - name: Probe tests/ presence
-        id: tests_probe
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          files=(tests/test_*.py tests/*_test.py)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "no test files present — soft pass"
-          else
-            echo "present=true" >> "$GITHUB_OUTPUT"
-            echo "test files present: ${#files[@]}"
-          fi
-      - name: pytest skip-clean
-        if: steps.tests_probe.outputs.present == 'true'
+      - name: pytest soft
         run: |
           set +e
           python -m pytest -q --tb=line -k "not integration"
           rc=$?
           set -e
-          if [ "$rc" -eq 5 ]; then exit 0; fi
-          if [ "$rc" -ne 0 ]; then
-            echo "pytest rc=$rc soft (STRICT_PYTEST=1 to hard-fail)"
-            [ "${STRICT_PYTEST:-0}" = "1" ] && exit "$rc"
+          if [ "$rc" -eq 5 ]; then
+            echo "no tests collected — soft pass"
             exit 0
           fi
           if [ "$rc" -ne 0 ]; then
-            echo "pytest rc=$rc — soft pass (set STRICT_PYTEST=1 to hard-fail)"
+            echo "pytest rc=$rc — soft pass (STRICT_PYTEST=1 to hard-fail)"
             [ "${STRICT_PYTEST:-0}" = "1" ] && exit "$rc"
             exit 0
           fi
@@ -133,21 +119,20 @@ jobs:
 
   federate:
     runs-on: ubuntu-latest
+    name: Federate · offline
     needs: build
     if: github.event_name == 'push'
     steps:
-      - run: echo offline
       - uses: actions/checkout@v4
       - run: echo "provider=offline"
 
   summary:
     runs-on: ubuntu-latest
+    name: Summary · job-local
     needs: [verify-integrity, build, federate]
     if: always()
+    timeout-minutes: 5
     steps:
-      - run: |
-          echo "| verify | ${{ needs.verify-integrity.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| build | ${{ needs.build.result }} |" >> "$GITHUB_STEP_SUMMARY"
       - name: Summary
         if: always()
         run: |
@@ -158,6 +143,5 @@ jobs:
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| build | ${{ needs.build.result }} |"
             echo "| federate | ${{ needs.federate.result }} |"
-            echo "- Headers: soft unless SOFT_HEADERS=0"
-            echo "- Pytest: soft unless STRICT_PYTEST=1"
+            echo "- Branches: main master deepseek grok mistral"
           } >> "$GITHUB_STEP_SUMMARY"
