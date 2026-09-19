@@ -90,19 +90,33 @@ jobs:
             exit 0
           fi
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import re, yaml
+          import re, sys, yaml
           from pathlib import Path
 
           entries = sorted(Path("ledger").glob("*.yaml"))
           heads = []
+          skipped = []
+
           for p in entries:
               try:
                   data = yaml.safe_load(p.read_text()) or {}
-              except Exception:
+              except Exception as e:
+                  skipped.append(f"{p}: parse error: {e}")
                   continue
+
+              # A ledger file may not be a mapping. Skip anything else.
+              if not isinstance(data, dict):
+                  skipped.append(
+                      f"{p}: top-level is {type(data).__name__}, not mapping"
+                  )
+                  continue
+
               idx = data.get("entry_index")
               if isinstance(idx, int):
                   heads.append((idx, p, data))
+              else:
+                  skipped.append(f"{p}: no integer entry_index")
+
           if not heads:
               print("head_index=0")
               print("head_seal=")
@@ -113,6 +127,11 @@ jobs:
               terminal = m.group(1).lower() if m else ""
               print(f"head_index={idx}")
               print(f"head_seal={terminal}")
+
+          # Report skipped files on stderr so they appear in the run log
+          # without contaminating GITHUB_OUTPUT.
+          for line in skipped:
+              print(f"skipped: {line}", file=sys.stderr)
           PY
 
       # ────────────────────────────────────────────────────────────
