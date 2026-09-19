@@ -29,17 +29,24 @@ env:
   PHASE_LOCK_DEG: "202.6"
 
 jobs:
-  north-star:
-    name: North Star · 71.975 Hz · scoped alignment
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 1 — Verify: ledger chain, registry, and scoped vocabulary.
+  # This job is the sole path for ledger verification. It does not
+  # seal, does not commit, does not write.
+  # ─────────────────────────────────────────────────────────────────
+  verify:
+    name: North Star · verify ledger + scoped alignment
     runs-on: ubuntu-latest
     timeout-minutes: 8
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
@@ -134,7 +141,6 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          # Fail-closed only on these paths — never repo-wide grep
           SCOPED = [
               Path("docs/COSMIC_ALIGNMENT_POLICY.md"),
               Path(".github/workflows/deepseek-cd.yml"),
@@ -145,7 +151,6 @@ jobs:
 
           for p in SCOPED:
               if not p.exists():
-                  # deepseek-cd.yml may be absent on main — soft for that path only
                   if p.name == "deepseek-cd.yml":
                       print(f"soft skip absent {p}")
                       continue
@@ -171,3 +176,46 @@ jobs:
           assert "b²" not in src
           print("✅ North Star constants + scoped vocabulary intact")
           PY
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 2 — Witness: record the verification outcome as a summary.
+  # Reads results from job 1. Does not re-run any check. Does not
+  # write the ledger. Produces a GitHub step summary only.
+  # ─────────────────────────────────────────────────────────────────
+  witness:
+    name: North Star · witness summary
+    needs: verify
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Emit witness summary
+        env:
+          VERIFY_RESULT: ${{ needs.verify.result }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### North Star Witness"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| verify.result | ${VERIFY_RESULT} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| north_star_hz | ${NORTH_STAR_HZ} |"
+            echo "| phase_lock_deg | ${PHASE_LOCK_DEG} |"
+            echo "| workflow | north-star-witness.yml |"
+            echo "| commit | ${{ github.sha }} |"
+            echo "| ref | ${{ github.ref }} |"
+            echo ""
+            if [ "${VERIFY_RESULT}" = "success" ]; then
+              echo "✅ Verify job passed — ledger chain and scoped alignment intact."
+            else
+              echo "❌ Verify job result: ${VERIFY_RESULT}."
+              echo ""
+              echo "Witness records the outcome but does not fail independently."
+              echo "The verify job is the sole gate."
+            fi
+            echo ""
+            echo "Seal: ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · WITNESSED"
+          } >> "$GITHUB_STEP_SUMMARY"
