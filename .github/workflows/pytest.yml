@@ -26,8 +26,7 @@ name: Sovereign CI/CD
 #
 # Fix 4 — MCP_URL and GARDEN_SECRET removed from workflow-level `env:`.
 #         The `secrets` context is not available at that scope. Steps that
-#         need them declare them locally, and the `if:` conditions
-#         reference `secrets.MCP_URL` directly.
+#         need them declare them locally.
 #
 # Fix 5 — `verify_ledger.py` invoked per-file, not with a multi-argument
 #         list. The verifier accepts one path per invocation.
@@ -41,6 +40,11 @@ name: Sovereign CI/CD
 # Fix 8 — seal step computes the ledger status from upstream job
 #         results. Previously wrote SUCCESS unconditionally, even when
 #         verify-integrity, test, or oidc-federation had failed.
+#
+# Fix 9 — `secrets` removed from every `if:` expression. The secrets
+#         context is not available in `if:` at any scope. The empty
+#         check is now the first line of the shell script; the secret
+#         is declared in the step's `env:` (where the context is legal).
 # ─────────────────────────────────────────────────────────────────
 
 on:
@@ -78,7 +82,7 @@ env:
   LEDGER_DIR: ledger
   # MCP_URL and GARDEN_SECRET are NOT declared here — the secrets context
   # is unavailable at workflow-level env. Steps that need them declare
-  # them locally, and `if:` conditions reference secrets.MCP_URL directly.
+  # them locally, and any empty-check happens inside the shell script.
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -174,11 +178,14 @@ jobs:
           PY
 
       - name: Verify live security headers from MCP_URL (soft)
-        if: ${{ secrets.MCP_URL != '' }}
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
         run: |
           set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "⚠️ MCP_URL not set — soft skip"
+            exit 0
+          fi
           echo "🌐 Checking live headers from $MCP_URL"
           if ! HEADERS=$(curl -s -I -X GET --max-time 15 "$MCP_URL/health" 2>/dev/null); then
             echo "⚠️ Could not reach $MCP_URL/health — soft skip"
@@ -265,12 +272,15 @@ jobs:
           '
 
       - name: MCP pulse (if MCP_URL set)
-        if: ${{ secrets.MCP_URL != '' }}
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "⚠️ MCP_URL not set — soft skip"
+            exit 0
+          fi
           echo "🌀 Sending MCP pulse to $MCP_URL"
           curl -sS --max-time 20 \
             -X POST "$MCP_URL/pulse" \
