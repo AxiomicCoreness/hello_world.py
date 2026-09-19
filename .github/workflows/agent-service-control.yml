@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: agent-service-control
+  group: agent-service-control-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -43,7 +43,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install control-layer requirements
@@ -73,7 +73,6 @@ jobs:
             echo "⚠️ no verify_ledger.py present — soft skip"
             exit 0
           fi
-          # One path per invocation. The verifier accepts a single file.
           for f in "${entries[@]}"; do
             python "$VERIFIER" "$f" || echo "⚠️ soft: $f"
           done
@@ -106,12 +105,6 @@ jobs:
 
           def safe_load_ledger(text):
               return yaml.load(text, Loader=NoTimestampSafeLoader)
-
-          # AST-shape discipline:
-          # 1. Parse with NoTimestampSafeLoader.
-          # 2. Result MUST be a mapping to be a candidate.
-          # 3. Mapping MUST carry integer entry_index.
-          # 4. Skips go to stderr; GITHUB_OUTPUT stays clean.
 
           heads = []
           skipped = []
@@ -202,15 +195,25 @@ jobs:
               print("❌ no containers in Deployment", file=sys.stderr)
               sys.exit(1)
 
+          # YAML may coerce unquoted `false` to Python False, and `true`
+          # to True. Compare in a normalized form so the check is stable
+          # whether the manifest uses `value: "false"` or `value: false`.
+          def norm(v):
+              if v is None:
+                  return None
+              if isinstance(v, bool):
+                  return "true" if v else "false"
+              return str(v)
+
           env = {e["name"]: e.get("value")
                  for e in containers[0].get("env", []) if "name" in e}
 
           failures = []
-          if env.get("BIND") != "127.0.0.1":
+          if norm(env.get("BIND")) != "127.0.0.1":
               failures.append(f"BIND={env.get('BIND')!r} (must be 127.0.0.1)")
-          if env.get("DUAL_ASGI") != "127.0.0.1:8024":
+          if norm(env.get("DUAL_ASGI")) != "127.0.0.1:8024":
               failures.append(f"DUAL_ASGI={env.get('DUAL_ASGI')!r} (must be 127.0.0.1:8024)")
-          if env.get("FILLED") != "false":
+          if norm(env.get("FILLED")) != "false":
               failures.append(f"FILLED={env.get('FILLED')!r} (must be 'false')")
 
           if failures:
@@ -237,35 +240,35 @@ jobs:
             exit 0
           fi
 
-          # The script's name says "apply". Guard by ensuring the
-          # script itself is dry-run-only, or by intercepting kubectl.
-          # Two-tier policy:
-          #   1. If the script accepts --dry-run, pass it.
-          #   2. Otherwise, source a PATH shim that forces --dry-run
-          #      on every kubectl invocation, so even a script that
-          #      calls `kubectl apply` cannot mutate the cluster.
           if grep -q -- '--dry-run' "$SCRIPT"; then
             echo "script already contains --dry-run — invoking directly"
             bash "$SCRIPT"
             exit 0
           fi
 
-          echo "script lacks --dry-run — installing kubectl shim"
+          # Locate real kubectl before modifying PATH, so the shim can
+          # exec the correct binary regardless of install method.
+          REAL_KUBECTL="$(command -v kubectl || true)"
+          if [ -z "$REAL_KUBECTL" ]; then
+            echo "⚠️ kubectl not present on PATH — soft skip dry-run"
+            exit 0
+          fi
+          echo "real kubectl: $REAL_KUBECTL"
+
           SHIM_DIR="$(mktemp -d)"
-          cat > "$SHIM_DIR/kubectl" <<'SH'
+          cat > "$SHIM_DIR/kubectl" <<SH
           #!/usr/bin/env bash
           # Force --dry-run=client on every subcommand that mutates.
-          args=("$@")
-          for i in "${!args[@]}"; do
-            case "${args[$i]}" in
+          args=("\$@")
+          for i in "\${!args[@]}"; do
+            case "\${args[\$i]}" in
               apply|create|replace|patch|delete|edit)
-                # insert --dry-run=client right after the subcommand
-                args=( "${args[@]:0:$((i+1))}" "--dry-run=client" "${args[@]:$((i+1))}" )
+                args=( "\${args[@]:0:\$((i+1))}" "--dry-run=client" "\${args[@]:\$((i+1))}" )
                 break
                 ;;
             esac
           done
-          exec /usr/local/bin/kubectl "${args[@]}"
+          exec "$REAL_KUBECTL" "\${args[@]}"
           SH
           chmod +x "$SHIM_DIR/kubectl"
           export PATH="$SHIM_DIR:$PATH"
@@ -344,11 +347,16 @@ jobs:
           HEAD_SEAL: ${{ steps.head.outputs.head_seal }}
         run: |
           {
-            echo "✅ Agent Service Control — park-gate verified."
-            echo "🜁∀ — Ledger policy: NO_GROWTH (contents: read)"
-            echo "🔒 Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED"
-            echo "🔐 hash_algo: sha3_256 (FIPS 202)"
-            echo "🎛  Invariants: replicas=0 · BIND=127.0.0.1 · DUAL_ASGI=127.0.0.1:8024 · FILLED=false"
-            echo "📍 Head at run: ${HEAD_INDEX:-0}"
-            echo "🔗 Head seal: ${HEAD_SEAL:-<none>}"
+            echo "### Agent Service Control"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| role | park-gate |"
+            echo "| ledger_policy | NO_GROWTH |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| head_index | ${HEAD_INDEX:-0} |"
+            echo "| head_seal | ${HEAD_SEAL:-<none>} |"
+            echo "| invariants | replicas=0 · BIND=127.0.0.1 · DUAL_ASGI=127.0.0.1:8024 · FILLED=false |"
+            echo ""
+            echo "Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
