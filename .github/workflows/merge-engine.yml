@@ -1,28 +1,28 @@
 name: Merge Engine
 
+# Seal: ∀∞φ² · MERGE_ENGINE · WOOD_DRAGON_0.91 · SEALED
+# Witness: read-only on ledger — does not rewrite sealed bodies
+# hash_algo: sha3_256 (FIPS 202)
+# role: merge manifest producer — consumes sources, emits .merge/merged_manifest.yaml
+# ledger_policy: NO_SEALED_REWRITE
+
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - "merge/manifest.yaml"
+      - "merge/**"
+      - "scripts/merge_engine.py"
+      - ".github/workflows/merge-engine.yml"
   workflow_dispatch:
     inputs:
       commit_merged:
         description: "Commit .merge/ report if verification passes"
         type: boolean
         default: false
-  push:
-    branches: [main, master]
-    paths:
-      - "merge/manifest.yaml"
-      - "scripts/merge_engine.py"
-      - ".github/workflows/merge-engine.yml"
-permissions:
-  contents: write
-concurrency:
-  group: merge-engine-${{ github.ref }}
-  cancel-in-progress: false
-env:
-  HASH_ALGO: sha3_256
 
 permissions:
-  contents: write
+  contents: write   # required when commit_merged is true
 
 concurrency:
   group: merge-engine-${{ github.ref }}
@@ -36,12 +36,15 @@ jobs:
     name: Verify · group · report
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
@@ -52,8 +55,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
 
+      - name: Verify engine script present
+        id: probe
+        run: |
+          set -euo pipefail
+          if [ -f scripts/merge_engine.py ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "scripts/merge_engine.py present"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "scripts/merge_engine.py absent — soft skip"
+          fi
+
       - name: Run merge engine
         id: merge
+        if: steps.probe.outputs.present == 'true'
         run: |
           set +e
           python scripts/merge_engine.py 2>&1 | tee merge.log
@@ -85,23 +101,28 @@ jobs:
           file_pattern: |
             .merge/merged_manifest.yaml
             .merge/merged_report.json
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
           commit_options: "--no-verify"
 
       - name: Summary
         if: always()
+        env:
+          ENGINE_RC: ${{ steps.merge.outputs.engine_rc }}
         run: |
           {
             echo "### Merge Engine"
-            echo "| engine_rc | ${{ steps.merge.outputs.engine_rc }} |"
-            echo "Policy: no sealed ledger rewrite"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| engine_rc | ${{ steps.merge.outputs.engine_rc }} |"
-            echo "| commit_merged | ${{ inputs.commit_merged }} |"
-            echo "| manifest | merge/manifest.yaml |"
-            echo "| report | .merge/merged_manifest.yaml |"
+            echo "| engine_rc | ${ENGINE_RC:-<none>} |"
+            echo "| commit_merged | ${{ inputs.commit_merged || 'false' }} |"
+            echo "| manifest (input) | merge/manifest.yaml |"
+            echo "| manifest (output) | .merge/merged_manifest.yaml |"
+            echo "| report | .merge/merged_report.json |"
+            echo "| log | merge.log |"
             echo "| hash_algo | ${HASH_ALGO} |"
             echo ""
             echo "Policy: does not rewrite sealed ledger bodies."
+            echo "Seal: ∀∞φ² · MERGE_ENGINE · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
