@@ -13,6 +13,13 @@ on:
       - "merge/manifest.yaml"
       - "scripts/merge_engine.py"
       - ".github/workflows/merge-engine.yml"
+permissions:
+  contents: write
+concurrency:
+  group: merge-engine-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  HASH_ALGO: sha3_256
 
 permissions:
   contents: write
@@ -85,6 +92,8 @@ jobs:
         run: |
           {
             echo "### Merge Engine"
+            echo "| engine_rc | ${{ steps.merge.outputs.engine_rc }} |"
+            echo "Policy: no sealed ledger rewrite"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"

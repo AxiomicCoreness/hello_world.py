@@ -42,6 +42,7 @@ entries:
   - { path: .github/workflows/sovereign-python-package.yml, role: workflow, ledger: null,  policy: NO_LEDGER_WRITE }
   - { path: .github/workflows/argo_ci.yml,              role: workflow, ledger: 8924,      policy: WRITE_VIA_SEAL }
   - { path: .github/workflows/cd-combinator.yml,        role: workflow, ledger: 8926,      policy: WRITE_VIA_SEAL }
+  - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
 
   # group: composite-actions
   - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
