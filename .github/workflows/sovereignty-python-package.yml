@@ -126,10 +126,25 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml
 
+      - name: Probe tests/ presence
+        id: tests_probe
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(tests/test_*.py tests/*_test.py)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "no test files present — soft pass"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "test files present: ${#files[@]}"
+          fi
+
       - name: pytest skip-clean
+        if: steps.tests_probe.outputs.present == 'true'
         run: |
           set +e
-          pytest -q --tb=line -k "not integration"
+          python -m pytest -q --tb=line -k "not integration"
           rc=$?
           set -e
           if [ "$rc" -eq 5 ]; then
@@ -199,4 +214,5 @@ jobs:
             echo "- Policy: NO_LEDGER_WRITE"
             echo "- Headers probe: soft unless \`SOFT_HEADERS=0\`"
             echo "- Summary file: \`ledger/9233.yaml\` (job-local only)"
+          } >> "$GITHUB_STEP_SUMMARY"
           } >> "$GITHUB_STEP_SUMMARY"
