@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-merge_engine.py — consolidate a manifest of tracked files.
-
-Reads  merge/manifest.yaml
-Writes .merge/merged_manifest.yaml
-       .merge/merged_report.json
-
-Verification:
-  - every file present on disk has its SHA3-256 computed
-  - every file marked role=ledger is parsed as YAML
-  - every file marked immutable=true is byte-identical to HEAD IF it
-    is present in HEAD; newly added immutable files are not violations
-  - conflicts detected when two entries share a ledger index
-  - missing files reported but not fatal
-"""
+# merge_engine.py — consolidate a manifest of tracked files.
+#
+# Reads  merge/manifest.yaml
+# Writes .merge/merged_manifest.yaml
+#        .merge/merged_report.json
+#
+# Verification:
+#   - every file present on disk has its SHA3-256 computed
+#   - every file marked role=ledger is parsed as YAML
+#   - every file marked immutable=true is byte-identical to HEAD IF it
+#     is present in HEAD; newly added immutable files are not violations
+#   - conflicts detected when two entries share a ledger index
+#   - missing files reported but not fatal
 from __future__ import annotations
 
 import hashlib
