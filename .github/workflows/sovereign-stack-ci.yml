@@ -45,6 +45,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Install deps
         run: |
           set -euo pipefail
@@ -54,6 +55,7 @@ jobs:
           fi
           python -m pip install --quiet \
             fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2 httpx
+
       - name: Import app
         id: import
         run: |
@@ -65,6 +67,7 @@ jobs:
           fi
           python -c "from app.main import app; print('app import ok', app.title, app.version)"
           echo "skipped=false" >> "$GITHUB_OUTPUT"
+
       - name: Route smoke (TestClient)
         if: steps.import.outputs.skipped != 'true'
         run: |
@@ -93,6 +96,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Compile check
         run: |
           set -euo pipefail
@@ -101,6 +105,7 @@ jobs:
             exit 0
           fi
           python -m py_compile mcp/port380_mcp.py
+
       - name: Full --check-config JSON contract
         run: |
           set -euo pipefail
@@ -116,8 +121,10 @@ jobs:
           required = {"bind", "port", "url", "surface", "namespace", "legacy_404_hard", "ok"}
           missing = required - set(plan)
           assert not missing, missing
+          print("check-config ok")
           print("check-config contract ok", sorted(plan))
           PY
+
       - name: Live probe /healthz
         run: |
           set -euo pipefail
@@ -129,7 +136,7 @@ jobs:
           pid=$!
           trap 'kill $pid 2>/dev/null || true' EXIT
           for i in $(seq 1 20); do
-            if curl -sf "http://127.0.0.1:${MCP_PORT}/healthz" >/tmp/mcp_body; then
+            if curl -sf "http://127.0.0.1:${MCP_PORT}/healthz" > /tmp/mcp_body; then
               cat /tmp/mcp_body
               echo
               exit 0
@@ -149,7 +156,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --quiet pyyaml
-      - name: Validate k8s/**/*.yaml (multi-doc safe)
+
+      - name: Validate k8s (multi-doc safe)
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -157,15 +165,12 @@ jobs:
           import yaml
           files = sorted(Path("k8s").rglob("*.yaml")) + sorted(Path("k8s").rglob("*.yml"))
           if not files:
-              print("no k8s yaml — soft skip")
+              print("k8s yaml absent — soft skip")
               raise SystemExit(0)
-          n = 0
           for f in files:
-              text = f.read_text(encoding="utf-8", errors="replace")
-              docs = list(yaml.safe_load_all(text))
-              n += len([d for d in docs if d is not None])
-              print(f"ok {f} ({len(docs)} doc(s))")
-          print(f"✅ validated {len(files)} files, {n} documents")
+              list(yaml.safe_load_all(f.read_text(encoding="utf-8", errors="replace")))
+              print("ok", f)
+          print("validated", len(files))
           PY
 
   kubernetes:
@@ -178,6 +183,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --quiet pyyaml
+
       - name: Validate kubernetes/**/*.yaml (multi-doc safe)
         run: |
           set -euo pipefail
@@ -216,7 +222,6 @@ jobs:
           set -euo pipefail
           {
             echo "## Sovereign Stack CI"
-            echo ""
             echo "| Job | Result |"
             echo "|-----|--------|"
             echo "| app | ${APP} |"

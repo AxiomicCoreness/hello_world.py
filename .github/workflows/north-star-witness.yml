@@ -34,94 +34,38 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
-
-      - name: Resolve latest ledger entry by entry_index
-        id: latest
+      - name: Soft verify + hard sealed set
         run: |
           set -euo pipefail
-          LATEST=$(python - <<'PY'
-          import pathlib, yaml
-          best = (None, None)
-          for p in pathlib.Path("ledger").glob("*.yaml"):
-              try:
-                  d = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-                  idx = d.get("entry_index")
-                  if isinstance(idx, int) and (best[0] is None or idx > best[0]):
-                      best = (idx, p)
-              except Exception:
-                  pass
-          print(best[1] if best[1] else "")
-          PY
-          )
-          if [ -z "$LATEST" ]; then
-            echo "⚠️ no ledger entries with an integer entry_index — soft skip"
-            echo "latest=" >> "$GITHUB_OUTPUT"
+          if [ ! -f .github/scripts/verify_ledger.py ]; then
+            echo "verify_ledger.py absent — soft skip"
             exit 0
           fi
-          echo "Latest ledger: $LATEST"
-          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
-
-      - name: Emit — latest ledger digests
-        if: steps.latest.outputs.latest != ''
-        run: |
-          set -euo pipefail
-          if [ -f .github/scripts/verify_ledger.py ]; then
-            python .github/scripts/verify_ledger.py --emit "${{ steps.latest.outputs.latest }}"
-          else
-            echo "⚠️ verify_ledger.py absent — soft skip emit"
-          fi
-
-      - name: Soft verify — all ledger entries (warn only)
-        run: |
-          set -euo pipefail
           shopt -s nullglob
           entries=(ledger/*.yaml)
-          if [ ${#entries[@]} -eq 0 ]; then
-            echo "⚠️ no ledger entries present — soft skip"
-            exit 0
-          fi
-          if [ ! -f .github/scripts/verify_ledger.py ]; then
-            echo "⚠️ verify_ledger.py absent — soft skip"
-            exit 0
-          fi
-          python .github/scripts/verify_ledger.py --soft "${entries[@]}" \
-            || echo "⚠️ soft verify returned non-zero (informational only)"
-
-      - name: Hard verify — sealed set
-        run: |
-          set -euo pipefail
-          if [ ! -f .github/scripts/verify_ledger.py ]; then
-            echo "⚠️ verify_ledger.py absent — soft skip hard set"
-            exit 0
+          if [ ${#entries[@]} -gt 0 ]; then
+            python .github/scripts/verify_ledger.py --soft "${entries[@]}" || true
           fi
           fail=0
-          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml \
-                   ledger/9244.yaml ledger/9245.yaml; do
+          for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml ledger/9244.yaml ledger/9245.yaml; do
             if [ -f "$f" ]; then
-              if ! python .github/scripts/verify_ledger.py --hard "$f"; then
-                echo "❌ hard verify failed: $f"
-                fail=1
-              fi
-            else
-              echo "⚠️ $f missing — soft skip"
+              python .github/scripts/verify_ledger.py --hard "$f" || fail=1
             fi
           done
+          [ "$fail" -eq 0 ]
+      - name: Scoped vocabulary guard
           if [ -f ledger/9241.yaml ]; then
             if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
               echo "❌ hard verify failed: ledger/9241.yaml"
@@ -141,44 +85,34 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-
           SCOPED = [
               Path("docs/COSMIC_ALIGNMENT_POLICY.md"),
               Path(".github/workflows/deepseek-cd.yml"),
               Path("ledger/9238.yaml"),
               Path("ledger/9244.yaml"),
           ]
-
           POLICY_TOKENS = ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove")
-
           for p in SCOPED:
               if not p.exists():
                   if p.name == "deepseek-cd.yml":
                       print(f"soft skip absent {p}")
                       continue
                   raise SystemExit(f"FAIL: required scoped path missing: {p}")
-
               text = p.read_text(encoding="utf-8")
-
               if p.name == "COSMIC_ALIGNMENT_POLICY.md":
                   for tok in POLICY_TOKENS:
                       if tok not in text:
                           raise SystemExit(f"FAIL: {p} missing token {tok!r}")
-                  print(f"✅ scoped OK {p} (policy tokens)")
-
+                  print(f"OK {p} policy")
               elif p.suffix in (".yaml", ".yml"):
                   if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
-                      raise SystemExit(f"FAIL: {p} missing cosmic_alignment marker")
-                  print(f"✅ scoped OK {p} (cosmic_alignment)")
-
+                      raise SystemExit(f"FAIL: {p} missing cosmic_alignment")
+                  print(f"OK {p} cosmic_alignment")
                   if p.name == "deepseek-cd.yml":
                       if "North Star" not in text and "71.975" not in text:
-                          raise SystemExit(f"FAIL: {p} missing North Star markers")
-                      print(f"✅ scoped OK {p} (North Star markers)")
-
+                          raise SystemExit(f"FAIL: {p} missing North Star")
               else:
-                  raise SystemExit(f"FAIL: {p} has no check defined")
-
+                  raise SystemExit(f"FAIL: {p} no check")
           vpath = Path(".github/scripts/verify_ledger.py")
           if vpath.exists():
               src = vpath.read_text(encoding="utf-8")
@@ -186,6 +120,9 @@ jobs:
               assert "PHASE_LOCK_DEG = 202.6" in src
               assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src
               assert 'DELTA = "b^2-4ac"' in src
+              assert 'DELTA = "b²"' not in src
+              assert "DELTA = 'b²'" not in src
+              print("OK constants")
               # Docs may mention Unicode b² as rejected; only forbid it as DELTA value.
               assert 'DELTA = "b²"' not in src
               assert "DELTA = 'b²'" not in src
@@ -195,12 +132,12 @@ jobs:
           PY
 
   witness:
-    name: North Star · witness summary
     needs: verify
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     steps:
+      - run: |
+          echo "verify=${{ needs.verify.result }}" >> "$GITHUB_STEP_SUMMARY"
       - name: Emit witness summary
         env:
           VERIFY_RESULT: ${{ needs.verify.result }}
