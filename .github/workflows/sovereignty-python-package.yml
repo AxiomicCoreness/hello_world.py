@@ -1,11 +1,22 @@
 name: Sovereign Python Package
 
+# Read-only package lane. Parses ledger 8979 and 9233, probes headers on
+# port380_mcp.py (or mcp/port380_mcp.py), runs the pytest matrix across
+# Python 3.10–3.12, then reports. Does not write a ledger entry.
+#
+# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# ledger_policy: NO_LEDGER_WRITE
+# behaviour:
+#   - headers probe is informational by default; set SOFT_HEADERS=0 to hard-fail
+#   - pytest is soft by default (rc=5 = no tests = pass); set STRICT_PYTEST=1 to hard-fail
+
 on:
   push:
     branches: [main, master, deepseek]
     paths:
       - ".github/workflows/sovereignty-python-package.yml"
       - "port380_mcp.py"
+      - "mcp/port380_mcp.py"
       - "**.py"
   pull_request:
     branches: [main, master]
@@ -18,86 +29,116 @@ concurrency:
   group: sovereignty-python-package-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  HASH_ALGO: sha3_256
+  SOFT_HEADERS: "1"
+  STRICT_PYTEST: "0"
+
 jobs:
   verify-integrity:
+    name: Verify integrity · headers · ledger parse
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - run: |
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml cryptography
-      - name: headers source probe
+
+      - name: Headers source probe
+        env:
+          SOFT_HEADERS: ${{ env.SOFT_HEADERS }}
         run: |
           python3 - <<'PY'
+          import os, sys
           from pathlib import Path
-          import sys, os
+
           candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
           p = next((c for c in candidates if c.exists()), None)
           if p is None:
               print("port380_mcp.py absent — skip")
               sys.exit(0)
+
           content = p.read_text(encoding="utf-8", errors="replace")
-          required = ["Content-Security-Policy", "Strict-Transport-Security", "X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy"]
+          required = [
+              "Content-Security-Policy",
+              "Strict-Transport-Security",
+              "X-Content-Type-Options",
+              "X-Frame-Options",
+              "Referrer-Policy",
+              "Permissions-Policy",
+          ]
           missing = [h for h in required if h not in content]
-          if missing and os.environ.get("SOFT_HEADERS", "1") == "0":
+
+          soft = os.environ.get("SOFT_HEADERS", "1") != "0"
+
+          if missing and not soft:
+              print(f"missing headers in {p}: {missing}", file=sys.stderr)
               sys.exit(1)
-          print("headers probe done", missing or "ok")
+
           if missing:
-              print(f"missing headers in {p}: {missing}")
-              if os.environ.get("SOFT_HEADERS", "1") == "0":
-                  sys.exit(1)
-              print("SOFT_HEADERS=1 — informational only")
+              print(f"⚠️ missing headers in {p}: {missing} (SOFT_HEADERS=1 — informational)")
               sys.exit(0)
-          print(f"headers present in {p}")
+
+          print(f"✅ headers present in {p}")
           PY
-      - name: ledger yaml parse 8979 + 9233
+
+      - name: Ledger YAML parse 8979 + 9233
         run: |
           python3 - <<'PY'
           from pathlib import Path
           try:
               import yaml
           except ImportError:
+              print("pyyaml absent — parse skipped")
               raise SystemExit(0)
+
           for rel in ("ledger/8979.yaml", "ledger/9233.yaml"):
               p = Path(rel)
               if not p.exists():
-                  print(rel, "absent — skipped")
+                  print(f"{rel} absent — skipped")
                   continue
               data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-              print(rel, "parsed", data.get("event"), data.get("status"))
+              print(f"{rel} parsed event={data.get('event')!r} status={data.get('status')!r}")
           PY
 
   build:
+    name: Build · Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: verify-integrity
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - run: |
-          python -m pip install --upgrade pip
-          python -m pip install --quiet pytest pyyaml
-      - name: pytest soft
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml
+
       - name: Probe tests/ presence
         id: tests_probe
         run: |
@@ -111,53 +152,67 @@ jobs:
             echo "present=true" >> "$GITHUB_OUTPUT"
             echo "test files present: ${#files[@]}"
           fi
-      - name: pytest skip-clean
+
+      - name: Pytest (soft by default)
         if: steps.tests_probe.outputs.present == 'true'
+        env:
+          STRICT_PYTEST: ${{ env.STRICT_PYTEST }}
         run: |
           set +e
           python -m pytest -q --tb=line -k "not integration"
           rc=$?
           set -e
-          if [ "$rc" -eq 5 ]; then exit 0; fi
-          if [ "$rc" -ne 0 ]; then
-            echo "pytest rc=$rc soft (STRICT_PYTEST=1 to hard-fail)"
-            [ "${STRICT_PYTEST:-0}" = "1" ] && exit "$rc"
+
+          # pytest rc=5 means "no tests collected" — treat as pass.
+          if [ "$rc" -eq 5 ]; then
+            echo "pytest rc=5 (no tests collected) — pass"
             exit 0
           fi
+
           if [ "$rc" -ne 0 ]; then
-            echo "pytest rc=$rc — soft pass (set STRICT_PYTEST=1 to hard-fail)"
-            [ "${STRICT_PYTEST:-0}" = "1" ] && exit "$rc"
+            if [ "${STRICT_PYTEST}" = "1" ]; then
+              echo "pytest rc=$rc — hard fail (STRICT_PYTEST=1)"
+              exit "$rc"
+            fi
+            echo "pytest rc=$rc — soft pass (STRICT_PYTEST=0)"
             exit 0
           fi
+
           echo "pytest passed"
 
   federate:
+    name: Offline federate
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: build
     if: github.event_name == 'push'
     steps:
-      - run: echo offline
-      - uses: actions/checkout@v4
-      - run: echo "provider=offline"
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Offline federate
+        run: |
+          echo "provider=offline"
 
   summary:
+    name: Summary
     runs-on: ubuntu-latest
     needs: [verify-integrity, build, federate]
     if: always()
     steps:
-      - run: |
-          echo "| verify | ${{ needs.verify-integrity.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| build | ${{ needs.build.result }} |" >> "$GITHUB_STEP_SUMMARY"
       - name: Summary
-        if: always()
         run: |
           {
             echo "### Sovereign Python Package"
+            echo ""
             echo "| Job | Result |"
             echo "|-----|--------|"
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| build | ${{ needs.build.result }} |"
             echo "| federate | ${{ needs.federate.result }} |"
-            echo "- Headers: soft unless SOFT_HEADERS=0"
-            echo "- Pytest: soft unless STRICT_PYTEST=1"
+            echo ""
+            echo "- hash_algo: ${HASH_ALGO} (FIPS 202)"
+            echo "- ledger_policy: NO_LEDGER_WRITE"
+            echo "- headers probe: soft unless \`SOFT_HEADERS=0\`"
+            echo "- pytest: soft unless \`STRICT_PYTEST=1\` (rc=5 = no tests = pass)"
           } >> "$GITHUB_STEP_SUMMARY"
