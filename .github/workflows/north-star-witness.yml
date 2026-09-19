@@ -123,7 +123,6 @@ jobs:
             fi
           done
           if [ -f ledger/9241.yaml ]; then
-            echo "9241 present — hard verify"
             if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
               echo "❌ hard verify failed: ledger/9241.yaml"
               fail=1
@@ -187,7 +186,9 @@ jobs:
               assert "PHASE_LOCK_DEG = 202.6" in src
               assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src
               assert 'DELTA = "b^2-4ac"' in src
-              assert "b²" not in src
+              # Docs may mention Unicode b² as rejected; only forbid it as DELTA value.
+              assert 'DELTA = "b²"' not in src
+              assert "DELTA = 'b²'" not in src
               print("✅ North Star constants + scoped vocabulary intact")
           else:
               print("⚠️ verify_ledger.py absent — constant assertions soft-skipped")
@@ -222,9 +223,6 @@ jobs:
               echo "✅ Verify job passed — ledger chain and scoped alignment intact."
             else
               echo "❌ Verify job result: ${VERIFY_RESULT}."
-              echo ""
-              echo "Witness records the outcome but does not fail independently."
-              echo "The verify job is the sole gate."
             fi
             echo ""
             echo "Seal: ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · WITNESSED"
