@@ -1,0 +1,22 @@
+# Section IV genesis — headless service
+apiVersion: v1
+kind: Service
+metadata:
+  name: argo-sink
+  namespace: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+    mcp.garden/filled: "false"
+  annotations:
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+spec:
+  clusterIP: None
+  selector:
+    app: argo-sink
+  ports:
+    - name: sink
+      port: 8024
+      targetPort: 8024
+      protocol: TCP

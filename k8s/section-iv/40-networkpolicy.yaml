@@ -1,0 +1,23 @@
+# Section IV genesis — deny-by-default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: argo-sink-netpol
+  namespace: garden-argo-sink
+  labels:
+    garden.section: "iv"
+    garden.genesis_ledger: "9195"
+spec:
+  podSelector:
+    matchLabels:
+      app: argo-sink
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8024
+  egress: []
