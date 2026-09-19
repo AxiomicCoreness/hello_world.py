@@ -1,24 +1,29 @@
 # Branch policy
 
-## Active triggers (extended set)
+## Active
 
-| Branch | Role |
-|--------|------|
-| `main` | Default. Full CI on push/PR. |
-| `master` | Parallel mirror / legacy default. Same CI when present. |
-| `deepseek` | Named agent lane. Fires when the branch exists. |
-| `grok` | Named agent lane. Fires when the branch exists. |
-| `mistral` | Named agent lane. Fires when the branch exists. |
+| Branch | Role | Default |
+|--------|------|---------|
+| `main` | default; all merges land here | yes |
+| `master` | mirror; kept in sync with main | no |
 
-## Workflows
+## Reserved
 
-- `north-star-witness.yml` — push: all five; PR: `main`, `master`
-- `sovereignty-python-package.yml` — push: all five; PR: `main`, `master`
-- `sovereign-stack-ci.yml` — push: all five; PR: `main`, `master`
+| Branch | Role | Status |
+|--------|------|--------|
+| `deepseek` | reserved; fires only if branch exists | inactive until created |
+| `grok` | reserved; fires only if branch exists | inactive until created |
+| `mistral` | reserved; fires only if branch exists | inactive until created |
 
-Missing branches in the list do not fail CI; GitHub does not schedule jobs for absent refs.
+## Trigger surface
 
-## Policy
+- `north-star-witness.yml`, `sovereignty-python-package.yml`, `sovereign-stack-ci.yml` — push: `[main, master, deepseek, grok, mistral]`; PR: `[main, master]`
+- `merge-engine.yml` — push: `[main, master]`
 
-- **Extend, do not delete `master`** unless a separate explicit command says so.
-- Creating `deepseek` / `grok` / `mistral` is optional; names are reserved in triggers.
+## CD combinator chain
+
+`cd-combinator-argo-rollout.yml` fires on `workflow_run` for workflow **name** `Master Equation Integration Test` (exact string match, not filename).
+
+## Cost note
+
+Keeping `main` and `master` in sync doubles job volume. Merge engine verifies digests only; does not rewrite sealed ledgers.
