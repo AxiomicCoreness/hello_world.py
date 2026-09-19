@@ -93,53 +93,53 @@ jobs:
           import re, sys, yaml
           from pathlib import Path
 
-          # AST-shape discipline:
-          # 1. Every ledger/*.yaml is parsed with yaml.safe_load.
-          # 2. The parsed result MUST be a mapping (dict) to be a
-          #    candidate entry. Anything else — str, list, int, None,
-          #    bool — is recorded as a skip.
-          # 3. The mapping MUST carry an integer entry_index to be a
-          #    candidate for the head. Anything else is a skip.
-          # 4. Non-mapping and non-candidate files are reported on
-          #    stderr so the run log shows what was ignored, without
-          #    contaminating GITHUB_OUTPUT.
+          # Paradox-token safe: do not coerce timestamp-shaped strings
+          # (e.g. "October 39, 2025") into datetime — keep them as str.
+          class NoTimestampSafeLoader(yaml.SafeLoader):
+              pass
 
-          entries = sorted(Path("ledger").glob("*.yaml"))
+          NoTimestampSafeLoader.yaml_implicit_resolvers = {
+              k: [(tag, regexp) for tag, regexp in v
+                  if tag != "tag:yaml.org,2002:timestamp"]
+              for k, v in yaml.SafeLoader.yaml_implicit_resolvers.items()
+          }
+
+          def safe_load_ledger(text):
+              return yaml.load(text, Loader=NoTimestampSafeLoader)
+
+          # AST-shape discipline:
+          # 1. Parse with NoTimestampSafeLoader.
+          # 2. Result MUST be a mapping to be a candidate.
+          # 3. Mapping MUST carry integer entry_index.
+          # 4. Skips go to stderr; GITHUB_OUTPUT stays clean.
+
           heads = []
           skipped = []
-
-          for p in entries:
+          for p in sorted(Path("ledger").glob("*.yaml")):
               try:
                   raw = p.read_text(encoding="utf-8")
               except OSError as e:
                   skipped.append(f"{p}: read error: {e}")
                   continue
-
               try:
-                  data = yaml.safe_load(raw)
+                  data = safe_load_ledger(raw)
               except yaml.YAMLError as e:
                   skipped.append(f"{p}: yaml parse error: {e}")
                   continue
-
-              # None from an empty file → treat as a skip, not a crash.
               if data is None:
                   skipped.append(f"{p}: empty document")
                   continue
-
-              # The critical guard: refuse to call .get on a non-mapping.
               if not isinstance(data, dict):
                   skipped.append(
                       f"{p}: top-level is {type(data).__name__}, not mapping"
                   )
                   continue
-
               idx = data.get("entry_index")
               if not isinstance(idx, int):
                   skipped.append(
                       f"{p}: entry_index is {type(idx).__name__}, not int"
                   )
                   continue
-
               heads.append((idx, p, data))
 
           if not heads:
@@ -147,8 +147,7 @@ jobs:
               print("head_seal=")
           else:
               idx, p, data = max(heads, key=lambda t: t[0])
-              seal = str(data.get("seal", ""))
-              m = re.search(r"([0-9a-fA-F]{64})", seal)
+              m = re.search(r"([0-9a-fA-F]{64})", str(data.get("seal", "")))
               terminal = m.group(1).lower() if m else ""
               print(f"head_index={idx}")
               print(f"head_seal={terminal}")
