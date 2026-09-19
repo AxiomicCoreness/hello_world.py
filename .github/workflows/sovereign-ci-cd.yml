@@ -36,21 +36,38 @@ name: Sovereign CI/CD
 # on the port380_mcp.py header check. The file contains the Unicode
 # seal glyph ∀∞φ²; locale-dependent reads are fragile across runners.
 #
-# Line-count accounting (473 raw → this file):
-#   raw conflicted file .................................. 473
-#     – conflict markers (4 trios) ........................ 12
-#     – duplicate worker-hook job (both branches) ......... 55
-#     – duplicate synthesis job (both branches) ........... 27
-#     – deepseek seal (embedded test matrix) .............. 15
-#     + merge-rationale header (this block) ............... 38
-#     + legacy preservation block (deepseek verbatim) .... 118
-#     – blank-line asymmetries from union ................. 36
-#     = resolved file .................................... ~484
+# ─────────────────────────────────────────────────────────────────
+# FIXES APPLIED — 2026-09-19
+# ─────────────────────────────────────────────────────────────────
+# Fix A — `name: Sovereign CI/CD` restored. The raw conflicted file
+#         had the rationale comment as its first content; without a
+#         `name:` key the workflow is unnamed in the Actions UI.
+#
+# Fix B — GARDEN_SECRET removed from workflow-level `env:`. The
+#         `secrets` context is not available at that scope. Any step
+#         that needs the secret declares it in its own `env:`.
+#
+# Fix C — `if: env.MCP_URL != ''` on the synthesis live-probe step
+#         replaced by an in-shell empty-check. `env` is readable in
+#         `if:` but the value here derives from `vars` + fallback,
+#         and the shell check is unambiguous.
+#
+# Fix D — `synthesis` live-probe `curl` wrapped with `--max-time 15`
+#         and `-sS` so a hung endpoint does not consume the job
+#         timeout.
+#
+# Fix E — `worker-hook` install step and `verify-integrity` install
+#         step use `python -m pip` rather than bare `pip`. Matches
+#         the runner's provisioned interpreter in every case.
+#
+# Fix F — ledger/8977.yaml written by the seal job is job-local; the
+#         summary states this explicitly so a reader does not expect
+#         the file to be committed.
 # ─────────────────────────────────────────────────────────────────
 
 on:
   push:
-    branches: [main, feat/*, deepseek, deepseek-ci]
+    branches: [main, "feat/*", deepseek, deepseek-ci]
     paths:
       - "**.py"
       - "requirements*.txt"
@@ -93,11 +110,13 @@ concurrency:
 
 env:
   MCP_URL: ${{ vars.MCP_URL || 'http://127.0.0.1:380' }}
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
   NORTH_STAR: H6VSH2
   PHASE_LOCK: "202.6"
   DUAL_ASGI: "127.0.0.1:8024"
   LIGHTNING_IMPACT_HZ: "6.49"
+  # GARDEN_SECRET is NOT declared here — the secrets context is not
+  # available at workflow-level env. Steps that need it declare it
+  # locally (see `oidc-federation` and `worker-hook` below).
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -108,62 +127,67 @@ jobs:
     name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.11
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install deps
-        run: pip install --quiet cryptography pyyaml
+        run: |
+          python -m pip install --quiet cryptography pyyaml
 
       # ACTIVE IMPLEMENTATION — from branch `deepseek`.
       # Names the eight required headers explicitly so the reader
       # can see the boundary without running the workflow.
       - name: Verify ledger 8976 (soft)
         run: |
-          python -c "
-          import yaml, sys, os
-          path = 'ledger/8976.yaml'
+          python - <<'PY'
+          import os, sys, yaml
+          path = "ledger/8976.yaml"
           if not os.path.exists(path):
-              print('⚠️ ledger/8976.yaml not found — skipping')
+              print("⚠️ ledger/8976.yaml not found — skipping")
               sys.exit(0)
-          with open(path, encoding='utf-8') as f:
+          with open(path, encoding="utf-8") as f:
               yaml.safe_load(f)
-          print('✅ Ledger 8976 loaded')
-          "
+          print("✅ Ledger 8976 loaded")
+          PY
 
       - name: Verify security headers in source
         run: |
-          python -c "
+          python - <<'PY'
           import sys
           from pathlib import Path
-          p = Path('port380_mcp.py')
+          p = Path("port380_mcp.py")
           if not p.exists():
-              print('⚠️ port380_mcp.py missing — soft-skip')
+              print("⚠️ port380_mcp.py missing — soft-skip")
               sys.exit(0)
-          content = p.read_text(encoding='utf-8')
+          content = p.read_text(encoding="utf-8")
           required = [
-              'CORSMiddleware',
-              'SecurityHeadersMiddleware',
-              'Content-Security-Policy',
-              'Strict-Transport-Security',
-              'X-Content-Type-Options',
-              'X-Frame-Options',
-              'Referrer-Policy',
-              'Permissions-Policy',
+              "CORSMiddleware",
+              "SecurityHeadersMiddleware",
+              "Content-Security-Policy",
+              "Strict-Transport-Security",
+              "X-Content-Type-Options",
+              "X-Frame-Options",
+              "Referrer-Policy",
+              "Permissions-Policy",
           ]
           missing = [h for h in required if h not in content]
           if missing:
-              print('⚠️ Missing header markers (soft):', ', '.join(missing))
+              print("⚠️ Missing header markers (soft):", ", ".join(missing))
               sys.exit(0)
-          print('✅ All security headers present')
-          "
+          print("✅ All security headers present")
+          PY
 
   # ──────────────────────────────────────────────────────────────
   # 1. Test matrix — from branch `main`
   # ──────────────────────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
+    name: Test · Python ${{ matrix.python-version }}
     timeout-minutes: 15
     needs: verify-integrity
     strategy:
@@ -171,24 +195,30 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements-ci.txt ]; then pip install -r requirements-ci.txt; fi
-          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
-          pip install cryptography pyyaml requests flake8 pytest || true
+          if [ -f requirements-ci.txt ]; then python -m pip install -r requirements-ci.txt; fi
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt || true; fi
+          python -m pip install cryptography pyyaml requests flake8 pytest || true
+
       - name: Lint with flake8
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
+
       - name: Run pytest
         run: |
           pytest -q --tb=line || pytest tests -q --tb=line || echo "pytest soft"
+
       - name: DeepSeek adapter smoke
         run: |
           PYTHONPATH=. python -c "print('deepseek smoke soft')"
@@ -196,11 +226,17 @@ jobs:
   # ──────────────────────────────────────────────────────────────
   # 2. OIDC federation — inline dispatch (from `main`)
   #    Option C: no local uses:; dispatch sibling by name at runtime.
+  #    Runs only on manual dispatch with a non-offline provider.
   # ──────────────────────────────────────────────────────────────
   oidc-federation:
+    name: OIDC federation · ${{ github.event.inputs.oidc_provider || 'offline' }}
     runs-on: ubuntu-latest
     needs: test
-    if: success() && github.event_name == 'workflow_dispatch' && github.event.inputs.oidc_provider != '' && github.event.inputs.oidc_provider != 'offline'
+    if: |
+      success()
+      && github.event_name == 'workflow_dispatch'
+      && github.event.inputs.oidc_provider != ''
+      && github.event.inputs.oidc_provider != 'offline'
     permissions:
       contents: read
       actions: write
@@ -235,6 +271,7 @@ jobs:
             echo "oidc-cloud-providers.yml absent — soft skip"
             echo "run_id=" >> "$GITHUB_OUTPUT"
           fi
+
       - name: Wait for dispatched federation (best-effort)
         if: steps.dispatch.outputs.run_id != ''
         env:
@@ -247,8 +284,11 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────
   # 3. Seal ledger 8977 — from branch `main`
+  #    Job-local write only; the file is not committed and not
+  #    uploaded. The policy is NO_LEDGER_WRITE.
   # ──────────────────────────────────────────────────────────────
   seal:
+    name: Seal · Sovereign CI/CD (Entry 8977)
     runs-on: ubuntu-latest
     needs: [verify-integrity, test]
     if: always()
@@ -257,7 +297,7 @@ jobs:
       - name: Write job-local ledger/8977.yaml
         run: |
           mkdir -p ledger
-          cat > ledger/8977.yaml << 'EOF'
+          cat > ledger/8977.yaml <<'EOF'
           entry_index: 8977
           event: /sovereign_cicd_run
           status: SUCCESS
@@ -267,17 +307,32 @@ jobs:
           witness: "8976 → 8977 — UNBROKEN"
           EOF
           echo "Ledger entry 8977 written (job workspace only)."
+
       - name: Summary
         if: always()
+        env:
+          VERIFY_RESULT: ${{ needs.verify-integrity.result }}
+          TEST_RESULT: ${{ needs.test.result }}
         run: |
-          echo "Sovereign CI/CD seal job finished." >> "$GITHUB_STEP_SUMMARY"
-          echo "Witness: 8976 → 8977 — UNBROKEN" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Sovereign CI/CD (Entry 8977)"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| verify-integrity | ${VERIFY_RESULT} |"
+            echo "| test | ${TEST_RESULT} |"
+            echo "| ledger file | job-local only (not committed) |"
+            echo "| witness | 8976 → 8977 — UNBROKEN |"
+            echo ""
+            echo "Seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ──────────────────────────────────────────────────────────────
   # 4. Worker hooks — matrix of five named workers
-  #    (present on both branches; one copy kept)
+  #    Present on both branches; one copy kept.
   # ──────────────────────────────────────────────────────────────
   worker-hook:
+    name: Worker · ${{ matrix.worker.name }}
     runs-on: ubuntu-latest
     needs: [seal]
     if: always()
@@ -297,13 +352,18 @@ jobs:
           - name: north-star
             description: "H6VSH2 North Star alignment worker"
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install worker deps
-        run: pip install --quiet requests pyyaml || true
+        run: |
+          python -m pip install --quiet requests pyyaml || true
+
       - name: Run ${{ matrix.worker.name }} hook
         id: worker
         env:
@@ -322,6 +382,7 @@ jobs:
             echo "No worker script — built-in"
             python -c "import os; print('Worker', os.environ.get('WORKER_NAME'), 'executed'); print('north_star', os.environ.get('NORTH_STAR'), 'phase', os.environ.get('PHASE_LOCK'), 'lightning_hz', os.environ.get('LIGHTNING_IMPACT_HZ', '6.49'), 'chessboard', 64)"
           fi
+
       - name: Record worker hook status
         if: always()
         run: |
@@ -332,6 +393,7 @@ jobs:
             echo "timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             echo "seal: ∀∞φ² · WORKER_HOOK_${{ matrix.worker.name }} · SEALED"
           } > ".worker-hooks/${{ matrix.worker.name }}.log"
+
       - name: Upload worker hook logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -339,11 +401,13 @@ jobs:
           name: worker-hook-${{ matrix.worker.name }}-${{ github.run_id }}
           path: .worker-hooks/${{ matrix.worker.name }}.log
           retention-days: 14
+          if-no-files-found: warn
 
   # ──────────────────────────────────────────────────────────────
   # 5. Final synthesis — from branch `deepseek` (verbose form)
   # ──────────────────────────────────────────────────────────────
   synthesis:
+    name: Final synthesis
     runs-on: ubuntu-latest
     needs: [worker-hook]
     if: always()
@@ -352,17 +416,21 @@ jobs:
       - name: Verify all worker hooks completed
         run: |
           echo "FINAL SYNTHESIS — All worker hooks complete"
+
       - name: Verify live headers
-        if: env.MCP_URL != ''
         env:
           MCP_URL: ${{ env.MCP_URL }}
         run: |
           set +e
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "MCP_URL not set — soft skip"
+            exit 0
+          fi
           echo "Checking live headers from $MCP_URL"
-          HEADERS=$(curl -s -I -X GET "$MCP_URL/health")
+          HEADERS=$(curl -sS -I -X GET --max-time 15 "$MCP_URL/health" 2>/dev/null)
           status=$?
           if [ $status -ne 0 ] || [ -z "$HEADERS" ]; then
-            echo "⚠️ Could not reach $MCP_URL — skipping"
+            echo "Could not reach $MCP_URL — skipping"
             exit 0
           fi
           echo "$HEADERS"
@@ -416,7 +484,7 @@ jobs:
 #          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
 #      - name: Run pytest
 #        run: |
-#          pytest -q --tb=line || pytest tests -q --tb=line || echo "⚠️ pytest had failures (non-fatal)"
+#          pytest -q --tb=line || pytest tests -q --tb=line || echo "pytest had failures (non-fatal)"
 #      - name: DeepSeek adapter smoke
 #        run: |
 #          PYTHONPATH=. python -c "
@@ -424,9 +492,9 @@ jobs:
 #              from quantum.deepseek_mesh.dsh_adapter import probe, complete
 #              p = probe()
 #              r = complete('ci', prefer='offline')
-#              print('✅ DeepSeek offline passed:', p.get('modes'), r.mode)
+#              print('DeepSeek offline passed:', p.get('modes'), r.mode)
 #          except ImportError:
-#              print('⚠️ quantum.deepseek_mesh not installed — skipping')
+#              print('quantum.deepseek_mesh not installed — skipping')
 #          "
 #      - name: Upload logs
 #        if: always()
@@ -466,12 +534,12 @@ jobs:
 #          seal: "∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED"
 #          witness: "8976 → 8977 — UNBROKEN"
 #          EOF
-#          echo "📋 Ledger entry 8977 written (job workspace only)."
+#          echo "Ledger entry 8977 written (job workspace only)."
 #      - name: Summary
 #        if: always()
 #        run: |
-#          echo "✅ Sovereign CI/CD seal job finished." >> "$GITHUB_STEP_SUMMARY"
-#          echo "🔗 Witness: 8976 → 8977 — UNBROKEN" >> "$GITHUB_STEP_SUMMARY"
+#          echo "Sovereign CI/CD seal job finished." >> "$GITHUB_STEP_SUMMARY"
+#          echo "Witness: 8976 → 8977 — UNBROKEN" >> "$GITHUB_STEP_SUMMARY"
 #
 #  worker-hook:
 #    runs-on: ubuntu-latest
@@ -507,17 +575,17 @@ jobs:
 #          NORTH_STAR: ${{ env.NORTH_STAR }}
 #          PHASE_LOCK: ${{ env.PHASE_LOCK }}
 #        run: |
-#          echo "🔷 WORKER HOOK — ${{ matrix.worker.name }}"
-#          echo "📝 Description: ${{ matrix.worker.description }}"
+#          echo "WORKER HOOK — ${{ matrix.worker.name }}"
+#          echo "Description: ${{ matrix.worker.description }}"
 #          WORKER_SCRIPT="scripts/workers/${WORKER_NAME}.py"
 #          if [ -f "$WORKER_SCRIPT" ]; then
-#            echo "✅ Found worker script: $WORKER_SCRIPT"
+#            echo "Found worker script: $WORKER_SCRIPT"
 #            python "$WORKER_SCRIPT"
 #          else
-#            echo "⚠️ No worker script found — using built-in"
+#            echo "No worker script found — using built-in"
 #            python -c "
 #            import os
-#            print('✅ Worker', os.environ.get('WORKER_NAME'), 'executed')
+#            print('Worker', os.environ.get('WORKER_NAME'), 'executed')
 #            print('north_star', os.environ.get('NORTH_STAR'), 'phase', os.environ.get('PHASE_LOCK'))
 #            "
 #          fi
@@ -547,18 +615,18 @@ jobs:
 #    steps:
 #      - name: Verify all worker hooks completed
 #        run: |
-#          echo "🔷 FINAL SYNTHESIS — All worker hooks complete"
+#          echo "FINAL SYNTHESIS — All worker hooks complete"
 #      - name: Verify live headers
 #        if: env.MCP_URL != ''
 #        env:
 #          MCP_URL: ${{ env.MCP_URL }}
 #        run: |
 #          set +e
-#          echo "🌐 Checking live headers from $MCP_URL"
+#          echo "Checking live headers from $MCP_URL"
 #          HEADERS=$(curl -s -I -X GET "$MCP_URL/health")
 #          status=$?
 #          if [ $status -ne 0 ] || [ -z "$HEADERS" ]; then
-#            echo "⚠️ Could not reach $MCP_URL — skipping"
+#            echo "Could not reach $MCP_URL — skipping"
 #            exit 0
 #          fi
 #          echo "$HEADERS"
