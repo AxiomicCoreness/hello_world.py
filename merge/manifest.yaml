@@ -1,0 +1,88 @@
+# merge/manifest.yaml — 66+ tracked entries (verify-only; no sealed body rewrite)
+version: 1
+hash_algo: sha3_256
+generated_by: merge-engine
+entries:
+  # group: workflows
+  - { path: .github/workflows/deepseek_ci_secrets.yml,  role: workflow, ledger: 8833,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/static.yml,               role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/agent-service-control.yml, role: workflow, ledger: null,     policy: NO_GROWTH }
+  - { path: .github/workflows/wood-dragon-dispatch.yml, role: workflow, ledger: 9007,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/debug-environment.yml,    role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/sovereignty-python-package.yml, role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/sovereign-pulse.yml,      role: workflow, ledger: 8989,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/multibody-toi.yml,        role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/oidc-cloud-providers.yml, role: workflow, ledger: 8979,      policy: WRITE_VIA_SEAL, soft: true }
+  - { path: .github/workflows/oidc-handover-380.yml,    role: workflow, ledger: 8970,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/python-package-ci-correction.yml, role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/sovereign_cicd.yml,       role: workflow, ledger: 8977,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/quantum_reality_engine_510510.yml, role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/sovereign-core-sidecar.yml, role: workflow, ledger: null,    policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/e10_hyperbolic_pytest.yml, role: workflow, ledger: 8974,     policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/generate_frb_bridge.yml,  role: workflow, ledger: 8975,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/master_equation_integration.yml, role: workflow, ledger: 8976, policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/gravastar-long-horizon.yml, role: workflow, ledger: 9070,    policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/mtls-cert-lifecycle.yml,  role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/mtls-cert-rotation.yml,   role: workflow, ledger: 8819,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/md-scalar-matrix.yml,     role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/dual-ci-venv.yml,         role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/fastmcp-ci.yml,           role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/fastmcp-pythonide-baseline.yml, role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/garden-surgery.yml,       role: workflow, ledger: null,      policy: WRITE_VIA_SELF_WRITE }
+  - { path: .github/workflows/singularity_stream_ci.yml, role: workflow, ledger: 8923,     policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/symplectic-status-generation.yml, role: workflow, ledger: 8984, policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/workload_em005_smoke.yml, role: workflow, ledger: 8987,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/validate_three_file_contract.yml, role: workflow, ledger: 8986, policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/deployment-test-8981.yml, role: workflow, ledger: 8985,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/north-star-witness.yml,   role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/python-package.yml,       role: workflow, ledger: 8980,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/witness-chain-sqlite.yml, role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/create-static.yml,        role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/verify-ledger.yml,        role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/sovereign-python-package.yml, role: workflow, ledger: null,  policy: NO_LEDGER_WRITE }
+  - { path: .github/workflows/argo_ci.yml,              role: workflow, ledger: 8924,      policy: WRITE_VIA_SEAL }
+  - { path: .github/workflows/cd-combinator.yml,        role: workflow, ledger: 8926,      policy: WRITE_VIA_SEAL }
+
+  # group: composite-actions
+  - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
+
+  # group: scripts
+  - { path: .github/scripts/verify_ledger.py,           role: verifier }
+  - { path: .github/scripts/witness_chain_sqlite.py,    role: mirror }
+  - { path: scripts/ledger_math_ci.py,                  role: verifier }
+  - { path: scripts/witness_chain_sqlite.py,            role: mirror }
+  - { path: scripts/test_deployment_8981.py,            role: test }
+  - { path: ci_cd_key_rotator.py,                       role: rotator }
+  - { path: port380_mcp.py,                             role: boundary }
+
+  # group: documentation
+  - { path: docs/BRANCHES.md,                           role: doc }
+  - { path: docs/frb_bridge_tolerance.md,               role: doc }
+  - { path: docs/section_iii_accrued.md,                role: doc }
+  - { path: docs/section_v_cross_branch.md,             role: doc }
+  - { path: docs/fusion_architecture.md,                role: doc }
+
+  # group: immutable-ledger
+  - { path: ledger/0000.yaml,                           role: ledger, immutable: true }
+  - { path: ledger/517.yaml,                            role: ledger, immutable: true }
+  - { path: ledger/518.yaml,                            role: ledger, immutable: true }
+  - { path: ledger/8923.yaml,                           role: ledger, immutable: true }
+  - { path: ledger/8979.yaml,                           role: ledger, immutable: true }
+  - { path: ledger/8980.yaml,                           role: ledger, immutable: true }
+  - { path: ledger/9183.yaml,                           role: ledger, immutable: true }
+  - { path: ledger/510510.yaml,                         role: ledger, immutable: true }
+
+  # group: current-ledger
+  - { path: ledger/9233.yaml,                           role: ledger }
+  - { path: ledger/9234.yaml,                           role: ledger }
+  - { path: ledger/9235.yaml,                           role: ledger }
+  - { path: ledger/9236.yaml,                           role: ledger }
+
+  # group: misc
+  - { path: fastMCP/gearbox.py,                         role: module }
+
+  # corrected append
+  - { path: scripts/merge_engine.py,                    role: verifier }
+  - { path: .github/workflows/merge-engine.yml,         role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
+  - { path: app/routes/tts.py,                          role: module }
+  - { path: app/routes/vision_tts.py,                   role: module }
