@@ -33,7 +33,6 @@ jobs:
     name: North Star · verify ledger + scoped alignment
     runs-on: ubuntu-latest
     timeout-minutes: 8
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -71,7 +70,7 @@ jobs:
           PY
           )
           if [ -z "$LATEST" ]; then
-            echo "⚠️ no ledger entries with an integer entry_index — soft skip"
+            echo "no ledger entries with an integer entry_index — soft skip"
             echo "latest=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -85,7 +84,7 @@ jobs:
           if [ -f .github/scripts/verify_ledger.py ]; then
             python .github/scripts/verify_ledger.py --emit "${{ steps.latest.outputs.latest }}"
           else
-            echo "⚠️ verify_ledger.py absent — soft skip emit"
+            echo "verify_ledger.py absent — soft skip emit"
           fi
 
       - name: Soft verify — all ledger entries (warn only)
@@ -94,21 +93,21 @@ jobs:
           shopt -s nullglob
           entries=(ledger/*.yaml)
           if [ ${#entries[@]} -eq 0 ]; then
-            echo "⚠️ no ledger entries present — soft skip"
+            echo "no ledger entries present — soft skip"
             exit 0
           fi
           if [ ! -f .github/scripts/verify_ledger.py ]; then
-            echo "⚠️ verify_ledger.py absent — soft skip"
+            echo "verify_ledger.py absent — soft skip"
             exit 0
           fi
           python .github/scripts/verify_ledger.py --soft "${entries[@]}" \
-            || echo "⚠️ soft verify returned non-zero (informational only)"
+            || echo "soft verify returned non-zero (informational only)"
 
       - name: Hard verify — sealed set
         run: |
           set -euo pipefail
           if [ ! -f .github/scripts/verify_ledger.py ]; then
-            echo "⚠️ verify_ledger.py absent — soft skip hard set"
+            echo "verify_ledger.py absent — soft skip hard set"
             exit 0
           fi
           fail=0
@@ -116,11 +115,11 @@ jobs:
                    ledger/9244.yaml ledger/9245.yaml; do
             if [ -f "$f" ]; then
               if ! python .github/scripts/verify_ledger.py --hard "$f"; then
-                echo "❌ hard verify failed: $f"
+                echo "hard verify failed: $f"
                 fail=1
               fi
             else
-              echo "⚠️ $f missing — soft skip"
+              echo "$f missing — soft skip"
             fi
           done
           if [ -f ledger/9241.yaml ]; then
@@ -130,10 +129,10 @@ jobs:
             fi
           fi
           if [ "$fail" -ne 0 ]; then
-            echo "❌ one or more sealed-set entries failed hard verification"
+            echo "one or more sealed-set entries failed hard verification"
             exit 1
           fi
-          echo "✅ sealed set verified"
+          echo "sealed set verified"
 
       - name: Scoped vocabulary guard (fail-closed, path-limited)
         run: |
@@ -150,9 +149,18 @@ jobs:
 
           POLICY_TOKENS = ("φ", "LUMERIS", "STARFIRE", "Eternal Now", "Never remove")
 
+          # Files whose absence is a soft skip. Files not in this set are
+          # hard requirements. Absence of a hard-required file fails the
+          # job; absence of a soft-skip file prints a message and continues.
+          SOFT_SKIP_ABSENT = {
+              "deepseek-cd.yml",
+              "9238.yaml",
+              "9244.yaml",
+          }
+
           for p in SCOPED:
               if not p.exists():
-                  if p.name == "deepseek-cd.yml":
+                  if p.name in SOFT_SKIP_ABSENT:
                       print(f"soft skip absent {p}")
                       continue
                   raise SystemExit(f"FAIL: required scoped path missing: {p}")
@@ -163,17 +171,17 @@ jobs:
                   for tok in POLICY_TOKENS:
                       if tok not in text:
                           raise SystemExit(f"FAIL: {p} missing token {tok!r}")
-                  print(f"✅ scoped OK {p} (policy tokens)")
+                  print(f"scoped OK {p} (policy tokens)")
 
               elif p.suffix in (".yaml", ".yml"):
                   if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
                       raise SystemExit(f"FAIL: {p} missing cosmic_alignment marker")
-                  print(f"✅ scoped OK {p} (cosmic_alignment)")
+                  print(f"scoped OK {p} (cosmic_alignment)")
 
                   if p.name == "deepseek-cd.yml":
                       if "North Star" not in text and "71.975" not in text:
                           raise SystemExit(f"FAIL: {p} missing North Star markers")
-                      print(f"✅ scoped OK {p} (North Star markers)")
+                      print(f"scoped OK {p} (North Star markers)")
 
               else:
                   raise SystemExit(f"FAIL: {p} has no check defined")
@@ -186,9 +194,9 @@ jobs:
               assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src
               assert 'DELTA = "b^2-4ac"' in src
               assert "b²" not in src
-              print("✅ North Star constants + scoped vocabulary intact")
+              print("North Star constants + scoped vocabulary intact")
           else:
-              print("⚠️ verify_ledger.py absent — constant assertions soft-skipped")
+              print("verify_ledger.py absent — constant assertions soft-skipped")
           PY
 
   witness:
@@ -197,7 +205,6 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3
-
     steps:
       - name: Emit witness summary
         env:
@@ -218,9 +225,9 @@ jobs:
             echo "| ref | ${{ github.ref }} |"
             echo ""
             if [ "${VERIFY_RESULT}" = "success" ]; then
-              echo "✅ Verify job passed."
+              echo "Verify job passed."
             else
-              echo "❌ Verify job result: ${VERIFY_RESULT}."
+              echo "Verify job result: ${VERIFY_RESULT}."
             fi
             echo ""
             echo "Seal: ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · WITNESSED"
