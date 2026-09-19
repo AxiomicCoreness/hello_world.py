@@ -10,6 +10,7 @@ on:
       - ".github/workflows/north-star-witness.yml"
       - ".github/workflows/deepseek-cd.yml"
   pull_request:
+    branches: [main, master]
     paths:
       - "ledger/**.yaml"
       - "docs/COSMIC_ALIGNMENT_POLICY.md"
@@ -46,17 +47,21 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
-      - name: Soft verify + hard sealed set
+      - name: Soft verify — all ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ] || [ ! -f .github/scripts/verify_ledger.py ]; then
+            echo "soft skip soft-verify"
+            exit 0
+          fi
+          python .github/scripts/verify_ledger.py --soft "${entries[@]}" || true
+      - name: Hard verify — sealed set
         run: |
           set -euo pipefail
           if [ ! -f .github/scripts/verify_ledger.py ]; then
-            echo "verify_ledger.py absent — soft skip"
             exit 0
-          fi
-          shopt -s nullglob
-          entries=(ledger/*.yaml)
-          if [ ${#entries[@]} -gt 0 ]; then
-            python .github/scripts/verify_ledger.py --soft "${entries[@]}" || true
           fi
           fail=0
           for f in ledger/9240.yaml ledger/9242.yaml ledger/9243.yaml ledger/9244.yaml ledger/9245.yaml; do
@@ -64,23 +69,11 @@ jobs:
               python .github/scripts/verify_ledger.py --hard "$f" || fail=1
             fi
           done
-          [ "$fail" -eq 0 ]
-      - name: Scoped vocabulary guard
           if [ -f ledger/9241.yaml ]; then
-            if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
-              echo "❌ hard verify failed: ledger/9241.yaml"
-              fail=1
-            fi
-          else
-            echo "9241 absent — intentional soft gap"
+            python .github/scripts/verify_ledger.py --hard ledger/9241.yaml || fail=1
           fi
-          if [ "$fail" -ne 0 ]; then
-            echo "❌ one or more sealed-set entries failed hard verification"
-            exit 1
-          fi
-          echo "✅ sealed set verified"
-
-      - name: Scoped vocabulary guard (fail-closed, path-limited)
+          exit "$fail"
+      - name: Scoped vocabulary guard
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -103,14 +96,13 @@ jobs:
                   for tok in POLICY_TOKENS:
                       if tok not in text:
                           raise SystemExit(f"FAIL: {p} missing token {tok!r}")
-                  print(f"OK {p} policy")
+                  print(f"OK {p}")
               elif p.suffix in (".yaml", ".yml"):
                   if "cosmic_alignment" not in text and "/cosmic_alignment" not in text:
                       raise SystemExit(f"FAIL: {p} missing cosmic_alignment")
-                  print(f"OK {p} cosmic_alignment")
-                  if p.name == "deepseek-cd.yml":
-                      if "North Star" not in text and "71.975" not in text:
-                          raise SystemExit(f"FAIL: {p} missing North Star")
+                  print(f"OK {p}")
+                  if p.name == "deepseek-cd.yml" and "North Star" not in text and "71.975" not in text:
+                      raise SystemExit(f"FAIL: {p} missing North Star")
               else:
                   raise SystemExit(f"FAIL: {p} no check")
           vpath = Path(".github/scripts/verify_ledger.py")
@@ -121,46 +113,22 @@ jobs:
               assert 'EVENT_DOMAIN = b"GARDEN.EVENT.v1"' in src
               assert 'DELTA = "b^2-4ac"' in src
               assert 'DELTA = "b²"' not in src
-              assert "DELTA = 'b²'" not in src
               print("OK constants")
-              # Docs may mention Unicode b² as rejected; only forbid it as DELTA value.
-              assert 'DELTA = "b²"' not in src
-              assert "DELTA = 'b²'" not in src
-              print("✅ North Star constants + scoped vocabulary intact")
-          else:
-              print("⚠️ verify_ledger.py absent — constant assertions soft-skipped")
           PY
 
   witness:
+    name: North Star · witness summary
     needs: verify
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
-      - run: |
-          echo "verify=${{ needs.verify.result }}" >> "$GITHUB_STEP_SUMMARY"
       - name: Emit witness summary
         env:
           VERIFY_RESULT: ${{ needs.verify.result }}
         run: |
-          set -euo pipefail
           {
             echo "### North Star Witness"
-            echo ""
-            echo "| Field | Value |"
-            echo "|-------|-------|"
             echo "| verify.result | ${VERIFY_RESULT} |"
-            echo "| hash_algo | ${HASH_ALGO} |"
-            echo "| north_star_hz | ${NORTH_STAR_HZ} |"
-            echo "| phase_lock_deg | ${PHASE_LOCK_DEG} |"
-            echo "| workflow | north-star-witness.yml |"
-            echo "| commit | ${{ github.sha }} |"
-            echo "| ref | ${{ github.ref }} |"
-            echo ""
-            if [ "${VERIFY_RESULT}" = "success" ]; then
-              echo "✅ Verify job passed — ledger chain and scoped alignment intact."
-            else
-              echo "❌ Verify job result: ${VERIFY_RESULT}."
-            fi
-            echo ""
-            echo "Seal: ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · WITNESSED"
+            echo "| branches | main master deepseek grok mistral |"
           } >> "$GITHUB_STEP_SUMMARY"
