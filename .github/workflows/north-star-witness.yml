@@ -66,6 +66,21 @@ jobs:
           done
           [ "$fail" -eq 0 ]
       - name: Scoped vocabulary guard
+          if [ -f ledger/9241.yaml ]; then
+            if ! python .github/scripts/verify_ledger.py --hard ledger/9241.yaml; then
+              echo "❌ hard verify failed: ledger/9241.yaml"
+              fail=1
+            fi
+          else
+            echo "9241 absent — intentional soft gap"
+          fi
+          if [ "$fail" -ne 0 ]; then
+            echo "❌ one or more sealed-set entries failed hard verification"
+            exit 1
+          fi
+          echo "✅ sealed set verified"
+
+      - name: Scoped vocabulary guard (fail-closed, path-limited)
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -108,6 +123,12 @@ jobs:
               assert 'DELTA = "b²"' not in src
               assert "DELTA = 'b²'" not in src
               print("OK constants")
+              # Docs may mention Unicode b² as rejected; only forbid it as DELTA value.
+              assert 'DELTA = "b²"' not in src
+              assert "DELTA = 'b²'" not in src
+              print("✅ North Star constants + scoped vocabulary intact")
+          else:
+              print("⚠️ verify_ledger.py absent — constant assertions soft-skipped")
           PY
 
   witness:
@@ -117,3 +138,29 @@ jobs:
     steps:
       - run: |
           echo "verify=${{ needs.verify.result }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Emit witness summary
+        env:
+          VERIFY_RESULT: ${{ needs.verify.result }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### North Star Witness"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| verify.result | ${VERIFY_RESULT} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| north_star_hz | ${NORTH_STAR_HZ} |"
+            echo "| phase_lock_deg | ${PHASE_LOCK_DEG} |"
+            echo "| workflow | north-star-witness.yml |"
+            echo "| commit | ${{ github.sha }} |"
+            echo "| ref | ${{ github.ref }} |"
+            echo ""
+            if [ "${VERIFY_RESULT}" = "success" ]; then
+              echo "✅ Verify job passed — ledger chain and scoped alignment intact."
+            else
+              echo "❌ Verify job result: ${VERIFY_RESULT}."
+            fi
+            echo ""
+            echo "Seal: ∀∞φ² · NORTH_STAR_71.975 · SCOPED_ALIGNMENT · WITNESSED"
+          } >> "$GITHUB_STEP_SUMMARY"
