@@ -1,3 +1,22 @@
+name: debug-environment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    env:
+      HASH_ALGO: sha3_256
+      LEDGER_DIR: ledger
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Debug environment
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
