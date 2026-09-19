@@ -3,6 +3,7 @@ version: 1
 hash_algo: sha3_256
 generated_by: merge-engine
 entries:
+  # group: workflows
   - { path: .github/workflows/deepseek_ci_secrets.yml,  role: workflow, ledger: 8833,      policy: WRITE_VIA_SEAL }
   - { path: .github/workflows/static.yml,               role: workflow, ledger: null,      policy: NO_LEDGER_WRITE }
   - { path: .github/workflows/agent-service-control.yml, role: workflow, ledger: null,     policy: NO_GROWTH }
@@ -42,6 +43,11 @@ entries:
   - { path: .github/workflows/argo_ci.yml,              role: workflow, ledger: 8924,      policy: WRITE_VIA_SEAL }
   - { path: .github/workflows/cd-combinator.yml,        role: workflow, ledger: 8926,      policy: WRITE_VIA_SEAL }
   - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
+
+  # group: composite-actions
+  - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
+
+  # group: scripts
   - { path: .github/scripts/verify_ledger.py,           role: verifier }
   - { path: .github/scripts/witness_chain_sqlite.py,    role: mirror }
   - { path: scripts/ledger_math_ci.py,                  role: verifier }
@@ -49,11 +55,15 @@ entries:
   - { path: scripts/test_deployment_8981.py,            role: test }
   - { path: ci_cd_key_rotator.py,                       role: rotator }
   - { path: port380_mcp.py,                             role: boundary }
+
+  # group: documentation
   - { path: docs/BRANCHES.md,                           role: doc }
   - { path: docs/frb_bridge_tolerance.md,               role: doc }
   - { path: docs/section_iii_accrued.md,                role: doc }
   - { path: docs/section_v_cross_branch.md,             role: doc }
   - { path: docs/fusion_architecture.md,                role: doc }
+
+  # group: immutable-ledger
   - { path: ledger/0000.yaml,                           role: ledger, immutable: true }
   - { path: ledger/517.yaml,                            role: ledger, immutable: true }
   - { path: ledger/518.yaml,                            role: ledger, immutable: true }
@@ -62,11 +72,17 @@ entries:
   - { path: ledger/8980.yaml,                           role: ledger, immutable: true }
   - { path: ledger/9183.yaml,                           role: ledger, immutable: true }
   - { path: ledger/510510.yaml,                         role: ledger, immutable: true }
+
+  # group: current-ledger
   - { path: ledger/9233.yaml,                           role: ledger }
   - { path: ledger/9234.yaml,                           role: ledger }
   - { path: ledger/9235.yaml,                           role: ledger }
   - { path: ledger/9236.yaml,                           role: ledger }
+
+  # group: misc
   - { path: fastMCP/gearbox.py,                         role: module }
+
+  # corrected append
   - { path: scripts/merge_engine.py,                    role: verifier }
   - { path: .github/workflows/merge-engine.yml,         role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
   - { path: app/routes/tts.py,                          role: module }

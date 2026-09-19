@@ -1,4 +1,5 @@
 name: Merge Engine
+
 on:
   workflow_dispatch:
     inputs:
@@ -19,6 +20,17 @@ concurrency:
   cancel-in-progress: false
 env:
   HASH_ALGO: sha3_256
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merge-engine-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+
 jobs:
   merge:
     name: Verify · group · report
@@ -28,15 +40,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
+
       - name: Run merge engine
         id: merge
         run: |
@@ -46,6 +61,7 @@ jobs:
           set -e
           echo "engine_rc=${rc}" >> "$GITHUB_OUTPUT"
           exit "${rc}"
+
       - name: Upload merged manifest
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,6 +73,20 @@ jobs:
             merge.log
           retention-days: 30
           if-no-files-found: warn
+
+      - name: Commit merged report
+        if: |
+          success()
+          && github.event_name == 'workflow_dispatch'
+          && inputs.commit_merged == true
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: merge engine report"
+          file_pattern: |
+            .merge/merged_manifest.yaml
+            .merge/merged_report.json
+          commit_options: "--no-verify"
+
       - name: Summary
         if: always()
         run: |
@@ -64,4 +94,14 @@ jobs:
             echo "### Merge Engine"
             echo "| engine_rc | ${{ steps.merge.outputs.engine_rc }} |"
             echo "Policy: no sealed ledger rewrite"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| engine_rc | ${{ steps.merge.outputs.engine_rc }} |"
+            echo "| commit_merged | ${{ inputs.commit_merged }} |"
+            echo "| manifest | merge/manifest.yaml |"
+            echo "| report | .merge/merged_manifest.yaml |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo ""
+            echo "Policy: does not rewrite sealed ledger bodies."
           } >> "$GITHUB_STEP_SUMMARY"
