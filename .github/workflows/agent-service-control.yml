@@ -93,18 +93,40 @@ jobs:
           import re, sys, yaml
           from pathlib import Path
 
+          # AST-shape discipline:
+          # 1. Every ledger/*.yaml is parsed with yaml.safe_load.
+          # 2. The parsed result MUST be a mapping (dict) to be a
+          #    candidate entry. Anything else — str, list, int, None,
+          #    bool — is recorded as a skip.
+          # 3. The mapping MUST carry an integer entry_index to be a
+          #    candidate for the head. Anything else is a skip.
+          # 4. Non-mapping and non-candidate files are reported on
+          #    stderr so the run log shows what was ignored, without
+          #    contaminating GITHUB_OUTPUT.
+
           entries = sorted(Path("ledger").glob("*.yaml"))
           heads = []
           skipped = []
 
           for p in entries:
               try:
-                  data = yaml.safe_load(p.read_text()) or {}
-              except Exception as e:
-                  skipped.append(f"{p}: parse error: {e}")
+                  raw = p.read_text(encoding="utf-8")
+              except OSError as e:
+                  skipped.append(f"{p}: read error: {e}")
                   continue
 
-              # A ledger file may not be a mapping. Skip anything else.
+              try:
+                  data = yaml.safe_load(raw)
+              except yaml.YAMLError as e:
+                  skipped.append(f"{p}: yaml parse error: {e}")
+                  continue
+
+              # None from an empty file → treat as a skip, not a crash.
+              if data is None:
+                  skipped.append(f"{p}: empty document")
+                  continue
+
+              # The critical guard: refuse to call .get on a non-mapping.
               if not isinstance(data, dict):
                   skipped.append(
                       f"{p}: top-level is {type(data).__name__}, not mapping"
@@ -112,10 +134,13 @@ jobs:
                   continue
 
               idx = data.get("entry_index")
-              if isinstance(idx, int):
-                  heads.append((idx, p, data))
-              else:
-                  skipped.append(f"{p}: no integer entry_index")
+              if not isinstance(idx, int):
+                  skipped.append(
+                      f"{p}: entry_index is {type(idx).__name__}, not int"
+                  )
+                  continue
+
+              heads.append((idx, p, data))
 
           if not heads:
               print("head_index=0")
@@ -128,8 +153,6 @@ jobs:
               print(f"head_index={idx}")
               print(f"head_seal={terminal}")
 
-          # Report skipped files on stderr so they appear in the run log
-          # without contaminating GITHUB_OUTPUT.
           for line in skipped:
               print(f"skipped: {line}", file=sys.stderr)
           PY
