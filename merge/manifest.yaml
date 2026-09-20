@@ -1,7 +1,15 @@
 # merge/manifest.yaml — tracked entries (verify-only; no sealed body rewrite)
-# Immutable digests: SHA3-256 of on-disk bytes at seal time (main, 2026-09-20).
+#
+# digest_of: file_bytes
+#   expected_sha3_256 and Merkle leaf file_digest both hash raw on-disk bytes.
+#   They are NOT GARDEN.EVENT.v1 canonical event payloads.
+#
+# Merkle root: per-run CI artifact under .merge/ (do not treat a committed
+#   root as chain authority; root changes when the present set changes).
+#
 version: 1
 hash_algo: sha3_256
+digest_of: file_bytes
 generated_by: merge-engine
 entries:
   # group: workflows
@@ -63,7 +71,8 @@ entries:
   - { path: docs/section_v_cross_branch.md,             role: doc }
   - { path: docs/fusion_architecture.md,                role: doc }
 
-  # group: immutable-ledger (expected_sha3_256 = seal-time on-disk digest)
+  # group: immutable-ledger
+  # expected_sha3_256 = full 64-hex SHA3-256(file_bytes) at seal time (main, 2026-09-20)
   - { path: ledger/0000.yaml,   role: ledger, immutable: true, expected_sha3_256: "5ac2012ff6ae05dd3bd8c9d8f6ac226be9ad1818774011edbed6091dfd3334eb" }
   - { path: ledger/517.yaml,    role: ledger, immutable: true, expected_sha3_256: "1e29af4fdaf702b944cf6341d004b9bf2b2acfc5d69b829c305d7d6955e4bfde" }
   - { path: ledger/518.yaml,    role: ledger, immutable: true, expected_sha3_256: "a6981e231fe4307b538d01ad4632a00682a8f18de8aa3383cf117b320e13e5a9" }
@@ -71,7 +80,13 @@ entries:
   - { path: ledger/8979.yaml,   role: ledger, immutable: true, expected_sha3_256: "4949c2506c620d8c3042a9ffb3da380aa17dc9d76c4064c1b9f0b4b100f46542" }
   - { path: ledger/8980.yaml,   role: ledger, immutable: true, expected_sha3_256: "c519fbf14098a8e4aa56af94dffe75a85fa96320a2c81233843dc354b1f462a1" }
   - { path: ledger/9183.yaml,   role: ledger, immutable: true, expected_sha3_256: "22d839a43e75bf5d17aee4d0f0fd2413ffac0a6024f735cf53b058550ab371cf" }
-  - { path: ledger/510510.yaml, role: ledger, immutable: true, expected_sha3_256: "a45d9e1b5927f33f2756f47d6bf2448942b25abfccb346ee3bd2015c99306e91" }
+  # series: hepta_prime — index 510510 = 2·3·5·7·11·13·17 (symbolic/sparse, not sequential 9xxx)
+  - path: ledger/510510.yaml
+    role: ledger
+    immutable: true
+    series: hepta_prime
+    series_note: "2*3*5*7*11*13*17; event /math_origin_quadratic_quadrant; not sequential ledger-order"
+    expected_sha3_256: "a45d9e1b5927f33f2756f47d6bf2448942b25abfccb346ee3bd2015c99306e91"
 
   # group: current-ledger (mutable / accrete)
   - { path: ledger/9233.yaml,                           role: ledger }
