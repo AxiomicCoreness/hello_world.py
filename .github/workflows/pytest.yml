@@ -27,7 +27,7 @@ name: Pytest · dual-gate ledger
 
 on:
   push:
-    branches: [main, "feat/*"]
+    branches: [main, "feat/*", grok-skill_tensor]
     paths:
       - "**.py"
       - "requirements*.txt"
