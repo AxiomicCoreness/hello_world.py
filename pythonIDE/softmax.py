@@ -37,6 +37,7 @@ def log_softmax(
     """Stable log-softmax: log(softmax(x))."""
     if temperature <= 0:
         raise ValueError("temperature must be > 0")
+    x = np.asarray(x, dtype=float)
     z = _stabilize(x / temperature, axis)
     return z - np.log(np.sum(np.exp(z), axis=axis, keepdims=True))
 
@@ -47,6 +48,7 @@ def softmax(
     """Stable softmax. Subtracts max along axis before exp."""
     if temperature <= 0:
         raise ValueError("temperature must be > 0")
+    x = np.asarray(x, dtype=float)
     z = _stabilize(x / temperature, axis)
     e = np.exp(z)
     return e / np.sum(e, axis=axis, keepdims=True)
@@ -65,7 +67,6 @@ def parse_array(s: str) -> np.ndarray:
     if not text:
         raise ValueError("empty input")
 
-    # Nested brackets: let json do the work.
     if text.startswith("["):
         try:
             data = json.loads(text)
@@ -76,7 +77,6 @@ def parse_array(s: str) -> np.ndarray:
             raise ValueError(f"only vectors and 2-D matrices supported, got rank {arr.ndim}")
         return arr
 
-    # Otherwise: whitespace or comma separated. Multi-line becomes a matrix.
     rows = [line for line in text.splitlines() if line.strip()]
     if len(rows) > 1:
         parsed = [
