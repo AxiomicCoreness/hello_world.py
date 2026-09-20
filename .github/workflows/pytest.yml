@@ -89,6 +89,7 @@ jobs:
 
           entries=(ledger/*.yaml)
 
+          # Soft pass over the full ledger — informational only.
           if [ ${#entries[@]} -gt 0 ]; then
             python "$VERIFIER" --soft "${entries[@]}" || true
             echo "soft ledger scan complete (${#entries[@]} files)"
@@ -96,6 +97,8 @@ jobs:
             echo "no ledger entries present — soft skip"
           fi
 
+          # Hard pass over the sealed set. Accumulate failures so one run
+          # shows the full failure set; exit non-zero only at the end.
           fail=0
           sealed_set=(
             ledger/9240.yaml
