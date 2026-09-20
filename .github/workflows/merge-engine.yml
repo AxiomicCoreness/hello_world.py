@@ -83,9 +83,9 @@ def verify_entry(e: dict) -> EntryResult:
         r.head_digest = hashlib.new(HASH_ALGO, hb).hexdigest()
         r.digest_matches_head = (r.digest == r.head_digest)
 
-    if r.immutable and r.head_digest and not r.digest_matches_head:
+    if r.immutable and e.get("expected_sha3_256") and r.digest != e["expected_sha3_256"]:
         r.immutable_ok = False
-        r.notes.append("immutable file modified vs HEAD")
+        r.notes.append("immutable file differs from recorded digest")
 
     if e["role"] == "ledger":
         try:
