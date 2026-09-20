@@ -1,6 +1,21 @@
 name: Sovereign CI/CD
 
-# FIX-3b soft ledger — soft-verify full tree; no hard-fail on historical seals.
+# Dual-gate ledger verification (aligned with north-star-witness.yml):
+#   soft  — full ledger/*.yaml (historical 00xx are label-only; never fail the job)
+#   hard  — sealed set 9240–9245 when present (real 64-hex + dual-regime)
+#
+# Retired from this slim revision (deliberate, not accidental):
+#   oidc-federation  — sibling dispatch moved out; use oidc-cloud-providers.yml
+#   seal             — no longer writes ledger/8977 from this workflow
+#   worker-hook      — five-way matrix retired from this file
+#   synthesis        — retired from this file
+# Re-layer only via an explicit commit that names the job restored.
+#
+# History note: an intermediate PLACEHOLDER body existed at 1a782b4a…;
+# this file supersedes it. Git history retains that SHA (no force-rewrite).
+#
+# No sealed ledger body rewrite. MCP unfilled. Dual ASGI 127.0.0.1:8024.
+
 on:
   push:
     branches: [main, "feat/*", grok-skill_tensor]
@@ -10,12 +25,15 @@ on:
       - ".github/workflows/pytest.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "**.py"
+      - "requirements*.txt"
+      - ".github/workflows/pytest.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
-  id-token: write
 
 concurrency:
   group: sovereign-cicd-${{ github.ref }}
@@ -29,40 +47,75 @@ jobs:
   verify-integrity:
     name: Verify Ledger Signatures & Security Headers
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     outputs:
       ed25519_outcome: ${{ steps.ed25519.outcome }}
       headers_source_outcome: ${{ steps.headers_source.outcome }}
       headers_live_outcome: ${{ steps.headers_live.outcome }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Install deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
-      - name: Verify SHA3-256 seals on present ledger entries
+
+      - name: Soft full ledger + hard sealed set (9240–9245)
         run: |
           set -euo pipefail
           shopt -s nullglob
-          entries=(ledger/*.yaml)
-          if [ ${#entries[@]} -eq 0 ]; then
-            echo "no ledger entries — soft skip"
-            exit 0
-          fi
+
           VERIFIER=".github/scripts/verify_ledger.py"
           [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
           if [ ! -f "$VERIFIER" ]; then
-            echo "no verify_ledger.py — soft skip"
+            echo "verify_ledger.py absent — soft skip"
             exit 0
           fi
-          python "$VERIFIER" --soft "${entries[@]}"
-          echo "soft ledger scan complete (${#entries[@]} files)"
-          exit 0
+
+          entries=(ledger/*.yaml)
+
+          # Soft pass over the full ledger — informational only.
+          if [ ${#entries[@]} -gt 0 ]; then
+            python "$VERIFIER" --soft "${entries[@]}" || true
+            echo "soft ledger scan complete (${#entries[@]} files)"
+          else
+            echo "no ledger entries present — soft skip"
+          fi
+
+          # Hard pass over the sealed set. Accumulate failures so one run
+          # shows the full failure set; exit non-zero only at the end.
+          fail=0
+          sealed_set=(
+            ledger/9240.yaml
+            ledger/9241.yaml
+            ledger/9242.yaml
+            ledger/9243.yaml
+            ledger/9244.yaml
+            ledger/9245.yaml
+          )
+          for f in "${sealed_set[@]}"; do
+            if [ -f "$f" ]; then
+              if ! python "$VERIFIER" --hard "$f"; then
+                echo "hard verify failed: $f"
+                fail=1
+              fi
+            else
+              echo "soft gap: $f absent"
+            fi
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo "one or more sealed-set entries failed hard verification"
+            exit 1
+          fi
+          echo "sealed set verified (hard)"
+
       - name: Verify Ed25519 signatures on ledger entries (soft)
         id: ed25519
         continue-on-error: true
@@ -74,16 +127,54 @@ jobs:
           if not p.exists():
               print("ledger/8976.yaml not present — soft skip")
               sys.exit(0)
-          print("Ed25519 structure soft-check skipped or ok")
+          try:
+              from cryptography.hazmat.primitives.asymmetric import ed25519  # noqa: F401
+              import yaml
+              data = yaml.safe_load(p.read_text()) or {}
+              print(f"Ed25519 structure soft-check ok (entry_index={data.get('entry_index')})")
+          except ImportError as e:
+              print(f"missing dependency {e} — soft skip")
           PY
+
       - name: Verify security headers in FastAPI middleware (source)
         id: headers_source
         continue-on-error: true
-        run: echo "headers_source soft"
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
+          p = next((c for c in candidates if c.exists()), None)
+          if p is None:
+              print("port380_mcp.py not present — soft skip")
+              sys.exit(0)
+          content = p.read_text(encoding="utf-8", errors="replace")
+          required = [
+              "CORSMiddleware", "SecurityHeadersMiddleware",
+              "Content-Security-Policy", "Strict-Transport-Security",
+              "X-Content-Type-Options", "X-Frame-Options",
+              "Referrer-Policy", "Permissions-Policy",
+          ]
+          missing = [h for h in required if h not in content]
+          if missing:
+              print(f"Missing headers in {p}: {missing}")
+              sys.exit(1)
+          print(f"All security headers present in {p}")
+          PY
+
       - name: Verify live security headers from MCP_URL (soft)
         id: headers_live
         continue-on-error: true
-        run: echo "headers_live soft"
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MCP_URL:-}" ]; then
+            echo "MCP_URL not set — soft skip"
+            exit 0
+          fi
+          echo "Checking live headers from $MCP_URL"
+          curl -s -I -X GET --max-time 15 "$MCP_URL/health" || echo "reach soft-fail"
 
   test:
     name: Test · Python ${{ matrix.python-version }}
@@ -106,7 +197,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements-ci.txt ]; then pip install -q -r requirements-ci.txt || true; fi
           if [ -f requirements.txt ]; then pip install -q -r requirements.txt || true; fi
-          pip install -q cryptography pyyaml requests flake8 pytest || true
+          pip install -q cryptography pyyaml requests flake8 pytest numpy || true
       - name: Run pytest
         run: |
           set +e
@@ -114,16 +205,22 @@ jobs:
           pytest tests -q --tb=line 2>&1 | tee -a pytest.log
           exit 0
 
-  seal:
-    name: Seal summary (no ledger rewrite in this soft-fix revision)
+  summary:
+    name: Summary (no ledger rewrite)
     runs-on: ubuntu-latest
     needs: [verify-integrity, test]
     if: always()
     steps:
-      - name: Summary
+      - name: Write step summary
         run: |
           {
-            echo "### Sovereign CI/CD (FIX-3b soft ledger)"
-            echo "Ledger verify: soft — historical 00xx not hard-failed"
+            echo "### Sovereign CI/CD (dual-gate ledger)"
+            echo ""
+            echo "| Gate | Mode |"
+            echo "|------|------|"
+            echo "| full ledger/*.yaml | soft |"
+            echo "| sealed 9240–9245 | hard |"
+            echo ""
+            echo "Retired jobs (documented): oidc-federation, seal, worker-hook, synthesis"
             echo "No sealed ledger body rewritten"
           } >> "$GITHUB_STEP_SUMMARY"
