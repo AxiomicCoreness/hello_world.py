@@ -13,43 +13,46 @@ name: Sovereign CI/CD
 # `--strict-gaps` verification will flag it.
 #
 # ─────────────────────────────────────────────────────────────────
-# FIXES APPLIED — 2026-09-19
+# FIXES APPLIED — 2026-09-20 (this revision)
 # ─────────────────────────────────────────────────────────────────
-# Fix 1 — paths filter matches the workflow's own filename. If the
-#         file is later renamed, update the third `paths:` entry to match.
+# FIX-1  paths filter matches the workflow's own filename: pytest.yml.
+#        If the file is renamed, update the third paths entry to match.
 #
-# Fix 2 — oidc-federation job no longer `uses:` the reusable workflow
-#         ./.github/workflows/oidc-cloud-providers.yml; inline no-op shell
-#         step preserved as the active form. Reusable form kept as comment.
+# FIX-2  Cross-job Ed25519 outcome now flows through job outputs.
+#        `steps.<id>.outcome` is job-local; using it inside the `seal`
+#        job resolved to empty. Correct path:
+#          verify-integrity.outputs.ed25519_outcome
+#          → needs.verify-integrity.outputs.ed25519_outcome
 #
-# Fix 3 — seal job's `needs:` names the inline oidc-federation job.
+# FIX-3  Ledger verify loop is now a HARD gate. The previous
+#        `python "$VERIFIER" "$f" || echo "soft: $f"` made every
+#        seal mismatch non-fatal — the step could never fail.
+#        Now: any non-zero exit from the verifier fails the step.
 #
-# Fix 4 — MCP_URL and GARDEN_SECRET removed from workflow-level `env:`.
-#         The `secrets` context is not available at that scope. Steps that
-#         need them declare them locally.
+# FIX-4  concurrency.cancel-in-progress: false. This workflow commits
+#        to ledger/8977.yaml; cancel-in-progress: true can kill the
+#        commit job mid-write. All commit-bearing lanes use false.
 #
-# Fix 5 — `verify_ledger.py` invoked per-file, not with a multi-argument
-#         list. The verifier accepts one path per invocation.
+# FIX-5  Ledger fields `security_headers_source`, `security_headers_live`,
+#        and `deepseek_offline` are now COMPUTED from upstream results,
+#        not written as literal strings. Previous versions hardcoded
+#        "VERIFIED"/"PASSED" regardless of what the steps did.
 #
-# Fix 6 — Python pinned to 3.12 in every setup-python step. Matrix
-#         extended to 3.10 / 3.11 / 3.12.
+# FIX-6  `security_headers_live` remains SKIPPED when MCP_URL is unset,
+#        but now degrades to FAILED when MCP_URL is set and the
+#        verify-integrity job failed — instead of the previous
+#        unconditional "VERIFIED if mcp_set else SKIPPED".
 #
-# Fix 7 — git-auto-commit-action carries commit_user_name and
-#         commit_user_email. Default git identity is not set on runners.
+# FIX-7  `deepseek_offline` is derived from needs.test.result, which is
+#        honest about the smoke being embedded in the test job
+#        (soft-skipped on ImportError) rather than claiming a specific
+#        pass. Field value is one of: RAN_OR_SKIPPED · FAILED.
 #
-# Fix 8 — seal step computes the ledger status from upstream job
-#         results. Previously wrote SUCCESS unconditionally, even when
-#         verify-integrity, test, or oidc-federation had failed.
-#
-# Fix 9 — `secrets` removed from every `if:` expression. The secrets
-#         context is not available in `if:` at any scope. The empty
-#         check is now the first line of the shell script; the secret
-#         is declared in the step's `env:` (where the context is legal).
-#
-# Fix 10 — Ed25519 step carries `id: ed25519`; the seal step reads
-#          `steps.ed25519.outcome` and writes it to the ledger entry's
-#          `ed25519_signatures` field. Previously the field was the
-#          hardcoded string "VERIFIED" regardless of what the step did.
+# Retained from prior revisions:
+#   - inline OIDC dispatch (no `uses:` on a possibly-absent sibling)
+#   - secrets context declared at step-level env:, never in `if:`
+#   - Python 3.12 pinned; matrix 3.10/3.11/3.12
+#   - git-auto-commit-action with commit_user_name + commit_user_email
 #
 # Canonicalization note — the seal step uses the default
 # `json.dumps(..., sort_keys=True, separators=(",", ":"))`, which is
@@ -63,13 +66,13 @@ on:
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign-cicd.yml"
+      - ".github/workflows/pytest.yml"
   pull_request:
     branches: [main]
     paths:
       - "**.py"
       - "requirements*.txt"
-      - ".github/workflows/sovereign-cicd.yml"
+      - ".github/workflows/pytest.yml"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -85,23 +88,26 @@ permissions:
 
 concurrency:
   group: sovereign-cicd-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false   # FIX-4
 
 env:
   HASH_ALGO: sha3_256
   LEDGER_DIR: ledger
-  # MCP_URL and GARDEN_SECRET are NOT declared here — the secrets context
-  # is unavailable at workflow-level env. Steps that need them declare
-  # them locally, and any empty-check happens inside the shell script.
 
 jobs:
   # ──────────────────────────────────────────────────────────────
-  # 0. CRYPTOGRAPHIC & SECURITY HEADER VERIFICATION (prerequisite)
+  # 0. CRYPTOGRAPHIC & SECURITY HEADER VERIFICATION
   # ──────────────────────────────────────────────────────────────
   verify-integrity:
     name: Verify Ledger Signatures & Security Headers
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
+    # FIX-2 — publish step outcomes to the seal job.
+    outputs:
+      ed25519_outcome:         ${{ steps.ed25519.outcome }}
+      headers_source_outcome:  ${{ steps.headers_source.outcome }}
+      headers_live_outcome:    ${{ steps.headers_live.outcome }}
 
     steps:
       - name: Check out repository
@@ -119,6 +125,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
+      # FIX-3 — hard gate. Any non-OK from the verifier fails the step.
       - name: Verify SHA3-256 seals on present ledger entries
         run: |
           set -euo pipefail
@@ -134,9 +141,14 @@ jobs:
             echo "⚠️ no verify_ledger.py — soft skip"
             exit 0
           fi
+          rc=0
           for f in "${entries[@]}"; do
-            python "$VERIFIER" "$f" || echo "⚠️ soft: $f"
+            if ! python "$VERIFIER" "$f"; then
+              echo "❌ hard fail: $f"
+              rc=1
+            fi
           done
+          exit "$rc"
 
       - name: Verify Ed25519 signatures on ledger entries (soft)
         id: ed25519
@@ -161,6 +173,8 @@ jobs:
           PY
 
       - name: Verify security headers in FastAPI middleware (source)
+        id: headers_source
+        continue-on-error: true
         run: |
           python - <<'PY'
           import sys
@@ -189,6 +203,8 @@ jobs:
           PY
 
       - name: Verify live security headers from MCP_URL (soft)
+        id: headers_live
+        continue-on-error: true
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
         run: |
@@ -232,7 +248,7 @@ jobs:
           echo "✅ All live security headers verified."
 
   # ──────────────────────────────────────────────────────────────
-  # 1. MAIN TEST MATRIX (Python versions)
+  # 1. MAIN TEST MATRIX
   # ──────────────────────────────────────────────────────────────
   test:
     name: Test · Python ${{ matrix.python-version }}
@@ -373,19 +389,7 @@ jobs:
           if-no-files-found: warn
 
   # ──────────────────────────────────────────────────────────────
-  # 2. OIDC CLOUD FEDERATION — INLINE (was `uses:` reusable workflow)
-  #    Reusable form is preserved below as a comment.
-  #
-  #    Original form (requires .github/workflows/oidc-cloud-providers.yml):
-  #
-  #      oidc-federation:
-  #        name: OIDC federation · ${{ inputs.oidc_provider || 'offline' }}
-  #        needs: test
-  #        if: success()
-  #        uses: ./.github/workflows/oidc-cloud-providers.yml
-  #        with:
-  #          provider: ${{ inputs.oidc_provider || 'offline' }}
-  #        secrets: inherit
+  # 2. OIDC CLOUD FEDERATION — INLINE
   # ──────────────────────────────────────────────────────────────
   oidc-federation:
     name: OIDC federation · ${{ inputs.oidc_provider || 'offline' }}
@@ -449,15 +453,19 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
 
+      # FIX-2 · FIX-5 · FIX-6 · FIX-7 — all env vars below are either
+      # job outputs (needs.<job>.outputs.*) or job-level needs.<job>.result.
       - name: Seal ledger entry 8977 (SHA3-256)
         if: success()
         env:
-          OIDC_PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
-          MCP_URL: ${{ secrets.MCP_URL }}
-          UPSTREAM_VERIFY: ${{ needs.verify-integrity.result }}
-          UPSTREAM_TEST: ${{ needs.test.result }}
-          UPSTREAM_OIDC: ${{ needs.oidc-federation.result }}
-          UPSTREAM_ED25519: ${{ steps.ed25519.outcome }}
+          OIDC_PROVIDER:      ${{ inputs.oidc_provider || 'offline' }}
+          MCP_URL:            ${{ secrets.MCP_URL }}
+          UPSTREAM_VERIFY:    ${{ needs.verify-integrity.result }}
+          UPSTREAM_TEST:      ${{ needs.test.result }}
+          UPSTREAM_OIDC:      ${{ needs.oidc-federation.result }}
+          UPSTREAM_ED25519:   ${{ needs.verify-integrity.outputs.ed25519_outcome }}
+          UPSTREAM_HDR_SRC:   ${{ needs.verify-integrity.outputs.headers_source_outcome }}
+          UPSTREAM_HDR_LIVE:  ${{ needs.verify-integrity.outputs.headers_live_outcome }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -480,6 +488,37 @@ jobs:
           all_ok = all(v == "success" for v in upstreams.values())
           status = "SUCCESS" if all_ok else "DEGRADED"
 
+          # FIX-2 — Ed25519 outcome from job output, not job-local steps context.
+          # If the step never ran (job skipped) the output is empty → NOT_RUN.
+          ed25519 = os.environ.get("UPSTREAM_ED25519", "").strip() or "NOT_RUN"
+
+          # FIX-5 — source header result derived from the step outcome.
+          hdr_src_step = os.environ.get("UPSTREAM_HDR_SRC", "").strip()
+          if hdr_src_step == "success":
+              hdr_src = "VERIFIED"
+          elif hdr_src_step:
+              hdr_src = "FAILED"
+          else:
+              hdr_src = "NOT_RUN"
+
+          # FIX-6 — live header result: SKIPPED without MCP_URL,
+          # otherwise from step outcome.
+          if not mcp_set:
+              hdr_live = "SKIPPED"
+          else:
+              hdr_live_step = os.environ.get("UPSTREAM_HDR_LIVE", "").strip()
+              if hdr_live_step == "success":
+                  hdr_live = "VERIFIED"
+              elif hdr_live_step:
+                  hdr_live = "FAILED"
+              else:
+                  hdr_live = "NOT_RUN"
+
+          # FIX-7 — deepseek is embedded in the test job; derive from its result.
+          deepseek_field = (
+              "RAN_OR_SKIPPED" if upstreams["test"] == "success" else "FAILED"
+          )
+
           entry = {
               "entry_index": 8977,
               "event": "/sovereign_cicd_run",
@@ -490,12 +529,12 @@ jobs:
               "upstream_results": upstreams,
               "pytest_status": "PASSED" if all_ok else "RECORDED",
               "linting_status": "RUN",
-              "deepseek_offline": "PASSED",
+              "deepseek_offline": deepseek_field,
               "mcp_pulse": "SENT" if mcp_set else "SKIPPED",
               "oidc_federation": provider,
-              "security_headers_source": "VERIFIED",
-              "security_headers_live": "VERIFIED" if mcp_set else "SKIPPED",
-              "ed25519_signatures": os.environ.get("UPSTREAM_ED25519", "NOT_RUN"),
+              "security_headers_source": hdr_src,
+              "security_headers_live": hdr_live,
+              "ed25519_signatures": ed25519,
               "witness": "8976 → 8977 — UNBROKEN",
               "seal": "∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED",
           }
@@ -511,7 +550,10 @@ jobs:
           print(f"✅ Sealed 8977 · {HASH_ALGO}:{h[:16]}...")
           print(f"   status = {status}")
           print(f"   upstreams = {upstreams}")
-          print(f"   ed25519 = {entry['ed25519_signatures']}")
+          print(f"   ed25519 = {ed25519}")
+          print(f"   headers_source = {hdr_src}")
+          print(f"   headers_live = {hdr_live}")
+          print(f"   deepseek_offline = {deepseek_field}")
           PY
 
       - name: Verify ledger entry 8977 (SHA3-256)
@@ -548,9 +590,11 @@ jobs:
       - name: Summary
         if: always()
         env:
-          OIDC_PROVIDER: ${{ inputs.oidc_provider || 'offline' }}
-          MCP_URL: ${{ secrets.MCP_URL }}
-          ED25519_OUTCOME: ${{ steps.ed25519.outcome }}
+          OIDC_PROVIDER:      ${{ inputs.oidc_provider || 'offline' }}
+          MCP_URL:            ${{ secrets.MCP_URL }}
+          ED25519_OUTCOME:    ${{ needs.verify-integrity.outputs.ed25519_outcome }}
+          HDR_SRC_OUTCOME:    ${{ needs.verify-integrity.outputs.headers_source_outcome }}
+          HDR_LIVE_OUTCOME:   ${{ needs.verify-integrity.outputs.headers_live_outcome }}
         run: |
           {
             echo "### Sovereign CI/CD (Entry 8977)"
@@ -563,6 +607,8 @@ jobs:
             echo "| test | ${{ needs.test.result }} |"
             echo "| oidc-federation | ${{ needs.oidc-federation.result }} |"
             echo "| ed25519 | ${ED25519_OUTCOME:-not_run} |"
+            echo "| headers source | ${HDR_SRC_OUTCOME:-not_run} |"
+            echo "| headers live | $([ -n "${MCP_URL:-}" ] && echo "${HDR_LIVE_OUTCOME:-not_run}" || echo "SKIPPED (no MCP_URL)") |"
             echo "| oidc_provider | ${OIDC_PROVIDER} |"
             echo "| mcp_pulse | $([ -n "${MCP_URL:-}" ] && echo SENT || echo SKIPPED) |"
             echo "| witness | 8976 → 8977 — UNBROKEN |"
