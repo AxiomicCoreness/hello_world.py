@@ -1,200 +1,166 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-scripts/verify_tree.py — directed tree integrity.
+scripts/verify_tree.py — Tree Integrity Guard
+
+Derived reading, named by Commander 2026-09-20:
+    tree       = filesystem tree
+    parent     = containing directory
+    fragment   = any `[[ref]]` line
+    root       = repo root (directory containing .git)
+
+Two derived conventions, marked so provenance is visible:
+    C1. Fragment references resolve relative to the repo root,
+        not relative to the containing file.
+    C2. Fragment syntax is `[[path]]` with optional `#anchor`,
+        matched by regex \\[\\[([^\\[]+)\\]\\].
 
 Checks:
-  1. Non-empty node set
-  2. Exactly one root (parent is null/None/absent)
-  3. Every non-root parent id exists in the node set
-  4. No cycles (DFS color: white/gray/black)
-
-Input formats (auto-detected by suffix, or --format):
-  .json  {"nodes": {"id": {"parent": null|"id", ...}, ...}}
-  .yaml  same shape under key `nodes` (requires PyYAML)
+    1. root-uniqueness   — exactly one .git directory under root
+    2. symlink-cycles    — no directory symlink cycles; no escape from root
+    3. reachability      — tautological on a filesystem tree; recorded only
+    4. fragment-refs     — every [[ref]] resolves to an existing path
 
 Exit codes:
-  0  tree is valid
-  1  one or more structural violations
-  2  file missing, unparseable, or usage error
+    0 — all checks pass
+    1 — one or more violations
+    2 — setup error (not a git repo)
 
-This script does not write ledger entries. It does not bind ports.
-Optional pythonIDE fallback for timed node attributes is out of scope
-here; see pythonIDE/symplectic_euler.py for reversible time steps.
+Ledger policy: NO_LEDGER_WRITE
+MCP: unfilled · dual ASGI 127.0.0.1:8024
 """
 from __future__ import annotations
-
-import argparse
-import json
+import os
+import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Tuple
 
-try:
-    import yaml
+FRAGMENT_RE = re.compile(r"\[\[([^\[]+)\]\]")
 
-    HAS_YAML = True
-except ImportError:
-    HAS_YAML = False
+SKIP_DIRS = {
+    ".git", "__pycache__", ".pytest_cache", ".mypy_cache",
+    "node_modules", ".venv", "venv", "env", ".tox", ".nox",
+    ".merge", ".worker-hooks",
+}
 
+SKIP_FILE_SUFFIXES = (
+    ".pyc", ".pyo", ".so", ".dylib", ".dll", ".o", ".a",
+    ".png", ".jpg", ".jpeg", ".gif", ".pdf", ".zip", ".tar", ".gz",
+)
 
-def normalize_parent(p: Any) -> Optional[str]:
-    if p is None:
-        return None
-    if isinstance(p, str) and p.strip().lower() in ("", "null", "none"):
-        return None
-    return str(p)
-
-
-def extract_nodes(doc: Any) -> Dict[str, Dict[str, Any]]:
-    """Accept {nodes: {...}} or a bare mapping of id -> node."""
-    if not isinstance(doc, dict):
-        raise ValueError("document must be a mapping")
-    if "nodes" in doc:
-        raw = doc["nodes"]
-    else:
-        raw = doc
-    if not isinstance(raw, dict):
-        raise ValueError("'nodes' must be a mapping of id -> node")
-    out: Dict[str, Dict[str, Any]] = {}
-    for nid, node in raw.items():
-        if node is None:
-            node = {}
-        if not isinstance(node, dict):
-            raise ValueError(f"node {nid!r} must be a mapping")
-        n = dict(node)
-        n["parent"] = normalize_parent(n.get("parent"))
-        out[str(nid)] = n
-    return out
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MiB — do not read larger files
 
 
-def verify_tree(nodes: Dict[str, Dict[str, Any]]) -> List[str]:
-    """Return a list of problem strings; empty means OK."""
+def find_repo_root(start: Path) -> Path:
+    p = start.resolve()
+    for candidate in [p, *p.parents]:
+        if (candidate / ".git").exists():
+            return candidate
+    raise RuntimeError(f"no .git found walking up from {start}")
+
+
+def iter_paths(root: Path):
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+        for name in dirnames + filenames:
+            yield Path(dirpath) / name
+
+
+def check_root_uniqueness(root: Path) -> Tuple[bool, str]:
+    git_dirs = [g for g in root.rglob(".git") if g.is_dir()]
+    if len(git_dirs) == 1:
+        return True, f"single root: {root}"
+    return False, f"expected 1 .git directory, found {len(git_dirs)}"
+
+
+def check_no_symlink_cycles(root: Path) -> Tuple[bool, List[str]]:
     problems: List[str] = []
-    if not nodes:
-        return ["empty tree"]
-
-    ids = set(nodes)
-    roots: List[str] = []
-
-    for nid, n in nodes.items():
-        parent = n.get("parent")
-        if parent is None:
-            roots.append(nid)
-        elif parent not in ids:
-            problems.append(f"{nid}: parent {parent!r} does not exist")
-
-    if len(roots) != 1:
-        problems.append(f"root count={len(roots)} expected 1: {roots}")
-
-    # Cycle detection: walk toward root; gray = in current path.
-    color = {i: 0 for i in ids}  # 0 white, 1 gray, 2 black
-
-    def dfs(u: str) -> None:
-        color[u] = 1
-        p = nodes[u].get("parent")
-        if p is not None and p in color:
-            if color[p] == 1:
-                problems.append(f"cycle involving {u} -> {p}")
-            elif color[p] == 0:
-                dfs(p)
-        color[u] = 2
-
-    for i in ids:
-        if color[i] == 0:
-            dfs(i)
-
-    return problems
+    for p in iter_paths(root):
+        if not p.is_symlink():
+            continue
+        try:
+            target = p.resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+            problems.append(f"dangling symlink: {p} -> {e}")
+            continue
+        try:
+            target.relative_to(root)
+        except ValueError:
+            problems.append(f"symlink escapes root: {p} -> {target}")
+    return len(problems) == 0, problems
 
 
-def load_document(path: Path, fmt: Optional[str] = None) -> Any:
-    text = path.read_text(encoding="utf-8")
-    kind = (fmt or path.suffix.lstrip(".")).lower()
-    if kind in ("yml", "yaml"):
-        if not HAS_YAML:
-            raise RuntimeError("PyYAML required for YAML input")
-        return yaml.safe_load(text)
-    if kind == "json":
-        return json.loads(text)
-    # try JSON then YAML
+def check_reachability(root: Path) -> Tuple[bool, List[str]]:
+    # Tautological on a filesystem tree — kept to record the invariant.
+    return True, []
+
+
+def check_fragments(root: Path) -> Tuple[bool, List[str]]:
+    problems: List[str] = []
+    for p in iter_paths(root):
+        if not p.is_file():
+            continue
+        if p.suffix.lower() in SKIP_FILE_SUFFIXES:
+            continue
+        try:
+            if p.stat().st_size > MAX_FILE_SIZE:
+                continue
+        except OSError:
+            continue
+        try:
+            text = p.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for m in FRAGMENT_RE.finditer(line):
+                ref = m.group(1).strip()
+                if not ref:
+                    continue
+                ref_path = ref.split("#", 1)[0].strip()
+                if not ref_path:
+                    continue
+                target = (root / ref_path).resolve()
+                if not target.exists():
+                    rel = p.relative_to(root)
+                    problems.append(f"{rel}:{lineno} -> [[{ref}]] unresolved")
+    return len(problems) == 0, problems
+
+
+def main() -> int:
     try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        if HAS_YAML:
-            return yaml.safe_load(text)
-        raise
-
-
-def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Verify directed tree integrity.")
-    ap.add_argument(
-        "path",
-        nargs="?",
-        default=None,
-        help="JSON/YAML tree file (omit for embedded smoke)",
-    )
-    ap.add_argument(
-        "--format",
-        choices=("json", "yaml", "yml"),
-        default=None,
-        help="force format",
-    )
-    ap.add_argument(
-        "--smoke",
-        action="store_true",
-        help="run built-in positive/negative cases and exit",
-    )
-    args = ap.parse_args(argv)
-
-    if args.smoke or args.path is None:
-        # Positive
-        ok = verify_tree(
-            {"a": {"parent": None}, "b": {"parent": "a"}, "c": {"parent": "b"}}
-        )
-        if ok:
-            print("FAIL smoke positive:", ok)
-            return 1
-        # Missing parent
-        bad = verify_tree({"a": {"parent": "z"}})
-        if not any("does not exist" in p for p in bad):
-            print("FAIL smoke missing-parent:", bad)
-            return 1
-        # Cycle
-        cyc = verify_tree({"a": {"parent": "b"}, "b": {"parent": "a"}})
-        if not any("cycle" in p for p in cyc):
-            print("FAIL smoke cycle:", cyc)
-            return 1
-        # Two roots
-        two = verify_tree({"a": {"parent": None}, "b": {"parent": None}})
-        if not any("root count" in p for p in two):
-            print("FAIL smoke two-roots:", two)
-            return 1
-        print("OK: verify_tree smoke (positive + 3 negatives)")
-        if args.path is None and not args.smoke:
-            return 0
-        if args.smoke and args.path is None:
-            return 0
-
-    path = Path(args.path)
-    if not path.is_file():
-        print(f"::error::{path} not found", file=sys.stderr)
+        root = find_repo_root(Path.cwd())
+    except RuntimeError as e:
+        print(f"❌ {e}", file=sys.stderr)
         return 2
 
-    try:
-        doc = load_document(path, args.format)
-        nodes = extract_nodes(doc)
-    except Exception as e:
-        print(f"::error::parse failed: {e}", file=sys.stderr)
-        return 2
+    print(f"root = {root}")
+    print()
 
-    problems = verify_tree(nodes)
-    if problems:
-        for p in problems:
-            print(f"FAIL: {p}")
-        return 1
+    ok_root, msg_root = check_root_uniqueness(root)
+    print(f"{'OK' if ok_root else 'FAIL':5} root-uniqueness       {msg_root}")
 
-    print(f"OK: tree valid ({len(nodes)} nodes, 1 root)")
-    return 0
+    ok_cycle, cycle_problems = check_no_symlink_cycles(root)
+    print(f"{'OK' if ok_cycle else 'FAIL':5} symlink-cycles        {len(cycle_problems)} problem(s)")
+    for p in cycle_problems[:20]:
+        print(f"      - {p}")
+
+    ok_reach, _ = check_reachability(root)
+    print(f"{'OK' if ok_reach else 'FAIL':5} reachability          (filesystem tautology)")
+
+    ok_frag, frag_problems = check_fragments(root)
+    print(f"{'OK' if ok_frag else 'FAIL':5} fragment-references   {len(frag_problems)} unresolved")
+    for p in frag_problems[:40]:
+        print(f"      - {p}")
+    if len(frag_problems) > 40:
+        print(f"      … and {len(frag_problems) - 40} more")
+
+    print()
+    all_ok = ok_root and ok_cycle and ok_reach and ok_frag
+    if all_ok:
+        print("✅ verify_tree: all checks pass")
+        return 0
+    print("❌ verify_tree: violations detected")
+    return 1
 
 
 if __name__ == "__main__":
