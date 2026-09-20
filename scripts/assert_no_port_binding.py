@@ -37,7 +37,8 @@ SOURCE = Path("port380_mcp.py")
 
 # Port variable names by word boundary. Matches PORT, UVICORN_PORT,
 # BIND_PORT, MY_PORT. Rejects REPORT, AIRPORT, PORTFOLIO, SUPPORT.
-PORT_NAME = re.compile(r"^(?:[A-Z][A-Z0-9_]*)?PORT(?:_[A-Z0-9_]+)?$")
+# Prefix (if present) must end with _ so REPORT does not match.
+PORT_NAME = re.compile(r"^(?:[A-Z][A-Z0-9_]*_)?PORT(?:_[A-Z0-9_]+)?$")
 
 # Socket-bind method names.
 BIND_METHODS = {"bind", "create_server"}
