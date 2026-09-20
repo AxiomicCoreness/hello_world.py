@@ -2,6 +2,7 @@ name: Merge Engine
 
 # Reads merge/manifest.yaml via scripts/merge_engine.py
 # Emits .merge/merged_manifest.yaml, merged_report.json, merkle_root.json
+# .merge/ is gitignored (per-run scratch). Artifact upload only — not committed.
 # ledger_policy: NO_SEALED_REWRITE
 
 on:
@@ -18,14 +19,9 @@ on:
       - "scripts/merge_engine.py"
       - ".github/workflows/merge-engine.yml"
   workflow_dispatch:
-    inputs:
-      commit_merged:
-        description: "Commit .merge/ artifacts on success"
-        type: boolean
-        default: false
 
 permissions:
-  contents: write  # workflow-scoped; only used by the gated commit step
+  contents: read
 
 concurrency:
   group: merge-engine-${{ github.ref }}
@@ -90,20 +86,6 @@ jobs:
             merge.log
           if-no-files-found: warn
 
-      - name: Commit .merge artifacts (dispatch only)
-        if: >
-          github.event_name == 'workflow_dispatch'
-          && inputs.commit_merged == true
-          && steps.probe.outputs.present == 'true'
-          && steps.engine.outputs.engine_rc == '0'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(merge): refresh .merge artifacts from merge-engine"
-          file_pattern: |
-            .merge/merged_manifest.yaml
-            .merge/merged_report.json
-            .merge/merkle_root.json
-
       - name: Summary
         if: always()
         run: |
@@ -114,6 +96,7 @@ jobs:
             echo "|------|-------|"
             echo "| script present | ${{ steps.probe.outputs.present }} |"
             echo "| engine_rc | ${{ steps.engine.outputs.engine_rc }} |"
+            echo "| .merge/ | gitignored — artifact upload only |"
             echo "| policy | NO_SEALED_REWRITE |"
             echo ""
             if [ -f .merge/merkle_root.json ]; then
