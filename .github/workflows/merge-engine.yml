@@ -11,6 +11,8 @@
 #   - every file marked role=ledger is parsed as YAML
 #   - every file marked immutable=true is byte-identical to HEAD IF it
 #     is present in HEAD; newly added immutable files are not violations
+#   - immutable files are also checked against expected_sha3_256 from
+#     the manifest, if present (defense in depth)
 #   - conflicts detected when two entries share a ledger index
 #   - missing files reported but not fatal
 from __future__ import annotations
@@ -83,9 +85,17 @@ def verify_entry(e: dict) -> EntryResult:
         r.head_digest = hashlib.new(HASH_ALGO, hb).hexdigest()
         r.digest_matches_head = (r.digest == r.head_digest)
 
-    if r.immutable and e.get("expected_sha3_256") and r.digest != e["expected_sha3_256"]:
-        r.immutable_ok = False
-        r.notes.append("immutable file differs from recorded digest")
+    if r.immutable:
+        # Check 1: byte-identical to HEAD, if present in HEAD.
+        # A newly added immutable file (not in HEAD) is not a violation.
+        if r.head_digest and not r.digest_matches_head:
+            r.immutable_ok = False
+            r.notes.append("immutable file differs from HEAD")
+        # Check 2: matches the digest recorded in the manifest, if present.
+        exp = e.get("expected_sha3_256")
+        if exp and r.digest != exp:
+            r.immutable_ok = False
+            r.notes.append("immutable file differs from recorded digest")
 
     if e["role"] == "ledger":
         try:
