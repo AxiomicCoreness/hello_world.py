@@ -1,18 +1,27 @@
-name: Sovereign CI/CD
+name: Pytest · dual-gate ledger
 
 # Dual-gate ledger verification (aligned with north-star-witness.yml):
 #   soft  — full ledger/*.yaml (historical 00xx are label-only; never fail the job)
 #   hard  — sealed set 9240–9245 when present (real 64-hex + dual-regime)
 #
-# Retired from this slim revision (deliberate, not accidental):
-#   oidc-federation  — sibling dispatch moved out; use oidc-cloud-providers.yml
-#   seal             — no longer writes ledger/8977 from this workflow
-#   worker-hook      — five-way matrix retired from this file
-#   synthesis        — retired from this file
-# Re-layer only via an explicit commit that names the job restored.
+# Display-name policy: this file is NOT "Sovereign CI/CD".
+# That name belongs to .github/workflows/sovereign-cicd.yml only.
 #
-# History note: an intermediate PLACEHOLDER body existed at 1a782b4a…;
-# this file supersedes it. Git history retains that SHA (no force-rewrite).
+# Who writes ledger/8977?
+#   Producer: sovereign-cicd.yml → job "seal" (job-local write; not committed).
+#   This workflow does not write 8977. Absence of a seal job here is intentional
+#   and does not create a chain gap — the producer remains sovereign-cicd.yml.
+#
+# Jobs not present in this file (deliberate slim surface):
+#   oidc-federation, seal, worker-hook, synthesis
+#   Those live on sovereign-cicd.yml. Do not re-add here without a named commit.
+#
+# History (pytest.yml only):
+#   1a782b4a…  PLACEHOLDER body (accidental slim; 617 lines removed)
+#   84356f10…  restored soft full body
+#   5e71bd74…  dual-gate (soft full + hard 9240–9245)
+#   this commit  rename display name + concurrency; document 8977 producer
+# Git history retains all SHAs (no force-rewrite).
 #
 # No sealed ledger body rewrite. MCP unfilled. Dual ASGI 127.0.0.1:8024.
 
@@ -36,7 +45,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: sovereign-cicd-${{ github.ref }}
+  group: pytest-dual-gate-${{ github.ref }}
   cancel-in-progress: false
 
 env:
@@ -80,7 +89,6 @@ jobs:
 
           entries=(ledger/*.yaml)
 
-          # Soft pass over the full ledger — informational only.
           if [ ${#entries[@]} -gt 0 ]; then
             python "$VERIFIER" --soft "${entries[@]}" || true
             echo "soft ledger scan complete (${#entries[@]} files)"
@@ -88,8 +96,6 @@ jobs:
             echo "no ledger entries present — soft skip"
           fi
 
-          # Hard pass over the sealed set. Accumulate failures so one run
-          # shows the full failure set; exit non-zero only at the end.
           fail=0
           sealed_set=(
             ledger/9240.yaml
@@ -214,13 +220,14 @@ jobs:
       - name: Write step summary
         run: |
           {
-            echo "### Sovereign CI/CD (dual-gate ledger)"
+            echo "### Pytest · dual-gate ledger"
             echo ""
             echo "| Gate | Mode |"
             echo "|------|------|"
             echo "| full ledger/*.yaml | soft |"
             echo "| sealed 9240–9245 | hard |"
             echo ""
-            echo "Retired jobs (documented): oidc-federation, seal, worker-hook, synthesis"
-            echo "No sealed ledger body rewritten"
+            echo "Display name distinct from sovereign-cicd.yml (Sovereign CI/CD)."
+            echo "8977 producer: sovereign-cicd.yml seal job (job-local)."
+            echo "No sealed ledger body rewritten."
           } >> "$GITHUB_STEP_SUMMARY"
