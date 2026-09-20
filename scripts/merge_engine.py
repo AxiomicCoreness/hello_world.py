@@ -17,7 +17,7 @@ Verification:
   - missing files reported (not fatal)
 
 Merkle:
-  leaves = SHA3-256(path + "\\0" + digest) for present entries, sorted by path
+  leaves = SHA3-256(path + NUL + digest) for present entries, sorted by path
   internal = SHA3-256(left || right); odd last leaf promoted
   root written to report and .merge/merkle_root.json
 
@@ -86,12 +86,9 @@ def head_bytes(path: str) -> bytes | None:
 
 
 def merkle_root(leaves: list[str]) -> str:
-    """Binary Merkle over hex leaf digests (SHA3-256 of each node)."""
+    """Binary Merkle over leaf hex strings (each re-hashed as ASCII for stability)."""
     if not leaves:
         return sha3_bytes(b"")
-    level = [bytes.fromhex(h) if len(h) == 64 else hashlib.new(HASH_ALGO, h.encode()).digest()
-             for h in leaves]
-    # leaves are already hex digests of path||digest; hash as hex string bytes for stability
     level = [hashlib.new(HASH_ALGO, h.encode("ascii")).digest() for h in leaves]
     while len(level) > 1:
         nxt: list[bytes] = []
@@ -252,7 +249,6 @@ def main() -> int:
         json.dumps(merged, indent=2, sort_keys=True, default=str),
         encoding="utf-8",
     )
-    # Node-discoverable small artifact (root + formula only)
     OUT_MERKLE.write_text(
         json.dumps(
             {
