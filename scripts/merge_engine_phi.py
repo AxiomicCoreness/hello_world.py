@@ -10,8 +10,8 @@ Soak:             τ_pulse = 23.61 ms · δθ = 0.018 · t_max = 10.0
 Starfire:         φ² ≈ 2.618034
 
 Reads  merge/manifest.yaml
-Writes .merge/merged_manifest.yaml
-       .merge/merged_report.json
+Writes .merge/phi/merged_manifest.yaml
+       .merge/phi/merged_report.json
 
 Verification:
   - every file present on disk has its SHA3-256 computed
@@ -50,7 +50,8 @@ import yaml
 
 
 MANIFEST = Path("merge/manifest.yaml")
-OUT_DIR = Path(".merge")
+# Option A — separate artifact tree so merge_engine.py is not clobbered
+OUT_DIR = Path(".merge/phi")
 OUT_YAML = OUT_DIR / "merged_manifest.yaml"
 OUT_JSON = OUT_DIR / "merged_report.json"
 HASH_ALGO = "sha3_256"
@@ -272,7 +273,7 @@ def main() -> int:
                             if r.immutable and not r.immutable_ok]
     missing = [r.path for r in results if not r.present]
 
-    args.out_dir.mkdir(exist_ok=True)
+    args.out_dir.mkdir(parents=True, exist_ok=True)
     out_yaml = args.out_dir / OUT_YAML.name
     out_json = args.out_dir / OUT_JSON.name
 
