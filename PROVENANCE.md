@@ -161,3 +161,11 @@ Ethic statement — see [`NOTICE`](NOTICE).
 ```
 
 Copyright (c) 2026 Clarke Yoursa Tee
+
+<!-- SEAL:BEGIN -->
+  Integrity: 3cadb204a05be4225bbcb2df28e6a4a1036c3f52fcd63705ac5ceec0a8b80c7a
+  Seal: 670d117a7e5a676dc0ace048ba765421c6c36e55c4fb69ac9fd389465c22ba41
+  Witness: 5bdc93afc03ab56363858c923498c4f5ee048a91f0a3232194b3471c44d88fab
+  Combined: 88e9c5c4046c9152f1f69a43c21c4ff4708fc47ec97f526266fef0ac94bcd8ee
+
+<!-- SEAL:END -->
