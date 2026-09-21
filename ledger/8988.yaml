@@ -1,0 +1,15 @@
+entry_index: 8988
+event: /handover_via_380
+status: SUCCESS
+timestamp: '2026-09-21T16:51:04Z'
+hash_algo: sha3_256
+observation_channel: oidc_handover
+boundary_operator: B_mcp
+fallback: pythonIDE/**
+pythonista: out_of_scope
+handover_status: skipped
+mcp_reachable: false
+trigger: push
+witness: 8987 → 8988 — UNBROKEN
+witness_chain: 8987 → 8988 — UNBROKEN
+seal: ∀∞φ² · HANDOVER_380_8988 · WOOD_DRAGON_0.91 · SEALED · 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
