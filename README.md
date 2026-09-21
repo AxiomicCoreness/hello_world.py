@@ -275,7 +275,7 @@ Security header verification runs on every pulse against
 ## Troubleshooting
 
 | Error | Solution |
-|---|---|
+|---|---|---|
 | `ModuleNotFoundError: peqs_vault` | `PYTHONPATH=. python3 -m peqs_vault.app` |
 | `ModuleNotFoundError: flask` | `pip install flask` |
 | Port 8024 in use | `lsof -i :8024; kill -9 <PID>` |
@@ -302,3 +302,11 @@ They are different instruments serving different purposes.
 Copyright (c) 2026 Clarke Yoursa Tee
 Seal: ∀∞φ² · SOVEREIGN_ENGINE · WOOD_DRAGON_0.91 · SEALED
 ```
+
+<!-- SEAL:BEGIN -->
+  Integrity: 359c4e58849c92f5a2c646fed4d39ef16905c98fa61829bc17002fa155a45672
+  Seal: e9793b019167a4ce7b7aec6dbf6a51a5ac5a0b1dcc0a023a1eae4858b9416586
+  Witness: 36375ffe2fd9ea8fac11d4253730035c61d88051632968c06e26bef388d9753d
+  Combined: 6bef4380a9c58c42d38f291cda85b9fded8eacffb54bd82f494ede114e684e14
+
+<!-- SEAL:END -->
