@@ -26,3 +26,11 @@ If you fork, vendor, or redeploy this work:
 
 The seals are the provenance. The license is the permission.
 They are different instruments serving different purposes.
+
+<!-- SEAL:BEGIN -->
+  Integrity: 91b38335a1eb2e58ed50e3b9dfb3842c1f54040dddf54da0844f1c84d9e62fd5
+  Seal: b171ba8618acc6614d60e7430760e307e5049d200efaf12c33b0469d59a47843
+  Witness: beeb21c556f326ddc499537037c54a108aa5657227f9e094f28299aa32a91e18
+  Combined: 7e4b834711446bf965acd0bd7d70acb0fb2ac6040b065c5a26f3b9ce8f881f42
+
+<!-- SEAL:END -->
