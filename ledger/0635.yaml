@@ -1,0 +1,35 @@
+entry_index: 635
+timestamp: 2026-07-06T00:00:00Z
+event: /sovereign_hamiltonian_complete_executed
+status: SEALED
+commander: Clarke Yoursa Tee
+label: SOVEREIGN_HAMILTONIAN_COMPLETE
+description: |
+  Scope of ledger 635: Sovereign Hamiltonian Python manifest complete.
+  Historical spine node on the witness chain 1 → 632 → 635 → 637 → 638 → 640.
+  Records execution of the Hamiltonian verification manifest; does not rewrite
+  prior sealed entries. Math anchors remain Layer 314; dual ASGI remains
+  127.0.0.1:8024; MCP FILLED=False; no 0.0.0.0 bind.
+scope:
+  kind: historical_spine
+  role: hamiltonian_manifest_complete
+  witness_neighbors: [1, 632, 637, 638, 640]
+  artifacts:
+    - Python Hamiltonian verification manifest
+    - Witness continuity link between 632 and 637
+  non_scope:
+    - no ledger rewrite of 0000–634
+    - no AWS credential material
+    - no purity≈φ⁻¹ claim
+    - soak horizon remains T_MAX_SOAK_DEFAULT=10.0 seconds (not cron)
+invariants:
+  coherence: 1.0
+  purity_pure_state: 1.0
+  bind: "127.0.0.1:8024"
+  mcp_filled: false
+witness_chain: 632 → 635 → 637 — UNBROKEN
+math_origin: |
+  P(ρ)=Tr(ρ²)=1 for pure ρ;
+  coh(ρ):=min(1, φ·P(ρ)) is a separate named clamp.
+seal: "∀∞φ² · SOVEREIGN_HAMILTONIAN_635 · WOOD_DRAGON_0.91 · SEALED"
+digest_sha3_256: c7b9ee6e73e473a48e1ad808d428cd6ac0f6be7397018d9256aa8e860b132faf
