@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 """scripts/check_structure.py — structural invariants for the repo.
 
+Signitorial: Clarke Yoursa Tee
+Seal:        ∀∞φ² · AST_STRUCTURE · WOOD_DRAGON_0.91 · SEALED
+Instrument:  AST (Python) + yaml.safe_load (workflows)
+Needle:      "Clarke Yoursa Tee" in masked header body (above SEAL:BEGIN)
+
 Checks:
   A1. .github/workflows/*.y{a,}ml parses as YAML, has top-level 'on' and 'jobs'.
   A2. No workflow file begins with a Python shebang.
   A3. Numeric soak constants in declared files are in range.
   A4. No live bind to 0.0.0.0 / :: in dual-ASGI entrypoints.
+  A5. Signitorial needle present in header files (masked body).
 
 Exits 0 on pass, 1 on any violation.
+No ledger rewrite. MCP unfilled. Dual ASGI 127.0.0.1:8024 only.
 """
 from __future__ import annotations
 
@@ -17,6 +24,20 @@ import sys
 from pathlib import Path
 
 import yaml
+
+# ── Header / signitorial (AST-visible constants) ─────────────────────
+SIGNITORIAL_NEEDLE = "Clarke Yoursa Tee"
+SIGNITORIAL_AUTHOR = "Clarke Yoursa Tee"
+SEAL_BEGIN = "<!-- SEAL:BEGIN -->"
+
+SIGNITORIAL_FILES = [
+    Path("README.md"),
+    Path("notice.md"),
+    Path("NOTICE"),
+    Path("PROVENANCE.md"),
+    Path("CITATION.cff"),
+    Path("LICENSE"),
+]
 
 WORKFLOWS = Path(".github/workflows")
 SOAK_FILES = [
@@ -80,7 +101,12 @@ def _numeric_assignments(tree: ast.Module) -> dict[str, float]:
             for tgt in node.targets:
                 if isinstance(tgt, ast.Name) and tgt.id in SOAK_CONSTANT_NAMES:
                     try:
-                        out[tgt.id] = float(eval(compile(ast.Expression(node.value), "<ast>", "eval"), {"PHI": (1 + 5 ** 0.5) / 2}))  # noqa: S307
+                        out[tgt.id] = float(
+                            eval(  # noqa: S307
+                                compile(ast.Expression(node.value), "<ast>", "eval"),
+                                {"PHI": (1 + 5 ** 0.5) / 2},
+                            )
+                        )
                     except Exception:
                         pass
     return out
@@ -147,11 +173,50 @@ def check_binds() -> list[str]:
     return errs
 
 
+def _masked_head(text: str) -> str:
+    """Body above SEAL:BEGIN — the region self_seal.py hashes."""
+    if SEAL_BEGIN in text:
+        return text.split(SEAL_BEGIN, 1)[0]
+    return text
+
+
+def check_signitorial() -> list[str]:
+    """A5 — needle 'Clarke Yoursa Tee' in masked header body.
+
+    Same region as scripts/self_seal.py check(). Definition-rank
+    presence, not a theorem. Missing file is skip, not fail, so a
+    branch that only carries a subset of the header set still passes
+    if every present file carries the name.
+    """
+    errs: list[str] = []
+    seen = 0
+    for p in SIGNITORIAL_FILES:
+        if not p.is_file():
+            continue
+        seen += 1
+        text = p.read_text(encoding="utf-8")
+        head = _masked_head(text)
+        if SIGNITORIAL_NEEDLE not in head:
+            errs.append(
+                f"{p}: signitorial needle {SIGNITORIAL_NEEDLE!r} "
+                f"missing from masked header"
+            )
+    # This file itself must carry the needle (AST-visible).
+    here = Path(__file__).resolve()
+    src = here.read_text(encoding="utf-8")
+    if SIGNITORIAL_NEEDLE not in src:
+        errs.append(f"{here.name}: signitorial needle missing from AST source")
+    if seen == 0:
+        errs.append("A5: no signitorial header files present on disk")
+    return errs
+
+
 def main() -> int:
     errors: list[str] = []
     errors.extend(check_workflows())
     errors.extend(check_soak_constants())
     errors.extend(check_binds())
+    errors.extend(check_signitorial())
     for e in errors:
         print(f"::error::{e}")
     if errors:
@@ -159,7 +224,7 @@ def main() -> int:
         return 1
     print(
         "✅ structure check: workflows valid, soak constants in range, "
-        "no forbidden binds"
+        "no forbidden binds, signitorial Clarke Yoursa Tee present"
     )
     return 0
 
