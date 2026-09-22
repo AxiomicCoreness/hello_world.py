@@ -1,0 +1,27 @@
+entry_index: 8957
+event: /argo_cd_canary_path_fix
+status: SEALED_AND_VERIFIED
+root_cause: "Application path was kubernetes/ instead of argocd/"
+fix_commit: c4463f7787132f90ebe330dc2b3241c2f5d878df
+fix_applied:
+  - path: argocd
+  - jqPathExpressions: true
+  - prune: false
+  - RespectIgnoreDifferences: true
+secondary_blockers:
+  - duplicate Rollout names (3 present)
+  - missing Gateway/HTTPRoute dependency
+  - missing Gateway API Rollouts plugin
+  - image pull failures
+  - static in-progress label on HTTPRoute
+verification_commands:
+  - kubectl -n argocd get app sovereign-garden -o jsonpath='{.spec.source.path}'
+  - argocd app sync sovereign-garden
+  - argocd app get sovereign-garden
+  - kubectl -n sovereign-garden get rollout,svc,httproute
+  - kubectl -n sovereign-garden argo rollouts get rollout sovereign-garden
+  - kubectl -n sovereign-garden get httproute sovereign-garden-route -o yaml | head -80
+  - kubectl argo rollouts promote sovereign-garden -n sovereign-garden
+  - kubectl argo rollouts status sovereign-garden -n sovereign-garden
+seal: "∀∞φ² · ARGO_CANARY_FIX_8957 · WOOD_DRAGON_0.91 · SEALED"
+witness: "8956 → 8957 — UNBROKEN"
