@@ -1,73 +1,220 @@
 #!/usr/bin/env python3
-"""scripts/check_structure.py — structural invariants A1–A4."""
+"""scripts/check_structure.py — structural invariants for the repo.
+
+Signitorial: Clarke Yoursa Tee
+Seal:        ∀∞φ² · AST_STRUCTURE · WOOD_DRAGON_0.91 · SEALED
+Instrument:  AST (Python) + yaml.safe_load (workflows)
+Needle:      "Clarke Yoursa Tee" in masked header body (above SEAL:BEGIN)
+
+Checks:
+  A1. .github/workflows/*.y{a,}ml parses as YAML, has top-level 'on' and 'jobs'.
+  A2. No workflow file begins with a Python shebang.
+  A3. Numeric soak constants in declared files are in range.
+  A4. No live bind to 0.0.0.0 / :: in dual-ASGI entrypoints.
+  A5. Signitorial needle present in header files (masked body).
+
+Exits 0 on pass, 1 on any violation.
+No ledger rewrite. MCP unfilled. Dual ASGI 127.0.0.1:8024 only.
+"""
 from __future__ import annotations
-import ast, re, sys
+
+import ast
+import re
+import sys
 from pathlib import Path
+
 import yaml
+
+SIGNITORIAL_NEEDLE = "Clarke Yoursa Tee"
+SIGNITORIAL_AUTHOR = "Clarke Yoursa Tee"
+SEAL_BEGIN = "<!-- SEAL:BEGIN -->"
+
+SIGNITORIAL_FILES = [
+    Path("README.md"),
+    Path("notice.md"),
+    Path("NOTICE"),
+    Path("PROVENANCE.md"),
+    Path("CITATION.cff"),
+    Path("LICENSE"),
+]
+
 WORKFLOWS = Path(".github/workflows")
-SOAK_FILES = [Path("pythonIDE/jitter_soak.py"), Path("scripts/merge_engine_phi.py")]
-SOAK_RANGES = {"T_MAX_SOAK_DEFAULT": (0.0, 60.0), "T_MAX_SOAK": (0.0, 60.0), "GAMMA_JITTER": (0.0, 1.0)}
-BIND_ENTRYPOINTS = [Path("port380_mcp.py"), Path("mcp/port380_mcp.py"), Path("app_main.py"), Path("app/main.py")]
+SOAK_FILES = [
+    Path("pythonIDE/jitter_soak.py"),
+    Path("scripts/merge_engine_phi.py"),
+]
+SOAK_CONSTANT_NAMES = {"T_MAX_SOAK_DEFAULT", "T_MAX_SOAK", "GAMMA_JITTER"}
+SOAK_RANGES: dict[str, tuple[float, float]] = {
+    "T_MAX_SOAK_DEFAULT": (0.0, 60.0),
+    "T_MAX_SOAK": (0.0, 60.0),
+    "GAMMA_JITTER": (0.0, 1.0),
+}
+BIND_ENTRYPOINTS = [
+    Path("port380_mcp.py"),
+    Path("mcp/port380_mcp.py"),
+    Path("app_main.py"),
+    Path("app/main.py"),
+]
 FORBIDDEN_HOSTS = {"0.0.0.0", "::"}
 SHEBANG_RE = re.compile(rb"^#![\s\S]*?python", re.IGNORECASE)
-def check_workflows():
-    errs = []
-    if not WORKFLOWS.is_dir(): return errs
+
+
+def check_workflows() -> list[str]:
+    errs: list[str] = []
+    if not WORKFLOWS.is_dir():
+        return errs
     for p in sorted(WORKFLOWS.iterdir()):
-        if p.suffix not in (".yml", ".yaml"): continue
+        if p.suffix not in (".yml", ".yaml"):
+            continue
         raw = p.read_bytes()
         if SHEBANG_RE.match(raw):
-            errs.append(f"{p}: first line is a Python shebang"); continue
-        try: doc = yaml.safe_load(raw)
+            errs.append(f"{p}: first line is a Python shebang")
+            continue
+        try:
+            doc = yaml.safe_load(raw)
         except yaml.YAMLError as exc:
-            errs.append(f"{p}: not valid YAML: {exc}"); continue
+            errs.append(f"{p}: not valid YAML: {exc}")
+            continue
         if not isinstance(doc, dict):
-            errs.append(f"{p}: top-level is {type(doc).__name__}, not mapping"); continue
-        if "on" not in doc and True not in doc: errs.append(f"{p}: no top-level 'on' key")
-        if "jobs" not in doc: errs.append(f"{p}: no top-level 'jobs' key")
+            errs.append(f"{p}: top-level is {type(doc).__name__}, not mapping")
+            continue
+        if "on" not in doc and True not in doc:
+            errs.append(f"{p}: no top-level 'on' key")
+        if "jobs" not in doc:
+            errs.append(f"{p}: no top-level 'jobs' key")
     return errs
-def check_soak_constants():
-    errs = []
-    for p in SOAK_FILES:
-        if not p.is_file(): continue
-        try: tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
-        except SyntaxError as exc:
-            errs.append(f"{p}: parse error: {exc}"); continue
-        values = {}
-        for node in tree.body:
-            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, (int, float)):
+
+
+def _numeric_assignments(tree: ast.Module) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
+            if isinstance(node.value.value, (int, float)):
                 for tgt in node.targets:
-                    if isinstance(tgt, ast.Name): values[tgt.id] = float(node.value.value)
-        for name, (lo, hi) in SOAK_RANGES.items():
-            if name in values and not (lo < values[name] <= hi):
-                errs.append(f"{p}: {name} = {values[name]} not in ({lo}, {hi}]")
-    return errs
-def check_binds():
-    errs = []
-    for p in BIND_ENTRYPOINTS:
-        if not p.is_file(): continue
-        try: tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+                    if isinstance(tgt, ast.Name):
+                        out[tgt.id] = float(node.value.value)
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.BinOp):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name) and tgt.id in SOAK_CONSTANT_NAMES:
+                    try:
+                        out[tgt.id] = float(
+                            eval(  # noqa: S307
+                                compile(ast.Expression(node.value), "<ast>", "eval"),
+                                {"PHI": (1 + 5 ** 0.5) / 2},
+                            )
+                        )
+                    except Exception:
+                        pass
+    return out
+
+
+def check_soak_constants() -> list[str]:
+    errs: list[str] = []
+    for p in SOAK_FILES:
+        if not p.is_file():
+            continue
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
         except SyntaxError as exc:
-            errs.append(f"{p}: parse error: {exc}"); continue
+            errs.append(f"{p}: parse error: {exc}")
+            continue
+        values = _numeric_assignments(tree)
+        for name, (lo, hi) in SOAK_RANGES.items():
+            if name not in values:
+                continue
+            v = values[name]
+            if not (lo < v <= hi):
+                errs.append(f"{p}: {name} = {v} not in ({lo}, {hi}]")
+    return errs
+
+
+def check_binds() -> list[str]:
+    errs: list[str] = []
+    for p in BIND_ENTRYPOINTS:
+        if not p.is_file():
+            continue
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+        except SyntaxError as exc:
+            errs.append(f"{p}: parse error: {exc}")
+            continue
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Call): continue
+            if not isinstance(node, ast.Call):
+                continue
             fn = node.func
-            name = fn.attr if isinstance(fn, ast.Attribute) else fn.id if isinstance(fn, ast.Name) else None
-            if name not in {"run", "serve_forever", "TCPServer", "HTTPServer"}: continue
+            name = (
+                fn.attr if isinstance(fn, ast.Attribute)
+                else fn.id if isinstance(fn, ast.Name)
+                else None
+            )
+            if name not in {"run", "serve_forever", "TCPServer", "HTTPServer"}:
+                continue
             for kw in node.keywords:
-                if kw.arg == "host" and isinstance(kw.value, ast.Constant) and kw.value.value in FORBIDDEN_HOSTS:
-                    errs.append(f"{p}:{node.lineno}: host={kw.value.value!r} in {name}()")
+                if kw.arg == "host" and isinstance(kw.value, ast.Constant):
+                    if kw.value.value in FORBIDDEN_HOSTS:
+                        errs.append(
+                            f"{p}:{node.lineno}: host={kw.value.value!r} in {name}()"
+                        )
             for arg in node.args:
                 if isinstance(arg, ast.Tuple):
                     for elt in arg.elts:
-                        if isinstance(elt, ast.Constant) and elt.value in FORBIDDEN_HOSTS:
-                            errs.append(f"{p}:{node.lineno}: tuple host {elt.value!r} in {name}()")
+                        if (
+                            isinstance(elt, ast.Constant)
+                            and elt.value in FORBIDDEN_HOSTS
+                        ):
+                            errs.append(
+                                f"{p}:{node.lineno}: tuple host "
+                                f"{elt.value!r} in {name}()"
+                            )
     return errs
-def main():
-    errors = check_workflows() + check_soak_constants() + check_binds()
-    for e in errors: print(f"::error::{e}")
+
+
+def _masked_head(text: str) -> str:
+    if SEAL_BEGIN in text:
+        return text.split(SEAL_BEGIN, 1)[0]
+    return text
+
+
+def check_signitorial() -> list[str]:
+    errs: list[str] = []
+    seen = 0
+    for p in SIGNITORIAL_FILES:
+        if not p.is_file():
+            continue
+        seen += 1
+        text = p.read_text(encoding="utf-8")
+        head = _masked_head(text)
+        if SIGNITORIAL_NEEDLE not in head:
+            errs.append(
+                f"{p}: signitorial needle {SIGNITORIAL_NEEDLE!r} "
+                f"missing from masked header"
+            )
+    here = Path(__file__).resolve()
+    src = here.read_text(encoding="utf-8")
+    if SIGNITORIAL_NEEDLE not in src:
+        errs.append(f"{here.name}: signitorial needle missing from AST source")
+    if seen == 0:
+        errs.append("A5: no signitorial header files present on disk")
+    return errs
+
+
+def main() -> int:
+    errors: list[str] = []
+    errors.extend(check_workflows())
+    errors.extend(check_soak_constants())
+    errors.extend(check_binds())
+    errors.extend(check_signitorial())
+    for e in errors:
+        print(f"::error::{e}")
     if errors:
-        print(f"\n❌ {len(errors)} structural violation(s)"); return 1
-    print("✅ structure check: workflows valid, soak constants in range, no forbidden binds"); return 0
+        print(f"\n❌ {len(errors)} structural violation(s)")
+        return 1
+    print(
+        "✅ structure check: workflows valid, soak constants in range, "
+        "no forbidden binds, signitorial Clarke Yoursa Tee present"
+    )
+    return 0
+
+
 if __name__ == "__main__":
     sys.exit(main())
