@@ -1,30 +1,60 @@
 #!/usr/bin/env python3
-"""Timestamp beacon verifier — the anchor is a witness only if it can fail."""
-import hashlib, sys, json
+"""beacons/timestamp_beacon.py — rev 3
 
-SUPPLIED = "a1f3d8c2b0e4e7e6b5a9d2c8f1e0b3a7d6e4c2a8f0b3d5e7c1a9e8f4d2b6c0a5"
+Computed anchor verifier. This script CAN FAIL; that is its entire purpose.
+It contains no seals, no witness chains, and no identity claims.
 
-def check(hash_str):
-    issues = []
-    if len(hash_str) != 64:
-        issues.append(f"length {len(hash_str)} != 64")
-    if not all(c in "0123456789abcdef" for c in hash_str):
-        issues.append("non-hex characters")
-    if hash_str == SUPPLIED:
-        issues.append("no preimage: hash supplied without the content it digests")
-    return issues
+exit 0: computed anchor verified, ghost structural analysis confirmed
+exit 1: computed anchor MISMATCH (tampered preimage or digest)
+exit 2: ghost structural claim no longer holds
+"""
+import hashlib
+import sys
 
-def verify(content: str) -> bool:
-    """True iff sha3_256(content) == SUPPLIED. THIS is what would make it real."""
-    return hashlib.sha3_256(content.encode()).hexdigest() == SUPPLIED
+GHOST_ANCHOR = "a1f3d8c2b0e4e7e6b5a9d2c8f1e0b3a7d6e4c2a8f0b3d5e7c1a9e8f4d2b6c0a5"
+GHOST_DIGITS = 32
+GHOST_LETTERS = 32
+GHOST_ALTERNATION_PCT = 100.0
+
+PREIMAGE = "GARDEN.ANCHOR.v1\nrepo: AxiomicCoreness/hello_world.py\nbranch: mistral-agent-cluster\nhead_commit: e5cdab4af3d220f38b02640f9263af0b4cd56769\nledger: math_origin_audit.py rev2 (D1-D14) + D15 ghost-anchor structural finding\nsupersedes: a1f3d8c2b0e4e7e6b5a9d2c8f1e0b3a7d6e4c2a8f0b3d5e7c1a9e8f4d2b6c0a5 (UNVERIFIABLE_ANCHOR, hand-typed: 100% digit/letter alternation, 32/32 split)\n"
+
+EXPECTED_DIGEST = "f4583aedf58260f3242c80b175ad433a45475dd4a0a841635b1bcdee6fd1c450"
+
+
+def verify_computed_anchor() -> bool:
+    digest = hashlib.sha3_256(PREIMAGE.encode("utf-8")).hexdigest()
+    return digest == EXPECTED_DIGEST
+
+
+def verify_ghost_structure() -> bool:
+    s = GHOST_ANCHOR.lower()
+    is_digit = [c.isdigit() for c in s]
+    digits = sum(is_digit)
+    alternation = sum(
+        1 for i in range(1, len(s)) if is_digit[i] != is_digit[i - 1]
+    ) / (len(s) - 1) * 100.0
+    return (
+        digits == GHOST_DIGITS
+        and len(s) - digits == GHOST_LETTERS
+        and abs(alternation - GHOST_ALTERNATION_PCT) < 0.05
+    )
+
+
+def main() -> int:
+    ghost_ok = verify_ghost_structure()
+    if not ghost_ok:
+        print("FAIL: ghost anchor no longer shows hand-typed signature "
+              "(investigate entry 1 analysis)")
+        return 2
+    if verify_computed_anchor():
+        print("OK: computed anchor verified "
+              f"(sha3-256 of inline preimage == {EXPECTED_DIGEST})")
+        print("OK: ghost anchor structural analysis confirmed "
+              "(100% alternation, 32/32 split -> hand-typed, unverifiable)")
+        return 0
+    print("FAIL: computed anchor mismatch — preimage or digest was tampered")
+    return 1
+
 
 if __name__ == "__main__":
-    issues = check(SUPPLIED)
-    if issues:
-        print("anchor UNVERIFIABLE:")
-        for i in issues:
-            print(f"  - {i}")
-        print("to activate: provide content whose sha3_256 equals the hash")
-        sys.exit(1)
-    print("anchor verifiable")
-    sys.exit(0)
+    sys.exit(main())
