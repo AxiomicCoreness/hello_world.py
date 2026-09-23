@@ -1,14 +1,14 @@
 entry_index: 8819
 event: /mtls_cert_rotation
 status: SUCCESS
-timestamp: '2026-09-23T05:09:21Z'
+timestamp: '2026-09-23T12:07:24Z'
 hash_algo: sha3_256
 boundary_operator: B_mtls
 theta: noop
 rotate_recommended: false
 old_fingerprint: ''
 new_fingerprint: ''
-phi_phase: '1.830598'
+phi_phase: '0.164018'
 force_rotate: false
 witness: 8818 → 8819 — UNBROKEN
-seal: ∀∞φ² · MTLS_ROTATION_8819 · WOOD_DRAGON_0.91 · SEALED · 6322e4352485e01fa4bb6bf36f69342f2ea647d6ed79eafecddcb13b525811aa
+seal: ∀∞φ² · MTLS_ROTATION_8819 · WOOD_DRAGON_0.91 · SEALED · f7c84b5ab4e6b36025ffb77f57206073adbb646e1e36847f7d306c738a053748
