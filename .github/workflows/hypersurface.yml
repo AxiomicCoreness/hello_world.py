@@ -1,0 +1,152 @@
+name: 7D Hypersurface
+
+on:
+  push:
+    paths:
+      - 'hypersurface_7d.py'
+      - '.github/workflows/hypersurface.yml'
+  pull_request:
+    paths:
+      - 'hypersurface_7d.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: render (matrix)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: full
+            numpy: "true"
+            matplotlib: "true"
+            expect_png: "true"
+            expect_exit: "0"
+          - name: no-matplotlib
+            numpy: "true"
+            matplotlib: "false"
+            expect_png: "false"
+            expect_exit: "2"
+          - name: bare
+            numpy: "false"
+            matplotlib: "false"
+            expect_png: "false"
+            expect_exit: "2"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          if [ "${{ matrix.numpy }}" = "true" ]; then
+            python -m pip install --quiet numpy
+          fi
+          if [ "${{ matrix.matplotlib }}" = "true" ]; then
+            python -m pip install --quiet matplotlib
+          fi
+
+      - name: Show runtime capability
+        run: |
+          python - <<'PY'
+          try:
+              import numpy; print(f"numpy: {numpy.__version__}")
+          except ImportError:
+              print("numpy: absent")
+          try:
+              import matplotlib; print(f"matplotlib: {matplotlib.__version__}")
+          except ImportError:
+              print("matplotlib: absent")
+          PY
+
+      - name: Run hypersurface_7d.py
+        id: run
+        continue-on-error: true
+        run: |
+          set +e
+          python hypersurface_7d.py
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Assert exit code
+        run: |
+          set -euo pipefail
+          actual="${{ steps.run.outputs.exit_code }}"
+          expected="${{ matrix.expect_exit }}"
+          echo "expected exit: $expected  actual exit: $actual"
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::exit code mismatch — expected $expected, got $actual"
+            exit 1
+          fi
+          echo "OK exit code matches expectation"
+
+      - name: Assert PNG presence
+        if: matrix.expect_png == 'true'
+        run: |
+          set -euo pipefail
+          if [ ! -f hypersurface_7d.png ]; then
+            echo "::error::hypersurface_7d.png not produced"
+            exit 1
+          fi
+          size=$(stat -c%s hypersurface_7d.png)
+          echo "hypersurface_7d.png: $size bytes"
+          if [ "$size" -lt 1000 ]; then
+            echo "::error::PNG too small ($size bytes) — likely blank render"
+            exit 1
+          fi
+          if ! file hypersurface_7d.png | grep -q 'PNG image data'; then
+            echo "::error::hypersurface_7d.png is not a PNG"
+            exit 1
+          fi
+          echo "OK PNG produced and validated"
+
+      - name: Upload PNG
+        if: matrix.expect_png == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hypersurface-${{ matrix.name }}
+          path: hypersurface_7d.png
+          retention-days: 30
+          if-no-files-found: error
+
+  # math_origin gate — runs once, independent of render matrix
+  math-origin:
+    name: math_origin gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify phi identities
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, '.')
+          from hypersurface_7d import verify_math_origins, MATH_ORIGIN
+          failures, pending = verify_math_origins()
+          if failures:
+              print("math_origin failures:")
+              for f in failures: print(f"   {f}")
+              sys.exit(1)
+          print(f"math_origin: {len(MATH_ORIGIN) - len(pending)} verified, {len(pending)} pending")
+          if pending:
+              print(f"pending: {', '.join(pending)}")
+          # Pending is a warning, not a failure, for DECORATIVE constants.
+          # If a pending constant becomes load-bearing, promote to failure here.
+          PY
