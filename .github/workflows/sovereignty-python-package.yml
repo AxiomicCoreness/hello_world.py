@@ -189,6 +189,10 @@ jobs:
   # imported inside it, this job fails. Runtime parity is witnessed, not
   # asserted. Container pytest retains the soft-by-default policy for parity
   # with the host lane, but import failure is never soft.
+  # In-image python - <<'PY' gates MUST use docker run -i. Without -i the
+  # interpreter gets EOF, the gate does not run, and the job ghost-passes
+  # (same class as Lua recon_ok = true). Lua is NOT installed in the
+  # python:3.12-slim fallback — do not add a lua step (that would 100% fail).
   container:
     name: Container · build & in-image verify
     runs-on: ubuntu-latest
@@ -229,7 +233,9 @@ jobs:
       - name: In-image import gate (HARD)
         run: |
           set -euo pipefail
-          docker run --rm "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
+          # -i required: heredoc is stdin. Without it python - reads EOF,
+          # the HARD import never executes, and the job ghost-passes.
+          docker run --rm -i "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
           import sys
           from pathlib import Path
 
@@ -249,7 +255,7 @@ jobs:
       - name: In-image headers probe (parity with host lane)
         run: |
           set -euo pipefail
-          docker run --rm -e SOFT_HEADERS="${SOFT_HEADERS}" \
+          docker run --rm -i -e SOFT_HEADERS="${SOFT_HEADERS}" \
             "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
           import os, sys
           from pathlib import Path
