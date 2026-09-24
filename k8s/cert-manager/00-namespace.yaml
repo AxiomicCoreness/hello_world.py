@@ -1,4 +1,15 @@
-# Optional: ensure target namespace exists (skip if already applied)
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
+# Companion to:  celestial/phi_constants.py
+# Fallbacks:     numpy, scipy, yaml, matplotlib, requests
+# φ set:         φ¹ φ² φ³ φ⁴ φ⁵ φ⁶ φ⁷ φ⁸ φ⁹ φ¹² φ¹³ φ¹⁴ φ²¹ φ³⁴
+#                φ⁻⁷⁰⁹ φ⁻¹⁰⁰⁰ φ⁻¹⁴¹⁸ φ⁻¹
+#
+# Cert-manager namespace manifest for the sovereign-garden.
+# Deterministic path: k8s/cert-manager/00-namespace-sovereign-garden.yaml
+#
+# Optional: ensure target namespace exists (skip if already applied).
+
 apiVersion: v1
 kind: Namespace
 metadata:

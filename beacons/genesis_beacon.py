@@ -170,8 +170,7 @@ def main() -> int:
     print(f"  seal_commander (ASSERTED LEGACY, 32 hex, not a SHA3 digest): {SEAL_COMMANDER_ASSERTED}")
 
     if args.verify_only:
-        print("
-verify-only: no seal computed.")
+        print("\nverify-only: no seal computed.")
         return 0
 
     seal = genesis_seal(args.entropy)

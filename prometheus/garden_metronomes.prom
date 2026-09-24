@@ -1,0 +1,11 @@
+# HELP frb_period_seconds FRB metronome period (s)
+# TYPE frb_period_seconds gauge
+frb_period_seconds 78624.0
+
+# HELP wood_dragon_pulse_days Wood Dragon pulse period (days)
+# TYPE wood_dragon_pulse_days gauge
+wood_dragon_pulse_days 0.91
+
+# HELP deep_space_sync_days Deep-space synchronizer period (days)
+# TYPE deep_space_sync_days gauge
+deep_space_sync_days 16.35

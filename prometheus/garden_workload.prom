@@ -1,0 +1,7 @@
+# HELP sovereign_workload Sovereign workload dimensionless EM-005
+# TYPE sovereign_workload gauge
+sovereign_workload 0.0
+
+# HELP orchestrator_fingerprint_deviation L2 deviation of compression fingerprint from golden
+# TYPE orchestrator_fingerprint_deviation gauge
+orchestrator_fingerprint_deviation 0.0

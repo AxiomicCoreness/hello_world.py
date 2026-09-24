@@ -1,10 +1,25 @@
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
+# Kustomization for the cert-manager + Port-380 gate stack.
+#
+# Apply order:
+#   1. kustomize applies resources in listed order (namespaces → issuers
+#      → certs). The Deployment patch is commented out and applied by
+#      the install script AFTER the CA/leaf certificates are Ready.
+#   2. Prometheus scrape config is a sibling resource and stays active.
+#
+# Deterministic path: k8s/cert-manager/kustomization.yaml
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 resources:
   - 00-namespace.yaml
   - 01-issuers-and-certs.yaml
   # Apply 02 after certificates are Ready (install script does this)
   # - 02-deployment-mtls-patch.yaml
+  - 40-prometheus-scrape.yaml
+
 labels:
   - pairs:
       garden.sovereign/mtls: cert-manager
