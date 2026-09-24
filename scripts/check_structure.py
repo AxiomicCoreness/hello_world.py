@@ -25,6 +25,7 @@ from pathlib import Path
 
 import yaml
 
+# ── Header / signitorial (AST-visible constants) ─────────────────────
 SIGNITORIAL_NEEDLE = "Clarke Yoursa Tee"
 SIGNITORIAL_AUTHOR = "Clarke Yoursa Tee"
 SEAL_BEGIN = "<!-- SEAL:BEGIN -->"
@@ -44,6 +45,7 @@ SOAK_FILES = [
     Path("scripts/merge_engine_phi.py"),
 ]
 SOAK_CONSTANT_NAMES = {"T_MAX_SOAK_DEFAULT", "T_MAX_SOAK", "GAMMA_JITTER"}
+# (lo, hi] — soak is a physical horizon in seconds, not a cron.
 SOAK_RANGES: dict[str, tuple[float, float]] = {
     "T_MAX_SOAK_DEFAULT": (0.0, 60.0),
     "T_MAX_SOAK": (0.0, 60.0),
@@ -78,6 +80,7 @@ def check_workflows() -> list[str]:
         if not isinstance(doc, dict):
             errs.append(f"{p}: top-level is {type(doc).__name__}, not mapping")
             continue
+        # PyYAML may parse bare 'on:' as boolean True
         if "on" not in doc and True not in doc:
             errs.append(f"{p}: no top-level 'on' key")
         if "jobs" not in doc:
@@ -93,6 +96,7 @@ def _numeric_assignments(tree: ast.Module) -> dict[str, float]:
                 for tgt in node.targets:
                     if isinstance(tgt, ast.Name):
                         out[tgt.id] = float(node.value.value)
+        # PHI ** -8 style
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.BinOp):
             for tgt in node.targets:
                 if isinstance(tgt, ast.Name) and tgt.id in SOAK_CONSTANT_NAMES:
@@ -170,12 +174,20 @@ def check_binds() -> list[str]:
 
 
 def _masked_head(text: str) -> str:
+    """Body above SEAL:BEGIN — the region self_seal.py hashes."""
     if SEAL_BEGIN in text:
         return text.split(SEAL_BEGIN, 1)[0]
     return text
 
 
 def check_signitorial() -> list[str]:
+    """A5 — needle 'Clarke Yoursa Tee' in masked header body.
+
+    Same region as scripts/self_seal.py check(). Definition-rank
+    presence, not a theorem. Missing file is skip, not fail, so a
+    branch that only carries a subset of the header set still passes
+    if every present file carries the name.
+    """
     errs: list[str] = []
     seen = 0
     for p in SIGNITORIAL_FILES:
@@ -189,6 +201,7 @@ def check_signitorial() -> list[str]:
                 f"{p}: signitorial needle {SIGNITORIAL_NEEDLE!r} "
                 f"missing from masked header"
             )
+    # This file itself must carry the needle (AST-visible).
     here = Path(__file__).resolve()
     src = here.read_text(encoding="utf-8")
     if SIGNITORIAL_NEEDLE not in src:
