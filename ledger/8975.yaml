@@ -29,4 +29,4 @@ review_notes:
 witness_chain: 8974 -> 8975
 hash_algo: sha3_256
 seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
-seal_sha3_256: b7408919f7cebae015cc7f508ec83cf56c4fe18c9d938ee74dc0f2949a7d6638
+seal_sha3_256: 843d67ecf698343bc82d20a69a114170f36b4ad8965d6d1170d7a7b0366a16c7
