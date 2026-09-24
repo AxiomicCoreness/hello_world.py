@@ -1,4 +1,34 @@
-# Mount cert-manager secrets into port-380-gate + optional in-cluster pulse CronJob
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
+# Port-380 gate: mTLS mount + env.
+#
+# PATCH FRAGMENT — this is not a complete Deployment. It carries
+# `spec.template.spec.containers[0]` env + mounts only. The base
+# Deployment (name: port-380-gate, namespace: sovereign-garden) must
+# supply spec.selector, spec.replicas, and image.
+#
+# Apply via kustomize `patches:` or a manual strategic-merge — do NOT
+# `kubectl apply` alone.
+#
+# Container-name match:
+#   The strategic-merge patch keys on `containers[].name` — the name in
+#   the base Deployment MUST be `sovereign-engine`. If the base uses a
+#   different name, either rename here or use a JSON-6902 patch instead.
+#
+# Prometheus:
+#   The annotation `prometheus.io/*` keeps the scrape surface visible
+#   to classic Prometheus (annotations-based discovery). The ServiceMonitor
+#   in 40-prometheus-scrape.yaml is the modern equivalent; both are kept
+#   because either install path may be in use.
+#
+# Companion to: celestial/phi_constants.py
+# Fallbacks:    numpy, scipy, yaml, matplotlib, requests
+# φ set:        φ¹ φ² φ³ φ⁴ φ⁵ φ⁶ φ⁷ φ⁸ φ⁹ φ¹² φ¹³ φ¹⁴ φ²¹ φ³⁴
+#               φ⁻⁷⁰⁹ φ⁻¹⁰⁰⁰ φ⁻¹⁴¹⁸ φ⁻¹
+#
+# Deterministic path: k8s/cert-manager/02-deployment-mtls-patch.yaml
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,6 +39,12 @@ spec:
     metadata:
       annotations:
         garden.sovereign/mtls: cert-manager
+        # Prometheus annotations — classic scrape-based discovery.
+        # The metrics server listens on :9090 and the gate on :380;
+        # both are declared in 40-prometheus-scrape.yaml.
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: sovereign-engine
@@ -37,75 +73,3 @@ spec:
               - key: ca.crt
                 path: ca.crt
             defaultMode: 0400
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: port380-mtls-pulse
-  namespace: sovereign-garden
-  labels:
-    garden.sovereign/component: mtls-heartbeat
-spec:
-  schedule: "0 */6 * * *"
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 2
-  failedJobsHistoryLimit: 2
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            app: port380-mtls-pulse
-        spec:
-          restartPolicy: OnFailure
-          containers:
-            - name: pulse
-              image: curlimages/curl:8.5.0
-              env:
-                - name: MCP_URL
-                  value: http://port-380-gate.sovereign-garden.svc.cluster.local:380
-                - name: GARDEN_SECRET
-                  valueFrom:
-                    secretKeyRef:
-                      name: garden-pulse-secret
-                      key: GARDEN_SECRET
-                      optional: true
-              volumeMounts:
-                - name: client-tls
-                  mountPath: /client-certs
-                  readOnly: true
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  set -e
-                  BODY='{"source":"cert-manager-cron","entry":8862}'
-                  if [ -f /client-certs/tls.crt ] && [ -f /client-certs/tls.key ]; then
-                    curl -sS -o /tmp/out -w "%{http_code}" \
-                      --cert /client-certs/tls.crt --key /client-certs/tls.key \
-                      --cacert /client-certs/ca.crt \
-                      -X POST -H "Content-Type: application/json" \
-                      ${GARDEN_SECRET:+ -H "X-Garden-Secret: ${GARDEN_SECRET}"} \
-                      -d "$BODY" \
-                      "${MCP_URL}/pulse" || true
-                  else
-                    curl -sS -X POST -H "Content-Type: application/json" \
-                      ${GARDEN_SECRET:+ -H "X-Garden-Secret: ${GARDEN_SECRET}"} \
-                      -d "$BODY" \
-                      "${MCP_URL}/pulse"
-                  fi
-                  echo
-                  cat /tmp/out 2>/dev/null || true
-          volumes:
-            - name: client-tls
-              secret:
-                secretName: port380-client-tls
-                optional: true
-                items:
-                  - key: tls.crt
-                    path: tls.crt
-                  - key: tls.key
-                    path: tls.key
-                  - key: ca.crt
-                    path: ca.crt
-                defaultMode: 0400
