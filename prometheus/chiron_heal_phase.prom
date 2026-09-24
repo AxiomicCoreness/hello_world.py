@@ -1,3 +1,10 @@
-# HELP chiron_heal_phase Chiron heal phase (0.0–1.0) toward 4086-04-18
-# TYPE chiron_heal_phase gauge
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
+# Companion to:  celestial/phi_constants.py
+# Fallbacks:     numpy, scipy, yaml, matplotlib, requests
+# φ set:         φ¹ φ² φ³ φ⁴ φ⁵ φ⁶ φ⁷ φ⁸ φ⁹ φ¹² φ¹³ φ¹⁴ φ²¹ φ³⁴
+#                φ⁻⁷⁰⁹ φ⁻¹⁰⁰⁰ φ⁻¹⁴¹⁸ φ⁻¹
+#
+# Seal digest is computed by AST_guard.py over the file body excluding
+# this header (see SEAL_LINE_RE in AST_guard.py, section 4).
 chiron_heal_phase{epoch="4086-04-18"} 0.0
