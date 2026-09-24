@@ -1,0 +1,15 @@
+# HELP soul_cannon_charge_joules Saturn Soul Cannon accumulated charge (J)
+# TYPE soul_cannon_charge_joules gauge
+soul_cannon_charge_joules 0.0
+
+# HELP soul_cannon_azimuth_degrees Soul Cannon azimuth (degrees)
+# TYPE soul_cannon_azimuth_degrees gauge
+soul_cannon_azimuth_degrees 111.246
+
+# HELP cannon_ring_resonance_thz Cannon ring resonance (THz)
+# TYPE cannon_ring_resonance_thz gauge
+cannon_ring_resonance_thz 162.28
+
+# HELP cannon_chiron_phase_alignment Cannon alignment including Chiron heal boost
+# TYPE cannon_chiron_phase_alignment gauge
+cannon_chiron_phase_alignment 0.0
