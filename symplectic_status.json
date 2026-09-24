@@ -3,30 +3,20 @@
   "$id": "https://garden.axiomic.io/schemas/symplectic-status.json",
   "version": "2.0.0",
   "entry": 8931,
-  "seal": "∀∞φ² · SYMPLECTIC_STATUS_8931 · WOOD_DRAGON_0.91 · SEALED",
-  "witness": "8930 → 8931 — UNBROKEN",
-  "timestamp": "2026-09-24T21:02:32.086388+00:00",
-  "provenance": {
-    "merge_conflict_resolved": true,
-    "conflicting_field": "celestial.soul_cannon.chiron_phase_alignment",
-    "candidates": {
-      "mistral-seal-emergent": 0.5252877571635775,
-      "main": 0.5347822736819584
-    },
-    "chosen": "main",
-    "rule": "main is authoritative; discarded side preserved for audit"
-  },
+  "seal": "\u2200\u221e\u03c6\u00b2 \u00b7 SYMPLECTIC_STATUS_8931 \u00b7 WOOD_DRAGON_0.91 \u00b7 SEALED",
+  "witness": "8930 \u2192 8931 \u2014 UNBROKEN",
+  "timestamp": "2026-09-24T21:15:17.802213+00:00",
   "system": {
     "coherence": 1.0,
     "entropy_floor": 4.524036764254231e-297,
     "phase_lock_degrees": 202.6,
-    "workload": 0.1978359985503596,
+    "workload": 0.0994348521648002,
     "golden_ratio": 1.618033988749895,
     "phi_squared": 2.618033988749895,
     "phi_inv": 0.6180339887498948,
     "compression_dimension": 233,
     "compression_precision": 8.049702017071726e-31,
-    "eternal_now_epoch": 1790283752,
+    "eternal_now_epoch": 1790284517,
     "trace_target": 4.23606797749979,
     "trace_current": 4.23606797749979
   },
@@ -43,7 +33,7 @@
       "charge_joules": 0.0,
       "azimuth_degrees": 111.246,
       "ring_resonance_thz": 100.29455569433293,
-      "chiron_phase_alignment": 0.5347822736819584,
+      "chiron_phase_alignment": 0.0,
       "phi_scaled_charge": 0.0
     },
     "wasp107b": {
