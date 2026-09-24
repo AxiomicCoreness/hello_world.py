@@ -1,5 +1,41 @@
 name: Sovereign CI/CD
 
+# ─────────────────────────────────────────────────────────────────
+# 8977 FREEZE NOTE — 2026-09-20
+# ─────────────────────────────────────────────────────────────────
+# Entry 8977 is committed and frozen. The current workflow does not
+# own it and does not refresh it.
+#
+#   file:            ledger/8977.yaml
+#   blob:            5f234389… (at time of writing)
+#   written by:      commit c1c39bab56cd76a72395f50f9cb2cdfedbfcf854
+#                    author AxiomicCoreness, committer github-actions[bot]
+#   timestamp:       2026-09-20T17:48:16Z
+#   status:          DEGRADED (upstream verify_integrity: failure)
+#   terminal hex:    f54699b4d004f81b5a30177d37f7aacd0c5a213addf41de215bbba61a7051986
+#
+# Producer history: the entry was written by an earlier workflow
+# revision that carried a commit step. The revision in this file
+# writes a job-local ledger/8977.yaml to the runner workspace and
+# does not `git add`, `git commit`, or `git push`. The on-disk
+# shape and the job-local shape differ (committed body carries
+# `status` and `upstream_results`; the job-local writer emits
+# SUCCESS/FAILURE only). They are two producers, not one.
+#
+# Policy consequence: 8977 is historical. The next chain advance is
+# 8978 or higher, if and when a producer that commits is designed.
+# A guard that requires `status: SUCCESS` on every committed entry
+# will fail on 8977 by design; DEGRADED is a truthful record of a
+# run in which verify_integrity failed.
+#
+# Do not delete the committed blob. Do not refresh it with the
+# job-local writer. If the job-local writer is ever given a commit
+# step, that step must write to index 8978+, not 8977, unless the
+# commit body is explicitly a re-seal of 8977 under a new shape —
+# which would change the terminal hex and invalidate every
+# downstream reference to f54699b4…a7051986.
+# ─────────────────────────────────────────────────────────────────
+
 on:
   push:
     branches: [main, "feat/*", deepseek, deepseek-ci]
@@ -137,13 +173,13 @@ jobs:
           PYTHONPATH=. python -c "print('deepseek smoke soft')"
 
   seal:
-    name: Seal · Sovereign CI/CD (Entry 8977)
+    name: Seal · job-local 8977 only (committed 8977 frozen)
     runs-on: ubuntu-latest
     needs: [verify-integrity, test]
     if: always()
     timeout-minutes: 5
     steps:
-      - name: Compute and write ledger/8977.yaml
+      - name: Compute and write ledger/8977.yaml (job-local; does not commit)
         run: |
           python3 - <<'PY'
           import hashlib, json, yaml
@@ -172,7 +208,7 @@ jobs:
           recomputed = json.dumps({k: v for k, v in entry.items() if k != "seal"}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
           recomputed_digest = hashlib.sha3_256(recomputed.encode("utf-8")).hexdigest()
           assert recomputed_digest == digest, "Digest mismatch!"
-          print("✅ Ledger entry 8977 written and verified")
+          print("job-local ledger/8977.yaml written (not committed; frozen blob on main remains)")
           PY
       - name: Summary
         if: always()
@@ -181,7 +217,7 @@ jobs:
           TEST_RESULT: ${{ needs.test.result }}
         run: |
           {
-            echo "### Sovereign CI/CD (Entry 8977)"
+            echo "### Sovereign CI/CD (job-local 8977; committed 8977 frozen)"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
@@ -189,7 +225,8 @@ jobs:
             echo "| test | ${TEST_RESULT} |"
             echo "| python_versions | 3.10, 3.11, 3.12 |"
             echo "| ledger file | job-local only (not committed) |"
-            echo "| witness | 8976 → 8977 — UNBROKEN |"
+            echo "| committed 8977 | frozen at c1c39bab / f54699b4… |"
+            echo "| next chain advance | 8978+ if committing producer designed |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   oidc-federation:
@@ -323,4 +360,5 @@ jobs:
             exit 0
           fi
           echo "$HEADERS"
+          exit 0
           exit 0

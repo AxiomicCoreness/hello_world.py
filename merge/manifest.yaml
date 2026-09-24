@@ -1,6 +1,30 @@
-# merge/manifest.yaml — 66+ tracked entries (verify-only; no sealed body rewrite)
+# merge/manifest.yaml — tracked entries (verify-only; no sealed body rewrite)
+#
+# TWO DIGEST NOTIONS (do not conflate):
+#
+#   digest_of: file_bytes
+#     Used by: scripts/merge_engine.py
+#     Field:   expected_sha3_256, Merkle leaf file_digest
+#     Means:   SHA3-256(raw on-disk file bytes)
+#
+#   seal regimes (ledger seal field) — .github/scripts/verify_ledger.py only:
+#     Regime A: SHA3-256(json.dumps(body minus seal, sort_keys, separators=",":))
+#     Regime B: SHA3-256(b"GARDEN.EVENT.v1\\x00" + f"{n}|{event}|phi2=...|delta=b^2-4ac|theta=...")
+#     There is no scripts/verify_ledger.py on this repo.
+#
+#   expected_sha3_256 is NOT interchangeable with seal digests from A/B.
+#
+# Merkle root: per-run CI artifact under .merge/ (not chain authority).
+#
 version: 1
 hash_algo: sha3_256
+digest_of: file_bytes
+seal_verifier: .github/scripts/verify_ledger.py
+seal_regimes:
+  - id: A
+    form: "SHA3-256(canonical JSON body minus seal)"
+  - id: B
+    form: "SHA3-256(GARDEN.EVENT.v1 || 0x00 || n|event|phi2|delta|theta)"
 generated_by: merge-engine
 entries:
   # group: workflows
@@ -44,15 +68,14 @@ entries:
   - { path: .github/workflows/cd-combinator.yml,        role: workflow, ledger: 8926,      policy: WRITE_VIA_SEAL }
   - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
 
-  # group: composite-actions
-  - { path: .github/actions/oidc-federate-offline/action.yml, role: action }
-
   # group: scripts
   - { path: .github/scripts/verify_ledger.py,           role: verifier }
   - { path: .github/scripts/witness_chain_sqlite.py,    role: mirror }
   - { path: scripts/ledger_math_ci.py,                  role: verifier }
   - { path: scripts/witness_chain_sqlite.py,            role: mirror }
   - { path: scripts/test_deployment_8981.py,            role: test }
+  - { path: scripts/merge_engine.py,                    role: verifier }
+  - { path: scripts/verify_tree.py,                     role: verifier }
   - { path: ci_cd_key_rotator.py,                       role: rotator }
   - { path: port380_mcp.py,                             role: boundary }
 
@@ -64,16 +87,22 @@ entries:
   - { path: docs/fusion_architecture.md,                role: doc }
 
   # group: immutable-ledger
-  - { path: ledger/0000.yaml,                           role: ledger, immutable: true }
-  - { path: ledger/517.yaml,                            role: ledger, immutable: true }
-  - { path: ledger/518.yaml,                            role: ledger, immutable: true }
-  - { path: ledger/8923.yaml,                           role: ledger, immutable: true }
-  - { path: ledger/8979.yaml,                           role: ledger, immutable: true }
-  - { path: ledger/8980.yaml,                           role: ledger, immutable: true }
-  - { path: ledger/9183.yaml,                           role: ledger, immutable: true }
-  - { path: ledger/510510.yaml,                         role: ledger, immutable: true }
+  # expected_sha3_256 = SHA3-256(file_bytes) only — not Regime A/B seal digests
+  - { path: ledger/0000.yaml,   role: ledger, immutable: true, expected_sha3_256: "5ac2012ff6ae05dd3bd8c9d8f6ac226be9ad1818774011edbed6091dfd3334eb" }
+  - { path: ledger/517.yaml,    role: ledger, immutable: true, expected_sha3_256: "1e29af4fdaf702b944cf6341d004b9bf2b2acfc5d69b829c305d7d6955e4bfde" }
+  - { path: ledger/518.yaml,    role: ledger, immutable: true, expected_sha3_256: "a6981e231fe4307b538d01ad4632a00682a8f18de8aa3383cf117b320e13e5a9" }
+  - { path: ledger/8923.yaml,   role: ledger, immutable: true, expected_sha3_256: "8008e65e65d0de6a74e5845b670e5f41f0fbef6a09209f1b82fa3045c15584cf" }
+  - { path: ledger/8979.yaml,   role: ledger, immutable: true, expected_sha3_256: "4949c2506c620d8c3042a9ffb3da380aa17dc9d76c4064c1b9f0b4b100f46542" }
+  - { path: ledger/8980.yaml,   role: ledger, immutable: true, expected_sha3_256: "c519fbf14098a8e4aa56af94dffe75a85fa96320a2c81233843dc354b1f462a1" }
+  - { path: ledger/9183.yaml,   role: ledger, immutable: true, expected_sha3_256: "22d839a43e75bf5d17aee4d0f0fd2413ffac0a6024f735cf53b058550ab371cf" }
+  - path: ledger/510510.yaml
+    role: ledger
+    immutable: true
+    series: hepta_prime
+    series_note: "2*3*5*7*11*13*17; event /math_origin_quadratic_quadrant; not sequential ledger-order"
+    expected_sha3_256: "a45d9e1b5927f33f2756f47d6bf2448942b25abfccb346ee3bd2015c99306e91"
 
-  # group: current-ledger
+  # group: current-ledger (mutable / accrete)
   - { path: ledger/9233.yaml,                           role: ledger }
   - { path: ledger/9234.yaml,                           role: ledger }
   - { path: ledger/9235.yaml,                           role: ledger }
@@ -81,9 +110,6 @@ entries:
 
   # group: misc
   - { path: fastMCP/gearbox.py,                         role: module }
-
-  # corrected append
-  - { path: scripts/merge_engine.py,                    role: verifier }
   - { path: .github/workflows/merge-engine.yml,         role: workflow, ledger: null, policy: NO_LEDGER_WRITE }
   - { path: app/routes/tts.py,                          role: module }
   - { path: app/routes/vision_tts.py,                   role: module }

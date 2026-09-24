@@ -1,18 +1,23 @@
 entry_index: 8977
 event: /sovereign_cicd_run
 status: SUCCESS
-timestamp: '2026-09-19T20:34:27Z'
+timestamp: '2026-09-20T19:38:31Z'
 hash_algo: sha3_256
 python_versions:
 - '3.10'
 - '3.11'
+- '3.12'
+upstream_results:
+  verify_integrity: success
+  test: success
+  oidc_federation: success
 pytest_status: PASSED
 linting_status: RUN
-deepseek_offline: PASSED
+deepseek_offline: RAN_OR_SKIPPED
 mcp_pulse: SKIPPED
 oidc_federation: offline
-security_headers_source: VERIFIED
+security_headers_source: FAILED
 security_headers_live: SKIPPED
-ed25519_signatures: VERIFIED
+ed25519_signatures: success
 witness: 8976 → 8977 — UNBROKEN
-seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED · bdcf3b94e44876b9a1c7fd49c357bcd777121cad3693e7a11264c37fec57baa3
+seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED · 2d6387ff82df90b08620fecf4da60e22b3f3462c718621ca448238a2d0c7cf1d

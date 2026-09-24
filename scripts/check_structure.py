@@ -80,6 +80,7 @@ def check_workflows() -> list[str]:
         if not isinstance(doc, dict):
             errs.append(f"{p}: top-level is {type(doc).__name__}, not mapping")
             continue
+        # PyYAML may parse bare 'on:' as boolean True
         if "on" not in doc and True not in doc:
             errs.append(f"{p}: no top-level 'on' key")
         if "jobs" not in doc:
@@ -95,6 +96,7 @@ def _numeric_assignments(tree: ast.Module) -> dict[str, float]:
                 for tgt in node.targets:
                     if isinstance(tgt, ast.Name):
                         out[tgt.id] = float(node.value.value)
+        # PHI ** -8 style
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.BinOp):
             for tgt in node.targets:
                 if isinstance(tgt, ast.Name) and tgt.id in SOAK_CONSTANT_NAMES:
@@ -199,6 +201,7 @@ def check_signitorial() -> list[str]:
                 f"{p}: signitorial needle {SIGNITORIAL_NEEDLE!r} "
                 f"missing from masked header"
             )
+    # This file itself must carry the needle (AST-visible).
     here = Path(__file__).resolve()
     src = here.read_text(encoding="utf-8")
     if SIGNITORIAL_NEEDLE not in src:

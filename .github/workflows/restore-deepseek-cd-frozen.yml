@@ -1,0 +1,121 @@
+name: Restore deepseek-cd frozen tip
+
+# AST structural contract (not cryptographic encryption):
+#   branch == "deepseek-cd"
+#   tip    == static.py FROZEN_LANE["tip"]
+#          == 4016ec295fa4a78ad3d1480473a8254d737cccf5
+#   policy: no_routine_merge; tip is witness-only ARCHIVE commit
+#
+# Run once via Actions → workflow_dispatch. Safe to re-run (force-updates ref).
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type RESTORE to create/update deepseek-cd at frozen tip"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: restore-deepseek-cd-frozen
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    name: Point deepseek-cd at 4016ec29…
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Guard confirm input
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.confirm }}" != "RESTORE" ]; then
+            echo "::error::confirm must be exactly RESTORE"
+            exit 1
+          fi
+
+      - name: AST check — tip object exists
+        env:
+          TIP: "4016ec295fa4a78ad3d1480473a8254d737cccf5"
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/tip.json -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/commits/$TIP")
+          test "$code" = "200"
+          msg=$(python3 -c "import json; print(json.load(open('/tmp/tip.json'))['message'].splitlines()[0])")
+          echo "tip message: $msg"
+          echo "$msg" | grep -q "ARCHIVE: freeze deepseek-cd"
+
+      - name: Create or update refs/heads/deepseek-cd
+        env:
+          TIP: "4016ec295fa4a78ad3d1480473a8254d737cccf5"
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/${{ github.repository }}/git/refs"
+          # Try create
+          create_code=$(curl -sS -o /tmp/ref.json -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$API" \
+            -d "{\"ref\":\"refs/heads/deepseek-cd\",\"sha\":\"$TIP\"}")
+          echo "create HTTP $create_code"
+          if [ "$create_code" = "201" ]; then
+            echo "created deepseek-cd @ $TIP"
+          elif [ "$create_code" = "422" ]; then
+            # Already exists — force update to frozen tip (renew)
+            upd_code=$(curl -sS -o /tmp/ref.json -w "%{http_code}" \
+              -X PATCH \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$API/heads/deepseek-cd" \
+              -d "{\"sha\":\"$TIP\",\"force\":true}")
+            echo "update HTTP $upd_code"
+            test "$upd_code" = "200"
+            echo "renewed deepseek-cd @ $TIP (force)"
+          else
+            cat /tmp/ref.json
+            exit 1
+          fi
+
+      - name: Verify branch tip
+        env:
+          TIP: "4016ec295fa4a78ad3d1480473a8254d737cccf5"
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -sS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/ref/heads/deepseek-cd" \
+            | tee /tmp/verify.json
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/verify.json"))
+          sha = d["object"]["sha"]
+          tip = "4016ec295fa4a78ad3d1480473a8254d737cccf5"
+          print("branch tip:", sha)
+          assert sha == tip, (sha, tip)
+          print("AST ok: deepseek-cd == FROZEN_LANE tip")
+          PY
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Restore deepseek-cd"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| branch | deepseek-cd |"
+            echo "| tip | \`4016ec295fa4a78ad3d1480473a8254d737cccf5\` |"
+            echo "| source | static.py FROZEN_LANE |"
+            echo "| policy | frozen / no_routine_merge |"
+          } >> "$GITHUB_STEP_SUMMARY"
