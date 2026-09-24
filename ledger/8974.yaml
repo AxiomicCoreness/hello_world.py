@@ -34,4 +34,4 @@ remedy_recorded: |
 witness_chain: 8973 -> 8974
 hash_algo: sha3_256
 seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
-seal_sha3_256: 3eeddb18ffc01e9a7f26d9659c8e94aff23e193e992317c0102e778e6cff9ee2
+seal_sha3_256: 38740c6f84839c265c65961e94ae67cbb25442b77edc06bc0bdb3e066a103d09
