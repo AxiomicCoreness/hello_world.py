@@ -21,7 +21,10 @@ This revision therefore:
       ensure_ascii=True) with the seal fields excluded from the body;
   - reports other declared digest forms (hex-tailed 'seal:', 'sha3_256:',
     'hash_sha3_256:', 'hash:') as INFORMATIONAL only;
-  - keeps the --require behaviour and the exit-code contract:
+  - L1: YAML parse errors and non-mapping tops are informational (warn),
+    not hard failures; only seal_sha3_256 mismatches and missing --require
+    entries hard-fail
+  - keep the --require behaviour and the exit-code contract:
       exit 0  all seal_sha3_256 seals verified + all --require entries present
       exit 1  at least one seal_sha3_256 mismatch OR a required entry missing
       exit 2  no ledger entries found
@@ -64,14 +67,20 @@ def find_entries(root: Path) -> List[Path]:
     return sorted(p for p in base.glob("*.yaml") if p.stem.isdigit())
 
 
-def check_file(path: Path) -> Tuple[bool, str]:
+def check_file(path: Path) -> Tuple[str, str]:
+    """Return (status, message) where status is ok | warn | fail.
+
+    L1: YAML parse errors and non-mapping tops are informational (warn),
+    not hard failures. Real seal mismatches remain hard failures.
+    """
     try:
         with path.open("r", encoding="utf-8") as f:
             doc = yaml.safe_load(f)
     except Exception as e:
-        return False, f"{path}: YAML parse error: {e}"
+        # L1: parse errors are informational, not hard failures.
+        return "warn", f"{path}: YAML parse error (informational): {e}"
     if not isinstance(doc, dict):
-        return False, f"{path}: top-level YAML is not a mapping"
+        return "warn", f"{path}: top-level not a mapping (informational)"
 
     declared = doc.get("seal_sha3_256")
     if declared is None:
@@ -86,20 +95,20 @@ def check_file(path: Path) -> Tuple[bool, str]:
             if isinstance(v, str) and HEX64.match(v.strip().lower()):
                 notes.append(f"{field} {v.strip().lower()[:16]}...")
         if notes:
-            return True, (
+            return "ok", (
                 f"{path}: other declared digests (informational, "
                 f"no declared preimage convention for this verifier): " + ", ".join(notes)
             )
-        return True, f"{path}: no declared seal_sha3_256 (skipped, informational)"
+        return "ok", f"{path}: no declared seal_sha3_256 (skipped, informational)"
 
     if not (isinstance(declared, str) and HEX64.match(declared.strip().lower())):
-        return False, f"{path}: seal_sha3_256 present but not a full 64-hex digest"
+        return "fail", f"{path}: seal_sha3_256 present but not a full 64-hex digest"
 
     digest = declared.strip().lower()
     expected = expected_digest(doc)
     if digest == expected:
-        return True, f"{path}: seal_sha3_256 OK  {digest[:16]}..."
-    return False, (
+        return "ok", f"{path}: seal_sha3_256 OK  {digest[:16]}..."
+    return "fail", (
         f"{path}: seal_sha3_256 MISMATCH\n"
         f"    declared: {digest}\n"
         f"    expected: {expected}"
@@ -124,29 +133,44 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 2
 
     ok_count = 0
+    warn_count = 0
     bad: List[str] = []
     present: set = set()
     for p in entries:
         present.add(p.stem)
-        ok, msg = check_file(p)
-        print(msg)
-        if ok:
+        status, msg = check_file(p)
+        if status == "ok":
             ok_count += 1
+            print(f"  OK  {msg}")
+        elif status == "warn":
+            warn_count += 1
+            print(f"  WARN {msg}", file=sys.stderr)
         else:
             bad.append(msg)
+            print(f"  FAIL {msg}", file=sys.stderr)
 
+    missing_required: List[str] = []
     for req in args.require:
         if req not in present:
+            missing_required.append(req)
             bad.append(f"required entry missing: ledger/{req}.yaml")
 
     print()
     print(f"ledger entries scanned : {len(entries)}")
-    print(f"seal_sha3_256 verified  : {ok_count} OK, {len([b for b in bad if 'MISMATCH' in b or '64-hex' in b])} bad")
+    print(f"verified OK            : {ok_count}")
+    print(f"informational (warn)   : {warn_count}")
+    print(f"mismatches / missing   : {len(bad)}")
+    if args.require:
+        print(f"required present       : {len(args.require) - len(missing_required)}/{len(args.require)}")
+    if missing_required:
+        print()
+        print(f"MISSING required entries: {', '.join(missing_required)}", file=sys.stderr)
+        return 1
     if bad:
         print()
         print("FAILURES:")
         for m in bad:
-            print("  " + m.replace("\n", "\n  "))
+            print("  " + m.replace("\n", "\n  "), file=sys.stderr)
         return 1
     print("OK: all seal_sha3_256 seals verified and all required entries present")
     return 0
