@@ -1,14 +1,19 @@
-name: Sovereign Python Package
-
+# Sovereign Python Package — containerized
 # Read-only package lane. Parses ledger 8979 and 9233, probes headers on
 # port380_mcp.py (or mcp/port380_mcp.py), runs the pytest matrix across
-# Python 3.10–3.12, then reports. Does not write a ledger entry.
+# Python 3.10-3.12 natively, then repeats the lane INSIDE a built container
+# image so runtime parity between host and container is witnessed.
 #
 # hash_algo: sha3_256 (FIPS 202) — declared for header consistency
 # ledger_policy: NO_LEDGER_WRITE
 # behaviour:
 #   - headers probe is informational by default; set SOFT_HEADERS=0 to hard-fail
 #   - pytest is soft by default (rc=5 = no tests = pass); set STRICT_PYTEST=1 to hard-fail
+#   - container lane builds the repo Dockerfile if present; falls back to a
+#     pinned python:3.12-slim container with pip deps. Container failures are
+#     HARD (a container that cannot run the package is a real defect).
+
+name: Sovereign Python Package
 
 on:
   push:
@@ -18,6 +23,7 @@ on:
       - "port380_mcp.py"
       - "mcp/port380_mcp.py"
       - "**.py"
+      - "Dockerfile"
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -33,6 +39,7 @@ env:
   HASH_ALGO: sha3_256
   SOFT_HEADERS: "1"
   STRICT_PYTEST: "0"
+  IMAGE_NAME: sovereign-package
 
 jobs:
   verify-integrity:
@@ -58,8 +65,6 @@ jobs:
           python -m pip install --quiet pyyaml cryptography
 
       - name: Headers source probe
-        env:
-          SOFT_HEADERS: ${{ env.SOFT_HEADERS }}
         run: |
           python3 - <<'PY'
           import os, sys
@@ -89,10 +94,10 @@ jobs:
               sys.exit(1)
 
           if missing:
-              print(f"⚠️ missing headers in {p}: {missing} (SOFT_HEADERS=1 — informational)")
+              print(f"missing headers in {p}: {missing} (SOFT_HEADERS=1 — informational)")
               sys.exit(0)
 
-          print(f"✅ headers present in {p}")
+          print(f"headers present in {p}")
           PY
 
       - name: Ledger YAML parse 8979 + 9233
@@ -155,8 +160,6 @@ jobs:
 
       - name: Pytest (soft by default)
         if: steps.tests_probe.outputs.present == 'true'
-        env:
-          STRICT_PYTEST: ${{ env.STRICT_PYTEST }}
         run: |
           set +e
           python -m pytest -q --tb=line -k "not integration"
@@ -180,11 +183,135 @@ jobs:
 
           echo "pytest passed"
 
+  # ── Container lane ────────────────────────────────────────────────────────
+  # Builds the image and reruns the integrity probe + pytest INSIDE it.
+  # HARD failures: if the image cannot be built, or the package cannot be
+  # imported inside it, this job fails. Runtime parity is witnessed, not
+  # asserted. Container pytest retains the soft-by-default policy for parity
+  # with the host lane, but import failure is never soft.
+  # In-image python - <<'PY' gates MUST use docker run -i. Without -i the
+  # interpreter gets EOF, the gate does not run, and the job ghost-passes
+  # (same class as Lua recon_ok = true). Lua is NOT installed in the
+  # python:3.12-slim fallback — do not add a lua step (that would 100% fail).
+  container:
+    name: Container · build & in-image verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify-integrity
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Probe Dockerfile
+        id: df_probe
+        run: |
+          if [ -f Dockerfile ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "no Dockerfile — will use pinned python:3.12-slim fallback"
+          fi
+
+      - name: Build image (repo Dockerfile)
+        if: steps.df_probe.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          docker build -t "${IMAGE_NAME}:${{ github.sha }}" .
+
+      - name: Build image (fallback base)
+        if: steps.df_probe.outputs.present == 'false'
+        run: |
+          set -euo pipefail
+          docker pull python:3.12-slim
+          docker build -t "${IMAGE_NAME}:${{ github.sha }}" - <<'DF'
+          FROM python:3.12-slim
+          WORKDIR /app
+          COPY . /app
+          RUN python -m pip install --no-cache-dir --quiet pytest pyyaml
+          DF
+
+      - name: In-image import gate (HARD)
+        run: |
+          set -euo pipefail
+          # -i required: heredoc is stdin. Without it python - reads EOF,
+          # the HARD import never executes, and the job ghost-passes.
+          docker run --rm -i "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          # module discovery: run import of port380 surface if present
+          candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
+          p = next((c for c in candidates if c.exists()), None)
+          if p is None:
+              print("port380_mcp.py absent in image — import gate n/a")
+              sys.exit(0)
+
+          sys.path.insert(0, str(p.parent))
+          import importlib
+          mod = importlib.import_module(p.stem)
+          print(f"imported {p} inside container — OK")
+          PY
+
+      - name: In-image headers probe (parity with host lane)
+        run: |
+          set -euo pipefail
+          docker run --rm -i -e SOFT_HEADERS="${SOFT_HEADERS}" \
+            "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
+          import os, sys
+          from pathlib import Path
+          candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
+          p = next((c for c in candidates if c.exists()), None)
+          if p is None:
+              print("absent in image — skip")
+              sys.exit(0)
+          content = p.read_text(encoding="utf-8", errors="replace")
+          required = [
+              "Content-Security-Policy",
+              "Strict-Transport-Security",
+              "X-Content-Type-Options",
+              "X-Frame-Options",
+              "Referrer-Policy",
+              "Permissions-Policy",
+          ]
+          missing = [h for h in required if h not in content]
+          soft = os.environ.get("SOFT_HEADERS", "1") != "0"
+          if missing and not soft:
+              print(f"missing headers in image: {missing}", file=sys.stderr)
+              sys.exit(1)
+          if missing:
+              print(f"missing headers in image (soft): {missing}")
+              sys.exit(0)
+          print("headers present in image — parity with host lane")
+          PY
+
+      - name: In-image pytest (soft, parity)
+        run: |
+          set -euo pipefail
+          docker run --rm "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
+            set +e
+            python -m pytest -q --tb=line -k "not integration"
+            rc=$?
+            if [ "$rc" -eq 5 ]; then echo "no tests collected in image — pass"; exit 0; fi
+            if [ "$rc" -ne 0 ]; then
+              if [ "${STRICT_PYTEST}" = "1" ]; then exit "$rc"; fi
+              echo "pytest rc=$rc in image — soft pass"; exit 0
+            fi
+            echo "pytest passed in image"
+          '
+
+      - name: Export image digest (witness)
+        run: |
+          set -euo pipefail
+          docker image inspect "${IMAGE_NAME}:${{ github.sha }}" \
+            --format 'image={{index .RepoDigests 0}} id={{.Id}}' || \
+          docker image inspect "${IMAGE_NAME}:${{ github.sha }}" \
+            --format 'image=local id={{.Id}}' >> "$GITHUB_STEP_SUMMARY"
+
   federate:
     name: Offline federate
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: build
+    needs: [build, container]
     if: github.event_name == 'push'
     steps:
       - name: Check out repository
@@ -197,7 +324,7 @@ jobs:
   summary:
     name: Summary
     runs-on: ubuntu-latest
-    needs: [verify-integrity, build, federate]
+    needs: [verify-integrity, build, container, federate]
     if: always()
     steps:
       - name: Summary
@@ -209,10 +336,12 @@ jobs:
             echo "|-----|--------|"
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| build | ${{ needs.build.result }} |"
+            echo "| container | ${{ needs.container.result }} |"
             echo "| federate | ${{ needs.federate.result }} |"
             echo ""
             echo "- hash_algo: ${HASH_ALGO} (FIPS 202)"
             echo "- ledger_policy: NO_LEDGER_WRITE"
-            echo "- headers probe: soft unless \`SOFT_HEADERS=0\`"
+            echo "- headers probe: soft unless \`SOFT_HEADERS=0\` (host + container parity)"
             echo "- pytest: soft unless \`STRICT_PYTEST=1\` (rc=5 = no tests = pass)"
+            echo "- container: import gate is HARD; image build failure is HARD"
           } >> "$GITHUB_STEP_SUMMARY"

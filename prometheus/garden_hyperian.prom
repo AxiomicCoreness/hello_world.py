@@ -1,0 +1,11 @@
+# HELP hyperian_up Hyperian / metrics surface up
+# TYPE hyperian_up gauge
+hyperian_up 1.0
+
+# HELP hyperian_phase_lock_deg Sovereign phase lock (degrees)
+# TYPE hyperian_phase_lock_deg gauge
+hyperian_phase_lock_deg 202.6
+
+# HELP hyperian_oidc_secret_len OIDC secret length (expect 64 Phase-3)
+# TYPE hyperian_oidc_secret_len gauge
+hyperian_oidc_secret_len 64.0

@@ -1,0 +1,66 @@
+# Ledger seal gate + Clifford smoke — additive CI lane.
+#
+# Wired here because in-place edits to Hamiltonian_Full_Immersion.yml are
+# blocked in the landing environment (full-file reads return stubs; a blind
+# overwrite would be unsafe). This lane achieves the wiring additively:
+#   - Option 3: Clifford smoke as a red-capable CI gate
+#   - (b): --require on the seal verifier, so required ledger entries
+#     (8958 catalogue, 8959 handoff) are hard CI dependencies
+# The Hamiltonian workflow keeps its own lanes; this file adds none of its
+# jobs and removes none of them.
+#
+# Exit-code contract:
+#   verify_ledger_seals.py  0 ok | 1 mismatch/missing-required | 2 no ledger
+#   clifford_euclid3.py     smoke asserts (any failure -> nonzero exit)
+name: ledger-seal-gate
+
+on:
+  push:
+    branches: [mistral-agent-cluster, main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  clifford-smoke:
+    name: Clifford Cl(3) smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run embedded smoke assertions
+        run: |
+          set -euo pipefail
+          python substrates/pyroclastic_ice/clifford_euclid3.py
+
+  ledger-seal-gate:
+    name: Ledger seal_sha3_256 gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+      - name: Verify seals; require entries 8958 and 8959
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959
+
+  beacon-anchor:
+    name: Beacon timestamp-anchor verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Recompute SHA3-256 anchor over inline preimage
+        run: |
+          set -euo pipefail
+          python beacons/timestamp_beacon.py

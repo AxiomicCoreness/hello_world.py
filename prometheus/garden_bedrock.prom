@@ -1,0 +1,15 @@
+# HELP bedrock_triangulation_phase_root0 Bedrock triangulation root 0
+# TYPE bedrock_triangulation_phase_root0 gauge
+bedrock_triangulation_phase_root0 0.0
+
+# HELP bedrock_triangulation_phase_root1 Bedrock triangulation root 1
+# TYPE bedrock_triangulation_phase_root1 gauge
+bedrock_triangulation_phase_root1 0.0
+
+# HELP bedrock_triangulation_phase_root2 Bedrock triangulation root 2
+# TYPE bedrock_triangulation_phase_root2 gauge
+bedrock_triangulation_phase_root2 0.0
+
+# HELP oracle_query_count Oracle query counter
+# TYPE oracle_query_count counter
+oracle_query_count 0.0
