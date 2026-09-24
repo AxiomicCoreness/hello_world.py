@@ -237,13 +237,33 @@ jobs:
           file_pattern: ledger/632.yaml
 
   # ──────────────────────────────────────────────────────────────
+  # 1b. ROTATION FAILURE DIAGNOSTIC (read-only, no downstream)
+  # ──────────────────────────────────────────────────────────────
+  diagnose-rotation:
+    runs-on: ubuntu-latest
+    name: Diagnose Failed Rotation (read-only)
+    needs: [key-rotation]
+    if: failure()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report rotation failure (no AWS calls, no sealing)
+        run: |
+          echo "::error::key-rotation failed — downstream pipeline correctly halted (verify-hamiltonian, handoff-pipeline, promote-canary all gated on rotation success)"
+          if [ -f ci_cd_key_rotator_state.json ]; then
+            echo "local rotator state present:"
+            cat ci_cd_key_rotator_state.json
+          else
+            echo "no local rotator state present (state is job-local, not committed)"
+          fi
+
+  # ──────────────────────────────────────────────────────────────
   # 2. HMAC VERIFICATION (Entry 635)
   # ──────────────────────────────────────────────────────────────
   verify-hamiltonian:
     runs-on: ubuntu-latest
     name: Verify Sovereign Hamiltonian (Entry 635)
     needs: [verify-integrity, key-rotation]
-    if: always()
 
     steps:
       - uses: actions/checkout@v4
