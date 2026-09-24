@@ -263,9 +263,18 @@ def has_seal_header(source: str) -> Optional[str]:
 
 
 def _split_header(source: str) -> tuple[str, str, str]:
-    """Return (shebang, encoding_line, body) with any seal line removed."""
-    stripped = SEAL_LINE_RE.sub("", source, count=1)
-    lines = stripped.split("\n")
+    """Return (shebang, encoding_line, body) with any seal line removed.
+
+    D27 fix: the seal line is removed as a WHOLE line (newline included),
+    so repeated inject/verify cycles are idempotent. The previous
+    SEAL_LINE_RE.sub("", ...) left a residual blank line on every
+    re-injection, growing the file and changing the digest each run.
+    """
+    lines = source.split("\n")
+    for i, ln in enumerate(lines):
+        if SEAL_LINE_RE.match(ln):
+            lines.pop(i)
+            break
     shebang = ""
     if lines and lines[0].startswith("#!"):
         shebang = lines[0] + "\n"
