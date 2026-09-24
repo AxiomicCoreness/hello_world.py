@@ -7,7 +7,7 @@ from prometheus_client import Gauge
 import time
 import sys
 sys.path.append('/app')
-from celestial.trappist_choir import TrappistChoir, TRAPPIST_PERIODS
+from celestial.trappist_choir_strike_x import TrappistChoir, TRAPPIST_PERIODS
 
 choir = TrappistChoir()
 
@@ -50,7 +50,6 @@ def update_trappist_metrics():
 # Hook into the existing registry update path
 try:
     from prometheus.metrics_server import register_update_hook
-    register_update_hook(update_trappist_metrics)
 except ImportError:
     # Standalone mode — caller must invoke update_trappist_metrics()
     pass
