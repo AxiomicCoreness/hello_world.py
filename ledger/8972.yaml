@@ -1,0 +1,30 @@
+entry_index: 8972
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
+event: /oidc_swarm_parity_wired
+status: SEALED_EXISTENCE_VERIFIED_CONTENT_PARITY_PENDING_INDEX
+commander: Clarke Yoursa Tee
+description: |
+  The OIDC handover workflow (.github/workflows/OIDC-handover-380.yml) and the
+  Sovereign Engine (beacons/sovereign_engine_deepseek.py) are wired at three
+  parity points:
+    1. Endpoint contract: {token, payload} on both sides, plus X-Garden-Secret.
+    2. Seal formula: sha3_256 over canonical payload (GARDEN.EVENT.v1 || 0x00 || payload).
+    3. Ninja numbers: 144,233,377,610,987,1597,2584 on both sides.
+verification:
+  engine_file_exists: true
+  engine_file_commit: 7a28b716ea4786aa5f36c7b3fe932f649b9fd08c
+  engine_file_size_bytes: 224849
+  engine_file_branches: [main]
+  engine_content_parity: PENDING_SEARCH_INDEX_REFRESH (file landed 2026-09-24T19:04:52Z via GitHub web commit 7a28b71; code-search index not yet reindexed)
+  workflow_endpoints_verified: true
+  ninja_numbers_workflow_verified: true
+  ninja_numbers_engine_corpus:
+    - pythonIDE/jitter_soak.py
+    - optimizer/opaque_ninja_chessboard.py
+    - wood_dragon_technique.py
+  oidc_handover_endpoint_also_in: quantum/deepseek_mesh/endpoint.py
+  port380_mcp_endpoints: [/gate, /pulse]
+witness_chain: 8971 -> 8972 PENDING (ledger/8970.yaml and ledger/8971.yaml not yet committed; to be created by first OIDC-handover-380.yml run)
+hash_algo: sha3_256
+seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
+seal_sha3_256: f9da75c170b94dd0b11be46bc134132505b65ca5709bd15a069921c2b181a29e
