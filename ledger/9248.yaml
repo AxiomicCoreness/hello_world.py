@@ -1,0 +1,8 @@
+entry_index: 9248
+event: "/readme_seal_block_landed_corrected"
+status: "SEALED"
+timestamp: "2026-09-24T22:24:18Z"
+hash_algo: "sha3_256"
+witness: "9247 → 9248 — UNBROKEN"
+note: "README seal block landed with corrected arithmetic. Five asserted phi-table values in the draft did not recompute and were replaced with derived values (phi^21, phi^34, phi^709, phi^713, phi^-1000); phi^-1000 in the draft carried phi^-1418's value. Proposed entry index 9170 was rejected: ledger/9170.yaml already exists and append-only policy forbids rewriting sealed entries. Ledger head at landing: 9247. Files: README_SEAL_BLOCK.md, scripts/append_readme_seal.sh."
+seal_sha3_256: "00d34365bcffe913eb6c8502d031c2c388e513e360a4f6def8f2f44cc40cb5ac"
