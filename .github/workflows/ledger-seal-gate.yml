@@ -51,3 +51,16 @@ jobs:
         run: |
           set -euo pipefail
           python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959
+
+  beacon-anchor:
+    name: Beacon timestamp-anchor verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Recompute SHA3-256 anchor over inline preimage
+        run: |
+          set -euo pipefail
+          python beacons/timestamp_beacon.py
