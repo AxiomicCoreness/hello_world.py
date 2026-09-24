@@ -1,4 +1,4 @@
-# Python
+# Dependencies
 __pycache__/
 *.py[cod]
 *$py.class
@@ -34,39 +34,25 @@ ENV/
 *.swo
 *~
 
-# Local dependency and container artifacts
-node_modules/
-kind
-option_56_results.json
-
 # Testing
+.pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .nox/
-.pytest_cache/
 
-# Visualization outputs
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
-*.pdf
+# Local builds
+.merge/
+.merge/merged_manifest.yaml
+.merge/merged_report.json
+.merge/expected_sha3_256.json
+.merge/merkle_root.json
+.merge/merkle_root_*.json
 
 # Logs
 *.log
-logs/
+.worker-hooks/
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-.cache/
-
-# Local configuration
-.env.local
-.env.*.local

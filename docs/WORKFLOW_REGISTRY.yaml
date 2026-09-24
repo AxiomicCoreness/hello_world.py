@@ -1,0 +1,290 @@
+# docs/WORKFLOW_REGISTRY.yaml
+#
+# Workflow registry. Typed map of every workflow that reads or writes
+# repository state.
+#
+# Grounded in three answers:
+#   1. Trust boundary: typos and drift, NOT adversarial insider.
+#      No signatures; content-addressed outputs; fail-fast exit codes.
+#   2. Failure budget: non-zero. Verifiers record; they do not page.
+#      The Actions run log and the ledger are the observation surface.
+#   3. Topology: GitHub-hosted cloud only. DAG edges are workflow_run,
+#      needs, artifacts, and git paths. No persistent Dask scheduler.
+#
+# Checked by scripts/check_registry.py (to be written). The checker
+# asserts four invariants:
+#   a. every reads[*].shape is written by some producer
+#   b. every writes[*].shape is declared in `shapes`
+#   c. every runs_as and invoked_by names a file that exists
+#   d. no two producers write the same concrete path without a rule
+#
+# Exit codes follow the repository convention: 0 clean, 1 problem,
+# 2 missing input.
+
+version: 1
+hash_algo: sha3_256
+
+layers:
+  0:
+    name: invariants
+    budget: every_push
+    side_effects: none
+    may_fail_pipeline: true
+    rationale: "Pure function over the tree. Exit code is the output."
+  1:
+    name: producers
+    budget: once_per_input_change
+    side_effects: write_declared_paths
+    may_fail_pipeline: true
+    rationale: "Content-addressed output. Re-running on same input is a no-op."
+  2:
+    name: verifiers
+    budget: after_L1_and_nightly
+    side_effects: none
+    may_fail_pipeline: true
+    rationale: "Boolean answer plus machine-readable reason."
+  3:
+    name: janitors
+    budget: nightly_or_release
+    side_effects: delete_within_scope
+    may_fail_pipeline: false
+    rationale: "Refuse when uncertain. Never delete outside scope."
+  4:
+    name: observers
+    budget: always
+    side_effects: summary_only
+    may_fail_pipeline: false
+    rationale: "Record. If recording fails, say so. Do not fail the pipeline."
+
+shapes:
+  ledger_entry:
+    required: [entry_index, event, timestamp, hash_algo, seal]
+    optional: [prev_hash, witness, status, math_origin,
+               upstream_results, python_versions, pytest_status]
+    canonicalization:
+      sort_keys: true
+      separators: [",", ":"]
+      # Unicode seals (∀∞φ²) require ensure_ascii: false so writer and
+      # verifier agree on the digest.
+      ensure_ascii: false
+    seal_field: seal
+    seal_format: "… · <64-hex>"
+    index_field: entry_index
+    prev_link_field: prev_hash
+
+  smoke_catalogue:
+    required: [generated_by, generated_at, entries]
+    optional: [counts, groups, conflicts, missing, immutable_violations]
+
+  merge_manifest:
+    required: [generated_by, generated_at, counts, entries]
+    optional: [groups, conflicts, immutable_violations, missing]
+
+  summary_table:
+    kind: stream
+    sink: $GITHUB_STEP_SUMMARY
+    note: "Markdown table lines appended to the run summary."
+
+entries:
+
+  - id: assert_no_forbidden_semantics
+    layer: 0
+    kind: invariant
+    runs_as: scripts/assert_no_forbidden_semantics.py
+    invoked_by:
+      - .github/workflows/producer-axiom-verify.yml
+    reads: ["**/*.py"]
+    writes: []
+    exit: { 0: clean, 1: violation, 2: missing_dep }
+
+  - id: assert_no_retired_symbols
+    layer: 0
+    kind: invariant
+    runs_as: scripts/assert_no_retired_symbols.py
+    invoked_by:
+      - .github/workflows/producer-axiom-verify.yml
+    reads: ["consumer_axiom/**", "producer_axiom/**",
+            "terminal_axiom/**", "tests/**",
+            "pythonIDE/**", "substrates/**"]
+    writes: []
+    exit: { 0: clean, 1: violation, 2: missing_dep }
+
+  - id: assert_math_origin
+    layer: 0
+    kind: invariant
+    runs_as: scripts/assert_math_origin.py
+    invoked_by:
+      - .github/workflows/producer-axiom-verify.yml
+    reads:
+      - path: ledger/*.yaml
+        shape: ledger_entry
+    writes: []
+    modes: [soft, strict]
+    exit: { 0: clean, 1: violation, 2: missing_dep }
+
+  - id: assert_no_port_binding
+    layer: 0
+    kind: invariant
+    runs_as: scripts/assert_no_port_binding.py
+    invoked_by:
+      - .github/workflows/producer-axiom-verify.yml
+    reads:
+      - path: port380_mcp.py
+    writes: []
+    claim_scope: |
+      "This file contains no port assignment and no port-taking call."
+      Does not certify CLI flags, env vars, Dockerfile, compose,
+      or process manager config.
+    exit: { 0: clean, 1: violation, 2: missing_file }
+
+  - id: assert_test_job_strict
+    layer: 0
+    kind: invariant
+    runs_as: scripts/assert_test_job_strict.py
+    invoked_by:
+      - .github/workflows/producer-axiom-verify.yml
+    reads:
+      - path: .github/workflows/producer-axiom-verify.yml
+    writes: []
+    exit: { 0: clean, 1: violation, 2: missing_file }
+
+  - id: seal_ledger_entry
+    layer: 1
+    kind: producer
+    runs_as: scripts/seal_ledger_entry.py
+    invoked_by:
+      - .github/workflows/generate-smoke-catalogue.yml
+    reads:
+      - path: ledger/<N-1>.yaml
+        shape: ledger_entry
+        fields: [seal]
+    writes:
+      - path: ledger/<N>.yaml
+        shape: ledger_entry
+    idempotent: true
+    conflict_rule: "one producer per entry_index; second write to same N is a defect"
+    atomic: "write to tmp, rename into place"
+    modes: [dry-run, write]
+    exit: { 0: ok, 1: fail, 2: missing_predecessor }
+
+  - id: smoke_catalogue
+    layer: 1
+    kind: producer
+    runs_as: scripts/catalogue_smoke_tests.py
+    invoked_by:
+      - .github/workflows/generate-smoke-catalogue.yml
+    reads: ["tests/**", "pythonIDE/**"]
+    writes:
+      - path: docs/smoke_catalogue.json
+        shape: smoke_catalogue
+    idempotent: true
+    exit: { 0: ok, 1: fail, 2: missing_dep }
+
+  - id: merge_engine
+    layer: 1
+    kind: producer
+    runs_as: scripts/merge_engine.py
+    invoked_by:
+      - .github/workflows/merge-engine.yml
+    reads: ["merge/manifest.yaml", "**/*"]
+    writes:
+      - path: .merge/merged_manifest.yaml
+        shape: merge_manifest
+      - path: .merge/merged_report.json
+        shape: merge_manifest
+    idempotent: true
+    conflict_rule: "outputs are content-addressed; same input → same bytes"
+    exit: { 0: ok, 1: conflicts_or_violations, 2: missing_manifest }
+
+  - id: seal_sovereign_cicd_8977
+    layer: 1
+    kind: producer
+    status: frozen_historical
+    writes_committed: false
+    committed_blob: 5f234389
+    committed_by: c1c39bab56cd76a72395f50f9cb2cdfedbfcf854
+    terminal_hex: f54699b4d004f81b5a30177d37f7aacd0c5a213addf41de215bbba61a7051986
+    next_index_if_reactivated: 8978
+    rationale: |
+      Entry 8977 exists on main. The current sovereign-cicd.yml writes
+      a job-local file only; it does not git add / commit / push. Treat
+      8977 as historical. A future committing producer writes 8978+.
+
+  - id: verify_ledger_dual_gate
+    layer: 2
+    kind: verifier
+    runs_as: .github/scripts/verify_ledger.py
+    invoked_by:
+      - .github/workflows/north-star-witness.yml
+      - .github/workflows/generate-smoke-catalogue.yml
+      - .github/workflows/pytest.yml
+    reads:
+      - path: ledger/*.yaml
+        shape: ledger_entry
+    asserts:
+      soft: "every present entry: seal terminates in 64-hex; canonical digest matches"
+      hard: "9240, 9241, 9242, 9243, 9244, 9245 — same assertion, mismatch fails job"
+    writes: []
+    modes: [emit, soft, hard]
+    exit: { 0: hard_ok, 1: hard_mismatch, 2: missing_file }
+
+  - id: verify_chain
+    layer: 2
+    kind: verifier
+    runs_as: scripts/verify_chain.py
+    invoked_by:
+      - .github/workflows/north-star-witness.yml
+    reads:
+      - path: ledger/*.yaml
+        shape: ledger_entry
+    asserts:
+      - seal_recompute
+      - prev_linkage
+      - contiguity
+    writes: []
+    exit: { 0: clean, 1: mismatch, 2: missing_predecessor }
+    note: |
+      Contiguity: whether prev_hash must name entry_index-1, or may
+      name any prior entry, is decided by the file on disk. If the
+      file names N-1 by index, contiguity is enforced and there is
+      no "any prior hex" fallback. If it searches, the ledger is a
+      DAG; document that in the file's docstring and re-type this
+      entry accordingly.
+
+  - id: prune_ephemeral_refs
+    layer: 3
+    kind: janitor
+    runs_as: scripts/prune_ephemeral_refs.py
+    status: not_yet_implemented
+    invoked_by: []
+    reads: ["git remote heads"]
+    writes: ["git remote refs"]
+    scope:
+      patterns: ["sovereign-tensor-*", "ci-node24-*"]
+      never: [main, master, "deepseek*", "grok*", "mistral*"]
+    safety_rule: "delete only if merged into main; refuse otherwise"
+    refuse_exit_code: 1
+    exit: { 0: ok, 1: refused, 2: missing_dep }
+
+  - id: github_summary
+    layer: 4
+    kind: observer
+    runs_as: inline
+    invoked_by: [all workflows]
+    reads: ["step outputs"]
+    writes:
+      - path: $GITHUB_STEP_SUMMARY
+        shape: summary_table
+    may_fail_pipeline: false
+    exit: { 0: always }
+
+no_state_workflows:
+  - .github/workflows/sovereign-pulse.yml
+  - .github/workflows/agent-service-control.yml
+
+# Composable cloud DAG under the three answers:
+#   Layer 0 (assert_*) → Layer 1 (merge_engine, smoke_catalogue, seal_ledger_entry)
+#   → Layer 2 (verify_ledger_dual_gate, verify_chain) → Layer 4 (github_summary)
+# Edges: exit codes, git paths, Actions artifacts, workflow_run only.
+# Out of DAG: persistent Dask/Ray; rebase-retry as standalone workflow;
+# dependency-audit PR generation as remote side-effect (declare separately).
