@@ -1,0 +1,37 @@
+entry_index: 8974
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
+event: /ghost_seal_census_computed_seal_applied
+status: GHOST_SEAL_CENSUS_SEALED
+commander: Clarke Yoursa Tee
+description: |
+  Computed seal applied to the ghost-seal census: a structural audit of the
+  ledger witness_prefix field. 99 entries sampled (of 684 files carrying the
+  field); each classified by deterministic pattern detectors, then the census
+  itself sealed with sha3_256 over canonical JSON.
+detectors:
+  - repeating 2/4/8-hex block (e.g. 0203 0203..., 82558255..., 01ee01ee...)
+  - sequential nibble chain (nibbles climb by 1 mod 16)
+  - interleaved ascending nibble sequences (8-hex hand-types)
+  - 100% digit/letter alternation (hand-typed giveaway)
+census:
+  sampled: 99
+  ghost_count: 84
+  ghost_entries: [0005,0008,0013,0024,0037,0061,0063,0065,0073,0080,0082,0087,0100,0110,0112,0116,0117,0119,0121,0122,0124,0125,0126,0136,0138,0145,0153,0156,0172,0183,0191,0197,0203,0221,0226,0228,0232,0234,0240,0241,0243,0245,0246,0250,0263,0270,0282,0290,0296,0314,0319,0327,0332,0344,0348,0404,0410,0415,0419,0439,0440,0443,0448,0459,0460,0472,0475,0477,0478,0480,0482,0483,0494,0500,0501,0512,0514,0515,0516,0519,8255,9026,9055,9067]
+  opaque_count: 15
+  opaque_entries: [0252,0385,8797,8800,8802,9130,9134,9172,9181,9182,9201,9221,9236,9242,9246]
+  opaque_status: OPAQUE_UNVERIFIED — full 64-hex, structurally plausible, but computation not verified (no preimage on record). NOT counted as real.
+examples_ghost:
+  - "0500: 7a8b9c0d1e2f3a4b... — 100% digit/letter alternation"
+  - "9026: 0203020302030203 — repeating 4-hex block"
+  - "8255: 8255825582558255 — entry index as repeating block"
+  - "0415: 1a2b3c4d5e6f7a8b — ascending chain, hand-typed"
+remedy_recorded: |
+  Per ledger/event_hash_chain.py: "witness_prefix (16 hex) is a label only.
+  Integrity is the full 64-hex SHA3-256." The ghost prefixes are therefore
+  labels, not seals — they are recorded here as ghosts, not deleted, and not
+  countersigned. Entries needing integrity must carry a computed
+  seal_sha3_256 with recorded preimage (the convention of 8972/8973/8974).
+witness_chain: 8973 -> 8974
+hash_algo: sha3_256
+seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
+seal_sha3_256: 3eeddb18ffc01e9a7f26d9659c8e94aff23e193e992317c0102e778e6cff9ee2
