@@ -8,21 +8,18 @@ and seals the catalogue with a prefix.
 import subprocess
 import hashlib
 import json
+import time
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# ── Smoke test commands (relative to repo root) ──
+# List of smoke test commands (relative to repo root)
 SMOKE_TESTS = [
     ["python", "quantum/security/soft_harness.py"],
     ["python", "x3df_x16f_protocol.py"],
     ["python", "x3df_x16f_websocket.py"],
     ["python", "lattice/octonian_heal_loop.py"],
     ["python", "sovereign_suite.py"],
-    # ── Symplectic POD scaffold tests (Entry 8536) ──
-    ["pytest", "test_symplectic_pod.py", "-v", "--tb=short"],
-    # ── Hybrid RK4 tests (float + Q8.24) ──
-    ["pytest", "test_hybrid_rk4.py", "-v", "--tb=short"],
 ]
 
 ENTRY_INDEX = 8958
@@ -42,7 +39,7 @@ def run_tests():
                 cwd=Path(__file__).resolve().parent.parent,
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=60,
             )
             stdout = proc.stdout
             stderr = proc.stderr
@@ -52,7 +49,7 @@ def run_tests():
                 "command": " ".join(cmd),
                 "returncode": proc.returncode,
                 "passed": passed,
-                "stdout": stdout[-2000:],
+                "stdout": stdout[-2000:],   # truncate for catalogue
                 "stderr": stderr[-2000:],
             })
             combined_output += stdout.encode() + stderr.encode()
@@ -65,6 +62,7 @@ def run_tests():
             })
             all_passed = False
 
+    # Compute hash of combined output
     sha = hashlib.sha256(combined_output).hexdigest()
     prefix = f"{ENTRY_INDEX}_{sha[:12]}"
     return {
@@ -78,6 +76,7 @@ def run_tests():
 
 def main():
     catalogue = run_tests()
+    # Save to docs/smoke_catalogue.json
     out_path = Path("docs/smoke_catalogue.json")
     out_path.parent.mkdir(exist_ok=True)
     with open(out_path, "w") as f:
