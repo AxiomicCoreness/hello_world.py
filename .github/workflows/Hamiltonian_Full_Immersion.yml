@@ -125,7 +125,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-rotator-632
+          role-to-assume: ${{ secrets.AWS_ROLE_ROTATOR_632 }}
           aws-region: us-east-1
           role-duration-seconds: 900
 
@@ -251,7 +251,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-verifier-635
+          role-to-assume: ${{ secrets.AWS_ROLE_VERIFIER_635 }}
           aws-region: us-east-1
           role-duration-seconds: 900
 
