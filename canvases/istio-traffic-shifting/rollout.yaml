@@ -10,14 +10,16 @@ spec:
       app: sovereign-garden
   strategy:
     canary:
-      canaryService: sovereign-garden-canary
-      stableService: sovereign-garden-stable
       trafficRouting:
         istio:
           virtualService:
             name: sovereign-garden
             routes:
               - primary
+          destinationRule:
+            name: sovereign-garden
+            canarySubsetName: canary
+            stableSubsetName: stable
       steps:
         - setWeight: 10
         - pause: { duration: 5m }
