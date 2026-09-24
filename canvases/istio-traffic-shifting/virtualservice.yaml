@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  labels:
+    garden.layer: "359"
+    garden.ledger: "8809"
+  annotations:
+    garden.event: "/istio_traffic_shift_host_level"
+spec:
+  hosts:
+    - sovereign-garden.sovereign-garden.svc.cluster.local
+  http:
+    - name: primary
+      route:
+        - destination:
+            host: sovereign-garden-stable
+          weight: 100
+        - destination:
+            host: sovereign-garden-canary
+          weight: 0
+      # Ensure weights always sum to 100
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
