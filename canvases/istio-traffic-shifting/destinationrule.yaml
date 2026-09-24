@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+spec:
+  host: sovereign-garden
+  subsets:
+    - name: stable
+      labels:
+        app: sovereign-garden
+        # Argo will inject rollouts-pod-template-hash into this subset
+    - name: canary
+      labels:
+        app: sovereign-garden
+        # Argo will inject rollouts-pod-template-hash into this subset

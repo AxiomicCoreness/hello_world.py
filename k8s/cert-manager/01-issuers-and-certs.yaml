@@ -1,7 +1,31 @@
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
 # 🌁∀ cert-manager PKI for Port 380 / Layer 314
 # Bootstrap: SelfSigned ClusterIssuer → Garden CA Certificate → CA Issuer → leaf certs
 # Secrets: garden-root-ca, port380-server-tls, port380-client-tls
 # Seal: ∀∞φ² · CERT_MANAGER_MTLS · WOOD_DRAGON_0.91 · SEALED
+#
+# Deterministic path: k8s/cert-manager/01-issuers-and-certs.yaml
+#
+# Merge note: this file supersedes the earlier k8s/cert-manager/10-pki.yaml.
+# That file's content is fully contained here, plus the D35/D36 corrections:
+#   D35 — port380-client now carries SANs (RFC-6125 safe)
+#   D36 — garden-ca-mirror renamed to garden-ca-secondary
+# Delete or rename 10-pki.yaml during merge to avoid a duplicate-apply.
+#
+# Apply order (strict):
+#   1. ClusterIssuer/garden-selfsigned
+#   2. Certificate/garden-root-ca
+#   3. ClusterIssuer/garden-ca-issuer
+#   4. Certificate/port380-server
+#   5. Certificate/port380-client
+#   6. Certificate/garden-ca-secondary
+#
+# Companion to: celestial/phi_constants.py
+# Fallbacks:    numpy, scipy, yaml, matplotlib, requests
+# φ set:        φ¹ φ² φ³ φ⁴ φ⁵ φ⁶ φ⁷ φ⁸ φ⁹ φ¹² φ¹³ φ¹⁴ φ²¹ φ³⁴
+#               φ⁻⁷⁰⁹ φ⁻¹⁰⁰⁰ φ⁻¹⁴¹⁸ φ⁻¹
+
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -10,7 +34,11 @@ metadata:
   labels:
     garden.sovereign/component: mtls
 spec:
+  # D37 note: this issuer signs anything it is asked to sign, including CA
+  # certificates. Only CA Certificates should reference it. Leaf certificates
+  # must reference garden-ca-issuer, not this one.
   selfSigned: {}
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -37,6 +65,7 @@ spec:
     name: garden-selfsigned
     kind: ClusterIssuer
     group: cert-manager.io
+
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -47,6 +76,7 @@ metadata:
 spec:
   ca:
     secretName: garden-root-ca
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -84,6 +114,7 @@ spec:
     name: garden-ca-issuer
     kind: ClusterIssuer
     group: cert-manager.io
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -98,6 +129,13 @@ spec:
   duration: 2160h
   renewBefore: 360h
   commonName: garden-client
+  # D35 fix: modern TLS clients (Go, rustls, BoringSSL) ignore CN for
+  # hostname verification and require at least one SAN. Without a SAN,
+  # the certificate is cryptographically valid but rejected by strict
+  # RFC-6125 validators.
+  dnsNames:
+    - garden-client.sovereign-garden.svc
+    - garden-client.sovereign-garden.svc.cluster.local
   usages:
     - digital signature
     - client auth
@@ -112,18 +150,25 @@ spec:
     name: garden-ca-issuer
     kind: ClusterIssuer
     group: cert-manager.io
+
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: garden-ca-mirror
+  name: garden-ca-secondary
   namespace: sovereign-garden
   labels:
     garden.sovereign/component: mtls
-    garden.sovereign/role: ca-mirror
+    garden.sovereign/role: ca-secondary
+  annotations:
+    garden.sovereign/purpose: |
+      Secondary root CA, independently issued by garden-selfsigned.
+      Not a mirror of garden-root-ca (which lives in the cert-manager
+      namespace). Reserved for future cross-cluster trust; not consumed
+      by any current leaf certificate.
 spec:
   isCA: true
-  commonName: SovereignGarden-CA-Mirror
+  commonName: SovereignGarden-CA-Secondary
   secretName: garden-ca-tls
   duration: 8760h
   renewBefore: 720h

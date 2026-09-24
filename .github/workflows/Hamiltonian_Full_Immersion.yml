@@ -122,10 +122,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC)
+      - name: Detect rotation mode (offline-first)
+        id: mode
+        env:
+          AWS_ROLE_ROTATOR_632: ${{ secrets.AWS_ROLE_ROTATOR_632 }}
+        run: |
+          if [ -n "$AWS_ROLE_ROTATOR_632" ]; then
+            echo "mode=FEDERATED" >> "$GITHUB_OUTPUT"
+            echo "rotation mode: FEDERATED (AWS role configured)"
+          else
+            echo "mode=OFFLINE" >> "$GITHUB_OUTPUT"
+            echo "rotation mode: OFFLINE (no AWS role — local lane, no cloud dependency)"
+          fi
+
+      - name: Configure AWS Credentials (OIDC — federation only)
+        if: steps.mode.outputs.mode == 'FEDERATED'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-rotator-632
+          role-to-assume: ${{ secrets.AWS_ROLE_ROTATOR_632 }}
           aws-region: us-east-1
           role-duration-seconds: 900
 
@@ -138,34 +152,75 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet boto3 pyyaml
+          python -m pip install --quiet pyyaml
+
+      - name: Install AWS SDK (federation only)
+        if: steps.mode.outputs.mode == 'FEDERATED'
+        run: python -m pip install --quiet boto3
 
       - name: Load Previous State
         id: load-state
         run: |
           python - <<'PY'
+          import os
+          os.environ.setdefault("CI_CD_ROTATOR_STATE", "rotation-state/key-rotator-632.json")
           from ci_cd_key_rotator import CI_CD_KeyRotator
           rotator = CI_CD_KeyRotator()
           if rotator.load_state():
-              print(f'✅ Loaded state: rotation #{rotator.rotation_count}')
+              print(f'✅ Loaded state: rotation #{rotator.rotation_count} (repo-committed, evolving)')
           else:
-              print('🔑 New deployment — initializing keys')
-          rotator.save_state()
+              print('🔑 New deployment — state seeds on first rotate')
           PY
 
       - name: Rotate Keys
         id: rotate
+        env:
+          MODE: ${{ steps.mode.outputs.mode }}
         run: |
           python - <<'PY'
           import json, os
+          from datetime import datetime, timezone
           from pathlib import Path
-          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
 
-          rotator = AWSSecretsManagerRotator(
-              secret_name="sovereign-hamiltonian-hmac-632",
-              region="us-east-1",
+          os.environ.setdefault("CI_CD_ROTATOR_STATE", "rotation-state/key-rotator-632.json")
+          mode = os.environ.get("MODE", "OFFLINE")
+
+          if mode == "FEDERATED":
+              from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
+              rotator = AWSSecretsManagerRotator(
+                  secret_name="sovereign-hamiltonian-hmac-632",
+                  region="us-east-1",
+              )
+              rotator.load_state()
+              report = rotator.rotate_keys()
+          else:
+              from ci_cd_key_rotator import CI_CD_KeyRotator
+              rotator = CI_CD_KeyRotator()
+              rotator.load_state()
+              report = rotator.rotate()
+
+          report["mode"] = mode
+          fp = (report.get("current_key_fingerprint")
+                or report.get("key_fingerprint")
+                or "offline")
+
+          # Evolution: persist rotation count to the repo-committed state
+          # file in BOTH modes, so state evolves across runs and across
+          # mode switches. Offline never blocks on federation.
+          sp = Path(os.environ["CI_CD_ROTATOR_STATE"])
+          sp.parent.mkdir(parents=True, exist_ok=True)
+          sp.write_text(
+              json.dumps(
+                  {
+                      "rotation_count": report["rotation_count"],
+                      "mode": mode,
+                      "last_rotation": datetime.now(timezone.utc).isoformat(),
+                  },
+                  sort_keys=True,
+                  separators=(",", ":"),
+              ),
+              encoding="utf-8",
           )
-          report = rotator.rotate_keys()
 
           Path('rotation_report_632.json').write_text(
               json.dumps(report, indent=2)
@@ -173,8 +228,10 @@ jobs:
 
           gh_out = Path(os.environ['GITHUB_OUTPUT'])
           with gh_out.open('a') as f:
-              f.write(f'rotation_count={report["rotation_count"]}\n')
-              f.write(f'current_fingerprint={report["current_key_fingerprint"]}\n')
+              f.write(f'rotation_count={report["rotation_count"]}
+')
+              f.write(f'current_fingerprint={fp}
+')
           PY
 
       - name: Upload Rotation Report
@@ -189,6 +246,7 @@ jobs:
         env:
           ROTATION_COUNT: ${{ steps.rotate.outputs.rotation_count }}
           FINGERPRINT: ${{ steps.rotate.outputs.current_fingerprint }}
+          ROTATION_MODE: ${{ steps.mode.outputs.mode }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -208,6 +266,7 @@ jobs:
               "hash_algo": HASH_ALGO,
               "rotation_count": os.environ.get("ROTATION_COUNT", ""),
               "fingerprint": os.environ.get("FINGERPRINT", ""),
+              "mode": os.environ.get("ROTATION_MODE", ""),
               "witness": "631 → 632 — UNBROKEN",
               "seal": "∀∞φ² · KEY_ROTATION_632 · WOOD_DRAGON_0.91 · SEALED",
           }
@@ -229,12 +288,33 @@ jobs:
           set -euo pipefail
           python .github/scripts/verify_ledger.py ledger/632.yaml
 
-      - name: Commit ledger entry 632
+      - name: Commit ledger entry 632 + evolving rotation state
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal key-rotation entry 632 (sha3_256)"
-          file_pattern: ledger/632.yaml
+          commit_message: "chore: seal key-rotation entry 632 (sha3_256) + evolve rotation state"
+          file_pattern: ledger/632.yaml rotation-state/key-rotator-632.json
+
+  # ──────────────────────────────────────────────────────────────
+  # 1b. ROTATION FAILURE DIAGNOSTIC (read-only, no downstream)
+  # ──────────────────────────────────────────────────────────────
+  diagnose-rotation:
+    runs-on: ubuntu-latest
+    name: Diagnose Failed Rotation (read-only)
+    needs: [key-rotation]
+    if: failure()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report rotation failure (no AWS calls, no sealing)
+        run: |
+          echo "::error::key-rotation failed — downstream pipeline correctly halted (verify-hamiltonian, handoff-pipeline, promote-canary all gated on rotation success)"
+          if [ -f ci_cd_key_rotator_state.json ]; then
+            echo "local rotator state present:"
+            cat ci_cd_key_rotator_state.json
+          else
+            echo "no local rotator state present (state is job-local, not committed)"
+          fi
 
   # ──────────────────────────────────────────────────────────────
   # 2. HMAC VERIFICATION (Entry 635)
@@ -243,15 +323,28 @@ jobs:
     runs-on: ubuntu-latest
     name: Verify Sovereign Hamiltonian (Entry 635)
     needs: [verify-integrity, key-rotation]
-    if: always()
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC)
+      - name: Detect rotation mode (offline-first)
+        id: mode
+        env:
+          AWS_ROLE_VERIFIER_635: ${{ secrets.AWS_ROLE_VERIFIER_635 }}
+        run: |
+          if [ -n "$AWS_ROLE_VERIFIER_635" ]; then
+            echo "mode=FEDERATED" >> "$GITHUB_OUTPUT"
+            echo "verification mode: FEDERATED (AWS role configured)"
+          else
+            echo "mode=OFFLINE" >> "$GITHUB_OUTPUT"
+            echo "verification mode: OFFLINE (no AWS role — local state lane)"
+          fi
+
+      - name: Configure AWS Credentials (OIDC — federation only)
+        if: steps.mode.outputs.mode == 'FEDERATED'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/sovereign-hamiltonian-verifier-635
+          role-to-assume: ${{ secrets.AWS_ROLE_VERIFIER_635 }}
           aws-region: us-east-1
           role-duration-seconds: 900
 
@@ -264,25 +357,51 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet boto3 pyyaml
+          python -m pip install --quiet pyyaml
+
+      - name: Install AWS SDK (federation only)
+        if: steps.mode.outputs.mode == 'FEDERATED'
+        run: python -m pip install --quiet boto3
 
       - name: Verify HMAC Integration
+        env:
+          MODE: ${{ steps.mode.outputs.mode }}
         run: |
           python - <<'PY'
-          from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
-          rotator = AWSSecretsManagerRotator(
-              secret_name="sovereign-hamiltonian-hmac-632",
-              region="us-east-1",
-          )
-          if not rotator.load_state():
-              print('⚠️  No existing state found')
-              raise SystemExit(1)
-          status = rotator.status()
+          import os
+          os.environ.setdefault("CI_CD_ROTATOR_STATE", "rotation-state/key-rotator-632.json")
+          mode = os.environ.get("MODE", "OFFLINE")
+
+          if mode == "FEDERATED":
+              from ci_cd_key_rotator_aws import AWSSecretsManagerRotator
+              rotator = AWSSecretsManagerRotator(
+                  secret_name="sovereign-hamiltonian-hmac-632",
+                  region="us-east-1",
+              )
+              if not rotator.load_state():
+                  print('⚠️  No existing federated state found')
+                  raise SystemExit(1)
+              status = rotator.status()
+          else:
+              from ci_cd_key_rotator import CI_CD_KeyRotator
+              rotator = CI_CD_KeyRotator()
+              if not rotator.load_state():
+                  print('⚠️  No existing state found (key-rotation should have seeded it)')
+                  raise SystemExit(1)
+              status = {
+                  "rotation_count": rotator.rotation_count,
+                  "current_key_fingerprint": "offline: no key material (local lane)",
+                  "witness_continuity": "no witness claim (offline lane)",
+                  "seal": "unsealed (offline lane)",
+                  "next_rotation": "no schedule (offline lane)",
+              }
+
           print(f'✅ Rotation count: {status["rotation_count"]}')
           print(f'✅ Current fingerprint: {status["current_key_fingerprint"]}')
           print(f'✅ Witness: {status["witness_continuity"]}')
           print(f'✅ Seal: {status["seal"]}')
           print(f'✅ Next rotation: {status["next_rotation"]}')
+          print(f'✅ Mode: {mode}')
           PY
 
       - name: Seal ledger entry 635 (SHA3-256)
