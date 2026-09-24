@@ -1,0 +1,43 @@
+name: seal-diag
+on:
+  push:
+  pull_request:
+
+jobs:
+  full:
+    name: SealDiag full
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml --quiet
+      - run: python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959
+
+  entry:
+    name: SealDiag e${{ matrix.entry }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ["8958", "8959", "8972", "8973", "8974", "8975", "9248"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml --quiet
+      - run: |
+          mkdir -p /tmp/led
+          cp "ledger/${{ matrix.entry }}.yaml" /tmp/led/
+          python .github/scripts/verify_ledger_seals.py /tmp/led
+
+  chunk:
+    name: SealDiag chunk-${{ matrix.chunk }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk: ["0", "1", "2", "3", "4", "5", "6"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyyaml --quiet
+      - run: |
+          mkdir -p /tmp/led
+          ls ledger/*.yaml | sort | awk -v c=${{ matrix.chunk }} 'NR > c*40 && NR <= (c+1)*40' | xargs -I{} cp {} /tmp/led/
+          python .github/scripts/verify_ledger_seals.py /tmp/led
