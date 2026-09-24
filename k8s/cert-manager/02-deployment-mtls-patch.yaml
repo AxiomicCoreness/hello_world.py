@@ -10,6 +10,22 @@
 # Apply via kustomize `patches:` or a manual strategic-merge — do NOT
 # `kubectl apply` alone.
 #
+# Container-name match:
+#   The strategic-merge patch keys on `containers[].name` — the name in
+#   the base Deployment MUST be `sovereign-engine`. If the base uses a
+#   different name, either rename here or use a JSON-6902 patch instead.
+#
+# Prometheus:
+#   The annotation `prometheus.io/*` keeps the scrape surface visible
+#   to classic Prometheus (annotations-based discovery). The ServiceMonitor
+#   in 40-prometheus-scrape.yaml is the modern equivalent; both are kept
+#   because either install path may be in use.
+#
+# Companion to: celestial/phi_constants.py
+# Fallbacks:    numpy, scipy, yaml, matplotlib, requests
+# φ set:        φ¹ φ² φ³ φ⁴ φ⁵ φ⁶ φ⁷ φ⁸ φ⁹ φ¹² φ¹³ φ¹⁴ φ²¹ φ³⁴
+#               φ⁻⁷⁰⁹ φ⁻¹⁰⁰⁰ φ⁻¹⁴¹⁸ φ⁻¹
+#
 # Deterministic path: k8s/cert-manager/02-deployment-mtls-patch.yaml
 
 ---
@@ -23,6 +39,12 @@ spec:
     metadata:
       annotations:
         garden.sovereign/mtls: cert-manager
+        # Prometheus annotations — classic scrape-based discovery.
+        # The metrics server listens on :9090 and the gate on :380;
+        # both are declared in 40-prometheus-scrape.yaml.
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: sovereign-engine
