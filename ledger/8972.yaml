@@ -27,4 +27,4 @@ verification:
 witness_chain: 8971 -> 8972 PENDING (ledger/8970.yaml and ledger/8971.yaml not yet committed; to be created by first OIDC-handover-380.yml run)
 hash_algo: sha3_256
 seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
-seal_sha3_256: f9da75c170b94dd0b11be46bc134132505b65ca5709bd15a069921c2b181a29e
+seal_sha3_256: 2c58db4a292eacb0eadc9346bb2cbd5c6454c0de94c7db71309a8a779b18dd21
