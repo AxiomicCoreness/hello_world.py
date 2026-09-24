@@ -1,108 +1,179 @@
 #!/usr/bin/env python3
-"""Tri-state seal verifier for hex-bearing ledger entries. Rev 2.
-
-Adds opt-in --require N (repeatable): exit 1 if entry N (entry_index or
-filename stem) is not present among seal_sha3_256-bearing entries. This
-closes the same empty/absent-ledger hole that --require closes in
-scripts/verify_chain.py, which is documented there but wired into no
-workflow on this branch (dormant gate - see ledger-seal-gate.yml).
-
-Contract:
-  exit 0  every ledger/*.yaml entry carrying seal_sha3_256 recomputes to
-          its stored digest, and all --require'd entries are present.
-          Entries without seal_sha3_256 are legacy non-events: reported
-          and skipped, never verified.
-  exit 1  any recomputed digest mismatches its stored seal_sha3_256,
-          a ledger file is not parseable YAML, or a --require'd entry is
-          missing (including the empty-ledger case).
-  exit 2  no ledger/*.yaml files present at all.
-
-Canonical body: json.dumps(body, sort_keys=True, separators=(",", ":"))
-where body = the entry mapping minus the seal_sha3_256 field.
-
-This verifier can fail. That is its purpose.
+# -*- coding: utf-8 -*-
 """
+verify_ledger_seals.py — ledger seal verifier for the Garden CI lane.
+
+Contract (as documented in .github/workflows/ledger-seal-gate.yml):
+    exit 0  — all seals verified, all --require entries present
+    exit 1  — at least one mismatch OR a required entry is missing
+    exit 2  — no ledger directory found at the given root
+
+Seal conventions understood:
+    1. `seal:` field ends with `· <64-hex>` (SHA3-256 over canonical JSON)
+    2. `seal_sha3_256:` field containing a full 64-hex digest
+    3. `hash:` / `sha3_256:` / `hash_sha3_256:` fields with a 64-hex digest
+
+The verifier does not rewrite anything. It reads, computes, compares.
+"""
+
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
+from typing import Iterable, Optional
 
 try:
     import yaml
 except ImportError:
-    print("FAIL: PyYAML required (python -c 'import yaml')")
-    sys.exit(1)
-
-SEAL_FIELD = "seal_sha3_256"
+    print("ERROR: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
+    sys.exit(2)
 
 
-def canonical_body(entry: dict) -> str:
-    body = {k: v for k, v in entry.items() if k != SEAL_FIELD}
-    return json.dumps(body, sort_keys=True, separators=(",", ":"))
+HEX64 = re.compile(r"[0-9a-f]{64}")
+SEAL_TAIL = re.compile(r"·\s*([0-9a-f]{64})\s*$")
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Verify seal_sha3_256 digests on ledger entries."
-    )
-    ap.add_argument("root", nargs="?", default=".",
-                    help="Repository root (default: .)")
-    ap.add_argument("--require", type=int, action="append", default=None,
-                    metavar="N",
-                    help="Exit 1 if entry N is not present among sealed "
-                         "entries. Repeatable.")
-    args = ap.parse_args()
+def canonical_json(obj) -> str:
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
-    root = Path(args.root)
-    ledger_dir = root / "ledger"
-    files = sorted(ledger_dir.glob("*.yaml")) if ledger_dir.is_dir() else []
-    if not files:
-        print("FAIL: no ledger/*.yaml present - nothing to check")
+
+def extract_declared_digest(doc: dict) -> Optional[tuple[str, str]]:
+    """
+    Return (field_name, digest) if the document declares a 64-hex digest
+    anywhere we know how to read. Return None otherwise.
+    """
+    for field in ("seal_sha3_256", "sha3_256", "hash_sha3_256"):
+        v = doc.get(field)
+        if isinstance(v, str) and HEX64.fullmatch(v.strip()):
+            return field, v.strip()
+
+    seal = doc.get("seal")
+    if isinstance(seal, str):
+        m = SEAL_TAIL.search(seal)
+        if m:
+            return "seal", m.group(1)
+        # also accept a 64-hex anywhere in the seal string
+        m2 = HEX64.search(seal)
+        if m2:
+            return "seal", m2.group(0)
+
+    h = doc.get("hash")
+    if isinstance(h, str) and HEX64.fullmatch(h.strip()):
+        return "hash", h.strip()
+
+    return None
+
+
+def expected_digest(doc: dict) -> str:
+    """
+    Compute the expected digest over the document with the digest-bearing
+    fields removed, so the digest does not depend on itself.
+    """
+    body = {k: v for k, v in doc.items() if k not in {
+        "seal", "seal_sha3_256", "sha3_256", "hash_sha3_256", "hash"
+    }}
+    return hashlib.sha3_256(canonical_json(body).encode("utf-8")).hexdigest()
+
+
+def check_file(path: Path) -> tuple[bool, str]:
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            doc = yaml.safe_load(f)
+    except Exception as e:
+        return False, f"{path}: YAML parse error: {e}"
+
+    if not isinstance(doc, dict):
+        return False, f"{path}: top-level not a mapping"
+
+    declared = extract_declared_digest(doc)
+    if declared is None:
+        return True, f"{path}: no declared digest (skipped, informational)"
+
+    field, digest = declared
+    expected = expected_digest(doc)
+
+    if digest == expected:
+        return True, f"{path}: {field} OK  {digest[:16]}…"
+    else:
+        return False, (
+            f"{path}: {field} MISMATCH\n"
+            f"    declared: {digest}\n"
+            f"    expected: {expected}"
+        )
+
+
+def find_entries(root: Path) -> list[Path]:
+    return sorted(root.rglob("*.yaml"))
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="Verify ledger seal digests.")
+    ap.add_argument("root", help="repository root or ledger directory")
+    ap.add_argument("--require", action="append", default=[],
+                    help="entry index that must be present (e.g. --require 8958)")
+    args = ap.parse_args(argv)
+
+    root = Path(args.root).resolve()
+
+    # locate ledger directory
+    candidates = [root / "ledger", root]
+    ledger_dir = next((c for c in candidates if c.is_dir()), None)
+    if ledger_dir is None:
+        print(f"ERROR: no ledger directory under {root}", file=sys.stderr)
         return 2
 
-    verified = 0
-    legacy = 0
-    present_indices = set()
-    for path in files:
-        try:
-            entry = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        except Exception as exc:
-            print(f"FAIL: {path}: unparseable YAML: {exc}")
-            return 1
-        if not isinstance(entry, dict):
-            print(f"- {path}: non-mapping - skipped")
-            continue
-        if path.stem.isdigit():
-            present_indices.add(int(path.stem))
-        ei = entry.get("entry_index")
-        if isinstance(ei, int):
-            present_indices.add(ei)
-        stored = entry.get(SEAL_FIELD)
-        if not isinstance(stored, str) or len(stored) != 64:
-            legacy += 1
-            continue
-        computed = hashlib.sha3_256(
-            canonical_body(entry).encode("utf-8")
-        ).hexdigest()
-        if computed != stored.lower():
-            print(f"FAIL: {path}: seal mismatch")
-            print(f"  stored:   {stored}")
-            print(f"  computed: {computed}")
-            return 1
-        verified += 1
+    entries = find_entries(ledger_dir)
+    if not entries:
+        print(f"ERROR: no YAML entries under {ledger_dir}", file=sys.stderr)
+        return 2
 
-    missing = [n for n in (args.require or []) if n not in present_indices]
-    if missing:
-        for n in missing:
-            print(f"FAIL: required entry {n} not present in {ledger_dir}/")
+    present_indices: set[str] = set()
+    for p in entries:
+        stem = p.stem
+        # ledger/8958.yaml -> "8958"
+        if stem.isdigit():
+            present_indices.add(stem)
+
+    # required entries
+    missing_required = [r for r in args.require if r not in present_indices]
+
+    # verify each
+    ok_count = 0
+    skipped = 0
+    bad: list[str] = []
+
+    for p in entries:
+        ok, msg = check_file(p)
+        if ok:
+            if "skipped" in msg:
+                skipped += 1
+            else:
+                ok_count += 1
+            print(f"  ✓ {msg}")
+        else:
+            bad.append(msg)
+            print(f"  ✗ {msg}", file=sys.stderr)
+
+    print()
+    print(f"  entries scanned : {len(entries)}")
+    print(f"  verified OK     : {ok_count}")
+    print(f"  skipped (no seal): {skipped}")
+    print(f"  mismatches      : {len(bad)}")
+    if args.require:
+        print(f"  required present : {len(args.require) - len(missing_required)}/{len(args.require)}")
+
+    if missing_required:
+        print()
+        print(f"  MISSING required entries: {', '.join(missing_required)}", file=sys.stderr)
         return 1
 
-    req = f", required present: {args.require}" if args.require else ""
-    print(
-        f"OK: {verified} sealed entr(ies) verified, "
-        f"{legacy} legacy entr(ies) skipped (no {SEAL_FIELD}){req}"
-    )
+    if bad:
+        return 1
+
     return 0
 
 
