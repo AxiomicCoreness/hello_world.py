@@ -40,3 +40,76 @@ Policy locks: Dual ASGI 127.0.0.1:8024. MCP FILLED=false. Fusion 515 and Hyperio
 start-class request = 2 compute units (vCPU).
 test cluster request budget = 4 compute units.
 n_workspaces_sat = floor(C_cpu / R_start_cpu) = floor(4/2) = 2.
+
+### General form (for any cluster C, request class R)
+
+Let:
+  C_cpu   = cluster CPU ceiling (vCPU)
+  C_mem   = cluster memory ceiling (Gi)
+  R_cpu   = per-workspace CPU request (vCPU)
+  R_mem   = per-workspace memory request (Gi)
+  L_cpu   = per-workspace CPU limit (vCPU)
+  L_mem   = per-workspace memory limit (Gi)
+
+Packing is bounded by the request footprint, not the limit:
+
+  n_sat_cpu = floor(C_cpu / R_cpu)
+  n_sat_mem = floor(C_mem / R_mem)
+  n_sat     = min(n_sat_cpu, n_sat_mem)
+
+For the test cluster and start-class request:
+
+  n_sat_cpu = floor(4 / 2) = 2
+  n_sat_mem = floor(8 / 4) = 2
+  n_sat     = min(2, 2) = 2
+
+For the production floor and start-class request:
+
+  n_sat_cpu = floor(32 / 2) = 16
+  n_sat_mem = floor(32 / 4) = 8
+  n_sat     = min(16, 8) = 8
+
+The binding constraint is memory, not CPU, for production.
+
+### Headroom after saturation (test cluster, start-class)
+
+  headroom_cpu = C_cpu - n_sat * R_cpu = 4 - 2*2 = 0 vCPU
+  headroom_mem = C_mem - n_sat * R_mem = 8 - 2*4 = 0 Gi
+
+Saturation is exact: no CPU or memory slack remains under requests.
+Limits are advisory at pack time; they govern runtime burst, not admission.
+
+### Lightweight class on test cluster
+
+  n_sat_cpu = floor(4 / 0.25) = 16
+  n_sat_mem = floor(8 / 0.25) = 32
+  n_sat     = min(16, 32) = 16
+
+The binding constraint is CPU for lightweight class.
+
+### Relationship to the capacity axiom
+
+For any container:
+
+  R_cpu <= L_cpu <= C_cpu
+  R_mem <= L_mem <= C_mem
+
+The packing formula operates on requests R. Limits L only constrain
+what a single container may burst to after admission; they do not
+enter n_sat. This is the strict reading of the axiom.
+
+### Seal
+
+  n_workspaces_sat = floor(C_cpu / R_start_cpu) = floor(4/2) = 2.
+
+  H_9194 = SHA3-256( GARDEN.EVENT.v1 || 0x00 ||
+                    9194|/k8s_codespace_packing_formula_specified|
+                    phi2=2.618033988749895|
+                    delta=b^2-4ac|theta=2.5416018462 )
+
+  H_9194 = <computed at seal time>
+
+## Witness continuity
+
+  ledger 9157 -> ledger 9194 -- UNBROKEN
+  sealed at ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
