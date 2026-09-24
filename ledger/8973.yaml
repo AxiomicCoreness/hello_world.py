@@ -1,0 +1,31 @@
+entry_index: 8973
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
+event: /beacon_directory_parity_push
+status: PARTIAL_PARITY_SEALED
+commander: Clarke Yoursa Tee
+description: |
+  Beacon directory parity push from main to all branches. beacons/genesis_beacon.py
+  (blob fccf399c, PR #55 merge d17d4e24) copied verbatim to every branch that lacked
+  it — committer-authored content, no blind overwrites. Remaining beacon files stay
+  unpushed pending verbatim content transfer (full-file reads return SHA stubs; the
+  no-blind-overwrite rule forbids copying bytes we cannot read).
+parity_matrix: # 1 = present, 0 = absent (verified after push)
+  main:                   {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 1, timestamp.md: 1, timestamp_beacon.py: 1}
+  mistral-agent-cluster:  {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 0, timestamp.md: 1, timestamp_beacon.py: 1}
+  master:                {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 0, timestamp.md: 0, timestamp_beacon.py: 0}
+  deepseek:               {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 0, timestamp.md: 0, timestamp_beacon.py: 0}
+  deepseek-ci:            {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 0, timestamp.md: 1, timestamp_beacon.py: 1}
+  grok-skill_tensor:      {genesis_beacon.py: 1, sovereign_engine_deepseek.py: 0, timestamp.md: 0, timestamp_beacon.py: 0}
+pushed_commits:
+  master: c21325b96f
+  deepseek: cf40ee398c
+  deepseek-ci: 1430666a4e
+  grok-skill_tensor: c0ffa72969
+source_blob_main: fccf399cfabbe8bab23e077515fdc3ed07dd4031
+pending_full_parity:
+  - sovereign_engine_deepseek.py (main-only; 224849 bytes; requires paste or committer push)
+  - timestamp.md, timestamp_beacon.py (main/mistral-agent-cluster/deepseek-ci; same limitation)
+witness_chain: 8972 -> 8973
+hash_algo: sha3_256
+seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
+seal_sha3_256: c30799789e34c0cb639f9a86a10f3b2c5a09897216452a28d4d8672ddd232104

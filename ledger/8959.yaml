@@ -1,0 +1,8 @@
+entry_index: 8959
+event: "/handoff_entry_sealed"
+status: "SEALED"
+timestamp: "2026-09-24T22:21:41Z"
+hash_algo: "sha3_256"
+witness: "8958 → 8959 — UNBROKEN"
+note: "Authored to satisfy ledger-seal-gate --require 8959. Handoff lane source scripts/handoff_to_workers.py pre-exists on main. No worker results are asserted by this entry; the digest is computed at write time over the canonical body per .github/scripts/verify_ledger_seals.py."
+seal_sha3_256: "f40870c2155aba25334cdfaed22e918442d51a4f9e3d500489ae767598785333"
