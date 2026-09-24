@@ -7,7 +7,7 @@ metadata:
     garden.layer: "359"
     garden.ledger: "8809"
   annotations:
-    garden.event: "/istio_traffic_shift_host_level"
+    garden.event: "/istio_traffic_shift_subset_level"
 spec:
   hosts:
     - sovereign-garden.sovereign-garden.svc.cluster.local
@@ -15,12 +15,13 @@ spec:
     - name: primary
       route:
         - destination:
-            host: sovereign-garden-stable
+            host: sovereign-garden
+            subset: stable
           weight: 100
         - destination:
-            host: sovereign-garden-canary
+            host: sovereign-garden
+            subset: canary
           weight: 0
-      # Ensure weights always sum to 100
       retries:
         attempts: 3
         perTryTimeout: 2s
