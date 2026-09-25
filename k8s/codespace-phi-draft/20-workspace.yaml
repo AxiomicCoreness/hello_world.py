@@ -1,0 +1,103 @@
+# k8s/codespace-phi-draft/20-workspace.yaml
+# Review-branch draft. Does NOT rewrite k8s/codespace/20-workspace.yaml.
+# Signitorial: Clarke Yoursa Tee
+#
+# MCP slot empty: no containerPort 380, no Ingress /mcp.
+# No secretKeyRef (GARDEN_SECRET unfilled — crash-if-absent is F2-class).
+# Dual ASGI 127.0.0.1:8024. No 0.0.0.0 bind. No public Ingress.
+# D19: PHI_MINUS_1000 is φ⁻¹⁰⁰⁰, not the φ⁻¹⁴¹⁸ ghost 4.524e-297.
+# D33: python:3.12-slim does not contain celestial/; import fails until
+#      a custom image is provided. Image is a placeholder, not a seal.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codespace-workspace
+  namespace: garden-codespace-phi-draft
+  labels:
+    garden: sovereign
+    garden.layer: "314"
+    strike: IX
+    mcp.garden/filled: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codespace-workspace
+  template:
+    metadata:
+      labels:
+        app: codespace-workspace
+      annotations:
+        garden.dual_asgi: "127.0.0.1:8024"
+        garden.bind_0000: "false"
+    spec:
+      serviceAccountName: sovereign-identity
+      containers:
+        - name: workspace
+          image: python:3.12-slim
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: PORT
+              value: "8080"
+            - name: GARDEN_BIND
+              value: "127.0.0.1"
+            - name: GARDEN_MCP_FILLED
+              value: "false"
+            - name: LAYER
+              value: "314"
+            - name: PHI
+              value: "1.618033988749895"
+            - name: PHI2
+              value: "2.618033988749895"
+            - name: PHI3
+              value: "4.236067977499790"
+            - name: PHI4
+              value: "6.854101966249685"
+            - name: PHI5
+              value: "11.090169943749474"
+            - name: PHI6
+              value: "17.944271909999160"
+            - name: PHI7
+              value: "29.034441853748633"
+            - name: PHI8
+              value: "46.978713763747790"
+            - name: PHI_INV
+              value: "0.618033988749895"
+            - name: PHI_MINUS_709
+              value: "6.726096017939553e-149"
+            - name: PHI_MINUS_1000
+              value: "1.028868213399699e-209"
+            - name: PHI_MINUS_1418
+              value: "4.524036764254231e-297"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codespace-workspace
+  namespace: garden-codespace-phi-draft
+  labels:
+    garden: sovereign
+    garden.layer: "314"
+spec:
+  type: ClusterIP
+  selector:
+    app: codespace-workspace
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 9090
+      targetPort: metrics

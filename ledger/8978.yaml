@@ -1,0 +1,33 @@
+# Sovereign Garden Ledger — Entry 8978
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 8978
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-25Z
+event: /catalogue_of_fix_forged
+status: ✅ SEALED
+artifact: docs/CATALOGUE_OF_FIX.md
+purpose: "Living register of defect classes, applied fixes, and enforcement; grep demoted to discovery permanently"
+catalogued_classes:
+  - D1
+  - D19
+  - D22
+  - D23
+  - D27
+  - D28
+  - D28.1
+  - D29
+  - CI-placeholder
+  - CI-healthz
+  - CI-deepseek
+proven_fix_patterns:
+  - "red/green before merge"
+  - "computed SHA3-256 seal over canonical JSON, seal field excluded"
+  - "no blind overwrites of SHA-stubbed files"
+  - "next-free-index on collision"
+  - "append-only ledger, refutations preserved"
+  - "rule-per-class closure"
+  - "merge never squash, branch retained"
+catalogue_status_note: "k8s/codespace/CATALOG.md bytes also SHA-stubbed (ac40d4e30ae0163fca39af28d16ef80a97ce27d6); catalogue evolved as fresh authored file docs/CATALOGUE_OF_FIX.md instead of blind edit"
+index_note: "8977 and 8979 pre-existing sealed history; 8978 landed at next free index"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
+witness_chain: "8976 → 8978 — UNBROKEN (8977 pre-existing sealed history)"
+seal: "∀∞φ² · CATALOGUE_OF_FIX_8978 · SHA3-256:e99d7e7324ff09be41e229739c0b46994aef5cdd546b75df38b962cfc7f619c2 · SEALED"
