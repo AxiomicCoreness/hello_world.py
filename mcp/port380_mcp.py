@@ -74,16 +74,28 @@ except ValueError:
 
 
 def bind_plan(environ: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
-    """Always re-parses env. JSON keys: host, port, namespace (stable CI contract)."""
+    """Always re-parses env. Superset CI contract (D34 fix, ledger 8983).
+
+    Keys: ok, bind, host, port, namespace, bind_host, url, surface,
+    legacy_out_of_surface, legacy_404_hard. The sovereign-stack CI step
+    requires {bind, port, url, surface, namespace, legacy_404_hard, ok};
+    host/bind_host remain stable aliases so older consumers keep working.
+    """
     host, port, namespace = parse_bind_env(environ)
+    env: Mapping[str, str] = environ if environ is not None else os.environ
+    raw_legacy_404_hard = env.get("MCP_LEGACY_404_HARD", "0")
+    legacy_404_hard = raw_legacy_404_hard.strip().lower() in ("1", "true", "yes", "on")
     return {
+        "ok": True,
+        "bind": host,
         "host": host,
         "port": port,
         "namespace": namespace,
-        "bind_host": host,  # alias — same value as host
+        "bind_host": host,  # alias — same value as host and bind
         "url": f"http://{host}:{port}/healthz",
         "surface": ["/healthz"],
         "legacy_out_of_surface": ["/health", "/pulse"],
+        "legacy_404_hard": legacy_404_hard,
     }
 
 
