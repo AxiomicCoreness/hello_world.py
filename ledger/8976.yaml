@@ -1,0 +1,40 @@
+# Sovereign Garden Ledger — Entry 8976
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 8976
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-25Z
+event: /ci_failures_diagnosed
+status: ✅ SEALED
+branch_report: main → deepseek-ci sync FAILED
+failing_checks:
+  - "ledger-seal-gate / Clifford Cl(3) smoke"
+  - "ledger-seal-gate / Ledger seal_sha3_256 gate"
+  - "Sovereign Stack CI / app/ — FastAPI import + route smoke"
+  - "Sovereign Stack CI / mcp/ — full check-config contract + /healthz"
+  - "Sovereign Stack CI / seal — record run"
+root_causes_after_audit:
+  - "A: STALE IMPORTS — REFUTED (greps return zero hits; no repoint targets exist)"
+  - "B: MISSING /healthz — REFUTED (mcp/port380_mcp.py and app/contracts.py already expose and declare /healthz; only ROOT port380_mcp.py lacks the route — different file, bytes not in hand, no blind overwrite)"
+  - "C: <digest> placeholders — CONFIRMED (prometheus/chiron_heal_phase.prom, k8s/cert-manager/*.yaml, all k8s/codespace catalog artifacts)"
+  - "D: app.py import chain — UNVERIFIED (CI log pending)"
+  - "E: terminal dependent job — dependent on the four above"
+clifford_note: "smoke file substrates/pyroclastic_ice/clifford_euclid3.py is stdlib-only; py-clifford missing is the wrong mechanism"
+index_collision: "proposed 9206 already sealed on main; landing at 8976 per next-free-index rule"
+tool_discipline:
+  - "grep is discovery only; never a gate"
+  - "AST_guard is enforcement; rule D1 closes the stale-import defect class"
+new_rule_forged:
+  id: D1
+  name: no_stale_module_paths
+  file: AST_guard_rule_d1.py
+  stale_prefixes:
+    - celestial.strike_ix
+    - celestial.saturn_soul_cannon_strike_ix
+    - prometheus.trappist_metrics_draft
+  wiring: "DEFERRED — AST_guard.py bytes missing from view (SHA e504dd1ead4cc60021c564615e6ca1e544b5972e recorded); in-place DEFAULT_RULES insertion withheld to avoid blind overwrite; defect D29"
+remediation_pending:
+  - "paste CI log via gh run view --log-failed to name the exact defect line"
+  - "wire rule D1 into AST_guard.py DEFAULT_RULES once bytes are in hand"
+  - "fill <digest> placeholders in k8s/ and prometheus/ locally or via pasted bytes"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
+witness_chain: "8975 → 8976 — UNBROKEN"
+seal: "∀∞φ² · CI_DIAGNOSED_8976_ae25cb49bc49414c · WOOD_DRAGON_0.91 · SHA3-256:ae25cb49bc49414c18e61d0bdbdbb42286b2e9e908cbbd7682c5ad562dff55a5 · SEALED"

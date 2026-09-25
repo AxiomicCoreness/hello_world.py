@@ -1,0 +1,40 @@
+# k8s/codespace-phi-draft/10-compute-node.yaml
+# Review-branch draft. Does NOT rewrite k8s/codespace/10-compute-node.yaml.
+# Signitorial: Clarke Yoursa Tee
+# MCP FILLED=false. Specification only — not a cloud Node object.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sovereign-identity
+  namespace: garden-codespace-phi-draft
+  labels:
+    garden: sovereign
+    garden.layer: "314"
+    mcp.garden/filled: "false"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: codespace-sovereign
+  namespace: garden-codespace-phi-draft
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "configmaps", "secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: codespace-sovereign-binding
+  namespace: garden-codespace-phi-draft
+subjects:
+  - kind: ServiceAccount
+    name: sovereign-identity
+    namespace: garden-codespace-phi-draft
+roleRef:
+  kind: Role
+  name: codespace-sovereign
+  apiGroup: rbac.authorization.k8s.io

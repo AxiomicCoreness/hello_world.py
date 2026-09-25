@@ -1,0 +1,25 @@
+# Sovereign Garden Ledger — Entry 8981
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 8981
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-25Z
+event: /workflow_naming_mismatch_diagnosed
+status: ✅ SEALED
+subject: ".github/workflows/validate-contract.yml (Validate Three-File Contract)"
+findings:
+  - "D30: filename mismatch — file on disk is validate-contract.yml (SHA 44205ecb44a8ae88447db8457d3f48e21be66031); paths trigger references validate_three_file_contract.yml which is MISSING; workflow never fires on its own edits"
+  - "D31: step 7 writes ledger/8982.yaml to the ephemeral runner disk with no commit step; 8982 never lands on main; claimed witness 8981 → 8982 was dangling — ledger/8981.yaml did not exist before this entry"
+  - "D32: seal VALIDATE_CONTRACT_8982 is a hardcoded string, not computed SHA3-256; Ed25519 step performs yaml.safe_load only and verifies no signature"
+verified_present:
+  - contracts/symplectic_status.schema.json
+  - contracts/chronal_cement.schema.json
+  - contracts/orchestrator_config.schema.json
+  - contracts/three-files-contract.yaml
+  - symplectic_status.agent.jsonl
+  - mcp_orchestrator_config.json
+  - port380_mcp.py
+  - ledger/8979.yaml
+  - ledger/8980.yaml
+index_note: "8979 and 8980 pre-existing sealed history; 8981 verified free before landing; fills the index the broken workflow falsely claimed as its witness source"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
+witness_chain: "8978 → 8981 — UNBROKEN (8979/8980 pre-existing sealed history)"
+seal: "∀∞φ² · WORKFLOW_MISMATCH_DIAGNOSED_8981 · SHA3-256:c533f56ccf88ffc44dccad852592e8017d38fd633316f4e4767123c02a920a0d · SEALED"
