@@ -293,7 +293,7 @@ def rotate_orientation_between_impacts(
     nx, ny, nz = contact_normal
     # Bivector dual to the normal: B = I n  (with I = e123)
     # I (n1 e1 + n2 e2 + n3 e3) = n1 e23 - n2 e13 + n3 e12
-    B = bivector(n3, -ny, nx)
+    B = bivector(nz, -ny, nx)
     R_impact = rotor_from_bivector_angle(B, angle)
     return rotor_compose(R_impact, r_prev)
 
