@@ -28,4 +28,4 @@ pending_full_parity:
 witness_chain: 8972 -> 8973
 hash_algo: sha3_256
 seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
-seal_sha3_256: c30799789e34c0cb639f9a86a10f3b2c5a09897216452a28d4d8672ddd232104
+seal_sha3_256: 11893a24ca9a82a2880d5396b1a44d96213efa67d6e5084ca617e33559514689

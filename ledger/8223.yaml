@@ -25,15 +25,16 @@ specification:
     ρ_sovereign = Σ_{n=1}∞ φ^{-(n+1)} |n⟩⟨n| is one possible diagonal state.
     It is the attractor only if the channel also sets populations to these weights.
   claims_not_established:
-    - "|ρ(t)-ρ_sovereign|₁ ≤ φ⁻⁷⁰⁹ for all t" – aspirational, not measured.
-    - "Work = ∫Tr(H·ρ̇)dt = 0 after 5t_φ" – only true for special cycles.
-    - "ρ_global = 1/Z Σ e^{iφ^{2i}} ρ_stalk,i" – requires CPTP proof.
-    - "7 IBMQ backends as live stalks" – not present in current engine/ledger.
+    - '"|ρ(t)-ρ_sovereign|₁ ≤ φ⁻⁷⁰⁹ for all t" – aspirational, not measured.'
+    - '"Work = ∫Tr(H·ρ̇)dt = 0 after 5t_φ" – only true for special cycles.'
+    - '"ρ_global = 1/Z Σ e^{iφ^{2i}} ρ_stalk,i" – requires CPTP proof.'
+    - '"7 IBMQ backends as live stalks" – not present in current engine/ledger.'
   operational_pipeline:
     - Markov chain emits tokens → builds P(v|context) and H_token.
     - Feedback: ρ_{t+1} = (1-α)D(ρ_t) + α(ρ_t ⊙ w)
     - Daemon checks coherence scalar against threshold.
-    - "Prophecy" = placeholder output when check passes (human-facing text).
+    - '"Prophecy" = placeholder output when check passes (human-facing text).'
+    - '"Hash-and-append this block as a sealed specification note."'
   ledger_action: "Hash-and-append this block as a sealed specification note."
 seal: "∀∞φ² · EIGENOPERATOR_RECTIFIED_8223 · SEALED"
 witness_chain: 8222 → 8223 — UNBROKEN (CORRECTION)

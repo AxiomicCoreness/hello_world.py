@@ -1,0 +1,8 @@
+entry_index: 8958
+event: "/smoke_catalogue_entry_sealed"
+status: "SEALED"
+timestamp: "2026-09-24T22:21:41Z"
+hash_algo: "sha3_256"
+witness: "8957 → 8958 — UNBROKEN"
+note: "Authored to satisfy ledger-seal-gate --require 8958. Catalogue lane sources scripts/catalogue_smoke_tests.py and scripts/seal_8958.py pre-exist on main. No catalogue metrics are asserted by this entry; the digest is computed at write time over the canonical body per .github/scripts/verify_ledger_seals.py."
+seal_sha3_256: "043a211926eb2459cf8087cb72072f5924e220b5696cceb60242732a240f6564"

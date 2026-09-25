@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          virtualService:
+            name: sovereign-garden
+            routes:
+              - primary
+          destinationRule:
+            name: sovereign-garden
+            canarySubsetName: canary
+            stableSubsetName: stable
+      steps:
+        - setWeight: 10
+        - pause: { duration: 5m }
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 75
+        - pause: { duration: 5m }
+        - setWeight: 100
