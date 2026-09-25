@@ -29,6 +29,9 @@ Sealed under ledger entry 8978 (witness 8976 → 8978; 8977 is pre-existing seal
 | CI-placeholder | Literal <digest> placeholders in prometheus/chiron_heal_phase.prom, k8s/cert-manager/*.yaml, k8s/codespace catalog | Identified in ledger 8976; fills need bytes in hand or local run | None | OPEN |
 | CI-healthz | ROOT port380_mcp.py lacks /healthz (mcp/ copy has it) | Identified; root file bytes not in hand | None | OPEN |
 | CI-deepseek | main → deepseek-ci sync failure, cause unnamed | Awaiting gh run view --log-failed tail | Log tail names the line | OPEN |
+| D30 | Workflow filename mismatch: .github/workflows/validate-contract.yml on disk, but paths trigger references validate_three_file_contract.yml (MISSING) — workflow never fires on its own edits | Identified in ledger 8981; fix needs workflow bytes (SHA 44205ecb44a8ae88447db8457d3f48e21be66031) pasted | None until bytes pasted | OPEN |
+| D31 | CI ledger write is ephemeral: validate-contract.yml step 7 writes ledger/8982.yaml to the runner disk with no commit/push step — entry never lands; claimed witness 8981 → 8982 dangling (8981 was MISSING on main before entry 8981 landed) | Identified in ledger 8981 | None | OPEN |
+| D32 | Asserted-not-computed seal in CI: VALIDATE_CONTRACT_8982 seal is a hardcoded string, not SHA3-256 over canonical JSON; Ed25519 step verifies nothing (yaml.safe_load only) | Identified in ledger 8981 | None | OPEN |
 
 ## Session-proven fix patterns
 
@@ -50,5 +53,5 @@ Sealed under ledger entry 8978 (witness 8976 → 8978; 8977 is pre-existing seal
 
 ## Witness chain
 
-8975 → 8976 → 8978 — UNBROKEN (8977 pre-existing sealed history; 8978 landed at
-next free index after the 8976 seal, no free index skipped).
+8975 → 8976 → 8978 → 8981 — UNBROKEN (8977/8979/8980 pre-existing sealed history;
+each session entry landed at the verified next free index).
