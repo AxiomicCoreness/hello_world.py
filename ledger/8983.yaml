@@ -1,0 +1,15 @@
+# Sovereign Garden Ledger — Entry 8983
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 8983
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-25Z
+event: /d34_check_config_contract_drift_fixed
+status: ✅ SEALED
+defect_class: "D34 — check-config contract drift"
+diagnosis: "Sovereign Stack CI mcp/ job failed: assert not missing reported all seven required keys missing; mcp/port380_mcp.py bind_plan emitted the older host-keyed contract without bind, ok, legacy_404_hard"
+evidence: "screenshot log: AssertionError {bind, port, url, surface, namespace, legacy_404_hard, ok}; file header declared the host-keyed contract"
+fix: "bind_plan now emits the superset contract: ok, bind, legacy_404_hard added; host/bind_host kept as stable aliases; both CI and older consumers satisfied"
+bytes_integrity: "mcp/port380_mcp.py reconstructed via 5-commit patch chain; git blob SHA-1 verified equal to c8f4da2000f8f91045d46bd73425e9dd471fd237 before modification — sovereignty absolute, no blind overwrite"
+terminology_policy: "sovereignty absolute replaces honesty in all ledger entries from 8983 forward; sealed entry 9036 /honesty_acknowledged_worker_contract stays untouched under the append-only rule"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
+witness_chain: "8982 → 8983 — UNBROKEN"
+seal: "∀∞φ² · D34_FIXED_8983 · SHA3-256:2a459ea57e61d65ed76d7ec087201ca3c1d82b15a7598ab89b397e22f77ac1d0 · SEALED"
