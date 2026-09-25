@@ -214,6 +214,38 @@ def rule_C2_no_ledger_mutation(tree: ast.AST, ctx: RuleContext) -> None:
                 ctx.report("C2", f"ledger mutation `{f.id}` is forbidden", node)
 
 
+
+def rule_D1_no_stale_module_paths(tree: ast.AST, ctx: RuleContext) -> None:
+    """
+    D1: forbid imports of pre-flattening module paths.
+    Forged under ledger entry 8976; wired under the entry sealed in this commit.
+    Add new pairs to STALE_IMPORT_PREFIXES as the tree evolves; remove entries
+    only when the migration is complete and the rule can retire.
+    """
+    stale_prefixes = (
+        "celestial.strike_ix",
+        "celestial.saturn_soul_cannon_strike_ix",
+        "prometheus.trappist_metrics_draft",
+    )
+
+    def check_module(module_name: str, node: ast.AST) -> None:
+        for stale in stale_prefixes:
+            if module_name == stale or module_name.startswith(stale + "."):
+                ctx.report(
+                    "D1",
+                    f"stale module path `{module_name}` (use the flattened form)",
+                    node,
+                )
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                check_module(alias.name, node)
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                check_module(node.module, node)
+
+
 DEFAULT_RULES: List[Rule] = [
     rule_A1_no_eval_exec,
     rule_A2_no_dunder_import,
@@ -222,6 +254,7 @@ DEFAULT_RULES: List[Rule] = [
     rule_A5_no_top_level_side_effects,
     rule_C1_no_sealed_rewrite,
     rule_C2_no_ledger_mutation,
+    rule_D1_no_stale_module_paths,
 ]
 
 
