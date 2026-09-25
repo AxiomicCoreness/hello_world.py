@@ -1,0 +1,21 @@
+# Sovereign Garden Ledger — Entry 8982
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 8982
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-25Z
+event: /d1_wired_d29_closed
+status: ✅ SEALED
+gate_state: "PR #62 head all green — ledger seal_sha3_256 gate success, Clifford Cl(3) smoke success; CI-deepseek STANDS DOWN, zero red lanes"
+d29_closure: "AST_guard.py bytes reconstructed via creation-commit patch chain (red 4ac1f021 verbatim paste, green a4f89a74 D27 fix), git blob SHA-1 verified equal to e504dd1ead4cc60021c564615e6ca1e544b5972e before any modification; rule D1 inserted inline and added to DEFAULT_RULES"
+d_series_survey:
+  D28: "15 ledger files carry D28 references; class = ledger-index collision per ledger/8975.yaml pending_collision_D28"
+  D28.1: "zero hits in ledger/*.yaml — class defined only in docs/CATALOGUE_OF_FIX.md, no ledger definition exists"
+  D28.2: "verified single hit in prometheus/trappist_metrics.py — guarded degradation when metrics host lacks register_update_hook"
+  D19: "9 ledger hits, all incidental hex fragments in digests — no defining entry found; class remains undefined in the ledger, recorded as such"
+new_rule_proposed:
+  id: D33
+  name: no_ghost_witness
+  rationale: "D-series survey plus D19 and D31 both reduce to the same class: a ledger entry or CI workflow claiming a witness index that does not exist in sealed history"
+  enforcement_target: "verify_ledger_seals.py extension or AST_guard rule D1-pattern; drafted only, not yet enforced, pending commander approval"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
+witness_chain: "8981 → 8982 — UNBROKEN"
+seal: "∀∞φ² · D1_WIRED_8982 · SHA3-256:ad66c2a999883a8ef469de8e9e866be8dfda22ebc36d7689779374a75e57c7bd · SEALED"

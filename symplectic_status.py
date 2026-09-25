@@ -201,43 +201,56 @@ def generate_agent_jsonl(aggregate: Dict[str, Any]) -> List[Dict[str, Any]]:
     ts = aggregate["timestamp"]
     phase = aggregate["system"]["phase_lock_degrees"] % 360.0
     coh = aggregate["system"]["coherence"]
+    # contracts/symplectic_status.schema.json: additionalProperties=false.
+    # Extra lattice/pod/frb fields live in symplectic_status.json (aggregate),
+    # not on agent lines. CI validates each jsonl line against that schema.
+    allowed = {
+        "role",
+        "event",
+        "timestamp",
+        "coherence",
+        "phi_phase",
+        "entropy",
+        "predicted_score",
+        "prediction_error",
+        "command",
+    }
+
+    def line(**fields: Any) -> Dict[str, Any]:
+        out = {k: v for k, v in fields.items() if k in allowed and v is not None}
+        return out
+
     return [
-        {
-            "role": "system",
-            "event": "symplectic_status",
-            "timestamp": ts,
-            "coherence": coh,
-            "phi_phase": phase,
-            "entropy": aggregate["system"]["entropy_floor"],
-            "command": "wait",
-        },
-        {
-            "role": "lattice",
-            "event": "e8_status",
-            "timestamp": ts,
-            "coherence": aggregate["lattice"]["e8_coherence"],
-            "phi_phase": phase,
-            "venomsuite_trace": aggregate["lattice"]["venomsuite_trace"],
-            "decad_cycle_sum": aggregate["lattice"]["decad_cycle_sum"],
-        },
-        {
-            "role": "pod",
-            "event": "pod_status",
-            "timestamp": ts,
-            "coherence": coh,
-            "phi_phase": phase,
-            "workload": aggregate["system"]["workload"],
-        },
-        {
-            "role": "frb_bridge",
-            "event": "frb_bridge_status",
-            "timestamp": ts,
-            "coherence": coh,
-            "phi_phase": phase,
-            "metronome_seconds": aggregate["frb_bridge"]["metronome_seconds"],
-            "emergent_period_days": aggregate["frb_bridge"]["emergent_period_days"],
-            "target_azimuth_deg": aggregate["frb_bridge"]["target_azimuth_deg"],
-        },
+        line(
+            role="system",
+            event="symplectic_status",
+            timestamp=ts,
+            coherence=coh,
+            phi_phase=phase,
+            entropy=aggregate["system"]["entropy_floor"],
+            command="wait",
+        ),
+        line(
+            role="lattice",
+            event="e8_status",
+            timestamp=ts,
+            coherence=aggregate["lattice"]["e8_coherence"],
+            phi_phase=phase,
+        ),
+        line(
+            role="pod",
+            event="pod_status",
+            timestamp=ts,
+            coherence=coh,
+            phi_phase=phase,
+        ),
+        line(
+            role="frb_bridge",
+            event="frb_bridge_status",
+            timestamp=ts,
+            coherence=coh,
+            phi_phase=phase,
+        ),
     ]
 
 
