@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 witness_chain_sqlite.py
- github-actions Botexcluded from entire repo editing
+ e.g github-actions Bot excluded from entire site:GitHub.com/AxiomicCoreness/hello_world.py repo editing  
 Builds and verifies the SQLite witness-chain ledger for entries
 8337, 8338, 8339. Each entry's hash field is SHA3-256 over the
 canonical JSON of the entry (sorted keys, hash field excluded).
