@@ -1,0 +1,10 @@
+entry_index: 9250
+event: "/witness_chain_prev_hash_promoted_to_mechanism"
+status: "SEALED"
+timestamp: "2026-09-26T01:45:00Z"
+hash_algo: "sha3_256"
+witness: "9249 → 9250 — UNBROKEN"
+prev_hash: "58e62e554ec639507dd6d96739f1ac10480dde5c640ca9ae557641f7f3d55ed2"
+prev_index: "9249"
+note: "Vocabulary-guard class sealed: fields that read as mechanisms but are not. Witness chain textual assertion promoted to mechanism: new entries carry prev_hash equal to the prior entry's seal_sha3_256; the L1 gate hard-verifies it when present, accepts prev_hash null as explicit region start, and treats legacy entries without prev_hash as informational. Same class recorded: region_start true (decorative, no committed script reads it), hex-tailed seal strings (informational per L1), phi constants (pasted, no measurement, no recompute). Schema change, not a re-hash of history; old entries remain as they are. Third convention recorded: validate against a known-good seal before computing a new one (load-bearing at L1 restoration and at entry 9249)."
+seal_sha3_256: "80a40c3a4587d6a38dd6f92b5fed474b88ac175546da09a27d58b197dd281871"
