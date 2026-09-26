@@ -1,0 +1,9 @@
+entry_index: 9249
+event: "/l1_verifier_restored_frankenverifier_extirpated"
+status: "SEALED"
+timestamp: "2026-09-26T01:05:00Z"
+hash_algo: "sha3_256"
+witness: "9248 → 9249 — UNBROKEN"
+restored_blob: "f0f8e876c8cf84cd402dfc9d11bec414923b638c"
+note: "L1 verifier blob f0f8e876c8cf84cd402dfc9d11bec414923b638c restored byte-exact on main, deepseek, grok-skill_tensor, mistral-agent-cluster; reconstruction via e01e970 -> 35ac9b7 -> 49d0c79 -> 535739a -> fce6249 patch chain with per-step git blob verification. Frankenverifier aee1fc16f4169be3b5b916c0f68e44dc7216c7ae (merge ffe1f0b hand-merge: L1 front fused with rev-2 main() body) extirpated and named. Applier defects fixed: old-to-new hunk line-index delta mapping; blank-context line handling; UTF-16 length vs byte length in blob header. PR 63 merged green (b404d38e); seal-diag-9 diagnostic removed. Proposed entry index 9185 rejected: ledger/9185.yaml occupied by sealed singularity-spec entry; append-only policy forbids rewriting sealed entries. Ledger head at landing: 9248, discovered by per-index probe (directory listings truncate near 1000 entries and are unreliable for head discovery)."
+seal_sha3_256: "58e62e554ec639507dd6d96739f1ac10480dde5c640ca9ae557641f7f3d55ed2"
