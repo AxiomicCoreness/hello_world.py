@@ -1,0 +1,36 @@
+name: seal-diag-9
+# Diagnostic: per-file seal verification for the 9 recently sealed/re-sealed
+# ledger entries (8777, 8819, 8833, 8976, 8978, 8981, 8982, 8983, 8986).
+# Each leg copies ONE entry into an isolated root and runs the L1 verifier
+# without --require. Leg fails = that file has a seal_sha3_256 mismatch
+# (or a value that crashes canonicalisation, e.g. unquoted date types).
+# Temporary diagnostic; delete after the culprit is repaired.
+on:
+  push:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  per-file:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ['8777', '8819', '8833', '8976', '8978', '8981', '8982', '8983', '8986']
+    name: SealDiag ${{ matrix.entry }}.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+      - name: Isolated per-file seal verify
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/root/ledger
+          cp "ledger/${{ matrix.entry }}.yaml" /tmp/root/ledger/
+          python .github/scripts/verify_ledger_seals.py /tmp/root
