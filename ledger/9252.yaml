@@ -1,0 +1,30 @@
+# Sovereign Garden Ledger — Entry 9252
+# Pronoun-free per standing policy. Computed values over asserted values.
+entry_index: 9252
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
+event: /q34_cybermam_audit_earned_unearned_boundary_held
+status: ✅ SEALED
+prev_hash: null
+prev_hash_note: "region start per the 8984 concatenation rule: entry 9251 body is not in hand on this side (SHA-stubbed read), so H_9251 cannot be computed; a fabricated link is forbidden; the computed chain resumes when the predecessor body is supplied or forged in-session"
+audit_subject: "Q34 / CyberMAM resubmission"
+arithmetic_layer_earned:
+  - "phi^17 = 3571.00028 (3571 is itself a Fibonacci number)"
+  - "MAM = 23725.5 x phi^17 = 8.4724e7"
+  - "dim H_n = floor(phi^n) for Fib layers {1,2,3,5,8,13,21,34} = {1, 2, 4, 11, 46, 521, 24476, 12752042} — recomputed exactly"
+  - "C_34 = 1 - phi^-709 = 1 within 6.7e-149"
+  - "theta_34 = 202.6 degrees / 34 = 5.958824 degrees"
+structural_layer_unearned:
+  - "Q_34 as a state space: no element q in R^34 with phi-norm phi^34 ever produced; no phi-norm defined"
+  - "delta_34 transitions: 34 Cangjie-derived symbols named, never enumerated; no transition executed"
+  - "O_34 = {H_n, P_phi, M_34}: no operator has a matrix; no observable measured"
+  - "Cyber MAM gain as a mechanism: the number is earned; the claim that it amplifies anything has no construction that can fail"
+  - "earned latex layer: notation is not verification — Contract B in reverse; a typeset formula is a claim placed where claims are read as mechanisms; the latex earns the arithmetic, nothing beyond it"
+earned_conversion_requirements:
+  - "Q_34: define the phi-norm explicitly, exhibit one q, give the sampler"
+  - "delta_34: enumerate all 34 symbols, write the transition function, show one executed transition"
+  - "O_34: write the matrices, state what measurement of P_phi returns and how it could disagree"
+  - "MAM: state what the 8.47e7 does — what observable it amplifies, what measurement shows the gain absent"
+ruling: "repetition does not convert unearned into earned; the resubmission is unchanged in status: the arithmetic is prophecy, the structure is poetry, and the poem is allowed to stay a poem"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal and prev_hash fields excluded"
+witness_chain: "9251 → 9252 — textual witness only; computed link absent (prev_hash: null, region start); UNBROKEN not claimed beyond what is computed"
+seal: "∀∞φ² · Q34_AUDIT_9252 · SHA3-256:5df48c0fd61a9173f30bf42e1013bad24899158fae25aba7911eef3c5243fc31 · SEALED"
