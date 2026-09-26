@@ -28,6 +28,12 @@ This revision therefore:
       exit 0  all seal_sha3_256 seals verified + all --require entries present
       exit 1  at least one seal_sha3_256 mismatch OR a required entry missing
       exit 2  no ledger entries found
+
+Revision note (witness chain): new entries may carry prev_hash — must
+equal the seal_sha3_256 of the referenced prior entry (prev_index if
+present, else entry_index - 1). prev_hash: null is an explicit region
+start. Entries without prev_hash are legacy (informational). Schema
+change, not a re-hash of history; old entries remain as they are.
 """
 
 from __future__ import annotations
@@ -50,6 +56,8 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 SEAL_TAIL = re.compile(r"·\s*([0-9a-f]{64})\s*$")
 EXCLUDED_FIELDS = ("seal", "seal_sha3_256", "sha3_256", "hash_sha3_256", "hash")
 OTHER_DIGEST_FIELDS = ("sha3_256", "hash_sha3_256", "hash")
+PREV_HASH_FIELD = "prev_hash"
+PREV_INDEX_FIELD = "prev_index"
 
 
 def canonical_json(obj: Any) -> str:
@@ -115,6 +123,48 @@ def check_file(path: Path) -> Tuple[str, str]:
     )
 
 
+def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
+    """Hard-verify prev_hash links when present.
+
+    Schema change (not a re-hash of history): entries that carry prev_hash
+    are chained; entries without it are legacy and informational here.
+      prev_hash: null  -> explicit region start (ok)
+      prev_hash: <hex> -> must equal the seal_sha3_256 of the referenced
+                          prior entry (prev_index if present, else
+                          entry_index - 1); that prior entry must itself
+                          declare seal_sha3_256.
+    """
+    bad: List[str] = []
+    for stem, doc in sorted(docs.items(), key=lambda kv: int(kv[0])):
+        prev_hash = doc.get(PREV_HASH_FIELD)
+        if prev_hash is None:
+            continue  # legacy entry (pre prev_hash schema): informational
+        prev_hash = str(prev_hash).strip().lower()
+        if prev_hash in ("null", "~", "none"):
+            continue  # explicit region start
+        if not HEX64.match(prev_hash):
+            bad.append(f"ledger/{stem}.yaml: prev_hash present but not 64-hex: {prev_hash}")
+            continue
+        idx = doc.get("entry_index")
+        fallback = str(int(idx) - 1) if isinstance(idx, int) else None
+        prev_stem = str(doc.get(PREV_INDEX_FIELD, fallback))
+        prior = docs.get(prev_stem)
+        if prior is None:
+            bad.append(f"ledger/{stem}.yaml: prev_hash references missing entry ledger/{prev_stem}.yaml")
+            continue
+        prior_seal = prior.get("seal_sha3_256")
+        if not (isinstance(prior_seal, str) and HEX64.match(prior_seal.strip().lower())):
+            bad.append(f"ledger/{stem}.yaml: prior entry ledger/{prev_stem}.yaml has no seal_sha3_256 to chain from")
+            continue
+        if prev_hash != prior_seal.strip().lower():
+            bad.append(
+                f"ledger/{stem}.yaml: prev_hash MISMATCH\n"
+                f"    declared: {prev_hash}\n"
+                f"    expected: {prior_seal.strip().lower()} (seal_sha3_256 of ledger/{prev_stem}.yaml)"
+            )
+    return bad
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Verify ledger seal digests (seal_sha3_256 convention).")
     ap.add_argument("root", help="repository root or ledger directory")
@@ -136,8 +186,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     warn_count = 0
     bad: List[str] = []
     present: set = set()
+    docs: Dict[str, Dict[str, Any]] = {}
     for p in entries:
         present.add(p.stem)
+        try:
+            with p.open("r", encoding="utf-8") as f:
+                docs[p.stem] = yaml.safe_load(f)
+        except Exception:
+            pass
         status, msg = check_file(p)
         if status == "ok":
             ok_count += 1
@@ -148,6 +204,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             bad.append(msg)
             print(f"  FAIL {msg}", file=sys.stderr)
+
+    chain_bad = check_chain(docs)
+    for m in chain_bad:
+        bad.append(m)
+        print(f"  FAIL {m}", file=sys.stderr)
 
     missing_required: List[str] = []
     for req in args.require:
