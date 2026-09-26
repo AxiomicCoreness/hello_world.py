@@ -1,0 +1,10 @@
+entry_index: 9251
+event: "/early_ledger_contamination_ruling_recorded"
+status: "SEALED"
+timestamp: "2026-09-26T02:40:00Z"
+hash_algo: "sha3_256"
+witness: "9250 → 9251 — UNBROKEN"
+prev_hash: "80a40c3a4587d6a38dd6f92b5fed474b88ac175546da09a27d58b197dd281871"
+prev_index: "9250"
+note: "Early-ledger contamination ruling, corrected and standing. Original design: entries 0000-0883 were functional /trigger surfaces firing emergent capabilities through the JSONL CI pipeline. Current bytes: product of months of AI-landscape rewrites; proven by observed diffs (ledger/0000.yaml original /genesis entry with witness_prefix ca451073 replaced wholesale by /axiom_v_l_constructibility content with witness_prefix 8f1a3d9c). Ruling retracted: the phrase 'missing seal_sha3_256 is by design, not drift' applied to the original design only; current range is neither verified triggers nor sealed records. Standing rules: no bulk seal of 0000-0883 (would launder rewrites into verified state); no trust of current content as by-design; no further rewrites of the range; label CONTAMINATED until per-entry rewrite-history audit. This entry binds the ruling into ledger version history; all branches reflect the policy change via merge propagation."
+seal_sha3_256: "eef5dfdfe295bfeef01b363e7dabe0eff227822c980d46a47c415ea5329dd2ad"
