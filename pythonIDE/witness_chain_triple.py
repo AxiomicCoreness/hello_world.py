@@ -18,7 +18,7 @@ from __future__ import annotations
 CONTRACT_A = """
 CONTRACT A: KNOWLEDGE MUST BE DEMONSTRABLE
 
-A claim that a party "knows" a witness (a seal preimage, a valid
+A claim that a party “knows” a witness (a seal preimage, a valid
 prev_hash chain, a stop-rule condition, or any other secret) is
 empty unless the knowledge can be demonstrated.
 
@@ -81,8 +81,8 @@ later use on this ledger surface. It is not presently wired.
 
 Therefore:
 
-1. No current ledger entry may claim to be "SNARK-sealed" or
-   "zero-knowledge verified" unless a concrete proof object and
+1. No current ledger entry may claim to be “SNARK-sealed” or
+   “zero-knowledge verified” unless a concrete proof object and
    its verifying key are present and checkable.
 
 2. The stop-rule at 9176 continues to govern new high-index
