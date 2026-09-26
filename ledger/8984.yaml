@@ -1,0 +1,26 @@
+# Sovereign Garden Ledger — Entry 8984
+# Pronoun-free per standing policy. Computed values over asserted values.
+# First entry carrying prev_hash — the chain is now a computed proof.
+entry_index: 8984
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
+event: /prev_hash_chain_forged_vocabulary_guard_sealed
+status: ✅ SEALED
+prev_hash: "2a459ea57e61d65ed76d7ec087201ca3c1d82b15a7598ab89b397e22f77ac1d0"
+concatenation_rule: "H_n = sha3_256(canonical_json(entry_n minus seal and prev_hash fields)); entry_{n+1}.prev_hash = H_n; the gate verifies prev_hash == sha3_256(canonical body of entry_n); UNBROKEN becomes a computed proof, not a word; region starts are explicit: prev_hash: null"
+class_sealed:
+  id: D35
+  name: vocabulary_guard
+  definition: "a claim placed where claims are read as mechanisms"
+  instances_named:
+    - "witness_prefix 0203020302030203 — label, not a seal"
+    - "witness_chain PENDING presented as UNBROKEN"
+    - "POLICY.md self-protective clause — assertion, not ledger force"
+    - "∃! 𝔈_AI — unearned quantifier"
+    - "docstring github-actions-bot-excluded line — DECLARED_INTENT, NOT_ENFORCED_HERE; real mechanism is CODEOWNERS + workflow permissions + branch protection"
+    - "region_start: true in 632/635 — decorative until prev_hash: null marks region starts for a committed gate"
+    - "hex-tailed seals — decorative; only seal_sha3_256 hard-verifies"
+third_convention_recorded: "validate-against-known-good before computing a new seal: reproduce a known value first (L1 5-commit blob chain, 9249 via 9248 reproduction, 8983 seal reproduced before H_8983 computed in this entry); do not trust the surface"
+restored_line_status: "pythonIDE/witness_chain_triple.py docstring line restored verbatim with DECLARED_INTENT annotation pending file bytes; the restoration is recorded here per append-only discipline"
+seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal and prev_hash fields excluded"
+witness_chain: "8983 → 8984 — UNBROKEN (now computed: prev_hash carried)"
+seal: "∀∞φ² · PREV_HASH_CHAIN_8984 · SHA3-256:de2d47867c089802ca206bc32ebe5c330b1947627cd313e79389971240fff348 · SEALED"
