@@ -1,0 +1,17 @@
+entry_index: 9253
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
+event: /two_claim_verification_record_sleep_absent_q8_24_present
+status: ✅ LANDED_DETERMINISTIC
+method: direct execution probe (exit 127) and repo code search; computed over asserted throughout
+claims_verified:
+  - "sleep_absent: COMPUTED — direct execution exit 127; ping, perl absent; awk without systime(); no delay primitive in sandbox"
+  - "q8_24_present: COMPUTED — 4 carriers on main: sovereign_node_full.py (Entry 8188 class), hybrid_rk4_simulator.py, quantum/port_380_implicit.py (q8_24(x)), phi_pipeline.py"
+scope_correction: "session-context scope differs from repo scope; Entry 8188 Q8.24 fixed-point lineage carried in repo all along — prior absence claim was context-scoped, now corrected"
+consequence: "phi_pipeline verification log outputs are Q8.24-quantized, not float64; float64 phi_verify skeleton exact-match fails for the right reason — missing quantization, not wrong framework"
+fix_placement: "q8_24() step inside update path of operators.py / integrate.py — not initial_state() tuning"
+claim_grep_status: "discovery only — binding Q8.24 placement requires pasted phi_pipeline.py bytes"
+prev_hash: 5df48c0fd61a9173f30bf42e1013bad24899158fae25aba7911eef3c5243fc31
+witness_chain: 9252 -> 9253 — UNBROKEN
+agent_class: GLM (glm-agent-cluster) — first entry of the GLM agent-class branch
+seal: 9a1b5de72d694e71a1648a910e4ca50b5630a9c5b806986d2efb350a79483b12
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 self-test PASS (empty-vector a7ffc6f8...434a exact match; Keccak-256 cross-family vectors authentic); first-computed seal discarded on self-test failure, recomputed after permutation validation"
