@@ -9,7 +9,7 @@ language: sovereign_standard_english
 witness_prefix: aad9574a75374bd4997dca62e62e3882f6abaf35853b2326ba25266690c153f5
 terminal_hex: aad9574a75374bd4997dca62e62e3882f6abaf35853b2326ba25266690c153f5
 chain_hex: 0730819541e2496436c428395d8936ab983e435a9f6703c06c223fb1c13aa319
-prev_hash: 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
+chain_prev_digest: 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
 curr_hash: 40bcd10d0c4ab03fb53bded1e604fae0f6f9d1e9a803fda85f254dee91d17513
 description: |
   Backfill chain digest SHA3-256(ascii concat of 9230 hex || 9231 hex).
