@@ -12,8 +12,10 @@ name: mTLS Cert Rotation (cybernetic)
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
 # ledger_policy: PILOT_HEARTBEAT_STREAM — ticks to heartbeats/mtls_rotation.jsonl
 # compaction_pilot: entry-8819 fixed-path overwrite retired; observation ticks go to
-#   the presence stream; decision-grade theta=rotate ticks remain ledger-eligible via
-#   a future decision entry at the next free index. Empty-window rule: SKIP.
+#   the presence stream; no main-ledger commit per run. Decision-grade rotation
+#   results (theta = rotate) become main-ledger entries at the next free index when
+#   commissioned — not via this workflow.
+# empty_window_rule: SKIP (absence of a compaction entry is the empty marker)
 #
 # ═══════════════════════════════════════════════════════════════════
 #  CYBERNETIC FRAMING
@@ -274,9 +276,7 @@ jobs:
           old_fp  = os.environ.get("OLD_FP", "") or ""
           new_fp  = os.environ.get("NEW_FP", "") or ""
           phase   = os.environ.get("PHI_PHASE", "null") or "null"
-
-          # Θ(t): the control action this cycle applied
-          theta = "rotate" if rotated else "noop"
+          theta   = "rotate" if rotated else "noop"
 
           hb_index = 0
           if stream.exists():
@@ -295,7 +295,6 @@ jobs:
               "new_fingerprint": new_fp,
               "phi_phase": phase,
               "force_rotate": os.environ.get("FORCE_ROTATE", "false") == "true",
-              "decision_grade": rotated,
           }
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
@@ -303,10 +302,25 @@ jobs:
           tick["body_hash"] = h
           with stream.open("a") as fh:
               fh.write(json.dumps(tick, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
-          print(f"📋 heartbeat tick {hb_index} appended · theta={theta}")
+          print(f"📋 heartbeat tick {hb_index} appended to presence stream.")
           print(f"✅ body_hash {HASH_ALGO}:{h[:16]}...")
-          print(f"   rotate_recommended = {rotated}")
-          print(f"   phi_phase          = {phase}")
+          print(f"   theta = {theta}")
+          PY
+
+      - name: Validate heartbeat stream (last tick well-formed)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stream = Path("heartbeats/mtls_rotation.jsonl")
+          lines = [l for l in stream.read_text().splitlines() if l.strip()]
+          assert lines, "empty stream"
+          tick = json.loads(lines[-1])
+          for key in ("hb_index", "timestamp", "agent_id", "body_hash"):
+              assert key in tick, f"missing {key}"
+          assert tick["agent_id"] == "mtls-cert-rotation"
+          print(f"✅ tick {tick['hb_index']} valid · theta {tick.get('theta')} · body_hash {tick['body_hash'][:16]}...")
           PY
 
       - name: Upload heartbeat stream
@@ -322,7 +336,7 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: append mtls-rotation heartbeat tick to presence stream (compaction pilot)"
+          commit_message: "chore: append mtls-cert-rotation heartbeat tick to presence stream (compaction pilot)"
           file_pattern: heartbeats/mtls_rotation.jsonl
           commit_options: '--no-verify'
 
@@ -405,7 +419,7 @@ jobs:
             echo "| old_fingerprint | \`${{ needs.measure.outputs.fingerprint }}\` |"
             echo "| new_fingerprint | \`${{ needs.rotate.outputs.new_fingerprint }}\` |"
             echo "| phi_phase | ${{ needs.measure.outputs.phase }} |"
-            echo "| slot | 8819 |"
+            echo "| stream | heartbeats/mtls_rotation.jsonl |"
             echo "| hash_algo | sha3_256 (FIPS 202) |"
             echo ""
             echo "**Job results:**"
@@ -419,6 +433,6 @@ jobs:
             echo "**Control action Θ(t):** ${{ needs.measure.outputs.rotate == 'true' && 'rotate' || 'noop' }}"
             echo "**Presence:** heartbeat tick → heartbeats/mtls_rotation.jsonl"
             echo ""
-            echo "**Cybernetic note:** *both* outcomes (rotate=true, rotate=false) are sealed —"
-            echo "the 'no-op' observation still advances 𝒜_n, preserving isotony."
+            echo "**Cybernetic note:** *both* outcomes (rotate=true, rotate=false) are recorded —"
+            echo "as presence-stream ticks; the 'no-op' observation still advances the stream."
           } >> "$GITHUB_STEP_SUMMARY"
