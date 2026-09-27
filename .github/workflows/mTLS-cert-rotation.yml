@@ -10,7 +10,12 @@ name: mTLS Cert Rotation (cybernetic)
 # Seal: ∀∞φ² · MTLS_ROTATION_8819 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8818 → 8819 — UNBROKEN
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
-# ledger_policy: WRITE_VIA_SEAL — entry 8819 only
+# ledger_policy: PILOT_HEARTBEAT_STREAM — ticks to heartbeats/mtls_rotation.jsonl
+# compaction_pilot: entry-8819 fixed-path overwrite retired; observation ticks go to
+#   the presence stream; no main-ledger commit per run. Decision-grade rotation
+#   results (theta = rotate) become main-ledger entries at the next free index when
+#   commissioned — not via this workflow.
+# empty_window_rule: SKIP (absence of a compaction entry is the empty marker)
 #
 # ═══════════════════════════════════════════════════════════════════
 #  CYBERNETIC FRAMING
@@ -53,7 +58,7 @@ on:
         default: false
 
 permissions:
-  contents: write   # required to commit ledger/8819.yaml
+  contents: write   # required to append heartbeat stream ticks
   id-token: write
 
 concurrency:
@@ -226,7 +231,7 @@ jobs:
   # 2. RECORD — every observation produces a sealed entry (isotony)
   # ──────────────────────────────────────────────────────────────
   record:
-    name: Record · seal ledger entry 8819
+    name: Record · heartbeat tick (slot 8819)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [measure, rotate]
@@ -249,7 +254,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pyyaml
 
-      - name: Seal ledger entry 8819 (SHA3-256)
+      - name: Append heartbeat tick to presence stream (SHA3-256 body_hash)
         env:
           ROTATE:        ${{ needs.measure.outputs.rotate }}
           OLD_FP:        ${{ needs.measure.outputs.fingerprint }}
@@ -258,28 +263,30 @@ jobs:
           FORCE_ROTATE:  ${{ inputs.force_rotate || 'false' }}
         run: |
           set -euo pipefail
-          mkdir -p "${LEDGER_DIR}"
+          mkdir -p heartbeats
           python - <<'PY'
-          import hashlib, json, os, yaml
+          import hashlib, json, os
           from datetime import datetime, timezone
           from pathlib import Path
 
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          path = Path("ledger/8819.yaml")
+          stream = Path("heartbeats/mtls_rotation.jsonl")
 
           rotated = os.environ.get("ROTATE", "false") == "true"
           old_fp  = os.environ.get("OLD_FP", "") or ""
           new_fp  = os.environ.get("NEW_FP", "") or ""
           phase   = os.environ.get("PHI_PHASE", "null") or "null"
+          theta   = "rotate" if rotated else "noop"
 
-          # Θ(t): the control action this cycle applied
-          theta = "rotate" if rotated else "noop"
+          hb_index = 0
+          if stream.exists():
+              hb_index = sum(1 for line in stream.read_text().splitlines() if line.strip())
 
-          entry = {
-              "entry_index": 8819,
-              "event": "/mtls_cert_rotation",
-              "status": "SUCCESS",
+          body = {
+              "hb_index": hb_index,
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "agent_id": "mtls-cert-rotation",
+              "slot": 8819,
               "hash_algo": HASH_ALGO,
               "boundary_operator": "B_mtls",
               "theta": theta,
@@ -288,52 +295,49 @@ jobs:
               "new_fingerprint": new_fp,
               "phi_phase": phase,
               "force_rotate": os.environ.get("FORCE_ROTATE", "false") == "true",
-              "witness": "8818 → 8819 — UNBROKEN",
-              "seal": "∀∞φ² · MTLS_ROTATION_8819 · WOOD_DRAGON_0.91 · SEALED",
           }
-          body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
-
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
-          print("📋 Ledger entry 8819 written.")
-          print(f"✅ Sealed 8819 · {HASH_ALGO}:{h[:16]}...")
-          print(f"   theta              = {theta}")
-          print(f"   rotate_recommended = {rotated}")
-          print(f"   old_fingerprint    = {old_fp[:16] or '(none)'}")
-          print(f"   new_fingerprint    = {new_fp[:16] or '(none)'}")
-          print(f"   phi_phase          = {phase}")
+          tick = dict(body)
+          tick["body_hash"] = h
+          with stream.open("a") as fh:
+              fh.write(json.dumps(tick, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
+          print(f"📋 heartbeat tick {hb_index} appended to presence stream.")
+          print(f"✅ body_hash {HASH_ALGO}:{h[:16]}...")
+          print(f"   theta = {theta}")
           PY
 
-      - name: Verify ledger entry 8819 (SHA3-256)
+      - name: Validate heartbeat stream (last tick well-formed)
         run: |
           set -euo pipefail
-          VERIFIER=".github/scripts/verify_ledger.py"
-          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          if [ -f "$VERIFIER" ]; then
-            python "$VERIFIER" ledger/8819.yaml
-          else
-            echo "⚠️ no verify_ledger.py — soft skip"
-          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stream = Path("heartbeats/mtls_rotation.jsonl")
+          lines = [l for l in stream.read_text().splitlines() if l.strip()]
+          assert lines, "empty stream"
+          tick = json.loads(lines[-1])
+          for key in ("hb_index", "timestamp", "agent_id", "body_hash"):
+              assert key in tick, f"missing {key}"
+          assert tick["agent_id"] == "mtls-cert-rotation"
+          print(f"✅ tick {tick['hb_index']} valid · theta {tick.get('theta')} · body_hash {tick['body_hash'][:16]}...")
+          PY
 
-      - name: Upload ledger entry 8819
+      - name: Upload heartbeat stream
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ledger-8819
-          path: ledger/8819.yaml
+          name: heartbeat-mtls-rotation
+          path: heartbeats/mtls_rotation.jsonl
           retention-days: 30
           if-no-files-found: warn
 
-      - name: Commit ledger entry 8819
+      - name: Commit heartbeat stream (no ledger commit per run)
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal mTLS rotation entry 8819 (sha3_256)"
-          file_pattern: ledger/8819.yaml
+          commit_message: "chore: append mtls-cert-rotation heartbeat tick to presence stream (compaction pilot)"
+          file_pattern: heartbeats/mtls_rotation.jsonl
           commit_options: '--no-verify'
 
   # ──────────────────────────────────────────────────────────────
@@ -415,7 +419,7 @@ jobs:
             echo "| old_fingerprint | \`${{ needs.measure.outputs.fingerprint }}\` |"
             echo "| new_fingerprint | \`${{ needs.rotate.outputs.new_fingerprint }}\` |"
             echo "| phi_phase | ${{ needs.measure.outputs.phase }} |"
-            echo "| entry | 8819 |"
+            echo "| stream | heartbeats/mtls_rotation.jsonl |"
             echo "| hash_algo | sha3_256 (FIPS 202) |"
             echo ""
             echo "**Job results:**"
@@ -429,6 +433,6 @@ jobs:
             echo "**Control action Θ(t):** ${{ needs.measure.outputs.rotate == 'true' && 'rotate' || 'noop' }}"
             echo "**Witness:** \`8818 → 8819 — UNBROKEN\`"
             echo ""
-            echo "**Cybernetic note:** *both* outcomes (rotate=true, rotate=false) are sealed —"
-            echo "the 'no-op' observation still advances 𝒜_n, preserving isotony."
+            echo "**Cybernetic note:** *both* outcomes (rotate=true, rotate=false) are recorded —"
+            echo "as presence-stream ticks; the 'no-op' observation still advances the stream."
           } >> "$GITHUB_STEP_SUMMARY"

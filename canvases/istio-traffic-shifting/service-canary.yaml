@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-canary
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: canary
+spec:
+  selector:
+    app: sovereign-garden
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

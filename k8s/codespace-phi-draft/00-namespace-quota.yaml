@@ -1,0 +1,57 @@
+# k8s/codespace-phi-draft/00-namespace-quota.yaml
+# Review-branch draft. Does NOT rewrite k8s/codespace/ (ledger 9157).
+# Signitorial: Clarke Yoursa Tee
+# MCP FILLED=false. Dual ASGI 127.0.0.1:8024. No 0.0.0.0 bind.
+#
+# Quota floors = floor(φ^n) from celestial/phi_constants.py.
+# D21: paste used pods=13 (F7) and services=8 (F6) as "φ floors" — those
+# are Fibonacci costumes. Recorded here as optional symbolic keys, not
+# as floor(φ⁶)/floor(φ⁸).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: garden-codespace-phi-draft
+  labels:
+    garden: sovereign
+    garden.layer: "314"
+    strike: IX
+    mcp.garden/filled: "false"
+  annotations:
+    garden.dual_asgi: "127.0.0.1:8024"
+    garden.bind_0000: "false"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: codespace-quota
+  namespace: garden-codespace-phi-draft
+  labels:
+    garden: sovereign
+spec:
+  hard:
+    requests.cpu: "2"       # floor(φ²)=2
+    requests.memory: "6Gi"  # floor(φ⁴)=6
+    limits.cpu: "11"        # floor(φ⁵)=11
+    limits.memory: "17Gi"   # floor(φ⁶)=17  (paste claimed 18)
+    pods: "17"              # floor(φ⁶)=17  (paste claimed 13)
+    services: "8"           # D21 costume — not floor(φ⁸)=46
+    secrets: "7"
+    configmaps: "7"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: codespace-limits
+  namespace: garden-codespace-phi-draft
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"

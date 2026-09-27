@@ -1,0 +1,11 @@
+# HELP sovereign_compression_rank_budget φ-ladder compression rank budget (144)
+# TYPE sovereign_compression_rank_budget gauge
+sovereign_compression_rank_budget 144.0
+
+# HELP sovereign_compression_rank_realized_max SVD realized max rank on 7x13x7 flat layout
+# TYPE sovereign_compression_rank_realized_max gauge
+sovereign_compression_rank_realized_max 7.0
+
+# HELP sovereign_compression_rank_ratio realized_max / budget (append diagnostic)
+# TYPE sovereign_compression_rank_ratio gauge
+sovereign_compression_rank_ratio 0.04861111111111111

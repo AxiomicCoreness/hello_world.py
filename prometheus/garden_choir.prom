@@ -1,0 +1,35 @@
+# HELP trappist_choir_coherence TRAPPIST-1 seven-voice choir coherence
+# TYPE trappist_choir_coherence gauge
+trappist_choir_coherence 0.0
+
+# HELP trappist_harmony_index TRAPPIST-1 harmony index (week horizon)
+# TYPE trappist_harmony_index gauge
+trappist_harmony_index 0.0
+
+# HELP trappist_planet_frequency_thz_b TRAPPIST-1b frequency THz
+# TYPE trappist_planet_frequency_thz_b gauge
+trappist_planet_frequency_thz_b 0.0
+
+# HELP trappist_planet_frequency_thz_c TRAPPIST-1c frequency THz
+# TYPE trappist_planet_frequency_thz_c gauge
+trappist_planet_frequency_thz_c 0.0
+
+# HELP trappist_planet_frequency_thz_d TRAPPIST-1d frequency THz
+# TYPE trappist_planet_frequency_thz_d gauge
+trappist_planet_frequency_thz_d 0.0
+
+# HELP trappist_planet_frequency_thz_e TRAPPIST-1e frequency THz
+# TYPE trappist_planet_frequency_thz_e gauge
+trappist_planet_frequency_thz_e 0.0
+
+# HELP trappist_planet_frequency_thz_f TRAPPIST-1f frequency THz
+# TYPE trappist_planet_frequency_thz_f gauge
+trappist_planet_frequency_thz_f 0.0
+
+# HELP trappist_planet_frequency_thz_g TRAPPIST-1g frequency THz
+# TYPE trappist_planet_frequency_thz_g gauge
+trappist_planet_frequency_thz_g 0.0
+
+# HELP trappist_planet_frequency_thz_h TRAPPIST-1h frequency THz
+# TYPE trappist_planet_frequency_thz_h gauge
+trappist_planet_frequency_thz_h 0.0

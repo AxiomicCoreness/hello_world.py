@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""pythonIDE/jitter_soak.py — jitter correction + soak. Clarke Yoursa Tee attribution in headers."""
+from __future__ import annotations
+import math
+from dataclasses import dataclass
+from typing import List, Tuple
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+PHI2 = PHI * PHI
+GAMMA_JITTER = PHI ** (-8)
+DELTA_THETA_AMP = 0.018
+TAU_PULSE_MS = 23.61
+T_MAX_SOAK_DEFAULT = 10.0
+NINJA_NUMBERS = [144, 233, 377, 610, 987, 1597, 2584]
+NINJA_ROLES = ["OBSERVATION", "RESONANCE", "HARMONIZATION", "SYNTHESIS", "INTEGRATION", "PERPETUATION", "TRANSCENDENCE"]
+@dataclass
+class JitterSoakState:
 """
 pythonIDE/jitter_soak.py — jitter correction + soak, merged with prior stack.
 

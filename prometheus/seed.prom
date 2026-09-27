@@ -1,0 +1,7 @@
+# HELP phi Golden ratio constant
+# TYPE phi gauge
+phi 1.618033988749895
+
+# HELP hyperian_up Hyperian / metrics surface up
+# TYPE hyperian_up gauge
+hyperian_up 1.0

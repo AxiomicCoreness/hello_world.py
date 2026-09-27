@@ -1,3 +1,4 @@
+# ─────────────────────────────────────────────────────────────────────────
 # Ledger seal gate + Clifford smoke — additive CI lane.
 #
 # Wired here because in-place edits to Hamiltonian_Full_Immersion.yml are
@@ -12,6 +13,7 @@
 # Exit-code contract:
 #   verify_ledger_seals.py  0 ok | 1 mismatch/missing-required | 2 no ledger
 #   clifford_euclid3.py     smoke asserts (any failure -> nonzero exit)
+# ─────────────────────────────────────────────────────────────────────────
 name: ledger-seal-gate
 
 on:

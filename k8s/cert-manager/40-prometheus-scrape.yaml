@@ -1,0 +1,92 @@
+# 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED · <digest>
+#
+# Prometheus scrape configuration for the Port-380 gate and the Garden
+# metrics server on :9090. Two forms so either install path works:
+#   - ServiceMonitor     (Prometheus Operator)
+#   - ConfigMap          (classic Prometheus)
+#
+# Deterministic path: k8s/cert-manager/40-prometheus-scrape.yaml
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: port-380-gate
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: prometheus
+    garden.sovereign/mtls: cert-manager
+    garden.sovereign/seal: WOOD_DRAGON_0.91
+    release: prometheus           # match Prometheus Operator selector
+spec:
+  selector:
+    matchLabels:
+      garden.sovereign/component: gate
+  namespaceSelector:
+    matchNames:
+      - sovereign-garden
+  endpoints:
+    # 9090 is the plain HTTP metrics surface; :380 is the mTLS gate.
+    - port: metrics
+      path: /metrics
+      scheme: http
+      interval: 30s
+      scrapeTimeout: 10s
+    - port: https
+      path: /metrics
+      scheme: https
+      interval: 30s
+      scrapeTimeout: 10s
+      tlsConfig:
+        # caFile / certFile / keyFile refer to files mounted into the
+        # Prometheus pod from port380-server-tls (or an equivalent
+        # mounted secret). Adjust paths to match the Prometheus pod.
+        caFile:   /etc/prom-tls/ca.crt
+        certFile: /etc/prom-tls/tls.crt
+        keyFile:  /etc/prom-tls/tls.key
+        insecureSkipVerify: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: garden-prometheus-scrape
+  namespace: sovereign-garden
+  labels:
+    garden.sovereign/component: prometheus
+    garden.sovereign/mtls: cert-manager
+    garden.sovereign/seal: WOOD_DRAGON_0.91
+data:
+  # Merge into your prometheus.yml under `scrape_configs:`
+  garden-scrape.yml: |
+    scrape_configs:
+      - job_name: port-380-gate-http
+        metrics_path: /metrics
+        scheme: http
+        static_configs:
+          - targets:
+              - port-380-gate.sovereign-garden.svc.cluster.local:9090
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: garden_component
+            replacement: gate
+          - source_labels: [__address__]
+            target_label: garden_layer
+            replacement: "314"
+      - job_name: port-380-gate-mtls
+        metrics_path: /metrics
+        scheme: https
+        tls_config:
+          ca_file:   /etc/prom-tls/ca.crt
+          cert_file: /etc/prom-tls/tls.crt
+          key_file:  /etc/prom-tls/tls.key
+          insecure_skip_verify: false
+        static_configs:
+          - targets:
+              - port-380-gate.sovereign-garden.svc.cluster.local:380
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: garden_component
+            replacement: gate-mtls
+          - source_labels: [__address__]
+            target_label: garden_layer
+            replacement: "314"

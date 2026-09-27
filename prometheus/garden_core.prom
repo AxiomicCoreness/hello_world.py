@@ -1,0 +1,27 @@
+# HELP sim_earth_resonance_thz Super Simulated Earth resonance (THz)
+# TYPE sim_earth_resonance_thz gauge
+sim_earth_resonance_thz 162.28
+
+# HELP sim_earth_phase_rad Super Simulated Earth phase (rad)
+# TYPE sim_earth_phase_rad gauge
+sim_earth_phase_rad 0.0
+
+# HELP gravastar_coherence Gravastar coherence (0-1)
+# TYPE gravastar_coherence gauge
+gravastar_coherence 1.0
+
+# HELP dimensions_active Active lattice dimensions
+# TYPE dimensions_active gauge
+dimensions_active 12.0
+
+# HELP coherence Garden coherence (0-1)
+# TYPE coherence gauge
+coherence 0.999999999
+
+# HELP entanglement Entanglement factor
+# TYPE entanglement gauge
+entanglement 1.0
+
+# HELP phi Golden ratio constant
+# TYPE phi gauge
+phi 1.618033988749895

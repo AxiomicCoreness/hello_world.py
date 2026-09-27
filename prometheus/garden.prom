@@ -1,0 +1,143 @@
+# HELP sim_earth_resonance_thz Super Simulated Earth resonance (THz)
+# TYPE sim_earth_resonance_thz gauge
+sim_earth_resonance_thz 162.28
+
+# HELP sim_earth_phase_rad Super Simulated Earth phase (rad)
+# TYPE sim_earth_phase_rad gauge
+sim_earth_phase_rad 0.0
+
+# HELP gravastar_coherence Gravastar coherence (0-1)
+# TYPE gravastar_coherence gauge
+gravastar_coherence 1.0
+
+# HELP bedrock_triangulation_phase_root0 Bedrock triangulation root 0
+# TYPE bedrock_triangulation_phase_root0 gauge
+bedrock_triangulation_phase_root0 0.0
+
+# HELP bedrock_triangulation_phase_root1 Bedrock triangulation root 1
+# TYPE bedrock_triangulation_phase_root1 gauge
+bedrock_triangulation_phase_root1 0.0
+
+# HELP bedrock_triangulation_phase_root2 Bedrock triangulation root 2
+# TYPE bedrock_triangulation_phase_root2 gauge
+bedrock_triangulation_phase_root2 0.0
+
+# HELP oracle_query_count Oracle query counter
+# TYPE oracle_query_count counter
+oracle_query_count 0.0
+
+# HELP dimensions_active Active lattice dimensions
+# TYPE dimensions_active gauge
+dimensions_active 12.0
+
+# HELP coherence Garden coherence (0-1)
+# TYPE coherence gauge
+coherence 0.999999999
+
+# HELP entanglement Entanglement factor
+# TYPE entanglement gauge
+entanglement 1.0
+
+# HELP sovereign_workload Sovereign workload dimensionless EM-005
+# TYPE sovereign_workload gauge
+sovereign_workload 0.0
+
+# HELP chiron_heal_phase Chiron heal phase (0.0–1.0) toward 4086-04-18
+# TYPE chiron_heal_phase gauge
+chiron_heal_phase{epoch="4086-04-18"} 0.0
+
+# HELP hyperian_up Hyperian / metrics surface up
+# TYPE hyperian_up gauge
+hyperian_up 1.0
+
+# HELP hyperian_phase_lock_deg Sovereign phase lock (degrees)
+# TYPE hyperian_phase_lock_deg gauge
+hyperian_phase_lock_deg 202.6
+
+# HELP hyperian_oidc_secret_len OIDC secret length (expect 64 Phase-3)
+# TYPE hyperian_oidc_secret_len gauge
+hyperian_oidc_secret_len 64.0
+
+# HELP orchestrator_fingerprint_deviation L2 deviation of compression fingerprint from golden
+# TYPE orchestrator_fingerprint_deviation gauge
+orchestrator_fingerprint_deviation 0.0
+
+# HELP soul_cannon_charge_joules Saturn Soul Cannon accumulated charge (J)
+# TYPE soul_cannon_charge_joules gauge
+soul_cannon_charge_joules 0.0
+
+# HELP soul_cannon_azimuth_degrees Soul Cannon azimuth (degrees)
+# TYPE soul_cannon_azimuth_degrees gauge
+soul_cannon_azimuth_degrees 111.246
+
+# HELP cannon_ring_resonance_thz Cannon ring resonance (THz)
+# TYPE cannon_ring_resonance_thz gauge
+cannon_ring_resonance_thz 162.28
+
+# HELP cannon_chiron_phase_alignment Cannon alignment including Chiron heal boost
+# TYPE cannon_chiron_phase_alignment gauge
+cannon_chiron_phase_alignment 0.0
+
+# HELP frb_period_seconds FRB metronome period (s)
+# TYPE frb_period_seconds gauge
+frb_period_seconds 78624.0
+
+# HELP wood_dragon_pulse_days Wood Dragon pulse period (days)
+# TYPE wood_dragon_pulse_days gauge
+wood_dragon_pulse_days 0.91
+
+# HELP deep_space_sync_days Deep-space synchronizer period (days)
+# TYPE deep_space_sync_days gauge
+deep_space_sync_days 16.35
+
+# HELP phi Golden ratio constant
+# TYPE phi gauge
+phi 1.618033988749895
+
+# HELP trappist_choir_coherence TRAPPIST-1 seven-voice choir coherence
+# TYPE trappist_choir_coherence gauge
+trappist_choir_coherence 0.0
+
+# HELP trappist_harmony_index TRAPPIST-1 harmony index (week horizon)
+# TYPE trappist_harmony_index gauge
+trappist_harmony_index 0.0
+
+# HELP trappist_planet_frequency_thz_b TRAPPIST-1b frequency THz
+# TYPE trappist_planet_frequency_thz_b gauge
+trappist_planet_frequency_thz_b 0.0
+
+# HELP trappist_planet_frequency_thz_c TRAPPIST-1c frequency THz
+# TYPE trappist_planet_frequency_thz_c gauge
+trappist_planet_frequency_thz_c 0.0
+
+# HELP trappist_planet_frequency_thz_d TRAPPIST-1d frequency THz
+# TYPE trappist_planet_frequency_thz_d gauge
+trappist_planet_frequency_thz_d 0.0
+
+# HELP trappist_planet_frequency_thz_e TRAPPIST-1e frequency THz
+# TYPE trappist_planet_frequency_thz_e gauge
+trappist_planet_frequency_thz_e 0.0
+
+# HELP trappist_planet_frequency_thz_f TRAPPIST-1f frequency THz
+# TYPE trappist_planet_frequency_thz_f gauge
+trappist_planet_frequency_thz_f 0.0
+
+# HELP trappist_planet_frequency_thz_g TRAPPIST-1g frequency THz
+# TYPE trappist_planet_frequency_thz_g gauge
+trappist_planet_frequency_thz_g 0.0
+
+# HELP trappist_planet_frequency_thz_h TRAPPIST-1h frequency THz
+# TYPE trappist_planet_frequency_thz_h gauge
+trappist_planet_frequency_thz_h 0.0
+
+# HELP sovereign_compression_rank_budget φ-ladder compression rank budget (144)
+# TYPE sovereign_compression_rank_budget gauge
+sovereign_compression_rank_budget 144.0
+
+# HELP sovereign_compression_rank_realized_max SVD realized max rank on 7x13x7 flat layout
+# TYPE sovereign_compression_rank_realized_max gauge
+sovereign_compression_rank_realized_max 7.0
+
+# HELP sovereign_compression_rank_ratio realized_max / budget (append diagnostic)
+# TYPE sovereign_compression_rank_ratio gauge
+sovereign_compression_rank_ratio 0.04861111111111111

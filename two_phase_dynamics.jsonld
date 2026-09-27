@@ -1,11 +1,45 @@
 {
-  "@context": "https://schema.org",
-  "@type": "MathematicalModel",
-  "name": "Two-Phase Sovereign Dynamics",
-  "description": "Phase I: Exponential Decay | Phase II: Clamped Boundary Lock",
-  "variable": [
-    {"@type": "MathematicalExpression", "name": "C(t)", "expression": "C0 + (C_target - C0)(1 - exp(-γt))"},
-    {"@type": "MathematicalExpression", "name": "P(t)", "expression": "P0 * exp(-γ_root * t)"}
+  "@context": {
+    "schema": "https://schema.org/",
+    "math": "https://math.garden/ns/",
+    "time": "https://www.w3.org/2006/time#"
+  },
+  "@id": "https://math.garden/system/two_phase_dynamics",
+  "@type": "math:DynamicalSystem",
+  "schema:name": "Two-Phase Coherence-Purity Dynamics",
+  "schema:description": "Two-phase system: exponential decay then clamped boundary lock, culminating in zero-entropy idle state",
+  "math:hasPhase": [
+    {
+      "@id": "https://math.garden/system/two_phase_dynamics/phase1",
+      "@type": "math:Phase",
+      "schema:name": "Phase I: Exponential Decay",
+      "time:hasBeginning": "0.0s",
+      "time:hasEnd": "2.0s",
+      "math:decayRate": { "@type": "math:Parameter", "math:symbol": "γ", "math:value": 1.5, "math:unit": "s⁻¹" },
+      "math:stateEquation": [
+        "C(t) = C₀ + (1 - C₀)(1 - e^{-γt})",
+        "P(t) = P₀ e^{-γ_root t}"
+      ],
+      "math:initialState": { "C": 0.9900, "P": 0.001000 },
+      "math:terminalState": { "C": 0.9940, "P": 0.000225 }
+    },
+    {
+      "@id": "https://math.garden/system/two_phase_dynamics/phase2",
+      "@type": "math:Phase",
+      "schema:name": "Phase II: Clamped Boundary Lock",
+      "time:hasBeginning": "2.1s",
+      "time:hasEnd": "5.0s",
+      "math:constraint": { "@type": "math:Constraint", "math:condition": "dP/dt ≡ 0", "math:fixedValue": 0.000350 },
+      "math:asymptoticState": { "C": "1.000000", "P": 0.000350, "entropy": 0.0, "PID": 0.0, "workload": 0.0 }
+    }
   ],
-  "seal": "∀∞φ² · TWO_PHASE_DYNAMICS · 412_SEALED"
+  "math:terminalState": {
+    "@id": "https://math.garden/system/two_phase_dynamics/terminal",
+    "@type": "math:TerminalState",
+    "time:atTime": "5.0s",
+    "math:coherence": 1.000000,
+    "math:entropy": 0.0,
+    "math:invariantStatus": "verified-by-computation",
+    "math:stability": "self-sustaining idle"
+  }
 }

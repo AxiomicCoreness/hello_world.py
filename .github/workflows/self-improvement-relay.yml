@@ -1,4 +1,9 @@
 name: Self Improvement Relay (Octonian CDP + QCH)
+# ledger_policy: PILOT_HEARTBEAT_STREAM — ticks to heartbeats/self_improvement_relay.jsonl
+# compaction_pilot: entry-8777 fixed-path overwrite retired; the run path no longer
+#   derives prev_hash from the predecessor seal tail (the decorative-source defect
+#   class repaired in PR #89); no main-ledger commit per run; no per-tick seal.
+# empty_window_rule: SKIP (absence of a compaction entry is the empty marker)
 
 on:
   workflow_dispatch:
@@ -23,7 +28,7 @@ env:
 
 jobs:
   relay:
-    name: Relay · QCH · CDP · Octonian · Seal (Entry 8777)
+    name: Relay · QCH · CDP · Octonian · Heartbeat Tick (Slot 8777)
     runs-on: ubuntu-latest
     timeout-minutes: 12
 
@@ -67,73 +72,87 @@ jobs:
           # ... real verification, or exit 0 with NOT_CHECKED ...
           PY
 
-      - name: Seal ledger entry 8777 (SHA3-256)
+      - name: Append heartbeat tick to presence stream (SHA3-256 body_hash)
         if: success()
         env:
           QCH_PASSED: ${{ steps.qch.outputs.qch_passed }}
           CDP_PASSED: ${{ steps.cdp.outputs.cdp_passed }}
         run: |
           set -euo pipefail
-          mkdir -p "${LEDGER_DIR}"
+          mkdir -p heartbeats
           python - <<'PY'
-          import hashlib, json, os, yaml
+          import hashlib, json, os
           from datetime import datetime, timezone
           from pathlib import Path
 
-          HASH_ALGO   = os.environ.get("HASH_ALGO", "sha3_256")
-          relay_id    = os.environ.get("RELAY_ENTRY", "8777")
-          pred_id     = os.environ.get("PREDECESSOR_ENTRY", "8776")
-          path        = Path(f"ledger/{relay_id}.yaml")
-          prev_path   = Path(f"ledger/{pred_id}.yaml")
-
-          prev_hash = ""
-          if prev_path.exists():
-              try:
-                  prev = yaml.safe_load(prev_path.read_text(encoding="utf-8")) or {}
-                  seal = prev.get("seal", "") or ""
-                  if "·" in seal:
-                      prev_hash = seal.rsplit("·", 1)[-1].strip()
-              except Exception as e:
-                  print(f"⚠️ predecessor read error: {e}")
+          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
+          relay_id   = os.environ.get("RELAY_ENTRY", "8777")
+          stream     = Path("heartbeats/self_improvement_relay.jsonl")
 
           qch = os.environ.get("QCH_PASSED", "unknown")
           cdp = os.environ.get("CDP_PASSED", "unknown")
           status = "SUCCESS" if qch == "true" and cdp == "true" else "DEGRADED"
 
-          entry = {
-              "entry_index": int(relay_id),
-              "event": "/self_improvement_relay",
-              "status": status,
+          hb_index = 0
+          if stream.exists():
+              hb_index = sum(1 for line in stream.read_text().splitlines() if line.strip())
+
+          body = {
+              "hb_index": hb_index,
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "agent_id": "self-improvement-relay",
+              "slot": int(relay_id),
               "hash_algo": HASH_ALGO,
               "qch_passed": qch,
               "cdp_passed": cdp,
+              "status": status,
               "octonian": "PASSED",
               "fal_probe": "PASSED",
               "security_headers_source": "VERIFIED",
               "security_headers_live": "VERIFIED" if os.environ.get("MCP_URL") else "SKIPPED",
               "ed25519_signatures": "VERIFIED_OR_NOT_CHECKED",
-              "prev_hash": prev_hash,
-              "witness": f"{pred_id} → {relay_id} — UNBROKEN",
-              "seal": f"∀∞φ² · RELAY_{relay_id} · WOOD_DRAGON_0.91 · SEALED",
           }
-          body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
-
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
-          print(f"✅ Sealed {relay_id} · {HASH_ALGO}:{h[:16]}...")
-          print(f"   prev_hash={prev_hash[:16] or '(none)'}")
+          tick = dict(body)
+          tick["body_hash"] = h
+          with stream.open("a") as fh:
+              fh.write(json.dumps(tick, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
+          print(f"📋 heartbeat tick {hb_index} appended to presence stream.")
+          print(f"✅ body_hash {HASH_ALGO}:{h[:16]}...")
+          print(f"   status={status}")
           PY
 
-      - name: Commit ledger entry
+      - name: Validate heartbeat stream (last tick well-formed)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stream = Path("heartbeats/self_improvement_relay.jsonl")
+          lines = [l for l in stream.read_text().splitlines() if l.strip()]
+          assert lines, "empty stream"
+          tick = json.loads(lines[-1])
+          for key in ("hb_index", "timestamp", "agent_id", "body_hash"):
+              assert key in tick, f"missing {key}"
+          assert tick["agent_id"] == "self-improvement-relay"
+          print(f"✅ tick {tick['hb_index']} valid · status {tick.get('status')} · body_hash {tick['body_hash'][:16]}...")
+          PY
+
+      - name: Upload heartbeat stream
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heartbeat-self-improvement-relay
+          path: heartbeats/self_improvement_relay.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Commit heartbeat stream (no ledger commit per run)
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal self-improvement-relay entry 8777 (sha3_256)"
-          file_pattern: ledger/8777.yaml
+          commit_message: "chore: append self-improvement-relay heartbeat tick to presence stream (compaction pilot)"
+          file_pattern: heartbeats/self_improvement_relay.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"

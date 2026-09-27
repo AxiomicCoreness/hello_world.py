@@ -64,7 +64,7 @@ flowchart TD
 
 ## The kernel is not "Layer 314"
 
-Layer 314 is the label. The kernel is the cycle itself — the fact that the update rule, the ledger, and the six surfaces can only be described in terms of each other. Prose name for the kernel: **"the closed loop of state, seal, and surface."** Layer 314 goes on the seal, not on the definition.
+Layer 314 is the label. The kernel is the cycle itself — the fact that the update rule, the ledger, and the six surfaces can only be described in terms of each other. Prose name for the kernel: **"the closed loop of state, seal, and surface."** Layer 314 goes on the seal, not the definition.
 
 ---
 Seal context: witness chain 8754 → 8755 — UNBROKEN. Committed under honest-ledger discipline: new method file added; no existing surface overwritten without held bytes.

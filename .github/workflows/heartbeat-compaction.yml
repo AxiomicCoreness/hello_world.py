@@ -1,0 +1,203 @@
+name: Heartbeat Compaction
+
+# Compaction job (commissioned 2026-09-27): reads presence-stream windows and
+# writes ONE main-ledger entry per run (/heartbeat_compaction) — never one
+# entry per tick. Main ledger = decisions + compaction commitments only.
+# Empty-window rule: SKIP (no entry; absence is the empty marker).
+# prev_hash = declared seal_sha3_256 of the current head (verifier convention,
+# .github/scripts/verify_ledger_seals.py); the new entry is verified by that
+# same verifier BEFORE any commit. Abort (no commit) if the head does not
+# declare seal_sha3_256 or its declared seal does not match the computed one.
+# Q8.24: not used; presence ticks are ordinary JSONL. hb_index uint64.
+# window: (previous compaction entry's window_end, now] — falls back to 24h.
+# No fixed slots are written; append-only at the next free index.
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      window_hours:
+        description: "Fallback window length in hours (used only if no prior compaction entry exists)"
+        type: string
+        default: "24"
+
+permissions:
+  contents: write   # required to commit the compaction ledger entry
+
+concurrency:
+  group: heartbeat-compaction
+  cancel-in-progress: false
+
+jobs:
+  compact:
+    name: Compact · presence streams → one ledger entry
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml
+
+      - name: Compute window and write compaction entry
+        id: compact
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, os, re, sys, yaml
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          EXCLUDED_FIELDS = ("seal", "seal_sha3_256", "sha3_256", "hash_sha3_256", "hash")
+          HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+          def canonical_json(obj):
+              return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+          def expected_digest(doc):
+              body = {k: v for k, v in doc.items() if k not in EXCLUDED_FIELDS}
+              return hashlib.sha3_256(canonical_json(body).encode("utf-8")).hexdigest()
+
+          now = datetime.now(timezone.utc)
+          window_fallback_hours = float(os.environ.get("WINDOW_HOURS", "24") or "24")
+
+          # ---- head discovery (full git listing; directory globs are complete here) ----
+          ledger = Path("ledger")
+          stems = [p.stem for p in ledger.glob("*.yaml") if p.stem.isdigit()]
+          if not stems:
+              print("no ledger entries found — aborting (nothing to chain from)")
+              sys.exit(1)
+          head_stem = max(stems, key=int)
+          head_idx = int(head_stem)
+
+          # ---- window: (previous compaction window_end, now]; fallback (now-24h, now] ----
+          window_start = now - timedelta(hours=window_fallback_hours)
+          head_doc = yaml.safe_load((ledger / f"{head_stem}.yaml").read_text(encoding="utf-8")) or {}
+          if head_doc.get("event") == "/heartbeat_compaction" and head_doc.get("window_end"):
+              window_start = head_doc["window_end"]  # str, ISO-8601
+
+          def in_window(ts):
+              try:
+                  return window_start_str <= ts <= window_end_str
+              except Exception:
+                  return False
+
+          window_end_str = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+          window_start_str = window_start if isinstance(window_start, str) else window_start.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          # ---- read presence streams ----
+          streams = {}
+          hb_dir = Path("heartbeats")
+          if hb_dir.is_dir():
+              for stream_path in sorted(hb_dir.glob("*.jsonl")):
+                  ticks = []
+                  for line in stream_path.read_text(encoding="utf-8").splitlines():
+                      line = line.strip()
+                      if not line:
+                          continue
+                      try:
+                          tick = json.loads(line)
+                      except Exception:
+                          continue
+                      ts = str(tick.get("timestamp", ""))
+                      if window_start_str <= ts <= window_end_str:
+                          ticks.append(tick)
+                  if ticks:
+                      last = ticks[-1]
+                      streams[stream_path.stem] = {
+                          "hb_count": len(ticks),
+                          "hb_head": str(last.get("body_hash", "")),
+                          "last_tick_ts": str(last.get("timestamp", "")),
+                      }
+
+          total = sum(s["hb_count"] for s in streams.values())
+          if total == 0:
+              print(f"empty window [{window_start_str}, {window_end_str}] — SKIP (no compaction entry)")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("written=false\n")
+              sys.exit(0)
+
+          # ---- chain anchor: head must declare a verified seal_sha3_256 ----
+          head_seal = head_doc.get("seal_sha3_256")
+          if not (isinstance(head_seal, str) and HEX64.match(head_seal.strip().lower())):
+              print(f"ABORT: head ledger/{head_stem}.yaml declares no seal_sha3_256 — cannot chain; repair needed first")
+              sys.exit(1)
+          if head_seal.strip().lower() != expected_digest(head_doc):
+              print(f"ABORT: head ledger/{head_stem}.yaml declared seal != computed seal — gate defect; repair needed first")
+              sys.exit(1)
+
+          new_idx = head_idx + 1
+          entry = {
+              "entry_index": new_idx,
+              "event": "/heartbeat_compaction",
+              "status": "SUCCESS",
+              "timestamp": window_end_str,
+              "hash_algo": "sha3_256",
+              "window_start": window_start_str,
+              "window_end": window_end_str,
+              "hb_count": total,
+              "streams": streams,
+              "prev_hash": head_seal.strip().lower(),
+              "witness": f"{head_idx} → {new_idx} — UNBROKEN",
+          }
+
+          # Hash the YAML-ROUND-TRIPPED representation (what the verifier loads)
+          path = ledger / f"{new_idx}.yaml"
+          path.write_text(yaml.dump(entry, sort_keys=False, default_flow_style=False, allow_unicode=True), encoding="utf-8")
+          loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
+          seal = expected_digest(loaded)
+          loaded["seal_sha3_256"] = seal
+          path.write_text(yaml.dump(loaded, sort_keys=False, default_flow_style=False, allow_unicode=True), encoding="utf-8")
+
+          print(f"compaction entry ledger/{new_idx}.yaml written: {total} ticks across {len(streams)} stream(s)")
+          print(f"prev_hash = seal_sha3_256 of {head_stem}: {head_seal.strip().lower()[:16]}...")
+          print(f"seal_sha3_256: {seal[:16]}...")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"written=true\n")
+              fh.write(f"index={new_idx}\n")
+          PY
+        env:
+          WINDOW_HOURS: ${{ inputs.window_hours || '24' }}
+
+      - name: Verify the new entry with the repo gate verifier
+        if: steps.compact.outputs.written == 'true'
+        run: |
+          set -euo pipefail
+          python .github/scripts/verify_ledger_seals.py . --require "${{ steps.compact.outputs.index }}"
+
+      - name: Commit compaction entry only
+        if: steps.compact.outputs.written == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: heartbeat compaction entry ${{ steps.compact.outputs.index }} (windowed presence commitment)"
+          file_pattern: "ledger/*.yaml"
+          commit_options: '--no-verify'
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Heartbeat Compaction"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| entry | ${{ steps.compact.outputs.index }} |"
+            echo "| written | ${{ steps.compact.outputs.written }} |"
+            echo "| rule | empty window → SKIP |"
+            echo "| prev_hash | declared seal_sha3_256 of head (gate convention) |"
+            echo "| verify | repo verifier, run before commit |"
+          } >> "$GITHUB_STEP_SUMMARY"

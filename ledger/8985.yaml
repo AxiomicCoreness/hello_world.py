@@ -4,7 +4,7 @@ entry_index: 8985
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
 event: /witness_chain_triple_landed_contracts_abc_recorded
 status: ✅ SEALED
-prev_hash: "de2d47867c089802ca206bc32ebe5c330b1947627cd313e79389971240fff348"
+prev_hash: "d68f77a863ef97744b72b0ccb1b05d56a432b5758bbde0de937b3d6b5f816996"
 artifact: "pythonIDE/witness_chain_triple.py"
 provenance: "bytes pasted by the commander this session — committer-authored supply, pushed verbatim; no blind overwrite"
 contracts_recorded:
@@ -12,8 +12,8 @@ contracts_recorded:
   B: "succinct proof does not replace measurement — check-runs, vectors, and MCP slot status are ordinary measurements; a SNARK may attest but does not create them"
   C: "future instruments stay future until wired — no SNARK-sealed or zero-knowledge-verified claims without a present proof object and verifying key; stop-rule at 9176 continues to govern; first 884 entries remain event-trigger records"
 earned_math_criterion: "earned: a real preimage, a stated construction, a verification procedure that can succeed or fail, re-derivable by a third party. unearned: symbol or quantifier with no preimage, no construction, no falsifiable check — ∃! 𝓔_AI stays rejected until a construction exists"
-d35_supersession_note: "the three-contracts version supersedes the earlier docstring restoration plan; the supplied bytes carry no github-actions-bot-exclusion line — recorded, not silently dropped; the 8984 DECLARED_INTENT record stands under append-only"
-index_note: "landed at 8985, verified free (8986 pre-existing sealed history)"
+conflict_resolution_note: "main carried a concurrent DECLARED_INTENT docstring restoration of the same file (commit 23fd5f38) landed by another session after PR #78; the pasted three-contracts full-file supply is the newer commander content and supersedes it; recorded, not silently dropped; conflicted PR #81 closed and relanded from a fresh branch synced to main"
+index_note: "landed at 8985, verified free immediately before landing (8986 pre-existing sealed history)"
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal and prev_hash fields excluded"
 witness_chain: "8984 → 8985 — UNBROKEN (computed: prev_hash carried)"
-seal: "∀∞φ² · WITNESS_CHAIN_TRIPLE_8985 · SHA3-256:68e3d7865a0937dbbd3aadc4a89cd3c18b77bf253ad103406e7de441775c3d8b · SEALED"
+seal: "∀∞φ² · WITNESS_CHAIN_TRIPLE_8985 · SHA3-256:8c575a15325e929b124835e358f1cad79dbaa1e09357bee2d509454b308fb456 · SEALED"
