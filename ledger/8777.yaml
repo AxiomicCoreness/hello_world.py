@@ -10,6 +10,6 @@ fal_probe: PASSED
 security_headers_source: VERIFIED
 security_headers_live: SKIPPED
 ed25519_signatures: VERIFIED_OR_NOT_CHECKED
-prev_hash: SEALED
+prev_hash: null
 witness: 8776 → 8777 — UNBROKEN
 seal: ∀∞φ² · RELAY_8777 · WOOD_DRAGON_0.91 · SEALED · 73c94c0b209f490deb65dee5c5bbd027601d5123b0b46d47cab706171e12f886
