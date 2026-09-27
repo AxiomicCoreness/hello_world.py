@@ -1,4 +1,9 @@
 name: Self Improvement Relay (Octonian CDP + QCH)
+# ledger_policy: PILOT_HEARTBEAT_STREAM — ticks to heartbeats/self_improvement_relay.jsonl
+# compaction_pilot: entry-8777 fixed-path overwrite retired; the run path no longer
+#   derives prev_hash from the predecessor seal tail (the decorative-source defect
+#   class repaired in PR #89); no main-ledger commit per run; no per-tick seal.
+# empty_window_rule: SKIP (absence of a compaction entry is the empty marker)
 
 on:
   workflow_dispatch:
@@ -23,7 +28,7 @@ env:
 
 jobs:
   relay:
-    name: Relay · QCH · CDP · Octonian · heartbeat tick (slot 8777)
+    name: Relay · QCH · CDP · Octonian · Heartbeat Tick (Slot 8777)
     runs-on: ubuntu-latest
     timeout-minutes: 12
 
@@ -81,7 +86,8 @@ jobs:
           from pathlib import Path
 
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          stream = Path("heartbeats/self_improvement_relay.jsonl")
+          relay_id   = os.environ.get("RELAY_ENTRY", "8777")
+          stream     = Path("heartbeats/self_improvement_relay.jsonl")
 
           qch = os.environ.get("QCH_PASSED", "unknown")
           cdp = os.environ.get("CDP_PASSED", "unknown")
@@ -95,7 +101,7 @@ jobs:
               "hb_index": hb_index,
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "agent_id": "self-improvement-relay",
-              "slot": 8777,
+              "slot": int(relay_id),
               "hash_algo": HASH_ALGO,
               "qch_passed": qch,
               "cdp_passed": cdp,
@@ -114,7 +120,33 @@ jobs:
               fh.write(json.dumps(tick, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n")
           print(f"📋 heartbeat tick {hb_index} appended to presence stream.")
           print(f"✅ body_hash {HASH_ALGO}:{h[:16]}...")
+          print(f"   status={status}")
           PY
+
+      - name: Validate heartbeat stream (last tick well-formed)
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stream = Path("heartbeats/self_improvement_relay.jsonl")
+          lines = [l for l in stream.read_text().splitlines() if l.strip()]
+          assert lines, "empty stream"
+          tick = json.loads(lines[-1])
+          for key in ("hb_index", "timestamp", "agent_id", "body_hash"):
+              assert key in tick, f"missing {key}"
+          assert tick["agent_id"] == "self-improvement-relay"
+          print(f"✅ tick {tick['hb_index']} valid · status {tick.get('status')} · body_hash {tick['body_hash'][:16]}...")
+          PY
+
+      - name: Upload heartbeat stream
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heartbeat-self-improvement-relay
+          path: heartbeats/self_improvement_relay.jsonl
+          retention-days: 90
+          if-no-files-found: warn
 
       - name: Commit heartbeat stream (no ledger commit per run)
         if: success()
