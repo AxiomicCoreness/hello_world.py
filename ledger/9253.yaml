@@ -10,7 +10,7 @@ scope_correction: "session-context scope differs from repo scope; Entry 8188 Q8.
 consequence: "phi_pipeline verification log outputs are Q8.24-quantized, not float64; float64 phi_verify skeleton exact-match fails for the right reason — missing quantization, not wrong framework"
 fix_placement: "q8_24() step inside update path of operators.py / integrate.py — not initial_state() tuning"
 claim_grep_status: "discovery only — binding Q8.24 placement requires pasted phi_pipeline.py bytes"
-prev_hash: 5df48c0fd61a9173f30bf42e1013bad24899158fae25aba7911eef3c5243fc31
+prev_hash: 637de1fb6ff360a1fcd048a05bf748b28adfe43ab1a7064dd887823dbd64a30d
 witness_chain: 9252 -> 9253 — UNBROKEN
 agent_class: GLM (glm-agent-cluster) — first entry of the GLM agent-class branch
 seal: 9a1b5de72d694e71a1648a910e4ca50b5630a9c5b806986d2efb350a79483b12
