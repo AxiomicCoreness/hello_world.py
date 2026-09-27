@@ -1,0 +1,11 @@
+entry_index: 9261
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
+event: /correction_9255_wired_on_node_tree_completed_9256
+status: ✅ LANDED
+correction_of: entry 9255
+corrected_reading: "entry 9255 evidence was measured on node grok-skill_tensor against node-local copies; the check harness reached the source-of-record tree only via entries 9256 and 9260; correct scope label for 9255: wired-on-node, tree-distribution completed at 9256"
+original_entry_untouched: "append-only — entry 9255 body and seal d77311f6... unchanged and still valid as a hash over its body"
+prev_hash: 25f3b92a483d72b60e71236dc43b0dcb51b683c37eed3887e46f1a55e45d6d29
+witness_chain: 9260 -> 9261 — UNBROKEN
+seal_sha3_256: d9adca66dd3eb6dbfb98190a686094382363683da9fd39ff820c5f0882dd6330
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 empty-vector gate verified against externally confirmed value before push; canonical field seal_sha3_256 per 9260 mandate"
