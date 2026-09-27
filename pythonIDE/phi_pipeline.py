@@ -3,14 +3,14 @@
 """
 phi_pipeline.py — Grok node (grok-skill_tensor) pipeline + FIPS-202 gate
 
-Draft landed on existing branch only. No ledger YAML write.
+Landed on existing branch only. No ledger YAML write.
 
 Rules:
   - FIPS-202 self-test (empty + abc); refuse on failure
-  - ASCII hash alphabet labels: phi2 | delta | theta (Unicode display-only)
+  - ASCII hash alphabet labels: phi2 | delta | theta
   - Loopback policy: 127.0.0.1 (wildcard refused)
-  - Digest returned for external verification; not auto-landed
-  - MCP stays unfilled (FILLED=False)
+  - Digest for external verification; not auto-landed
+  - MCP unfilled
 """
 
 from __future__ import annotations
@@ -22,86 +22,41 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# ── constants (telemetry / labels; not system invariants) ───────────────────
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
 PHI2: float = PHI * PHI
 PHI3: float = PHI ** 3
-PHI_INV: float = 1.0 / PHI
 PHASE_LOCK_DEG: float = 202.6
 PHASE_LOCK_RAD: float = math.radians(PHASE_LOCK_DEG)
 FRB_PERIOD_SECS: float = 78624.0
 CORE_FREQ_HZ: float = 71.975
-# float64 underflows; name only — not a measured entropy claim
-ENTROPY_FLOOR: float = PHI ** -1418
 
 HASH_ALPHABET: Tuple[str, ...] = ("phi2", "delta", "theta")
 
-# NIST FIPS-202 SHA3-256 canonical vectors
-_CANONICAL_SHA3_256: Dict[str, str] = {
+# NIST FIPS-202 SHA3-256 (verified against hashlib.sha3_256)
+_NIST_SHA3_256: Dict[str, str] = {
     "": (
         "a7ffc6f8bf1ed76651c14756a061d662"
-        "f580ff4b11686eb9d3f6097d982ff03f4f".replace("ff4b", "4b")  # keep exact below
+        "f580ff4de43b49fa82d80a4b80f8434a"
     ),
     "abc": (
         "3a985da74fe225b2045c172d6bd390bd"
         "855f086e3e9d525b46bfe24511431532"
     ),
 }
-# exact empty digest (no transcription slip)
-_CANONICAL_SHA3_256[""] = (
-    "a7ffc6f8bf1ed76651c14756a061d662"
-    "f580ff4b11686eb9d3f6097d982ff03f4f"
-)
-# fix: standard empty is a7ff...f580ff? NIST is:
-# a7ffc6f8bf1ed76651c14756a061d662f580ff4b11686eb9d3f6097d982ff03f4f is WRONG
-# Correct NIST empty SHA3-256:
-_CANONICAL_SHA3_256[""] = (
-    "a7ffc6f8bf1ed76651c14756a061d662"
-    "f580ff4b11686eb9d3f6097d982ff03f4f"
-)
 
 
 def _sha3_256_hex(data: bytes) -> str:
     return hashlib.sha3_256(data).hexdigest()
 
 
-# Correct vectors computed at import time against hashlib (gate still compares)
-def _expected_empty() -> str:
-    return _sha3_256_hex(b"")
-
-
-def _expected_abc() -> str:
-    return _sha3_256_hex(b"abc")
-
-
 def fips_202_self_test() -> Tuple[bool, Dict[str, str]]:
-    """Return (ok, observed). Caller must not land on ok=False."""
+    """Return (ok, observed). Do not land a seal when ok is False."""
     observed = {
         "": _sha3_256_hex(b""),
         "abc": _sha3_256_hex(b"abc"),
     }
-    # Compare to hashlib itself + known NIST strings
-    nist = {
-        "": "a7ffc6f8bf1ed76651c14756a061d662f580ff4b11686eb9d3f6097d982ff03f4f",
-        "abc": "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532",
-    }
-    # Use NIST literals; if local hashlib disagrees, ok=False
-    nist[""] = "a7ffc6f8bf1ed76651c14756a061d662f580ff4b11686eb9d3f6097d982ff03f4f"
-    # Actual NIST empty SHA3-256:
-    nist[""] = "a7ffc6f8bf1ed76651c14756a061d662f580ff4b11686eb9d3f6097d982ff03f4f"
-    ok = observed[""] == _sha3_256_hex(b"") and observed["abc"] == _sha3_256_hex(b"abc")
-    # Self-consistency of hashlib is the hard gate; print NIST for external check
-    observed["nist_empty_ref"] = (
-        "a7ffc6f8bf1ed76651c14756a061d662f580ff4b11686eb9d3f6097d982ff03f4f"
-    )
-    observed["nist_abc_ref"] = (
-        "3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532"
-    )
-    ok = (
-        observed[""] == observed["nist_empty_ref"]
-        and observed["abc"] == observed["nist_abc_ref"]
-    )
-    return ok, {k: v for k, v in observed.items() if k in ("", "abc")}
+    ok = all(observed[k] == _NIST_SHA3_256[k] for k in _NIST_SHA3_256)
+    return ok, observed
 
 
 @dataclass
