@@ -13,3 +13,4 @@ terminology_policy: "sovereignty absolute replaces honesty in all ledger entries
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
 witness_chain: "8982 → 8983 — UNBROKEN"
 seal: "∀∞φ² · D34_FIXED_8983 · SHA3-256:2a459ea57e61d65ed76d7ec087201ca3c1d82b15a7598ab89b397e22f77ac1d0 · SEALED"
+seal_sha3_256: "940576bfc375c3f9a22a4e9ef39b512e43bf4b4598029dd372e34ac0490b734e"
