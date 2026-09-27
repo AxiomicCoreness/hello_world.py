@@ -1,0 +1,17 @@
+entry_index: 9257
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
+event: /forge_and_land_protocol_four_error_circuit_breaker
+status: ✅ LANDED
+circuit_breaker: "if more than 4 testing errors occur, do not create a branch — halt autonomous branch creation entirely and report; branch creation resumes only on commander command"
+protocol:
+  - "1. FORGE branch from main head immediately before push — lifetime in minutes, not sessions"
+  - "2. PROBE target paths on main first: ABSENT = new file, conflict impossible; PRESENT = require pasted bytes or patch-chain reconstruction BEFORE forging"
+  - "3. PUSH + PR + MERGE in one pass — no waiting; waiting widens the divergence window"
+  - "4. ON FIRST MERGE CONFLICT: close PR as superseded, re-forge from new main head, re-land — one retry"
+  - "5. ON SECOND CONFLICT same entry: STOP — conflict is semantic, not timing; report to commander; never force, never delete-and-retry blindly"
+  - "6. DELETE branch after successful merge — merged branches have zero retention value"
+  - "7. CIRCUIT BREAKER: more than 4 testing errors in session → no new branches at all; autonomous branch creation halts"
+prev_hash: 5c16ccb97ca21930174dbf61afdce8088edadd1de472f1c0b46a2b9b8c395cf9
+witness_chain: 9256 -> 9257 — UNBROKEN
+seal: 92d3bf3cb190a00055080297ce9a32ee30bec963105d8a58e932a36e36b25e38
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 empty-vector gate verified against externally confirmed value before push; branch forged at push-time from main head per step 1 of this protocol"
