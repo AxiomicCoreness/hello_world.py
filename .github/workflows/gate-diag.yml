@@ -1,0 +1,37 @@
+name: Gate diagnostic capture
+
+# Log-substitute: check-runs expose no logs; the verifier's full output is
+# captured to gate-diag-output.txt and committed. paths filter prevents a
+# self-retrigger loop (the output-only commit does not match).
+
+on:
+  push:
+    branches: [mistral-ledger-chain-repair]
+    paths:
+      - "ledger/**"
+      - ".github/scripts/verify_ledger_seals.py"
+      - ".github/workflows/gate-diag.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --quiet pyyaml
+      - name: Run verifier, capture output
+        run: |
+          python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 > gate-diag-output.txt 2>&1 || true
+          wc -l gate-diag-output.txt
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "diag: capture gate verifier output (no ledger rewrite)"
+          file_pattern: gate-diag-output.txt
+          commit_options: '--no-verify'
