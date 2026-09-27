@@ -1,16 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-phi_pipeline.py — Grok node (grok-skill_tensor) pipeline + FIPS-202 gate
+phi_pipeline.py — FIPS-202 gate + dry-run
 
-Landed on existing branch only. No ledger YAML write.
-
-Rules:
-  - FIPS-202 self-test (empty + abc); refuse on failure
-  - ASCII hash alphabet labels: phi2 | delta | theta
-  - Loopback policy: 127.0.0.1 (wildcard refused)
-  - Digest for external verification; not auto-landed
-  - MCP unfilled
+Branch marker distinguishes node vs source-of-record runs.
+No ledger YAML write. MCP unfilled.
 """
 
 from __future__ import annotations
@@ -18,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -32,7 +27,6 @@ CORE_FREQ_HZ: float = 71.975
 
 HASH_ALPHABET: Tuple[str, ...] = ("phi2", "delta", "theta")
 
-# NIST FIPS-202 SHA3-256 (verified against hashlib.sha3_256)
 _NIST_SHA3_256: Dict[str, str] = {
     "": (
         "a7ffc6f8bf1ed76651c14756a061d662"
@@ -50,7 +44,6 @@ def _sha3_256_hex(data: bytes) -> str:
 
 
 def fips_202_self_test() -> Tuple[bool, Dict[str, str]]:
-    """Return (ok, observed). Do not land a seal when ok is False."""
     observed = {
         "": _sha3_256_hex(b""),
         "abc": _sha3_256_hex(b"abc"),
@@ -82,8 +75,20 @@ def _stage_constants(ctx: Dict[str, Any]) -> Dict[str, Any]:
     ctx["phase_lock_rad"] = PHASE_LOCK_RAD
     ctx["frb_period_secs"] = FRB_PERIOD_SECS
     ctx["core_freq_hz"] = CORE_FREQ_HZ
-    ctx["node"] = "grok-skill_tensor"
-    ctx["agent"] = "grok"
+    ctx["hash_alphabet"] = list(HASH_ALPHABET)
+    try:
+        ctx["branch"] = (
+            subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            ).stdout.strip()
+            or "UNKNOWN"
+        )
+    except Exception:
+        ctx["branch"] = "UNKNOWN"
+    ctx["is_source_of_record"] = ctx["branch"] == "main"
     return ctx
 
 
@@ -93,11 +98,6 @@ def _stage_gate(ctx: Dict[str, Any]) -> Dict[str, Any]:
     ctx["_gate_observed"] = observed
     if not ok:
         raise RuntimeError(f"FIPS-202 self-test FAILED — refusing. observed={observed}")
-    return ctx
-
-
-def _stage_ascii_alphabet(ctx: Dict[str, Any]) -> Dict[str, Any]:
-    ctx["hash_alphabet"] = list(HASH_ALPHABET)
     return ctx
 
 
@@ -121,7 +121,6 @@ def _stage_digest(ctx: Dict[str, Any]) -> Dict[str, Any]:
 PIPELINE: List[Stage] = [
     Stage("constants", _stage_constants),
     Stage("fips_202_gate", _stage_gate),
-    Stage("ascii_alphabet", _stage_ascii_alphabet),
     Stage("loopback", _stage_loopback),
     Stage("digest", _stage_digest),
 ]
@@ -154,7 +153,7 @@ def run_pipeline(initial: Optional[Dict[str, Any]] = None) -> PipelineResult:
 def _main(argv: List[str]) -> int:
     if "--self-test" in argv:
         ok, observed = fips_202_self_test()
-        print(json.dumps({"ok": ok, "observed": observed, "node": "grok-skill_tensor"}, indent=2))
+        print(json.dumps({"ok": ok, "observed": observed}, indent=2))
         return 0 if ok else 2
     if "--dry-run" in argv:
         result = run_pipeline()
@@ -166,13 +165,14 @@ def _main(argv: List[str]) -> int:
                     "digest": result.digest,
                     "error": result.error,
                     "payload_keys": sorted(result.payload.keys()),
-                    "node": "grok-skill_tensor",
+                    "branch": result.payload.get("branch"),
+                    "is_source_of_record": result.payload.get("is_source_of_record"),
                 },
                 indent=2,
             )
         )
         return 0 if result.ok else 2
-    print("phi_pipeline.py — node: grok-skill_tensor (Grok)")
+    print("phi_pipeline.py")
     print("  --self-test   FIPS-202 canonical vectors")
     print("  --dry-run     full pipeline; no landing")
     return 0
