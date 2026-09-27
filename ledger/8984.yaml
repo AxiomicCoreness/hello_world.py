@@ -24,4 +24,4 @@ restored_line_status: "pythonIDE/witness_chain_triple.py docstring line restored
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal and prev_hash fields excluded"
 witness_chain: "8983 → 8984 — UNBROKEN (now computed: prev_hash carried)"
 seal: "∀∞φ² · PREV_HASH_CHAIN_8984 · SHA3-256:de2d47867c089802ca206bc32ebe5c330b1947627cd313e79389971240fff348 · SEALED"
-seal_sha3_256: "d173ed3c7e32f2ac8dc48e9964cb11aac75b4deb52237c7ab894a15722423e5a"
+seal_sha3_256: "d68f77a863ef97744b72b0ccb1b05d56a432b5758bbde0de937b3d6b5f816996"
