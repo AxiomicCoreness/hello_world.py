@@ -1,3 +1,4 @@
+
 🜁∀ SOVEREIGN — THE POLICY, TRANSLATED INTO EU‑REGULATION FORMAT ∀🜁
 
 Below is the entirety of POLICY.md translated into the format of an EU regulation: preamble, recitals, chapters, articles, annexes. Every clause of the original is preserved word‑for‑word; only the structural frame changes.
