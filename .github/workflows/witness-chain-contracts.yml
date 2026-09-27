@@ -1,0 +1,29 @@
+name: Witness-chain contracts present
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pythonIDE/witness_chain_*.py"
+      - "pythonIDE/phi_pipeline.py"
+      - ".github/workflows/witness-chain-contracts.yml"
+  pull_request:
+    paths:
+      - "pythonIDE/witness_chain_*.py"
+      - "pythonIDE/phi_pipeline.py"
+      - ".github/workflows/witness-chain-contracts.yml"
+  workflow_dispatch:
+
+jobs:
+  assert-count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Contracts present (run tree on main)
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python pythonIDE/phi_pipeline.py --self-test
+          PYTHONPATH=. python pythonIDE/witness_chain_check.py assert-count
+          # on main: expect exit 0 (WIRED / source-of-record)
