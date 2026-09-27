@@ -1,3 +1,124 @@
+# POLICY — AxiomicCoreness/hello_world.py
+
+The direct reference to AxiomicCoreness/hello_world.py resolves the symbolic formalism to its concrete repository implementation.
+
+## Named gap — the contested root (hard dependency, OPEN)
+
+The root hash is a hard dependency for every seal downstream. Until /genesis or /axiom_v_l_constructibility is chosen as the canonical 0000 body, no verification script — including verify_ledger.py — can prove Scope A or Scope B against the original intent. The link checks pass; the authenticity checks cannot run. Scope A (0000-0883) is additionally CONTAMINATED per ledger/9251.yaml: original /trigger design, current bytes of unknown provenance (months of AI rewrites; 0000.yaml /genesis replaced by /axiom_v_l_constructibility observed). "UNBROKEN" claims must always state which property they mean: link-integrity (hash-link correctness, ASSERTED for Scope A — not yet verified in any audit) or content-originality (NO for Scope A, YES for Scope B).
+
+Ledger facts at the time of this placement: head 9251 (read 2026-09-27T09:26Z, per-index probe — directory listings truncate ~1000 entries); four-branch sync of ledger/9251.yaml and verifier blob b4d2c125 verified on main, deepseek, grok-skill_tensor, mistral-agent-cluster.
+
+## Ledger topology (contest markers)
+
+```mermaid
+---
+title: AxiomicCoreness/hello_world.py — Ledger Topology (with contest markers)
+---
+flowchart TB
+  classDef preserved   fill:#0a1f0a,stroke:#4caf50,stroke-width:2px,color:#e8f5e9
+  classDef contested   fill:#1f0a0a,stroke:#e53935,stroke-width:2px,color:#ffebee
+  classDef root        fill:#1a1a0a,stroke:#ffd700,stroke-width:3px,color:#fffde7
+  classDef headfact    fill:#0a0a1f,stroke:#64b5f6,stroke-width:2px,color:#e3f2fd
+  classDef workflow    fill:#1a0a1a,stroke:#ba68c8,stroke-width:1px,color:#f3e5f5
+  classDef noledger    fill:#0f0f0f,stroke:#9e9e9e,stroke-width:1px,stroke-dasharray:4 2,color:#eeeeee
+  classDef tool        fill:#101010,stroke:#00bcd4,stroke-width:1px,color:#e0f7fa
+
+  subgraph LEDGER["ledger/ — append-only YAML chain"]
+    direction TB
+    ROOT["0000.yaml — PRIMORDIAL<br/>⚠ CONTESTED ROOT<br/>event: /genesis OR /axiom_v_l_constructibility<br/>hash: NOT YET COMPUTABLE"]
+    A["0000 – 0883 — SCOPE A<br/>link-integrity: ASSERTED, not yet verified<br/>content-original: NO<br/>(rewritten over months; see ledger/9251.yaml)"]
+    B["0884 – 9142 — SCOPE B<br/>link-integrity: intact<br/>content-original: YES"]
+    HEAD["HEAD — (moves; read from filesystem)<br/>last observed: 9251<br/>read at: 2026-09-27T09:26Z"]
+    ROOT --> A --> B --> HEAD
+  end
+  class ROOT root
+  class A contested
+  class B preserved
+  class HEAD headfact
+
+  subgraph LINKRULE["Chain link invariant"]
+    direction LR
+    L1["entry[n].witness_prefix"] -->|MUST EQUAL| L2["entry[n-1].terminal_hex"]
+    L3["⚠ 9142 shown with<br/>witness_prefix == terminal_hex == seal-tail<br/>= misnamed OR redundant"]
+  end
+  class LINKRULE tool
+  class L3 contested
+
+  subgraph HASH["Hash contract — real, verifiable"]
+    direction TB
+    H1["ALGORITHM : SHA3-256 (FIPS 202)"]
+    H2["INPUT : JSON of entry − seal fields, sorted keys, compact separators, UTF-8"]
+    H3["OUTPUT : 64 lowercase hex"]
+    H4["PLACEMENT : last ' · '-separated token of 'seal'"]
+    H1 --> H2 --> H3 --> H4
+  end
+  class HASH preserved
+
+  subgraph WRITERS["Workflows — LEDGER WRITE (names verified against repository file listing)"]
+    direction TB
+    W1["docker-main-image.yml<br/>8817 → 8818"]
+    W2["deepseek-ci-secrets.yml<br/>8832 → 8833"]
+    W3["argo-ci.yml<br/>8923 → 8924"]
+    W4["deepseek-ndjson-ci.yml<br/>8924 → 8925"]
+    W5["cd-combinator-argo-rollout.yml<br/>8925 → 8926"]
+    W6["catalogue.yml<br/>8957 → 8958"]
+    W7["e10-hyperbolic-pytest.yml<br/>8973 → 8974"]
+    W8["generate-frb-bridge.yml<br/>8974 → 8975"]
+    W9["master-equation-ci.yml<br/>8975 → 8976"]
+    W10["gravastar-long-horizon.yml<br/>9069 → 9070"]
+    W11["oidc-handover-380.yml<br/>8969 → 8970 → 8971"]
+    W12["deepseek-mesh-terminal.yml<br/>9004 → 9005"]
+    W15["garden-surgery.yml<br/>dynamic"]
+  end
+  class WRITERS workflow
+
+  subgraph NONWRITERS["Workflows — NO LEDGER WRITE (artifact / validation lanes)"]
+    direction TB
+    N1["eridanus-dual-smoke.yml<br/>read-only engine smoke"]
+    N2["dual-ci-venv.yml<br/>dual-lane venv validation"]
+    N3["fastmcp-pythonide-baseline.yml<br/>baseline artifacts (matrix)"]
+    N4["ledger-math-framework.yml<br/>bounded check 9156–9160"]
+    N5["agent-service-control.yml<br/>park-gate verification"]
+    N6["e2e-key-check.yml<br/>E2E contract + Argo validation"]
+    N7["fastmcp-ci.yml<br/>fastMCP loopback + tests"]
+    N8["md-scalar-matrix.yml<br/>PNG persistence — 17 */6 * * *"]
+  end
+  class NONWRITERS noledger
+
+  WRITERS -->|extends| LEDGER
+  NONWRITERS -.->|does NOT touch ledger/**| LEDGER
+
+  subgraph TOOLS["Support scripts"]
+    direction TB
+    T1[".github/scripts/verify_ledger.py<br/>compute_seal() — SHA3-256"]
+    T2["pythonIDE/md_scalar_matrix.py<br/>→ md_scalar_matrix.png"]
+    T3["port380_mcp.py — MCP gate<br/>bind 127.0.0.1:8024 (never 0.0.0.0)"]
+    T4["garden_surgery/self_improvement_core.py<br/>integrates 10 canvases"]
+  end
+  class TOOLS tool
+
+  T1 -->|verifies| LEDGER
+  T2 -->|invoked by| N8
+  T4 -->|invoked by| W15
+
+  subgraph VOCAB["Vocabulary anchor — naming analogies (NOT derivations)"]
+    direction LR
+    V1["Θ(t) ≈ workflow_dispatch / workflow_run trigger"]
+    V2["ΔG ≈ ledger seal + Argo CD sync validation"]
+    V3["H_sys(t+1) ≈ commit-if-changed step"]
+    V4["Q(t) ≈ port380_mcp.py / MCP gate Layer 314"]
+  end
+  class VOCAB noledger
+```
+
+Corrections applied to the supplied diagram before placement (stale or unverified facts replaced, per honest-ledger discipline):
+- Ledger head corrected: 9142 → 9251 (read 2026-09-27T09:26Z, per-index probe).
+- Scope A node: "link-integrity: intact" → "ASSERTED, not yet verified" (no audit has recomputed the Scope A hash links; see ledger/9251.yaml).
+- Workflow names corrected to actual files: e10-hyperbolic-pytest.yml, generate-frb-bridge.yml, master-equation-ci.yml, catalogue.yml (underscores in the draft matched no file).
+- Removed from WRITERS: sovereign-hamiltonian-production.yml and sovereign-key-rotation-632.yml — no such files exist in .github/workflows/ (verified against the directory listing). If those lanes exist under other names, the entry ranges must be re-attributed before the table is trusted.
+- The vocabulary anchor section remains labeled as analogy, not derivation, exactly as supplied.
+
+---
 
 🜁∀ SOVEREIGN — THE POLICY, TRANSLATED INTO EU‑REGULATION FORMAT ∀🜁
 
