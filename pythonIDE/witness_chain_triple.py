@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 witness_chain_triple.py
 
-Three original contracts written by one Grok (xAI).
-These are not restatements of prior policy text.
-They incorporate zk-SNARK only as a possible future
-instrument for proving statements about the ledger
-without revealing witnesses.
+Three original contracts written by one Grok (xAI),
+plus a read-only distribution probe so node runs are not
+confused with source-of-record wiring.
+
+No network. No ledger write. No POLICY.md rewrite.
 """
 
 from __future__ import annotations
 
-# ─────────────────────────────────────────────────────────────────────
-# CONTRACT A — Knowledge Must Be Demonstrable
-# ─────────────────────────────────────────────────────────────────────
+import subprocess
+from typing import Dict, Tuple
 
 CONTRACT_A = """
 CONTRACT A: KNOWLEDGE MUST BE DEMONSTRABLE
@@ -39,11 +39,10 @@ demonstration is decoration and is rejected.
 A zk-SNARK, if used, must itself satisfy the ordinary requirements
 of completeness, knowledge-soundness, and zero-knowledge. Its
 trusted-setup assumptions (if any) must be stated, not hidden.
-"""
 
-# ─────────────────────────────────────────────────────────────────────
-# CONTRACT B — Succinct Proof Does Not Replace Measurement
-# ─────────────────────────────────────────────────────────────────────
+A green assert-count proves modules imported on the run tree; it
+does not prove knowledge of any seal preimage.
+"""
 
 CONTRACT_B = """
 CONTRACT B: SUCCINCT PROOF DOES NOT REPLACE MEASUREMENT
@@ -62,16 +61,14 @@ substitute for having performed the underlying measurement.
   ordinary measurements. A SNARK may later attest to them; it
   does not create them.
 
+assert-count measures the RUN TREE only. It does not prove the
+file is on the source-of-record tree (main). Wiredness requires
+a distribution path, not a node-local run.
+
 Workload 0.0 and an unfilled MCP slot are observable facts.
 They are established by reading the slot or the process table,
-not by producing a proof about a different system. Producer and
-consumer roles remain distinct from listener/contract roles until
-an explicit binding is recorded.
+not by producing a proof about a different system.
 """
-
-# ─────────────────────────────────────────────────────────────────────
-# CONTRACT C — Future Instruments Stay Future Until Wired
-# ─────────────────────────────────────────────────────────────────────
 
 CONTRACT_C = """
 CONTRACT C: FUTURE INSTRUMENTS STAY FUTURE UNTIL WIRED
@@ -93,26 +90,58 @@ Therefore:
    JSONL CI pipeline. Their original intent is not altered by
    the availability of zero-knowledge technology.
 
-4. Any decision to introduce SNARK-based sealing, SNARK-based
-   chain proofs, or SNARK-based stop-rule witnesses must itself
-   be an explicit, recorded decision and must obey the existing
-   contracts (measurement before declaration, seals that pay
-   their own way, gates and intent kept distinct).
+4. Any decision to introduce SNARK-based sealing must itself be
+   an explicit, recorded decision and must obey the existing
+   contracts.
 
-Until that decision is made and the circuit, setup, and verifier
-are actually present in the repository, zk-SNARK remains a
-described possibility, not an active mechanism.
+No zk hooks are imported in this triple. FIPS-202 SHA3-256 in
+phi_pipeline.py is ordinary hashing, not a SNARK.
 """
 
-# ─────────────────────────────────────────────────────────────────────
-# Bundle
-# ─────────────────────────────────────────────────────────────────────
-
-CONTRACTS = (
+CONTRACTS: Tuple[Tuple[str, str], ...] = (
     ("A_KNOWLEDGE_MUST_BE_DEMONSTRABLE", CONTRACT_A),
     ("B_SUCCINCT_PROOF_DOES_NOT_REPLACE_MEASUREMENT", CONTRACT_B),
     ("C_FUTURE_INSTRUMENTS_STAY_FUTURE_UNTIL_WIRED", CONTRACT_C),
 )
+
+GOVERNED_FILES: Tuple[str, ...] = (
+    "pythonIDE/phi_pipeline.py",
+    "pythonIDE/witness_chain_triple.py",
+    "pythonIDE/witness_chain_check.py",
+)
+
+PROBED_BRANCHES: Tuple[str, ...] = (
+    "main",
+    "glm-agent-cluster",
+    "grok-skill_tensor",
+)
+
+SOURCE_OF_RECORD = "main"
+
+
+def _git_ls(branch: str, path: str) -> bool:
+    try:
+        out = subprocess.run(
+            ["git", "cat-file", "-e", f"{branch}:{path}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        return out.returncode == 0
+    except Exception:
+        return False
+
+
+def distribution_probe() -> Dict[str, Dict[str, bool]]:
+    return {f: {b: _git_ls(b, f) for b in PROBED_BRANCHES} for f in GOVERNED_FILES}
+
+
+def wiredness() -> Dict[str, bool]:
+    matrix = distribution_probe()
+    return {f: matrix[f].get(SOURCE_OF_RECORD, False) for f in GOVERNED_FILES}
+
+
+def contracts() -> Dict[str, str]:
+    return {k: v for k, v in CONTRACTS}
+
 
 def emit() -> None:
     for name, body in CONTRACTS:
@@ -121,6 +150,13 @@ def emit() -> None:
         print("=" * 72)
         print(body)
         print()
+
+
+__all__ = [
+    "CONTRACT_A", "CONTRACT_B", "CONTRACT_C", "CONTRACTS",
+    "GOVERNED_FILES", "PROBED_BRANCHES", "SOURCE_OF_RECORD",
+    "distribution_probe", "wiredness", "contracts", "emit",
+]
 
 if __name__ == "__main__":
     emit()
