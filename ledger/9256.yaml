@@ -1,0 +1,11 @@
+entry_index: 9256
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
+event: /contracts_ci_wired_readonly
+status: ✅ LANDED
+problem: "contracts passed locally and on node but no workflow measured them — triple regression invisible until hand-run"
+fix: "witness-chain-contracts.yml — read-only CI measurement of contracts tree on push/PR/dispatch; no ledger write, no seal invention"
+scope_note: "CI green = measurement of tree (Contract B); proves presence + three exported bodies, never seal-preimage knowledge (Contract A); no SNARK hooks (Contract C); 9255 claim-language correction remains a separate pending entry, not silently patched"
+prev_hash: d77311f682d52553744f9fb54416daf713061cc8d28f64ddd8202670401ae11d
+witness_chain: 9255 -> 9256 — UNBROKEN
+seal: 5c16ccb97ca21930174dbf61afdce8088edadd1de472f1c0b46a2b9b8c395cf9
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 empty-vector gate verified against externally confirmed value before push"
