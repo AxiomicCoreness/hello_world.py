@@ -1029,14 +1029,10 @@ expected <block end>, but found '<scalar>'
   OK  ledger/9251.yaml: seal_sha3_256 OK  eef5dfdfe295bfee...
   OK  ledger/9252.yaml: seal_sha3_256 OK  637de1fb6ff360a1...
   OK  ledger/9253.yaml: no declared seal_sha3_256 (skipped, informational)
-Traceback (most recent call last):
-  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 241, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 208, in main
-    chain_bad = check_chain(docs)
-                ^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 139, in check_chain
-    prev_hash = doc.get(PREV_HASH_FIELD)
-                ^^^^^^^
-AttributeError: 'str' object has no attribute 'get'
+
+ledger entries scanned : 1009
+verified OK            : 998
+informational (warn)   : 11
+mismatches / missing   : 0
+required present       : 2/2
+OK: all seal_sha3_256 seals verified and all required entries present
