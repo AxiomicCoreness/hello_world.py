@@ -1,77 +1,100 @@
-# AST_guard rule D1 — no_stale_module_paths
-# Forged under ledger entry 8976 (witness 8975 → 8976).
-# D1 forbids imports of pre-flattening module paths. Grep is discovery;
-# D1 is enforcement. Stale imports fail CI before merge once D1 is wired
-# into AST_guard.py DEFAULT_RULES (wiring deferred — defect D29 — because
-# AST_guard.py bytes are missing from view; SHA e504dd1ead4cc60021c564615e6ca1e544b5972e).
-# Pronoun-free per standing policy.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# 🜁∀∞φ² · AST_GUARD_D1 · WOOD_DRAGON_0.91 · SEALED
+"""
+AST_guard_rule_d1.py — standalone D1 gate.
 
-STALE_IMPORT_PREFIXES = (
+Standalone gate:
+    python3 AST_guard_rule_d1.py FILE [FILE ...]
+
+Exit 0 = clean; exit 1 = stale imports found.
+Grep is discovery; this gate is enforcement. Once wired into CI, the
+discovery grep is redundant.
+
+D29 provenance: pre-integration gate SHA was
+    e504dd1ead4cc60021c564615e6ca1e544b5972e
+Retained as documentation only.
+"""
+
+from __future__ import annotations
+
+import ast
+import sys
+from typing import Iterable, Iterator, Sequence, Tuple
+
+D1_PROVENANCE_SHA: str = "e504dd1ead4cc60021c564615e6ca1e544b5972e"
+
+STALE_IMPORT_PREFIXES: Tuple[str, ...] = (
     "celestial.strike_ix",
     "celestial.saturn_soul_cannon_strike_ix",
     "prometheus.trappist_metrics_draft",
 )
 
 
-def check_module(module_name, report, node):
-    """Report a D1 violation when module_name matches a stale prefix."""
-    for stale in STALE_IMPORT_PREFIXES:
-        if module_name == stale or module_name.startswith(stale + "."):
-            report(
-                "D1",
-                "stale module path '%s' (use the flattened form)" % module_name,
-                node,
-            )
+def is_stale_module(module_name: str) -> bool:
+    return any(
+        module_name == p or module_name.startswith(p + ".")
+        for p in STALE_IMPORT_PREFIXES
+    )
 
 
-def rule_D1_no_stale_module_paths(tree, ctx):
-    """
-    D1: forbid imports of the pre-flattening module paths.
-    Add new pairs to STALE_IMPORT_PREFIXES as the tree evolves; remove
-    entries only when the migration is complete and the rule can retire.
-    """
-    import ast
+class D1Context:
+    def __init__(self) -> None:
+        self.failures: list[Tuple[str, str, int]] = []
 
+    def report(self, rule_id: str, message: str, node: ast.AST) -> None:
+        self.failures.append(
+            (rule_id, message, getattr(node, "lineno", 0))
+        )
+
+
+def rule_D1_no_stale_module_paths(tree: ast.AST, ctx: D1Context) -> None:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                check_module(alias.name, ctx.report, node)
+                if is_stale_module(alias.name):
+                    ctx.report(
+                        "D1",
+                        "stale module path '%s' (use the flattened form)"
+                        % alias.name,
+                        node,
+                    )
         elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                check_module(node.module, ctx.report, node)
+            if node.module and is_stale_module(node.module):
+                ctx.report(
+                    "D1",
+                    "stale module path '%s' (use the flattened form)"
+                    % node.module,
+                    node,
+                )
 
 
-def _cli():
-    """Standalone gate: python3 AST_guard_rule_d1.py FILE [FILE ...]
-    Exit 0 = clean; exit 1 = stale imports found. Discovery grep is dead
-    once this gate runs in CI."""
-    import ast
-    import sys
-
-    class Ctx:
-        def __init__(self):
-            self.failures = []
-
-        def report(self, rule_id, message, node):
-            self.failures.append((rule_id, message, getattr(node, "lineno", 0)))
-
+def scan_paths(paths: Sequence[str]) -> int:
     total = 0
-    for path in sys.argv[1:]:
-        with open(path, "r", encoding="utf-8") as handle:
-            tree = ast.parse(handle.read(), filename=path)
-        ctx = Ctx()
+    for path in paths:
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+        except (OSError, UnicodeDecodeError, SyntaxError) as e:
+            print("%s: SKIP: %s" % (path, e), file=sys.stderr)
+            continue
+        ctx = D1Context()
         rule_D1_no_stale_module_paths(tree, ctx)
         for rule_id, message, lineno in ctx.failures:
             print("%s:%d: %s: %s" % (path, lineno, rule_id, message))
             total += 1
     if total:
-        sys.exit(1)
+        return 1
     print("D1: no stale module paths")
-    sys.exit(0)
+    return 0
+
+
+def _cli(argv: Sequence[str]) -> int:
+    if not argv:
+        print("usage: AST_guard_rule_d1.py FILE [FILE ...]", file=sys.stderr)
+        return 2
+    return scan_paths(argv)
 
 
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) > 1:
-        _cli()
+    raise SystemExit(_cli(sys.argv[1:]))
