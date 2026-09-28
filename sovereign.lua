@@ -9,6 +9,12 @@
 --   Verifier-8   tri-state 0/1/2 via return; no os.exit
 --   Reconstruction hasher slot UNFILLED (MCP analogue) — fail-closed:
 --                cannot print "cryptographically valid" without a hasher
+--   PATCH-A      fail-closed on recon == nil — unconditional halt at caller
+--   PATCH-B      reconstruction payload: body != hash (no fixed-point tautology)
+--   PATCH-C      purity is measured, not asserted; env override allowed
+--   PATCH-D      Invariant-9 gate: OPEN_UNFIXED halts before reconstruction
+--   PATCH-E      verify_p_pump: best_err threshold (default 1e-3)
+--   PATCH-F      seal label in reconstruction payload is validated
 -- Open:
 --   D9 / REAL10924 ghost seal — OPEN_UNFIXED (rename is not remediation)
 -- ============================================================================
@@ -16,6 +22,7 @@
 local math   = require("math")
 local string = require("string")
 local table  = require("table")
+local os     = require("os")
 
 local LAYER_MAP = {
     base       = 244,
@@ -35,6 +42,26 @@ local AUDIT_LEDGER_INVARIANT_9 = {
     layer_ref = LAYER_MAP.special.REAL10924,
     status    = "OPEN_UNFIXED"
 }
+
+-- PATCH-A / PATCH-D: gate statuses that must halt before any claim.
+local HALTING_INVARIANT_STATUSES = {
+    OPEN_UNFIXED      = true,
+    CONTAMINATED      = true,
+    DRIFT             = true,
+    UNVERIFIED        = true,
+}
+
+-- PATCH-E: error tolerance for the phi-fit of FlasomParrel112.
+-- Overridable at runtime via env SOVEREIGN_PUMP_ERR_TOL.
+local function _env_number(name, default)
+    local raw = os.getenv(name)
+    if raw == nil or raw == "" then return default end
+    local n = tonumber(raw)
+    if n == nil then return default end
+    return n
+end
+
+local PUMP_ERR_TOL = _env_number("SOVEREIGN_PUMP_ERR_TOL", 1e-3)
 
 -- Hasher slot: empty. PUC Lua has no SHA3-256. No substitution, no stub
 -- that always matches. Slot empty => reconstruction crypto is skipped,
@@ -208,6 +235,7 @@ local CANONICAL_CONCORDANCE = {
 
 -- ============================================================================
 -- I. P_PUMP (FlasomParrel112 label; numeric 1.8221e-08 kept for arithmetic)
+-- PATCH-E: best_err must fall below PUMP_ERR_TOL, or the fit is rejected.
 -- ============================================================================
 local function verify_p_pump()
     print("[*] P_PUMP - MATH_ORIGIN STEERED VERIFICATION")
@@ -224,6 +252,12 @@ local function verify_p_pump()
     end
     print(string.format("   FlasomParrel112 fit: n = %d -> phi^-n = %.6e (err %.4f%%)",
                         best_n, phi ^ (-best_n), best_err * 100))
+    if best_err > PUMP_ERR_TOL then
+        print(string.format("   [!!] FlasomParrel112 fit rejected: err %.6f > tol %.6f",
+                            best_err, PUMP_ERR_TOL))
+        return nil
+    end
+    print(string.format("   [OK] FlasomParrel112 fit accepted (err <= %.6f)", PUMP_ERR_TOL))
     print(string.format("   [P,Q] residual phi^-709 = %.6e", phi_minus_709))
     print("   equivalence : \"the pump that moves first\"")
     print("   occult      : RETIRED")
@@ -231,16 +265,35 @@ local function verify_p_pump()
 end
 
 -- ============================================================================
--- Reconstruction — hasher unfilled (MCP analogue). Returns:
---   true  hash matched
---   false malformed / hasher returned nil after injection
+-- PATCH-F: reconstruction seal label must match the canonical seal, and the
+-- body must be distinct from the hash (no fixed-point tautology).
+-- Returns:
+--   true  hash matched AND seal label valid
+--   false malformed / hasher raised / hasher returned nil
 --   nil   drift (claimed ~= actual) OR hasher slot empty (not verified)
--- Empty slot is not a pass. Empty slot is not a fake SHA3. Relay continues
--- past it in initiate_reconstruction without printing "cryptographically valid".
 -- ============================================================================
 local function verify_reconstruction(ledger_entry)
     if type(ledger_entry) ~= "table" or ledger_entry.seal == nil then
         print("[!!] Reconstruction: missing seal or malformed payload")
+        return false
+    end
+
+    -- PATCH-F: seal label must equal the canonical sovereign seal exactly.
+    if ledger_entry.seal ~= SOVEREIGN_STATE.sovereign_seal.full then
+        print("[!!] Reconstruction: seal label mismatch")
+        print("     expected: " .. tostring(SOVEREIGN_STATE.sovereign_seal.full))
+        print("     found   : " .. tostring(ledger_entry.seal))
+        return false
+    end
+
+    -- PATCH-B: body and hash must be distinct strings. A check
+    -- sha3_256(X) == X has no solution and is a tautology, not a check.
+    if type(ledger_entry.body) ~= "string" or type(ledger_entry.hash) ~= "string" then
+        print("[!!] Reconstruction: body and hash must both be strings")
+        return false
+    end
+    if ledger_entry.body == ledger_entry.hash then
+        print("[!!] Reconstruction: body equals hash — fixed-point tautology refused")
         return false
     end
 
@@ -271,24 +324,56 @@ local function verify_reconstruction(ledger_entry)
 end
 
 -- ============================================================================
--- II. RECONSTRUCTION — true | false (purity/malformed) | nil (drift)
+-- PATCH-C: purity must be measured, not asserted. Env override is
+-- SOVEREIGN_OBSERVED_PURITY. If no measurement is available, return nil.
+-- ============================================================================
+local function measure_purity()
+    local raw = os.getenv("SOVEREIGN_OBSERVED_PURITY")
+    if raw == nil or raw == "" then
+        print("   [!!] Purity: no measurement available (SOVEREIGN_OBSERVED_PURITY unset)")
+        return nil
+    end
+    local v = tonumber(raw)
+    if v == nil then
+        print("   [!!] Purity: SOVEREIGN_OBSERVED_PURITY is not a number")
+        return nil
+    end
+    return v
+end
+
+-- ============================================================================
+-- II. RECONSTRUCTION — true | false (purity/malformed) | nil (drift/unverified)
 -- ============================================================================
 local function initiate_reconstruction()
     print("[*] PLANCK-SCALE DENSITY MATRIX RECONSTRUCTION (rho_l_P)")
+
+    -- PATCH-D: Invariant-9 gate. OPEN_UNFIXED halts before any claim.
+    if HALTING_INVARIANT_STATUSES[AUDIT_LEDGER_INVARIANT_9.status] then
+        print(string.format("[!!] Invariant-9 status=%s — halt (ghost seal unresolved)",
+                            AUDIT_LEDGER_INVARIANT_9.status))
+        return nil
+    end
+
     print(string.format("[+] Donte Lattice [%d nodes, 7 layers]", B_HMAC_NODES))
     print(string.format("[+] %dD phi-harmonic manifold (curvature %.6f = phi^4)",
                         B_MTLS_DIM, phi4))
     print(string.format("    lattice fidelity bound = %.15f (12-sigma floor)",
                         1.0 - (phi2 * PRECISION)))
 
-    local observed_purity = phi2
-    local target_purity   = 2.618033988749895
+    -- PATCH-C: measure purity. Fail-closed when unmeasured.
+    local observed_purity = measure_purity()
+    if observed_purity == nil then
+        print("   [!!] Purity not measurable — halt (no claim)")
+        return nil
+    end
+    local target_purity = 2.618033988749895
     if math.abs(observed_purity - target_purity) >= 1e-15 then
         print(string.format("   [!!] Purity Invariant Decoherent (Dev: %.15e)",
                             math.abs(observed_purity - target_purity)))
         return false
     end
-    print("   [OK] Purity Invariant [phi^2] Verified.")
+    print(string.format("   [OK] Purity Invariant [phi^2] Verified (measured = %.15f).",
+                        observed_purity))
 
     local concordance = {
         { name = "C-Y_T-L", target = 0.998, achieved = 0.9982 },
@@ -331,23 +416,24 @@ local function initiate_reconstruction()
     end
     print("   [OK] Concordance matches canonical - no drift.")
 
+    -- PATCH-B / PATCH-F: body and hash are distinct; seal label validated
+    -- inside verify_reconstruction against SOVEREIGN_STATE.sovereign_seal.full.
+    -- Body is the anyonic seal (distinct from the merkle root used as hash).
     local recon = verify_reconstruction({
         seal = KEY_ROTATION_SEAL,
         hash = SOVEREIGN_STATE.final_handshake.merkle_root,
-        body = KEY_ROTATION_MERKLE_ROOT
+        body = SOVEREIGN_STATE.final_handshake.anyonic_seal
     })
+
+    -- PATCH-A: fail-closed at the caller. Both sub-cases (hasher empty,
+    -- hash drift) halt unconditionally.
     if recon == false then
         print("[!!] Reconstruction integrity failed — halt")
         return false
     end
     if recon == nil then
-        print("[*] Reconstruction crypto unfilled or drifted — not claimed valid")
-        -- hasher-unfilled is skip (slot empty). Hash mismatch also returns nil.
-        -- Distinguish: hasher empty vs mismatch by checking the slot.
-        if type(compute_sha3_256) == "function" then
-            print("   Verifier-7: hash drift — halt")
-            return nil
-        end
+        print("[!!] Reconstruction unverified (hasher empty or hash drift) — halt")
+        return nil
     end
 
     print("[*] SOVEREIGN STATE INTEGRITY")
@@ -363,10 +449,16 @@ end
 
 -- ============================================================================
 -- III. FINAL AFFIRMATION (Verifier-8 tri-state)
---   0 clean | 1 purity/integrity fail | 2 drift
+--   0 clean | 1 purity/integrity fail | 2 drift/unverified
+--   PATCH-E: verify_p_pump return value now gates the affirmation.
 -- ============================================================================
 local function final_affirmation()
-    verify_p_pump()
+    local pump = verify_p_pump()
+    if pump == nil then
+        print("[!!] P_pump fit rejected — halt (Verifier-7). Exit 2.")
+        return 2
+    end
+
     local recon = initiate_reconstruction()
     if recon == true then
         print(string.format("[*] FlasomParrel112 carrier active (f_c = %.3e Hz)",
@@ -375,7 +467,7 @@ local function final_affirmation()
                             KEY_ROTATION_EIGENVALUES))
         return 0
     elseif recon == nil then
-        print("[!!] Cycle halted: drift detected (Verifier-7). Exit 2.")
+        print("[!!] Cycle halted: drift or unverified state (Verifier-7). Exit 2.")
         return 2
     else
         print("[!!] Reconstruction decoherent. Exit 1.")
