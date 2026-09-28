@@ -1,0 +1,53 @@
+{
+  "schema": "GARDEN.WORKLOAD.REGISTRY.v1",
+  "seal_domain": "GARDEN.EVENT.v1",
+  "created": "2026-09-28Z",
+  "author": "Clarke Yoursa Tee (A14 Bionic)",
+  "invariants": {
+    "ledger": "append-only; tail entries only; no rewrite of 0000-9223",
+    "mcp": "no writes to MCP surfaces",
+    "attribution": "Grok writes code; GitHub shows AxiomicCoreness"
+  },
+  "workloads": [
+    {
+      "id": "seal-verify-pulse",
+      "schedule": "0 */6 * * *",
+      "entry": "make -f workloads.mk seal-verify",
+      "entrypoint": ["compute_seal.py", "verify_witness_chain_9179_9188.py"],
+      "ledger_prefix": "/seal_verify_pulse",
+      "resources": "github-runner"
+    },
+    {
+      "id": "key-rotation",
+      "schedule": "0 3 * * 1",
+      "entry": "make -f workloads.mk rotate-keys",
+      "entrypoint": ["sovereign_key_rotator.py", "ci_cd_key_rotator.py"],
+      "ledger_prefix": "/key_rotation",
+      "resources": "github-runner"
+    },
+    {
+      "id": "simulation-batch",
+      "schedule": "workflow_dispatch",
+      "entry": "make -f workloads.mk simulate",
+      "entrypoint": ["master_equation.py", "hybrid_rk4_simulator.py"],
+      "ledger_prefix": "/simulation_batch",
+      "resources": "github-runner"
+    },
+    {
+      "id": "mesh-terminal-ci",
+      "schedule": "workflow_dispatch",
+      "entry": "make -f workloads.mk mesh-terminal",
+      "entrypoint": ["quantum/deepseek_mesh/terminal_ci.py"],
+      "ledger_prefix": "/deepseek_mesh_terminal_ci",
+      "resources": "github-runner"
+    },
+    {
+      "id": "port380-heartbeat",
+      "schedule": "deployed (Render)",
+      "entry": "run_port380.sh",
+      "entrypoint": ["port380_mcp.py"],
+      "ledger_prefix": "/port380_heartbeat",
+      "resources": "render-free"
+    }
+  ]
+}

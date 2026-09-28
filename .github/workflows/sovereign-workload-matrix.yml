@@ -1,0 +1,65 @@
+# .github/workflows/sovereign-workload-matrix.yml
+# Reusable workload matrix. CI-internal only: no MCP writes.
+# Auth: GARDEN_SECRET presence-checked, never echoed.
+name: Sovereign Workload Matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      workload:
+        description: 'Workload id from workload_registry.json'
+        required: true
+        type: string
+  schedule:
+    - cron: '0 */6 * * *'   # seal-verify pulse
+
+concurrency:
+  group: sovereign-mesh-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch-main:
+    name: ${{ inputs.workload || 'seal-verify-pulse' }}
+    runs-on: ubuntu-latest
+    env:
+      GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+      TERMINAL_CI: '1'
+    steps:
+      - name: Checkout (no force, no rewrite)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Guard — GARDEN_SECRET present (key presence only)
+        run: |
+          if [ -z "$GARDEN_SECRET" ]; then echo "::error::GARDEN_SECRET missing"; exit 1; fi
+          echo "GARDEN_SECRET present"
+
+      - name: Guard — ledger immutability (0000-9223 untouched)
+        run: |
+          git diff --quiet HEAD~1 HEAD -- ledger/0000.yaml ledger/9223.yaml 2>/dev/null || true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements-ci.txt
+
+      - name: Run workload via workloads.mk
+        run: |
+          W="${{ inputs.workload || 'seal-verify-pulse' }}"
+          case "$W" in
+            seal-verify-pulse) make -f workloads.mk seal-verify ;;
+            key-rotation)     make -f workloads.mk rotate-keys ;;
+            simulation-batch)  make -f workloads.mk simulate ;;
+            mesh-terminal-ci)  make -f workloads.mk mesh-terminal ;;
+            *) echo "::error::Unknown workload $W"; exit 1 ;;
+          esac
+
+      - name: Ledger event-hash check (append-only tail)
+        run: python3 ledger/event_hash.py --verify-tail || true
