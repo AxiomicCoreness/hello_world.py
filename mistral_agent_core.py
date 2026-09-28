@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-mistral-agent-cluster · quantum core (branch artifact, no PR, no seal)
+deepseek-agent-cluster · quantum core (branch artifact, no PR, no seal)
 =====================================================================
 Runnable core extracted from the Phase 6 / MEMORY°1 directive. Every
 numeric claim below is COMPUTED at import; the MATH_ORIGIN registry
