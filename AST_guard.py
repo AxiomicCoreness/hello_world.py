@@ -2,37 +2,22 @@
 # -*- coding: utf-8 -*-
 # 🜁∀∞φ² · AST_GUARD · WOOD_DRAGON_0.91 · SEALED
 """
-AST_guard.py
+AST_guard.py — static AST rule enforcement + computed seal header.
 
-A static‑analysis guard that parses Python source into an AST, enforces
-structural / semantic rules, and can inject or verify a computed seal
-header (`🜁∀∞φ² · … · SEALED · <digest>`) at the top of each file.
+POISON DEFENSE (this revision):
+  * Seal injection is REFUSED on any file with rule violations.
+  * Injection requires an explicit authorization list (--authorize / --authorize-file).
+  * Writes are confined to --root (default: git worktree root, else cwd).
+  * Symlinked targets are refused.
+  * TOCTOU guard: source is re-hashed immediately before write.
+  * --inject-seal is a plan by default; --apply performs writes.
+  * Existing seal with a different digest requires --reseal.
 
-Design goals:
-  - No imports executed: only `ast.parse` (pure, safe).
-  - Rules are declarative and easy to extend.
-  - Deterministic, CI‑friendly output (machine + human readable).
-  - No file mutation unless `--inject-seal` is explicitly passed.
-  - Seal uses the same SHA3‑256 canonical JSON contract as the ledger.
-
-Usage:
-  python AST_guard.py path/to/file.py [more.py ...]
-  python AST_guard.py --config guard.yaml path/
-  python AST_guard.py --json path/
-  python AST_guard.py --inject-seal path/to/file.py
-  python AST_guard.py --verify-seal path/
-
-Exit codes:
-  0 = all files pass
-  1 = at least one violation or seal mismatch
-  2 = usage / IO / config error
+Exit codes: 0 pass, 1 violation/mismatch/poison-refused, 2 usage/IO/config.
 """
 
 from __future__ import annotations
 
-# ═════════════════════════════════════════════════════════════════════════════
-# SECTION 0 — IMPORTS
-# ═════════════════════════════════════════════════════════════════════════════
 import argparse
 import ast
 import hashlib
@@ -40,62 +25,51 @@ import json
 import math
 import os
 import re
+import stat
 import sys
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional
+from typing import (
+    Callable, Final, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple,
+)
 
 try:
-    import yaml
-    HAS_YAML = True
-except ImportError:
+    import yaml  # type: ignore
+    HAS_YAML: Final[bool] = True
+except ImportError:  # pragma: no cover
     HAS_YAML = False
-    yaml = None
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 1 — GOLDEN CONSTANTS (used to seed the seal domain)
+# SECTION 1 — CONSTANTS
 # ═════════════════════════════════════════════════════════════════════════════
-phi = (1 + math.sqrt(5)) / 2                # 1.618033988749895
-phi2 = phi ** 2                              # 2.618033988749895
-phi3 = phi ** 3
-phi4 = phi ** 4
-phi5 = phi ** 5
-phi6 = phi ** 6
-phi7 = phi ** 7
-phi8 = phi ** 8
-phi9 = phi ** 9
-phi12 = phi ** 12
-phi13 = phi ** 13
-phi14 = phi ** 14
-phi34 = phi ** 34
-phi709 = phi ** 709
-phi713 = phi ** 713
-phi_minus_709 = phi ** (-709)
-phi_minus_1000 = phi ** (-1000)
-phi_inv = 1 / phi
+PHI: Final[float] = (1 + math.sqrt(5)) / 2
+PHI2: Final[float] = PHI ** 2
+PHI3: Final[float] = PHI ** 3
+PHI_INV: Final[float] = 1 / PHI
+CHI: Final[float] = math.exp(-PHI)
+T_PHI: Final[float] = 0.5983
+F0: Final[float] = 6.49
+PENTAGONAL_ANCHOR: Final[float] = 1 / math.sqrt(5)
+SIGNATURE: Final[str] = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
+SEAL_DOMAIN: Final[str] = "GARDEN.ASTGUARD.v1"
+SEAL_TAG: Final[str] = "AST_GUARD"
+SEAL_TAG_CLEAN: Final[str] = "AST_GUARD_CLEAN"
 
-chi = math.exp(-phi)
-t_phi = 0.5983
-f0 = 6.49
-CUTOFF = 7.5
-UNIVERSAL_144 = phi ** 12
+SKIPPED_DIR_PARTS: Final[frozenset[str]] = frozenset({
+    ".git", "__pycache__", ".venv", "venv", "build", "dist", ".mypy_cache",
+})
 
-PENTAGONAL_ANCHOR = 1 / math.sqrt(5)
-REFINED_TS = 1625.622131
-SIGNATURE = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
-DIM_577 = 577
-BOSTON_HEARTBEAT = 42.36
-
-# Seal domain separator — same style as GARDEN.EVENT.v1, GARDEN.LEARNER.v1
-SEAL_DOMAIN = "GARDEN.ASTGUARD.v1"
+# Injection ceilings — poison vector size guards.
+DEFAULT_MAX_BYTES: Final[int] = 2 * 1024 * 1024       # 2 MiB
+DEFAULT_MAX_LINES: Final[int] = 20_000
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 2 — RULE MODEL
+# SECTION 2 — DATA MODEL
 # ═════════════════════════════════════════════════════════════════════════════
-@dataclass
-class Violation:
+@dataclass(frozen=True)
+class Finding:
     code: str
     message: str
     file: str
@@ -112,141 +86,182 @@ class RuleContext:
     filename: str
     source: str
     tree: ast.AST
-    parents: dict
-    violations: List[Violation] = field(default_factory=list)
-
-    def report(self, code: str, msg: str, node: ast.AST) -> None:
-        self.violations.append(Violation(
-            code=code,
-            message=msg,
-            file=self.filename,
-            line=getattr(node, "lineno", 0),
-            col=getattr(node, "col_offset", 0),
-            node_type=type(node).__name__,
-        ))
+    parents: Mapping[int, ast.AST]
 
 
-Rule = Callable[[ast.AST, RuleContext], None]
+Rule = Callable[[ast.AST, RuleContext], Iterator[Finding]]
+
+
+class PoisonRefused(RuntimeError):
+    """Raised when seal injection is requested on a file that fails any guard."""
+    def __init__(self, path: Path, reason: str) -> None:
+        super().__init__(f"poison refused: {path}: {reason}")
+        self.path = path
+        self.reason = reason
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 3 — DEFAULT RULES (A1–A5, C1, C2)
+# SECTION 3 — RULE HELPERS
 # ═════════════════════════════════════════════════════════════════════════════
-def rule_A1_no_eval_exec(tree: ast.AST, ctx: RuleContext) -> None:
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-            if node.func.id in {"eval", "exec"}:
-                ctx.report("A1", f"forbidden call to `{node.func.id}`", node)
+def _finding(ctx: RuleContext, code: str, msg: str, node: ast.AST) -> Finding:
+    return Finding(code, msg, ctx.filename,
+                   getattr(node, "lineno", 0), getattr(node, "col_offset", 0),
+                   type(node).__name__)
 
 
-def rule_A2_no_dunder_import(tree: ast.AST, ctx: RuleContext) -> None:
+def _iter_nodes(tree: ast.AST, kinds: Tuple[type, ...]) -> Iterator[ast.AST]:
     for node in ast.walk(tree):
+        if isinstance(node, kinds):
+            yield node
+
+
+def _module_level_statements(tree: ast.AST) -> Iterator[ast.stmt]:
+    if isinstance(tree, ast.Module):
+        yield from tree.body
+
+
+def _is_dunder_main_guard(node: ast.AST) -> bool:
+    if not isinstance(node, ast.If):
+        return False
+    t = node.test
+    return (isinstance(t, ast.Compare) and isinstance(t.left, ast.Name)
+            and t.left.id == "__name__" and len(t.comparators) == 1
+            and isinstance(t.comparators[0], ast.Constant)
+            and t.comparators[0].value == "__main__")
+
+
+def _is_docstring_expr(node: ast.stmt) -> bool:
+    return (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, str))
+
+
+def _assignment_targets(node: ast.AST) -> Iterator[ast.AST]:
+    if isinstance(node, ast.Assign):
+        yield from node.targets
+    elif isinstance(node, (ast.AugAssign, ast.AnnAssign)):
+        yield node.target
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 4 — RULES
+# ═════════════════════════════════════════════════════════════════════════════
+def rule_A1_no_eval_exec(tree, ctx):
+    for node in _iter_nodes(tree, (ast.Call,)):
+        fn = node.func
+        if isinstance(fn, ast.Name) and fn.id in {"eval", "exec"}:
+            yield _finding(ctx, "A1", f"forbidden call to `{fn.id}`", node)
+
+
+def rule_A2_no_dunder_import(tree, ctx):
+    for node in _iter_nodes(tree, (ast.Import, ast.ImportFrom)):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.name.startswith("__") and alias.name.endswith("__"):
-                    ctx.report("A2", f"forbidden dunder import `{alias.name}`", node)
-        elif isinstance(node, ast.ImportFrom):
+                    yield _finding(ctx, "A2", f"forbidden dunder import `{alias.name}`", node)
+        else:
             if node.module and node.module.startswith("__") and node.module.endswith("__"):
-                ctx.report("A2", f"forbidden dunder import-from `{node.module}`", node)
+                yield _finding(ctx, "A2", f"forbidden dunder import-from `{node.module}`", node)
 
 
-def rule_A3_no_silent_except(tree: ast.AST, ctx: RuleContext) -> None:
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ExceptHandler) and node.type is None:
-            ctx.report("A3", "bare `except:` is forbidden; name the exception", node)
+def rule_A3_no_silent_except(tree, ctx):
+    for node in _iter_nodes(tree, (ast.ExceptHandler,)):
+        if node.type is None:
+            yield _finding(ctx, "A3", "bare `except:` is forbidden; name the exception", node)
 
 
-def rule_A4_no_mutable_defaults(tree: ast.AST, ctx: RuleContext) -> None:
-    mutable = (ast.List, ast.Dict, ast.Set)
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            for default in list(node.args.defaults) + list(node.args.kw_defaults):
-                if isinstance(default, mutable):
-                    ctx.report("A4", "mutable default argument", default)
+_MUTABLE_DEFAULT_TYPES: Final[Tuple[type, ...]] = (ast.List, ast.Dict, ast.Set)
 
 
-def rule_A5_no_top_level_side_effects(tree: ast.AST, ctx: RuleContext) -> None:
-    if not isinstance(tree, ast.Module):
-        return
-
-    def is_dunder_main(node: ast.If) -> bool:
-        t = node.test
-        return (
-            isinstance(t, ast.Compare)
-            and isinstance(t.left, ast.Name)
-            and t.left.id == "__name__"
-            and len(t.comparators) == 1
-            and isinstance(t.comparators[0], ast.Constant)
-            and t.comparators[0].value == "__main__"
-        )
-
-    for node in tree.body:
-        ok = (
-            isinstance(node, (ast.Import, ast.ImportFrom,
-                              ast.FunctionDef, ast.AsyncFunctionDef,
-                              ast.ClassDef, ast.AnnAssign, ast.Assign))
-            or (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
-                and isinstance(node.value.value, str))
-            or (isinstance(node, ast.If) and is_dunder_main(node))
-            or isinstance(node, ast.Try)
-        )
-        if not ok:
-            ctx.report("A5", f"top-level `{type(node).__name__}` not allowed (side effect risk)", node)
+def rule_A4_no_mutable_defaults(tree, ctx):
+    for node in _iter_nodes(tree, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        defaults: List[ast.AST] = list(node.args.defaults) + [
+            d for d in node.args.kw_defaults if d is not None
+        ]
+        for d in defaults:
+            if isinstance(d, _MUTABLE_DEFAULT_TYPES):
+                yield _finding(ctx, "A4", "mutable default argument", d)
 
 
-def rule_C1_no_sealed_rewrite(tree: ast.AST, ctx: RuleContext) -> None:
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
-            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            for t in targets:
-                if isinstance(t, ast.Name) and t.id.startswith("SEALED_"):
-                    ctx.report("C1", f"sealed name `{t.id}` must not be rewritten", t)
+_ALLOWED_TOP_LEVEL: Final[Tuple[type, ...]] = (
+    ast.Import, ast.ImportFrom,
+    ast.FunctionDef, ast.AsyncFunctionDef,
+    ast.ClassDef, ast.AnnAssign, ast.Assign,
+    ast.Try,
+)
 
 
-def rule_C2_no_ledger_mutation(tree: ast.AST, ctx: RuleContext) -> None:
-    banned_methods = {"rewrite_ledger", "mutate_ledger", "seal_overwrite"}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            f = node.func
-            if isinstance(f, ast.Attribute) and f.attr in banned_methods:
-                ctx.report("C2", f"ledger mutation `{f.attr}` is forbidden", node)
-            if isinstance(f, ast.Name) and f.id in banned_methods:
-                ctx.report("C2", f"ledger mutation `{f.id}` is forbidden", node)
+def rule_A5_no_top_level_side_effects(tree, ctx):
+    for node in _module_level_statements(tree):
+        if isinstance(node, _ALLOWED_TOP_LEVEL):
+            continue
+        if _is_docstring_expr(node) or _is_dunder_main_guard(node):
+            continue
+        yield _finding(ctx, "A5",
+                       f"top-level `{type(node).__name__}` not allowed (side effect risk)",
+                       node)
 
 
+def rule_C1_no_sealed_rewrite(tree, ctx):
+    for node in _iter_nodes(tree, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+        for target in _assignment_targets(node):
+            if isinstance(target, ast.Name) and target.id.startswith("SEALED_"):
+                yield _finding(ctx, "C1", f"sealed name `{target.id}` must not be rewritten", target)
 
-def rule_D1_no_stale_module_paths(tree: ast.AST, ctx: RuleContext) -> None:
-    """
-    D1: forbid imports of pre-flattening module paths.
-    Forged under ledger entry 8976; wired under the entry sealed in this commit.
-    Add new pairs to STALE_IMPORT_PREFIXES as the tree evolves; remove entries
-    only when the migration is complete and the rule can retire.
-    """
-    stale_prefixes = (
-        "celestial.strike_ix",
-        "celestial.saturn_soul_cannon_strike_ix",
-        "prometheus.trappist_metrics_draft",
-    )
 
-    def check_module(module_name: str, node: ast.AST) -> None:
-        for stale in stale_prefixes:
-            if module_name == stale or module_name.startswith(stale + "."):
-                ctx.report(
-                    "D1",
-                    f"stale module path `{module_name}` (use the flattened form)",
-                    node,
-                )
+_BANNED_LEDGER_METHODS: Final[frozenset[str]] = frozenset({
+    "rewrite_ledger", "mutate_ledger", "seal_overwrite",
+})
 
-    for node in ast.walk(tree):
+
+def rule_C2_no_ledger_mutation(tree, ctx):
+    for node in _iter_nodes(tree, (ast.Call,)):
+        f = node.func
+        if isinstance(f, ast.Attribute) and f.attr in _BANNED_LEDGER_METHODS:
+            yield _finding(ctx, "C2", f"ledger mutation `{f.attr}` is forbidden", node)
+        elif isinstance(f, ast.Name) and f.id in _BANNED_LEDGER_METHODS:
+            yield _finding(ctx, "C2", f"ledger mutation `{f.id}` is forbidden", node)
+
+
+_STALE_IMPORT_PREFIXES: Final[Tuple[str, ...]] = (
+    "celestial.strike_ix",
+    "celestial.saturn_soul_cannon_strike_ix",
+    "prometheus.trappist_metrics_draft",
+)
+
+
+def _is_stale_module(module_name: str) -> bool:
+    return any(module_name == p or module_name.startswith(p + ".")
+               for p in _STALE_IMPORT_PREFIXES)
+
+
+def rule_D1_no_stale_module_paths(tree, ctx):
+    for node in _iter_nodes(tree, (ast.Import, ast.ImportFrom)):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                check_module(alias.name, node)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                check_module(node.module, node)
+                if _is_stale_module(alias.name):
+                    yield _finding(ctx, "D1",
+                                   f"stale module path `{alias.name}` (use the flattened form)",
+                                   node)
+        else:
+            if node.module and _is_stale_module(node.module):
+                yield _finding(ctx, "D1",
+                               f"stale module path `{node.module}` (use the flattened form)",
+                               node)
 
 
-DEFAULT_RULES: List[Rule] = [
+# ── Poison-class rule: forbid seal injection from being called in-process ──
+def rule_D2_no_self_seal_calls(tree, ctx):
+    """D2: forbid in-process calls that would auto-seal on import."""
+    banned = {"inject_seal", "apply_seal", "write_seal", "stamp_seal"}
+    for node in _iter_nodes(tree, (ast.Call,)):
+        f = node.func
+        if isinstance(f, ast.Name) and f.id in banned:
+            yield _finding(ctx, "D2", f"in-process seal call `{f.id}` is forbidden", node)
+        elif isinstance(f, ast.Attribute) and f.attr in banned:
+            yield _finding(ctx, "D2", f"in-process seal call `{f.attr}` is forbidden", node)
+
+
+DEFAULT_RULES: Final[Sequence[Rule]] = (
     rule_A1_no_eval_exec,
     rule_A2_no_dunder_import,
     rule_A3_no_silent_except,
@@ -255,54 +270,60 @@ DEFAULT_RULES: List[Rule] = [
     rule_C1_no_sealed_rewrite,
     rule_C2_no_ledger_mutation,
     rule_D1_no_stale_module_paths,
-]
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# SECTION 4 — COMPUTED SEAL HEADER (injection & verification)
-# ═════════════════════════════════════════════════════════════════════════════
-SEAL_LINE_RE = re.compile(
-    r"^#\s*🜁∀∞φ²\s*·[^\n]*·\s*SEALED\s*·\s*([0-9a-f]{64})\s*$",
-    re.MULTILINE,
+    rule_D2_no_self_seal_calls,
 )
+
+_RULES_BY_CODE: Final[Mapping[str, Rule]] = {
+    "A1": rule_A1_no_eval_exec, "A2": rule_A2_no_dunder_import,
+    "A3": rule_A3_no_silent_except, "A4": rule_A4_no_mutable_defaults,
+    "A5": rule_A5_no_top_level_side_effects, "C1": rule_C1_no_sealed_rewrite,
+    "C2": rule_C2_no_ledger_mutation, "D1": rule_D1_no_stale_module_paths,
+    "D2": rule_D2_no_self_seal_calls,
+}
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 5 — SEAL (pure parse/compose)
+# ═════════════════════════════════════════════════════════════════════════════
+SEAL_LINE_RE: Final[re.Pattern[str]] = re.compile(
+    r"^#\s*🜁∀∞φ²\s*·[^\n]*·\s*SEALED\s*·\s*([0-9a-f]{64})\s*$", re.MULTILINE)
+_ENCODING_RE: Final[re.Pattern[str]] = re.compile(r"^#.*coding[:=]")
+
+
+def _normalize_source(source: str) -> str:
+    text = source.replace("\r\n", "\n")
+    lines = [line.rstrip() for line in text.split("\n")]
+    while lines and lines[-1] == "":
+        lines.pop()
+    return "\n".join(lines) + "\n"
 
 
 def compute_seal(source: str, *, domain: str = SEAL_DOMAIN) -> str:
-    """
-    Compute the SHA3‑256 seal over the canonical JSON of the file's
-    source content, prefixed with a domain separator.
-
-    Normalisation:
-      - line endings → LF
-      - no trailing whitespace on lines
-      - exactly one trailing newline
-    """
-    normalised = "\n".join(line.rstrip() for line in source.replace("\r\n", "\n").split("\n"))
-    if not normalised.endswith("\n"):
-        normalised += "\n"
-
-    payload = {"domain": domain, "content": normalised}
+    payload = {"domain": domain, "content": _normalize_source(source)}
     canon = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha3_256(canon.encode("utf-8")).hexdigest()
 
 
-def build_seal_line(digest: str, *, tag: str = "AST_GUARD") -> str:
+def build_seal_line(digest: str, *, tag: str = SEAL_TAG) -> str:
     return f"# 🜁∀∞φ² · {tag} · WOOD_DRAGON_0.91 · SEALED · {digest}"
 
 
-def has_seal_header(source: str) -> Optional[str]:
+def find_seal_digest(source: str) -> Optional[str]:
     m = SEAL_LINE_RE.search(source)
     return m.group(1) if m else None
 
 
-def _split_header(source: str) -> tuple[str, str, str]:
-    """Return (shebang, encoding_line, body) with any seal line removed.
+@dataclass(frozen=True)
+class SplitSource:
+    shebang: str
+    encoding_line: str
+    body: str
 
-    D27 fix: the seal line is removed as a WHOLE line (newline included),
-    so repeated inject/verify cycles are idempotent. The previous
-    SEAL_LINE_RE.sub("", ...) left a residual blank line on every
-    re-injection, growing the file and changing the digest each run.
-    """
+    def recompose(self, seal_line: str = "") -> str:
+        return self.shebang + self.encoding_line + seal_line + self.body
+
+
+def split_header(source: str) -> SplitSource:
     lines = source.split("\n")
     for i, ln in enumerate(lines):
         if SEAL_LINE_RE.match(ln):
@@ -313,104 +334,231 @@ def _split_header(source: str) -> tuple[str, str, str]:
         shebang = lines[0] + "\n"
         lines = lines[1:]
     encoding_line = ""
-    if lines and re.match(r"^#.*coding[:=]", lines[0]):
+    if lines and _ENCODING_RE.match(lines[0]):
         encoding_line = lines[0] + "\n"
         lines = lines[1:]
-    body = "\n".join(lines)
-    return shebang, encoding_line, body
+    return SplitSource(shebang, encoding_line, "\n".join(lines))
 
 
-def inject_seal(path: Path, *, tag: str = "AST_GUARD") -> tuple[bool, str, str]:
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 6 — INJECTION (poison-guarded)
+# ═════════════════════════════════════════════════════════════════════════════
+def _git_root(start: Path) -> Optional[Path]:
+    p = start.resolve()
+    for parent in (p, *p.parents):
+        if (parent / ".git").exists():
+            return parent
+    return None
+
+
+def _resolve_root(root_arg: Optional[str]) -> Path:
+    if root_arg:
+        return Path(root_arg).resolve()
+    g = _git_root(Path.cwd())
+    return g if g is not None else Path.cwd().resolve()
+
+
+def _is_under(child: Path, root: Path) -> bool:
+    try:
+        child.resolve().relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+@dataclass(frozen=True)
+class Authorize:
+    allowed: frozenset[Path]
+
+    @classmethod
+    def empty(cls) -> "Authorize":
+        return cls(frozenset())
+
+    @classmethod
+    def from_paths(cls, paths: Sequence[str]) -> "Authorize":
+        return cls(frozenset(Path(p).resolve() for p in paths))
+
+    @classmethod
+    def from_file(cls, path: Path) -> "Authorize":
+        entries: List[Path] = []
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            entries.append(Path(line).resolve())
+        return cls(frozenset(entries))
+
+    def allows(self, target: Path) -> bool:
+        return target.resolve() in self.allowed
+
+
+@dataclass(frozen=True)
+class InjectPlan:
+    path: Path
+    changed: bool
+    old_digest: str
+    new_digest: str
+    reason: str  # "ok" | "noop" | "needs-reseal" | "poison" | "unauthorized" | "outside-root" | "symlink" | "too-large" | "toctou"
+
+
+def plan_injection(
+    path: Path,
+    rules: Sequence[Rule],
+    *,
+    authorize: Authorize,
+    root: Path,
+    allow_reseal: bool,
+    max_bytes: int,
+    max_lines: int,
+) -> InjectPlan:
+    """Decide whether injection is permitted. Never writes."""
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return InjectPlan(path, False, "", "", "outside-root")
+
+    # 1. Symlink refusal
+    if path.is_symlink():
+        return InjectPlan(path, False, "", "", "symlink")
+
+    # 2. Root confinement
+    if not _is_under(resolved, root):
+        return InjectPlan(path, False, "", "", "outside-root")
+
+    # 3. Authorization
+    if not authorize.allows(resolved):
+        return InjectPlan(path, False, "", "", "unauthorized")
+
+    # 4. Size / line ceilings
+    try:
+        st = resolved.stat()
+    except OSError:
+        return InjectPlan(path, False, "", "", "outside-root")
+    if not stat.S_ISREG(st.st_mode):
+        return InjectPlan(path, False, "", "", "symlink")
+    if st.st_size > max_bytes:
+        return InjectPlan(path, False, "", "", "too-large")
+
+    try:
+        source = resolved.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return InjectPlan(path, False, "", "", "outside-root")
+    if source.count("\n") > max_lines:
+        return InjectPlan(path, False, "", "", "too-large")
+
+    # 5. Parse + rules — poison gate
+    try:
+        tree = ast.parse(source, filename=str(resolved))
+    except SyntaxError:
+        return InjectPlan(path, False, "", "", "poison")
+
+    ctx = RuleContext(str(resolved), source, tree, _parents(tree))
+    for rule in rules:
+        for _ in rule(tree, ctx):
+            # First violation ⇒ poison. Do not enumerate further.
+            return InjectPlan(path, False, "", "", "poison")
+
+    # 6. Idempotency + reseal policy
+    old_digest = find_seal_digest(source) or ""
+    parts = split_header(source)
+    new_digest = compute_seal(parts.recompose(), domain=SEAL_DOMAIN)
+    if old_digest and old_digest != new_digest and not allow_reseal:
+        return InjectPlan(path, False, old_digest, new_digest, "needs-reseal")
+    if old_digest == new_digest:
+        return InjectPlan(path, False, old_digest, new_digest, "noop")
+
+    return InjectPlan(path, True, old_digest, new_digest, "ok")
+
+
+def apply_injection(plan: InjectPlan, *, tag: str = SEAL_TAG_CLEAN) -> None:
+    """Perform the write, guarded by a TOCTOU re-hash."""
+    if not plan.changed:
+        return
+    resolved = plan.path.resolve()
+    before = resolved.read_text(encoding="utf-8")
+    parts = split_header(before)
+    pre_hash = compute_seal(parts.recompose(), domain=SEAL_DOMAIN)
+    if pre_hash != plan.new_digest:
+        raise PoisonRefused(resolved, "TOCTOU: source changed between plan and apply")
+
+    new_source = parts.recompose(build_seal_line(plan.new_digest, tag=tag) + "\n")
+    resolved.write_text(new_source, encoding="utf-8")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 7 — VERIFY (read-only)
+# ═════════════════════════════════════════════════════════════════════════════
+@dataclass(frozen=True)
+class VerifyResult:
+    ok: bool
+    expected: str
+    found: str
+
+
+def verify_seal(path: Path) -> VerifyResult:
     source = path.read_text(encoding="utf-8")
-    old_digest = has_seal_header(source) or ""
-    shebang, encoding_line, body = _split_header(source)
-
-    new_digest = compute_seal(shebang + encoding_line + body, domain=SEAL_DOMAIN)
-    seal_line = build_seal_line(new_digest, tag=tag) + "\n"
-
-    new_source = shebang + encoding_line + seal_line + body
-    if new_source == source:
-        return (False, old_digest, new_digest)
-
-    path.write_text(new_source, encoding="utf-8")
-    return (True, old_digest, new_digest)
-
-
-def verify_seal(path: Path) -> tuple[bool, str, str]:
-    source = path.read_text(encoding="utf-8")
-    found = has_seal_header(source) or ""
-    shebang, encoding_line, body = _split_header(source)
-    expected = compute_seal(shebang + encoding_line + body, domain=SEAL_DOMAIN)
-    return (found == expected, expected, found)
+    found = find_seal_digest(source) or ""
+    parts = split_header(source)
+    expected = compute_seal(parts.recompose(), domain=SEAL_DOMAIN)
+    return VerifyResult(ok=(found == expected), expected=expected, found=found)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 5 — CONFIG LOADING (YAML)
+# SECTION 8 — CONFIG
 # ═════════════════════════════════════════════════════════════════════════════
-def load_config(path: Path) -> dict:
-    if not HAS_YAML:
-        raise RuntimeError("PyYAML is required for --config; install pyyaml")
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+@dataclass(frozen=True)
+class GuardConfig:
+    rule_codes: Tuple[str, ...] = tuple(_RULES_BY_CODE.keys())
 
+    @classmethod
+    def from_yaml(cls, path: Path) -> "GuardConfig":
+        if not HAS_YAML:
+            raise RuntimeError("PyYAML required for --config; install pyyaml")
+        raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        codes = tuple(raw.get("rules", cls().rule_codes))
+        unknown = [c for c in codes if c not in _RULES_BY_CODE]
+        if unknown:
+            raise ValueError(f"unknown rule code(s): {', '.join(unknown)}")
+        return cls(rule_codes=codes)
 
-def build_rules_from_config(cfg: dict) -> List[Rule]:
-    if not cfg or "rules" not in cfg:
-        return DEFAULT_RULES
-    wanted = set(cfg["rules"])
-    mapping = {
-        "A1": rule_A1_no_eval_exec,
-        "A2": rule_A2_no_dunder_import,
-        "A3": rule_A3_no_silent_except,
-        "A4": rule_A4_no_mutable_defaults,
-        "A5": rule_A5_no_top_level_side_effects,
-        "C1": rule_C1_no_sealed_rewrite,
-        "C2": rule_C2_no_ledger_mutation,
-    }
-    return [mapping[k] for k in wanted if k in mapping]
+    def rules(self) -> Tuple[Rule, ...]:
+        return tuple(_RULES_BY_CODE[c] for c in self.rule_codes)
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 6 — RUNNER
+# SECTION 9 — PARSING / WALKING
 # ═════════════════════════════════════════════════════════════════════════════
-def build_parent_map(tree: ast.AST) -> dict:
-    parents: dict = {}
+def _parents(tree: ast.AST) -> Mapping[int, ast.AST]:
+    parents: dict[int, ast.AST] = {}
     for parent in ast.walk(tree):
         for child in ast.iter_child_nodes(parent):
             parents[id(child)] = parent
     return parents
 
 
-def check_file(path: Path, rules: Iterable[Rule]) -> List[Violation]:
+def check_file(path: Path, rules: Sequence[Rule]) -> List[Finding]:
     try:
         source = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as e:
-        return [Violation("IO", f"cannot read file: {e}", str(path), 0, 0, "File")]
-
+        return [Finding("IO", f"cannot read file: {e}", str(path), 0, 0, "File")]
     try:
         tree = ast.parse(source, filename=str(path))
     except SyntaxError as e:
-        return [Violation("SYNTAX", f"syntax error: {e.msg}", str(path),
-                          e.lineno or 0, e.offset or 0, "SyntaxError")]
-
-    ctx = RuleContext(
-        filename=str(path),
-        source=source,
-        tree=tree,
-        parents=build_parent_map(tree),
-    )
+        return [Finding("SYNTAX", f"syntax error: {e.msg}", str(path),
+                        e.lineno or 0, e.offset or 0, "SyntaxError")]
+    ctx = RuleContext(str(path), source, tree, _parents(tree))
+    findings: List[Finding] = []
     for rule in rules:
-        rule(tree, ctx)
-    return ctx.violations
+        findings.extend(rule(tree, ctx))
+    return findings
 
 
-def iter_python_files(targets: List[str]) -> Iterable[Path]:
+def iter_python_files(targets: Sequence[str]) -> Iterator[Path]:
     for t in targets:
         p = Path(t)
         if p.is_dir():
             for f in sorted(p.rglob("*.py")):
-                if any(part in {".git", "__pycache__", ".venv", "venv", "build", "dist"}
-                       for part in f.parts):
+                if any(part in SKIPPED_DIR_PARTS for part in f.parts):
                     continue
                 yield f
         elif p.is_file():
@@ -420,93 +568,162 @@ def iter_python_files(targets: List[str]) -> Iterable[Path]:
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# SECTION 7 — MAIN
+# SECTION 10 — CLI
 # ═════════════════════════════════════════════════════════════════════════════
-def main(argv: Optional[List[str]] = None) -> int:
+@dataclass(frozen=True)
+class Command:
+    targets: Sequence[str]
+    json: bool
+    quiet: bool
+    config: Optional[str]
+    inject_seal: bool
+    apply: bool
+    authorize: Sequence[str]
+    authorize_file: Optional[str]
+    root: Optional[str]
+    reseal: bool
+    verify_seal: bool
+    max_bytes: int
+    max_lines: int
+
+
+def _parse_args(argv: Optional[Sequence[str]]) -> Command:
     ap = argparse.ArgumentParser(
-        description="AST_guard: static AST rule enforcement + computed seal header."
-    )
-    ap.add_argument("targets", nargs="+", help="files or directories to check")
-    ap.add_argument("--json", action="store_true", help="emit JSON instead of text")
-    ap.add_argument("--quiet", action="store_true", help="only print violations, no summary")
-    ap.add_argument("--config", type=str, default=None, help="path to YAML config")
+        description="AST_guard: static AST rules + poison-guarded seal injection.")
+    ap.add_argument("targets", nargs="+")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--config", default=None)
     ap.add_argument("--inject-seal", action="store_true",
-                    help="inject/refresh the computed seal header on each file")
-    ap.add_argument("--verify-seal", action="store_true",
-                    help="verify the computed seal header on each file")
-    args = ap.parse_args(argv)
+                    help="plan seal injection (dry-run unless --apply)")
+    ap.add_argument("--apply", action="store_true",
+                    help="perform writes for --inject-seal")
+    ap.add_argument("--authorize", action="append", default=[],
+                    help="repeatable; explicit file path authorized for injection")
+    ap.add_argument("--authorize-file", default=None,
+                    help="file listing authorized paths (one per line, # comments)")
+    ap.add_argument("--root", default=None,
+                    help="confine writes to this root (default: git worktree or cwd)")
+    ap.add_argument("--reseal", action="store_true",
+                    help="allow overwriting an existing seal with a new digest")
+    ap.add_argument("--verify-seal", action="store_true")
+    ap.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
+    ap.add_argument("--max-lines", type=int, default=DEFAULT_MAX_LINES)
+    ns = ap.parse_args(argv)
+    return Command(
+        targets=ns.targets, json=ns.json, quiet=ns.quiet, config=ns.config,
+        inject_seal=ns.inject_seal, apply=ns.apply,
+        authorize=ns.authorize, authorize_file=ns.authorize_file,
+        root=ns.root, reseal=ns.reseal, verify_seal=ns.verify_seal,
+        max_bytes=ns.max_bytes, max_lines=ns.max_lines,
+    )
 
-    # Load rules
-    rules = DEFAULT_RULES
-    if args.config:
-        try:
-            cfg = load_config(Path(args.config))
-            rules = build_rules_from_config(cfg)
-        except Exception as e:
-            print(f"config error: {e}", file=sys.stderr)
-            return 2
 
-    all_violations: List[Violation] = []
+def _build_authorize(cmd: Command) -> Authorize:
+    paths = list(cmd.authorize)
+    if cmd.authorize_file:
+        extra = Authorize.from_file(Path(cmd.authorize_file))
+        return Authorize(frozenset(extra.allowed | Authorize.from_paths(paths).allowed))
+    return Authorize.from_paths(paths)
+
+
+def _render(findings: Sequence[Finding], plans: Sequence[InjectPlan],
+            verifies: Sequence[dict], files_checked: int, quiet: bool) -> None:
+    for v in findings:
+        print(v.fmt())
+    for p in plans:
+        mark = {"ok": "🖋", "noop": "✓"}.get(p.reason, "🚫")
+        old = p.old_digest[:16] or "—"
+        new = p.new_digest[:16] or "—"
+        print(f"{mark} {p.path}  reason={p.reason}  new={new}  old={old}")
+    for r in verifies:
+        mark = "✅" if r["ok"] else "❌"
+        print(f"{mark} {r['file']}  expected={r['expected'][:16]}…  found={r['found'][:16] or '—'}")
+    if not quiet:
+        print(f"\n[{files_checked} file(s); "
+              f"{len(findings)} violation(s); "
+              f"{len(plans)} inject-plan(s); "
+              f"{len(verifies)} verify-op(s)]", file=sys.stderr)
+
+
+def run(cmd: Command) -> int:
+    try:
+        config = GuardConfig.from_yaml(Path(cmd.config)) if cmd.config else GuardConfig()
+    except (OSError, ValueError, RuntimeError) as e:
+        print(f"config error: {e}", file=sys.stderr)
+        return 2
+
+    rules = config.rules()
+    root = _resolve_root(cmd.root)
+    authorize = _build_authorize(cmd)
+
+    findings: List[Finding] = []
+    plans: List[InjectPlan] = []
+    verifies: List[dict] = []
     files_checked = 0
-    seal_report: List[dict] = []
+    seal_only = cmd.inject_seal or cmd.verify_seal
 
-    for path in iter_python_files(args.targets):
+    for path in iter_python_files(cmd.targets):
         files_checked += 1
 
-        if args.inject_seal:
+        if cmd.inject_seal:
+            plan = plan_injection(
+                path, rules,
+                authorize=authorize, root=root,
+                allow_reseal=cmd.reseal,
+                max_bytes=cmd.max_bytes, max_lines=cmd.max_lines,
+            )
+            plans.append(plan)
+            if cmd.apply and plan.reason == "ok":
+                try:
+                    apply_injection(plan)
+                except PoisonRefused as e:
+                    findings.append(Finding("POISON", e.reason, str(path), 0, 0, "InjectPlan"))
+                    # Downgrade reason for reporting
+                    plans[-1] = InjectPlan(plan.path, False, plan.old_digest,
+                                           plan.new_digest, "toctou")
+
+        if cmd.verify_seal:
             try:
-                changed, old_d, new_d = inject_seal(path)
-                seal_report.append({
-                    "file": str(path), "action": "inject_seal",
-                    "changed": changed, "old_digest": old_d, "new_digest": new_d,
-                })
+                v = verify_seal(path)
+                verifies.append({"file": str(path), "ok": v.ok,
+                                 "expected": v.expected, "found": v.found})
             except OSError as e:
-                all_violations.append(Violation("IO", f"seal inject failed: {e}",
-                                                str(path), 0, 0, "File"))
+                findings.append(Finding("IO", f"seal verify failed: {e}",
+                                        str(path), 0, 0, "File"))
 
-        if args.verify_seal:
-            try:
-                ok, exp, found = verify_seal(path)
-                seal_report.append({
-                    "file": str(path), "action": "verify_seal",
-                    "ok": ok, "expected": exp, "found": found,
-                })
-            except OSError as e:
-                all_violations.append(Violation("IO", f"seal verify failed: {e}",
-                                                str(path), 0, 0, "File"))
+        if not seal_only:
+            findings.extend(check_file(path, rules))
 
-        # Run AST rules only when we did not exclusively ask for seal ops.
-        if not (args.inject_seal or args.verify_seal):
-            all_violations.extend(check_file(path, rules))
-
-    # Output
-    if args.json:
+    if cmd.json:
         print(json.dumps({
             "files_checked": files_checked,
-            "violations": [asdict(v) for v in all_violations],
-            "seal_report": seal_report,
+            "violations": [asdict(v) for v in findings],
+            "inject_plans": [{
+                "path": str(p.path), "changed": p.changed,
+                "old_digest": p.old_digest, "new_digest": p.new_digest,
+                "reason": p.reason,
+            } for p in plans],
+            "verify_seal": verifies,
+            "root": str(root),
+            "authorized": sorted(str(p) for p in authorize.allowed),
         }, indent=2))
     else:
-        for v in all_violations:
-            print(v.fmt())
-        for r in seal_report:
-            if r["action"] == "inject_seal":
-                mark = "🖋" if r["changed"] else "✓"
-                print(f"{mark} {r['file']}  new={r['new_digest'][:16]}…  old={r['old_digest'][:16] or '—'}")
-            else:
-                mark = "✅" if r["ok"] else "❌"
-                print(f"{mark} {r['file']}  expected={r['expected'][:16]}…  found={r['found'][:16] or '—'}")
-        if not args.quiet:
-            print(f"\n[{files_checked} file(s) checked, "
-                  f"{len(all_violations)} violation(s), "
-                  f"{len(seal_report)} seal operation(s)]", file=sys.stderr)
+        _render(findings, plans, verifies, files_checked, cmd.quiet)
 
-    # Exit code
-    if all_violations:
+    # Exit codes
+    if findings:
         return 1
-    if args.verify_seal and any(not r.get("ok", True) for r in seal_report):
+    if any(p.reason not in ("ok", "noop") for p in plans):
+        # Refused injections (poison, unauthorized, symlink, too-large, etc.)
+        return 1
+    if cmd.verify_seal and any(not r["ok"] for r in verifies):
         return 1
     return 0
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    return run(_parse_args(argv))
 
 
 if __name__ == "__main__":
