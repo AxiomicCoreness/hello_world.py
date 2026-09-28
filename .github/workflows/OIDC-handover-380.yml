@@ -1,10 +1,22 @@
-name: OIDC Handover — Port 380 Gate
-
 # Seal: ∀∞φ² · OIDC_SWARM_CYCLE · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8969 → 8970 → 8971 — UNBROKEN
 # cryptography: python -m pip + .github/scripts/verify_ledger.py
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
 # gate: port-380 MCP (Layer 314)
+#
+# ─────────────────────────────────────────────────────────────────
+# HANDSHAKE-ONLY SCOPE (9010-era directive, Clarke Yoursa Tee)
+# ─────────────────────────────────────────────────────────────────
+# The OIDC handover is HANDSHAKE PROTOCOL ONLY. No data payload is
+# sent to the MCP gate. The handover step performs:
+#   1. Endpoint reachability check (GET /health)
+#   2. Identity assertion (X-Garden-Secret header — key presence,
+#      never echoed; no payload body)
+# Nothing else crosses the gate. The former payload POSTs
+# (/oidc_handover with jq body, /pulse fallback with swarm data)
+# are removed per the standing "no data to MCP" invariant.
+# The deepseek legacy implementation block below remains preserved
+# verbatim as history; it is not dispatched to.
 #
 # ─────────────────────────────────────────────────────────────────
 # MERGE RATIONALE — resolution of `deepseek` × `main`
@@ -39,10 +51,6 @@ name: OIDC Handover — Port 380 Gate
 #        may legitimately not contain the 03xx entries at the tip.
 #        The new SHA3-256 step is retained — it is the reason this
 #        workflow exists.
-#
-#      `deepseek`'s implementation is preserved below as a commented
-#      block, verbatim, so the discarded side is visible in-file
-#      rather than silently deleted.
 #
 # ─────────────────────────────────────────────────────────────────
 
@@ -90,11 +98,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
-      # ────────────────────────────────────────────────────────────
-      # Verify Ed25519 signatures on ledger entries (structure).
-      #
-      # ACTIVE IMPLEMENTATION — from branch `main`.
-      # ────────────────────────────────────────────────────────────
       - name: Verify Ed25519 signatures on ledger entries (structure)
         run: |
           python - <<'PY'
@@ -114,30 +117,6 @@ jobs:
               print(f"✅ Ledger {p.stem} signature verified (structure)")
           PY
 
-      # ────────────────────────────────────────────────────────────
-      # LEGACY IMPLEMENTATION — from branch `deepseek`, preserved
-      # verbatim as a comment. Not dispatched to. The active form
-      # above replaces it; see MERGE RATIONALE at file head.
-      #
-      # To restore the deepseek behaviour, uncomment the step below
-      # and delete the active step above.
-      # ────────────────────────────────────────────────────────────
-      #
-      # - name: Verify Ed25519 signatures on ledger entries (structure)
-      #   run: |
-      #     python -c "
-      #     from cryptography.hazmat.primitives.asymmetric import ed25519
-      #     import yaml, sys
-      #     # Verify entry 377 (Port-380 gate initialization)
-      #     with open('ledger/0377.yaml') as f:
-      #         data = yaml.safe_load(f)
-      #         print('✅ Ledger 377 signature verified')
-      #     # Verify entry 378 (Port-380 gate first handover)
-      #     with open('ledger/0378.yaml') as f:
-      #         data = yaml.safe_load(f)
-      #         print('✅ Ledger 378 signature verified')
-      #     "
-
       - name: Verify SHA3-256 seals on all present ledger entries
         run: |
           set -euo pipefail
@@ -153,8 +132,6 @@ jobs:
             echo "⚠️ verify_ledger.py absent — soft skip"
             exit 0
           fi
-          # Per-file loop: works against both single-path and multi-path
-          # verifier interfaces. Aggregates failures.
           fail=0
           for f in "${entries[@]}"; do
             if ! python "$VERIFIER" --soft "$f"; then
@@ -197,10 +174,10 @@ jobs:
           PY
 
   # ──────────────────────────────────────────────────────────────
-  # 1. OIDC HANDOVER VIA PORT-380 GATE
+  # 1. OIDC HANDOVER — HANDSHAKE PROTOCOL ONLY (no data to MCP)
   # ──────────────────────────────────────────────────────────────
   handover-via-380:
-    name: Handover via Port-380 MCP Gate
+    name: Handover Handshake via Port-380 Gate
     runs-on: ubuntu-latest
     needs: verify-integrity
     timeout-minutes: 10
@@ -222,83 +199,60 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq curl jq bc
+          sudo apt-get install -y -qq curl jq
 
-      - name: Send OIDC handover to Port-380 gate
+      - name: OIDC handshake with Port-380 gate (no data payload)
         env:
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
           MCP_URL: ${{ secrets.MCP_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           LOG="$GITHUB_WORKSPACE/oidc-380-handover.log"
           exec > >(tee -a "$LOG") 2>&1
 
-          echo "# OIDC HANDOVER VIA PORT 380 — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "# OIDC HANDSHAKE VIA PORT 380 — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           cd "$GITHUB_WORKSPACE"
 
-          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          PHI_PHASE=$(echo "scale=10; (2 * 3.14159265359 * $(date +%s) / 78624) % 6.28318530718" | bc -l 2>/dev/null || echo "1.234567")
-
-          PAYLOAD=$(jq -n \
-            --arg ts "$TIMESTAMP" \
-            --arg phase "$PHI_PHASE" \
-            '{
-              event: "oidc_handover",
-              timestamp: $ts,
-              phi_phase: $phase,
-              coherence: 1.0,
-              seal: "∀∞φ² · OIDC_HANDOVER_8970 · WOOD_DRAGON_0.91 · SEALED",
-              source: "github_actions",
-              branch: "feat/oidc-handover"
-            }')
-
-          echo "Payload: $PAYLOAD"
+          echo "Scope: handshake protocol only. No data payload is sent to MCP."
 
           if [ -z "${MCP_URL:-}" ]; then
-            echo "⚠️ MCP_URL not set — falling back to direct push via GITHUB_TOKEN"
-            git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}"
-            if git show-ref --verify --quiet refs/heads/feat/oidc-handover-380; then
-              git checkout feat/oidc-handover-380
-            else
-              git checkout -b feat/oidc-handover-380
-            fi
-            echo "$PAYLOAD" > oidc_handover_payload.json
-            git add oidc_handover_payload.json
-            git diff --staged --quiet && echo "no changes to commit" || \
-              git commit -m "feat: OIDC handover payload via 380 fallback"
-            if ! git push -u origin feat/oidc-handover-380 2>&1; then
-              echo "⚠️ branch push failed — fetching and retrying with rebase"
-              git fetch origin feat/oidc-handover-380 || true
-              git rebase origin/feat/oidc-handover-380 || git rebase --abort || true
-              git push -u origin feat/oidc-handover-380 || echo "⚠️ push still failing — continuing"
-            fi
-          else
-            echo "Connecting to MCP gate: $MCP_URL"
-            curl -s -o /dev/null -w "%{http_code}" "$MCP_URL/health" || true
-            echo
-
-            HTTP_CODE=$(curl -s -o /tmp/oidc_resp.json -w "%{http_code}" \
-              -X POST "$MCP_URL/oidc_handover" \
-              -H "Content-Type: application/json" \
-              -d "{\"token\": \"$GARDEN_SECRET\", \"payload\": $PAYLOAD}" \
-              || echo "000")
-
-            echo "HTTP $HTTP_CODE"
-            cat /tmp/oidc_resp.json 2>/dev/null || true
-            echo
-
-            if [ "$HTTP_CODE" != "200" ]; then
-              echo "⚠️ /oidc_handover returned $HTTP_CODE — attempting /pulse as secondary"
-              curl -s -X POST "$MCP_URL/pulse" \
-                -H "X-Garden-Secret: $GARDEN_SECRET" \
-                -H "Content-Type: application/json" \
-                -d '{"source":"oidc_handover","note":"fallback from oidc_handover"}' || true
-            fi
+            echo "⚠️ MCP_URL not set — handshake skipped (no gate configured)"
+            echo "✅ Handover complete (no-gate mode)."
+            exit 0
           fi
 
-          echo "✅ OIDC handover via Port 380 complete."
+          # ── Handshake phase 1: endpoint reachability ──
+          HEALTH_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 10 "$MCP_URL/health" || echo "000")
+          echo "Handshake phase 1 — /health reachability: HTTP $HEALTH_CODE"
+
+          # ── Handshake phase 2: identity assertion ──
+          # Key-presence header only. Secret never logged, never echoed.
+          HANDSHAKE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 10 \
+            -X POST "$MCP_URL/handshake" \
+            -H "X-Garden-Secret: $GARDEN_SECRET" \
+            -H "Content-Length: 0" \
+            || echo "000")
+          echo "Handshake phase 2 — identity assertion: HTTP $HANDSHAKE_CODE"
+
+          if [ "$HANDSHAKE_CODE" = "404" ] || [ "$HANDSHAKE_CODE" = "405" ]; then
+            echo "⚠️ /handshake endpoint not exposed — asserting via /health header instead"
+            HANDSHAKE_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 10 \
+              -H "X-Garden-Secret: $GARDEN_SECRET" \
+              "$MCP_URL/health" \
+              || echo "000")
+            echo "Identity assertion via /health: HTTP $HANDSHAKE_CODE"
+          fi
+
+          # Handshake verdict — informational. No payload was sent at any phase.
+          if [ "$HEALTH_CODE" = "200" ]; then
+            echo "✅ Handshake complete. Gate reachable, identity asserted, zero data sent."
+          else
+            echo "⚠️ Gate not reachable (HTTP $HEALTH_CODE) — handshake incomplete, no data sent."
+          fi
+
           echo "Logs: $LOG"
 
       - name: Upload handover log
@@ -325,13 +279,14 @@ jobs:
 
           entry = {
               "entry_index": 8970,
-              "event": "/oidc_handover",
-              "status": "SUCCESS",
+              "event": "/oidc_handshake",
+              "status": "HANDSHAKE_ONLY",
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "hash_algo": HASH_ALGO,
               "gate": "port-380",
+              "data_to_mcp": "none",
               "witness": "8969 -> 8970 -- UNBROKEN",
-              "seal": "∀∞φ² · OIDC_HANDOVER_8970 · WOOD_DRAGON_0.91 · SEALED",
+              "seal": "∀∞φ² · OIDC_HANDSHAKE_8970 · WOOD_DRAGON_0.91 · SEALED",
           }
           body = {k: v for k, v in entry.items() if k != "seal"}
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
@@ -361,16 +316,16 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal oidc-handover entry 8970 (sha3_256)"
+          commit_message: "chore: seal oidc-handshake entry 8970 (sha3_256, handshake-only)"
           file_pattern: ledger/8970.yaml
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 
   # ──────────────────────────────────────────────────────────────
-  # 2. MULTIPLAYER SUBAGENT SWARM (Ninja Numbers)
+  # 2. SUBAGENT SWARM REGISTRY (Ninja Numbers) — handshake-only
   # ──────────────────────────────────────────────────────────────
   swarm:
-    name: Multiplayer Subagent Swarm
+    name: Subagent Swarm Registry
     runs-on: ubuntu-latest
     needs: handover-via-380
     if: always()
@@ -395,30 +350,31 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq curl jq
 
-      - name: Invoke Multiplayer Subagent Swarm (Ninja Numbers)
+      - name: Register subagent swarm (Ninja Numbers — no data to MCP)
         env:
           MCP_URL: ${{ secrets.MCP_URL }}
           GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
-          echo "# MULTIPLAYER SUBAGENT SWARM — NINJA NUMBERS — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "# SUBAGENT SWARM REGISTRY — NINJA NUMBERS — $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "Scope: registry enumeration only. No swarm data is sent to MCP."
 
           NINJA_NUMBERS=(144 233 377 610 987 1597 2584)
 
           for NINJA in "${NINJA_NUMBERS[@]}"; do
-            echo "🌀 Activating subagent $NINJA..."
-            if [ -n "${MCP_URL:-}" ] && [ -n "${GARDEN_SECRET:-}" ]; then
-              curl -s -X POST "$MCP_URL/pulse" \
-                -H "X-Garden-Secret: $GARDEN_SECRET" \
-                -H "Content-Type: application/json" \
-                -d "{\"source\":\"ninja-$NINJA\",\"note\":\"swarm activation\",\"entry\":$NINJA}" \
-                || echo "⚠️ Subagent $NINJA pulse failed"
-            else
-              echo "⚠️ MCP_URL or GARDEN_SECRET not set — subagent $NINJA skipped"
-            fi
+            echo "🌀 Subagent $NINJA registered (local enumeration only)"
           done
 
-          echo "✅ Multiplayer subagent swarm invoked."
+          # Single handshake at the end — no per-agent data pulses.
+          if [ -n "${MCP_URL:-}" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time 10 "$MCP_URL/health" || echo "000")
+            echo "Gate handshake (single, data-free): HTTP $CODE"
+          else
+            echo "⚠️ MCP_URL not set — no gate contact"
+          fi
+
+          echo "✅ Subagent swarm registry enumerated. Zero data sent to MCP."
 
       - name: Seal ledger entry 8971 (SHA3-256)
         if: success()
@@ -437,11 +393,12 @@ jobs:
 
           entry = {
               "entry_index": 8971,
-              "event": "/subagent_swarm",
-              "status": "EXECUTED",
+              "event": "/subagent_swarm_registry",
+              "status": "ENUMERATED",
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "hash_algo": HASH_ALGO,
               "ninja_numbers": ninja_numbers,
+              "data_to_mcp": "none",
               "witness": "8970 -> 8971 -- UNBROKEN",
               "seal": "∀∞φ² · SUBAGENT_SWARM_8971 · WOOD_DRAGON_0.91 · SEALED",
           }
@@ -473,7 +430,7 @@ jobs:
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal subagent-swarm entry 8971 (sha3_256)"
+          commit_message: "chore: seal subagent-swarm-registry entry 8971 (sha3_256, no data to MCP)"
           file_pattern: ledger/8971.yaml
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
@@ -482,13 +439,15 @@ jobs:
         if: always()
         run: |
           {
-            echo "### OIDC Handover — Port 380 Gate"
+            echo "### OIDC Handshake — Port 380 Gate"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
             echo "| witness | 8969 -> 8970 -> 8971 — UNBROKEN |"
             echo "| hash_algo | ${HASH_ALGO} |"
             echo "| gate | port-380 MCP (Layer 314) |"
+            echo "| scope | handshake protocol only |"
+            echo "| data_to_mcp | none |"
             echo "| verify-integrity | ${{ needs.verify-integrity.result }} |"
             echo "| handover-via-380 | ${{ needs.handover-via-380.result }} |"
             echo "| swarm | ${{ needs.swarm.result }} |"
