@@ -4,7 +4,8 @@
 
 REGISTRY ?= workload_registry.json
 
-.PHONY: dispatch verify pulse seal-verify rotate-keys simulate mesh-terminal list
+.PHONY: dispatch verify pulse seal-verify rotate-keys simulate mesh-terminal list \
+        anatomy anatomy-verify
 
 list:
 	@echo "Registered workloads:"
@@ -34,3 +35,13 @@ verify:
 
 pulse: verify seal-verify
 	@echo "pulse complete"
+
+# --- Sovereign Anatomy (9007) ---
+anatomy: anatomy-verify
+	@echo "anatomy: seven organs checked"
+
+anatomy-verify:
+	python3 -c "from anatomy.spine import check_spine; r = check_spine(); print('spine', r['entries'], 'ok' if r['ok'] else r['problems']); exit(0 if r['ok'] else 1)"
+	python3 -c "from anatomy.dual_soul import canonical_hash; print('dual_soul', canonical_hash('anatomy-9007')[:16])"
+	python3 -c "from anatomy.breath import cron_for; print('breath', cron_for())"
+	python3 -c "from anatomy.genitals import next_ledger_path; print('genitals', next_ledger_path(9006))"

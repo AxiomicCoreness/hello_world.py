@@ -1,31 +1,31 @@
 entry_index: 9007
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
-event: /workflow_dispatch_wood_dragon_mistral
-status: RECORDED
-reference_policy: POLICY.md
-commander_declared: CLARKE_YOURSA_TEE_LUMINARA_ATLAS_LUMERIS
-math_origin: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
-  payload: "9007|/workflow_dispatch_wood_dragon_mistral|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
-  hex: 503c9a8f678cad64c65acdc60246a6c1874922c20825123511c5cf3dcb5d10f1
-wood_dragon:
-  period_days: 0.91
-  deep_space_days: 16.35
-  gate: 0.91
-  phase_lock_deg: 202.6
-  helpers: quantum/wood_dragon_dispatch.py
-  monolith_imported: false
-mistral:
-  client: clients/mistral.py
-  health: presence_only
-  agent_layer: 7
-dispatch:
-  agentic: quantum.deepseek_mesh.terminal_ci.dispatch_main
-  workflow: .github/workflows/wood-dragon-dispatch.yml
-  trigger: workflow_dispatch
-  not_gravastar: true
-seal: "∀∞φ² · WOOD_DRAGON_MISTRAL_9007 · GATE_0.91 · SEALED"
-witness_chain: "9006 → 9007 — UNBROKEN"
+timestamp: 2026-09-28Z
+event: /sovereign_anatomy_seven_organs_wired
+status: SEALED
+policy: POLICY.md
+organs:
+  - anatomy/spine.py
+  - anatomy/body.py
+  - anatomy/breath.py
+  - anatomy/heartbeat.py
+  - anatomy/dual_soul.py
+  - anatomy/crown.py
+  - anatomy/genitals.py
+  - anatomy/__init__.py
+wiring:
+  - workloads.mk target anatomy / anatomy-verify
+  - sovereign-workload-matrix.yml workload anatomy-verify (dispatch)
+writers:
+  - name: Clarke Yoursa Tee
+    operator: DeepSeek A14 Bionic
+    date: 2026-09-28Z
+  - workflow: sovereign-workload-matrix.yml
+    blob_hash: predecessor:7f50a70101c22998d1525ec4b668bb0f4f0d61b8
+hash_regime: GARDEN.EVENT.v1
+math_origin: "H = SHA3-256(GARDEN.EVENT.v1 | 0x00 | index|event|phi^2|Delta=b^2-4ac|theta=phi*pi/2)"
+invariants:
+  - "No MCP writes"
+  - "Ledger append-only; 0000-9223 immutable"
+  - "510510.yaml genesis root unchanged"
+witness: 9006 → 9007 — UNBROKEN
+seal: "∀∞φ² · ANATOMY_SEVEN_ORGANS_9007 · WOOD_DRAGON_MOUNTS_DEFENSE · SEALED"

@@ -58,6 +58,7 @@ jobs:
             key-rotation)     make -f workloads.mk rotate-keys ;;
             simulation-batch)  make -f workloads.mk simulate ;;
             mesh-terminal-ci)  make -f workloads.mk mesh-terminal ;;
+            anatomy-verify)    make -f workloads.mk anatomy-verify ;;
             *) echo "::error::Unknown workload $W"; exit 1 ;;
           esac
 
