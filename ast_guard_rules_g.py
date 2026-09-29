@@ -19,14 +19,12 @@ Compatibility (corrected from draft):
     constant matching goes through _const_value(), which handles
     both ast.Constant (3.8+) and ast.Num/ast.Str (3.6/3.7).
   - Subscript slices: on 3.6-3.8 the slice is wrapped in ast.Index;
-    _slice_upper() unwraps both shapes. (Draft's direct ast.Slice
-    access was a silent no-op on 3.6-3.8 -- a false-witness bug.)
+    _slice_upper() unwraps both shapes.
   - No dataclasses in the fallback shims (3.6 lacks the module);
-    plain classes with __init__ instead.
+    plain classes instead.
   - No 'from __future__ import annotations' (3.7+ only).
   - G2 scoped to golden modules and golden names only, to prevent
-    the over-fire residual flagged in the draft (a bare 'width = 640'
-    in a non-golden module is not a G2 concern).
+    the over-fire residual flagged in the draft.
 
 Requires: Python 3.6+ standard library only. No third-party imports.
 """
@@ -36,9 +34,6 @@ import re
 import sys
 
 # --- Local imports guard ---------------------------------------------------
-# The parent AST_guard.py may define RuleContext, Violation, Rule.
-# To keep this module standalone-runnable, we use minimal shims
-# when the parent is absent. No dataclasses (Python 3.6 lacks them).
 try:
     from AST_guard import RuleContext, Violation, Rule  # type: ignore
 except ImportError:
@@ -84,14 +79,9 @@ _HEX64_RE = re.compile(r"[0-9a-f]{64}$")
 
 def _const_value(node):
     # type: (ast.AST) -> object
-    """Return the literal value of a constant node on 3.6 through 3.12+.
-
-    ast.Constant exists from 3.8. On 3.6/3.7 literals are ast.Num /
-    ast.Str / ast.NameConstant. Returns None for non-literals.
-    """
+    """Return the literal value of a constant node on 3.6 through 3.12+."""
     if hasattr(ast, "Constant") and isinstance(node, ast.Constant):
         return node.value
-    # Python 3.6/3.7 literal node types.
     if hasattr(ast, "Num") and isinstance(node, ast.Num):
         return node.n
     if hasattr(ast, "Str") and isinstance(node, ast.Str):
@@ -140,23 +130,17 @@ def _module_level_names(tree):
 # G1 -- phi must be declared by expression, not by literal
 # ==========================================================================
 
-# Accepted shapes for phi:
-#   (1 + math.sqrt(5)) / 2
-#   (1 + 5 ** 0.5) / 2
-#   (1 + 5 ** (1/2)) / 2
 _PHI_LITERAL_BAND = (1.617, 1.619)
 
 
 def _is_sqrt_of_five(node):
     # type: (ast.AST) -> bool
-    # math.sqrt(5)
     if isinstance(node, ast.Call):
         f = node.func
         if (isinstance(f, ast.Attribute) and f.attr == "sqrt"
                 and len(node.args) == 1
                 and _is_int_const(node.args[0], 5)):
             return True
-    # 5 ** 0.5  or  5 ** (1/2)
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Pow):
         if _is_int_const(node.left, 5):
             right = node.right
@@ -227,9 +211,6 @@ def rule_G1_phi_by_expression(tree, ctx):
 # G2 -- golden-constant alias coverage (scoped: golden modules only)
 # ==========================================================================
 
-# Golden constant names: the phi-family and greek-letter constants the
-# alias rule was written for. A bare 'width' or 'count' in any module
-# is NOT in scope. This closes the over-fire residual from the draft.
 _GOLDEN_NAME_RE = re.compile(r"^(phi|chi|theta|tau|sigma|lambda_)[a-z0-9_]*$")
 
 
@@ -248,18 +229,20 @@ def rule_G2_alias_coverage(tree, ctx):
     # type: (ast.AST, RuleContext) -> None
     """G2: golden lowercase constants must have uppercase aliases.
 
-    Scoped to golden modules and golden names (phi/chi/theta/tau/
-    sigma/lambda_ families) -- the draft's unrestricted version
-    flagged every lowercase module constant, which was noise.
+    Scoped to golden modules and golden names -- the draft's
+    unrestricted version flagged every lowercase module constant,
+    which was noise.
     """
     if not isinstance(tree, ast.Module):
         return
     if not _module_is_golden(ctx.filename):
         return
     names = _module_level_names(tree)
-    lower = {n for n in names
-             if re.fullmatch(r"[a-z][a-z0-9_]*", n) and _GOLDEN_NAME_RE.match(n)}
-    upper = {n for n in names if re.fullmatch(r"[A-Z][A-Z0-9_]*", n)}
+    lower = set()
+    for n in names:
+        if re.fullmatch(r"[a-z][a-z0-9_]*", n) and _GOLDEN_NAME_RE.match(n):
+            lower.add(n)
+    upper = set(n for n in names if re.fullmatch(r"[A-Z][A-Z0-9_]*", n))
     for name in sorted(lower):
         expected = name.upper()
         if expected not in upper:
@@ -293,7 +276,6 @@ def rule_G3_seal_full_hex(tree, ctx):
     # type: (ast.AST, RuleContext) -> None
     """G3: any string assigned to a name containing 'seal' must end in 64 hex."""
     for node in ast.walk(tree):
-        # Case 1: simple assignment x_seal = "..."
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 name = None
@@ -312,7 +294,6 @@ def rule_G3_seal_full_hex(tree, ctx):
                         "%r does not end in 64 lowercase hex" % (name,),
                         node,
                     )
-        # Case 2: dict entries {"seal": "..."}
         if isinstance(node, ast.Dict):
             for k, v in zip(node.keys, node.values):
                 ks = _string_node_value(k) if k is not None else None
@@ -344,18 +325,16 @@ def _is_hexdigest_producer(node):
 
 def _slice_upper(node):
     # type: (ast.AST) -> object
-    """Extract [None:upper] slice upper bound from a Subscript node.
+    """Extract [None:upper] slice bound from a Subscript, 3.6-3.12+.
 
-    Version-tolerant: on 3.9+ node.slice is the ast.Slice directly;
-    on 3.6-3.8 it is wrapped in ast.Index. The draft's direct
-    ast.Slice access silently never matched on 3.6-3.8.
+    On 3.9+ node.slice is the ast.Slice directly; on 3.6-3.8 it is
+    wrapped in ast.Index. The draft's direct ast.Slice access
+    silently never matched on 3.6-3.8 (false-witness bug).
     """
     if not isinstance(node, ast.Subscript):
         return None
     sl = node.slice
-    # Python 3.9+: slice is bare.
     if not isinstance(sl, ast.Slice):
-        # Python 3.6-3.8: slice wrapped in ast.Index.
         if hasattr(ast, "Index") and isinstance(sl, ast.Index):
             sl = sl.value
         else:
@@ -447,53 +426,51 @@ GOLDEN_RULES = [
 # ==========================================================================
 
 if __name__ == "__main__":
+    # (label, filename, source, expected_violations)
+    # filename is EXPLICIT so the golden-module scoping of G2/G4 is
+    # exercised exactly where intended.
     SAMPLES = [
-        ("clean_phi",
+        ("clean_phi", "sample.py",
          "import math\nphi = (1 + math.sqrt(5)) / 2\nPHI = phi\n",
          []),
-        ("literal_phi",
+        ("literal_phi", "sample.py",
          "phi = 1.618033988749895\nPHI = phi\n",
          ["G1"]),
-        # G2 is scoped to golden modules: the sample filenames below use
-        # 'golden_' prefixes so the rule is actually exercised.
-        ("missing_alias_golden",
+        ("missing_alias_golden", "golden_constants.py",
          "import math\nphi = (1 + math.sqrt(5)) / 2\n",
          ["G2"]),
-        ("no_alias_nongolden",
+        ("no_alias_nongolden", "sample.py",
          "import math\nwidth = 640\n",
          []),
-        ("seal_truncated",
+        ("seal_truncated", "sample.py",
          'x_seal = "\u2200\u221e\u03c6\u00b2 \u00b7 TEST \u00b7 abc123"\n',
          ["G3"]),
-        ("seal_clean",
+        ("seal_clean", "sample.py",
          'seal = "prefix \u00b7 " + "a" * 63 + "b"\n',
          []),
-        ("slice_truncation",
+        ("slice_truncation", "sample.py",
          "import hashlib\nh = hashlib.sha3_256(b'x').hexdigest()[:16]\n",
          ["G3b"]),
-        ("slice_full",
+        ("slice_full", "sample.py",
          "import hashlib\nh = hashlib.sha3_256(b'x').hexdigest()[:64]\n",
          []),
-        ("legacy_import",
+        ("legacy_import_golden", "golden_phi.py",
          "import numpy\nimport math\nphi = (1 + math.sqrt(5)) / 2\nPHI = phi\n",
          ["G4"]),
-        # Constant-matching smoke test: on a broken 3.6 build using
-        # ast.Constant-only matching, this sample would produce NO G1
-        # (false witness). _const_value() must catch it.
-        ("literal_phi_3_6_regression",
+        ("legacy_import_nongolden", "sample.py",
+         "import numpy\nimport math\nphi = (1 + math.sqrt(5)) / 2\nPHI = phi\n",
+         []),
+        # Regression: on a build using ast.Constant-only matching,
+        # this 3.6/3.7-style literal would produce NO G1 (false
+        # witness). _const_value() must catch it on every version.
+        ("literal_phi_regression", "sample.py",
          "phi = 1.618\nPHI = phi\n",
          ["G1"]),
     ]
 
     fails = 0
-    for label, src, expected in SAMPLES:
+    for label, fname, src, expected in SAMPLES:
         tree = ast.parse(src, filename="<%s>" % label)
-        fname = label if label.startswith("golden") else (
-            "golden_sample.py" if "golden" in label or "alias" in label
-            else "sample.py")
-        # Ensure G2/G4 scoping is exercised where intended.
-        if "alias" in label:
-            fname = "golden_constants.py"
         ctx = RuleContext(filename=fname, source=src, tree=tree, parents={})
         for rule in GOLDEN_RULES:
             rule(tree, ctx)
@@ -501,7 +478,8 @@ if __name__ == "__main__":
         want = sorted(set(expected))
         ok = got == want
         mark = "PASS" if ok else "FAIL"
-        print("  %s %-32s got=%s want=%s" % (mark, label, got, want))
+        print("  %s %-28s (%s) got=%s want=%s"
+              % (mark, label, fname, got, want))
         fails += (not ok)
 
     print("")
