@@ -3,6 +3,11 @@
 % Adjoins: docs/toi_manifold.tex (surface + TOI gradient),
 %          the formal envelope (M = <L,S,T>),
 %          the Fibonacci/floating-base reference (Part II).
+% AMENDED 2026-09-29 per external referee review:
+%   (1) sign convention on d(gamma_k)/du frozen and referenced by both files
+%   (2) beta_k redefinition stated explicitly (absorbs projection term)
+%   (3) 'exact transpose' qualified: correct-handler-conditional
+%   (4) A4 split into A4a (scenario regression) / A4b (subsumed by A2)
 % Pure mechanics. No narrative constants. Compile: pdflatex toi_adjoint.tex
 % =====================================================================
 \documentclass[11pt]{article}
@@ -12,10 +17,11 @@
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{definition}{Definition}
+\newtheorem{convention}{Convention}
 
 \title{The Adjoint of Time-of-Impact Hybrid Dynamics\\
       (Backward Pass for $\partial J/\partial u$)}
-\date{2026-09-29}
+\date{2026-09-29 (amended same day)}
 
 \begin{document}
 \maketitle
@@ -34,6 +40,35 @@ $s^+ = g(s^-)$ at impact times $\gamma_k$ satisfying
 $\psi(s(\gamma_k)) = 0$ with $\nabla\psi^\top f < 0$ (transversality).
 
 % ---------------------------------------------------------------------
+\section{Frozen sign convention (AMENDMENT 1)}
+% ---------------------------------------------------------------------
+\begin{convention}[Sign of the TOI sensitivity]
+\label{conv:sign}
+The implicit-differentiation identity is taken with its minus sign
+NOT absorbed:
+\begin{equation}
+  \frac{\partial\gamma_k}{\partial u}
+  \;=\;
+  -\,\frac{\nabla\psi^\top \tfrac{\partial s(\gamma_k^-)}{\partial u}}
+          {\nabla\psi^\top f}\Big|_{\gamma_k}.
+\end{equation}
+This is the same convention as the manifold document (toi_manifold,
+$\partial\gamma_k/\partial u$ identity). The forward transport term
+is therefore a projection:
+\begin{equation}
+  f \otimes \frac{\partial\gamma_k}{\partial u}
+  \;=\;
+  -\,f\,\frac{\nabla\psi^\top \tfrac{\partial s}{\partial u}}
+             {\nabla\psi^\top f},
+\end{equation}
+and the adjoint jump (Proposition~\ref{prop:jump}) consumes the SAME
+sign. Any future file that redefines $\partial\gamma_k/\partial u$
+with the sign absorbed must be flagged against this convention; a
+sign flip at the impact is a defect, not a style choice. Both files
+reference this convention block.
+\end{convention}
+
+% ---------------------------------------------------------------------
 \section{The adjoint states}
 % ---------------------------------------------------------------------
 \begin{definition}[Continuous-phase adjoint]
@@ -45,109 +80,135 @@ ODEs of the Pontryagin maximum principle:
   \dot\mu     &= -\Bigl(\tfrac{\partial f}{\partial u}\Bigr)^\top \lambda
                  \;-\; \nabla_u L,
 \end{align}
-with terminal conditions $\lambda(T) = \nabla\Phi(s(T))$, $\mu(T) = 0$,
-and the reduced gradient of $J$ with respect to the control on any
-interval $(\gamma_k, \gamma_{k+1})$ is
+with terminal conditions $\lambda(T) = \nabla\Phi(s(T))$, $\mu(T) = 0$.
+On any interval $(\gamma_k, \gamma_{k+1})$ the reduced gradient is
 $\partial J/\partial u = \mu$ evaluated on that interval.
 \end{definition}
 
 % ---------------------------------------------------------------------
-\section{The jump map of the adjoint (the load-bearing step)}
+\section{The jump map of the adjoint (AMENDED)}
 % ---------------------------------------------------------------------
 Naive hybrid adjoints carry only the Jacobian factor
 $(\partial g/\partial s)^\top$ across the impact. That is wrong
-whenever $\partial\gamma_k/\partial u \neq 0$, exactly as the forward
-gradient is wrong without the transport term.
+whenever $\partial\gamma_k/\partial u \neq 0$.
 
 \begin{proposition}[Adjoint jump at an impact]
 \label{prop:jump}
-Integrating the adjoint backward across $\gamma_k$ gives
+Under Convention~\ref{conv:sign}, integrating the adjoint backward
+across $\gamma_k$ gives
+\begin{equation}
+  \lambda(\gamma_k^-) \;=\;
+  \Bigl(\tfrac{\partial g}{\partial s}\Bigr)^\top \lambda(\gamma_k^+)
+  \;-\;
+  \frac{\nabla\psi}{\nabla\psi^\top f}\,
+    f^\top \Bigl(\tfrac{\partial g}{\partial s}\Bigr)^\top
+    \lambda(\gamma_k^+)
+  \;+\;
+  \beta_{\mathrm{raw}} \, \nabla\psi,
+\end{equation}
+or equivalently, absorbing the projection term into a single
+multiplier (AMENDMENT 2 — the file's declared convention):
 \begin{equation}
   \lambda(\gamma_k^-) \;=\;
   \Bigl(\tfrac{\partial g}{\partial s}\Bigr)^\top \lambda(\gamma_k^+)
   \;+\;
   \beta_k \, \nabla\psi\bigl(s(\gamma_k)\bigr),
+  \qquad
+  \beta_k \;=\;
+  \beta_{\mathrm{raw}}
+  \;-\;
+  \frac{f^\top\bigl(\tfrac{\partial g}{\partial s}\bigr)^\top
+        \lambda(\gamma_k^+)}
+       {\nabla\psi^\top f}\Big|_{\gamma_k}.
 \end{equation}
-where the scalar impact multiplier $\beta_k$ is fixed by the
-Hamiltonian jump condition at the impact (the adjoint image of
-the forward transport term), and the control-side jump is
+Both forms are correct under their stated conventions; this file
+DECLARES the absorbed form ($\beta_k$) as canonical. A reader who
+computes $\beta_{\mathrm{raw}}$ and substitutes it for $\beta_k$ will
+get a different $\lambda(\gamma_k^-)$ — the two are related by the
+stated equation, not interchangeable. The control-side jump is
 \begin{equation}
   \mu(\gamma_k^-) \;=\;
   \mu(\gamma_k^+) \;+\;
   \beta_k\,
   \frac{\nabla\psi^\top \tfrac{\partial s}{\partial u}}
-       {\nabla\psi^\top f}\Big|_{\gamma_k}.
+       {\nabla\psi^\top f}\Big|_{\gamma_k},
 \end{equation}
+consistent with the transpose action of the forward transport term
+under Convention~\ref{conv:sign}.
 \end{proposition}
 
-Two remarks make the structure visible:
-
-\begin{itemize}
-  \item \textbf{The $\beta_k\,\nabla\psi$ term is the adjoint image of
-        the forward transport term.} Forward:
-        $f \otimes \partial\gamma_k/\partial u$ moves the impact time;
-        backward: $\beta_k\,\nabla\psi$ moves the impact
-        \emph{constraint}. They arise from the same differentiated
-        manifold condition $\psi(s(\gamma_k))=0$.
-  \item \textbf{Dropping $\beta_k$ is the adjoint false witness.}
-        A backward pass that omits the multiplier reproduces exactly
-        the published failure: pre-collision control that decreases
-        when it should increase.
-\end{itemize}
+The structure: the $\beta_k\,\nabla\psi$ term is the adjoint image
+of the forward transport term. Forward: $f \otimes
+\partial\gamma_k/\partial u$ moves the impact time; backward:
+$\beta_k\,\nabla\psi$ moves the impact constraint. Both arise from
+the same differentiated manifold condition $\psi(s(\gamma_k))=0$.
+Dropping $\beta_k$ is the adjoint false witness: a backward pass
+that omits the multiplier reproduces the published failure
+(pre-collision control decreasing when it should increase).
 
 % ---------------------------------------------------------------------
-\section{Discrete form (matches the code layer)}
+\section{Discrete form (AMENDED — transpose claim qualified)}
 % ---------------------------------------------------------------------
-For the discretised problem with steps $\Delta t$ and a step map
-that may contain one impact, the discrete adjoint of the
-TOI-velocity step is the exact transpose of the forward
-sensitivity — one multiplication by
-$\bigl(\partial \operatorname{step}/\partial s\bigr)^\top$
-per step, where the step Jacobian \emph{already contains} the
-transport term of the adjoining document:
-\begin{equation}
-  \frac{\partial s_{i+1}}{\partial u_i}
-  \;=\;
-  \frac{\partial \operatorname{step}}{\partial s}\,
-  \frac{\partial s_i}{\partial u_i}
-  \;+\;
-  \frac{\partial \operatorname{step}}{\partial \gamma}\,
-  \frac{\partial \gamma}{\partial u_i},
-  \qquad
-  \frac{\partial \gamma}{\partial u_i}
-  \;=\;
-  -\,\frac{\nabla\psi^\top \tfrac{\partial s_i}{\partial u_i}}
-          {\nabla\psi^\top f}.
-\end{equation}
-Backward-mode differentiation of this same expression
-(autograd over the step) yields the adjoint automatically and
-exactly; a correct TOI forward gradient and a correct TOI
-adjoint are one object, not two.
+For the discretised problem, the discrete adjoint obtained by
+reverse-mode autodiff is the exact transpose of the IMPLEMENTED
+forward computation — always, for any implementation, including
+branching. That is a property of the autodiff machinery (CLAIM 1).
+
+Whether the implemented forward computation is the correct forward
+SENSITIVITY of the hybrid system is a separate, implementation-
+conditional claim (CLAIM 2). The impact time $\gamma_k$ is
+$C^0$ but not $C^1$ in the state at the crossing. A handler that
+computes $\partial\gamma_k/\partial u$ by implicit differentiation
+of $\psi = 0$ (Convention~\ref{conv:sign}) implements the correct
+sensitivity, and reverse-mode autodiff then reproduces the
+analytical adjoint jump of Proposition~\ref{prop:jump}. A smoothed
+or clamped handler — fixed $\gamma$, smooth surrogate for the
+crossing — implements a DIFFERENT function: autograd transposes it
+exactly, but the result does not match the analytical jump.
+
+\textbf{Correct statement:} in a correctly-implemented event
+handler — one that computes $\partial\gamma_k/\partial u$ by
+implicit differentiation of $\psi=0$ — reverse-mode autodiff
+reproduces the analytical adjoint. The two agree at the level of
+the correctly-implemented computation. They do NOT agree for
+smoothed or clamped surrogates. The ``one object, not two''
+identity is a consequence of the implementation matching the
+analytical form, not a free property of autograd. A reader with a
+clamped handler whose autograd adjoint disagrees with the
+analytical jump should conclude the HANDLER is wrong, not the
+analytical form.
 
 % ---------------------------------------------------------------------
-\section{Verification protocol (gate for the benchmark)}
+\section{Verification protocol (AMENDED — A4 split)}
 % ---------------------------------------------------------------------
 \begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}llll@{}}
 \toprule
-Gate & Check & Assertion \\
+Gate & Scope & Check & Assertion \\
 \midrule
-A1 & directional derivative & $\nabla J^\top \delta u \approx
-      \bigl(J(u+\varepsilon\delta u) - J(u)\bigr)/\varepsilon$
-      to $O(\varepsilon)$ \\
-A2 & adjoint vs forward & adjoint gradient $\equiv$ forward-mode
-      gradient (same TOI terms) \\
-A3 & impact-count robustness & gates hold for $1..m$ impacts in
-      $(0,T)$ \\
-A4 & pre-collision $u_y$ & monotonically increasing (the
-      discriminating signature, gate G2 of the benchmark) \\
+A1 & general & directional derivative &
+  $\nabla J^\top \delta u \approx
+  \bigl(J(u+\varepsilon\delta u)-J(u)\bigr)/\varepsilon$ \\
+A2 & general & adjoint vs forward &
+  adjoint gradient $\equiv$ forward-mode gradient,
+  both under Convention~\ref{conv:sign} \\
+A3 & general & impact-count robustness &
+  gates hold for $1..m$ impacts in $(0,T)$ \\
+A4a & scenario & two-ball regression &
+  pre-collision $u_y$ monotonically increasing; runs ONLY on
+  the two-ball benchmark \\
+A4b & general & subsumed by A2 &
+  the general correctness gate is A2; A4b is recorded as
+  ``A2 applies'' to keep the gate IDs stable \\
 \bottomrule
 \end{tabular}
 \end{center}
-Gate A1 is the brute-force truth: finite differences on the
-loss. Gate A2 catches transpose errors. Gate A3 catches
-accumulated drift over multiple impacts. Gate A4 is inherited
-from the adjoining benchmark and is the one naive adjoints fail.
+
+A4a is a regression test, not a general gate: a scenario where
+pre-collision control legitimately decreases would fail A4a
+correctly (it is outside the benchmark) but must not fail the
+gate set. The gate set for general scenarios is
+$\{$A1, A2, A3$\}$; the benchmark additionally asserts A4a.
 
 % ---------------------------------------------------------------------
 \section{Floating-base extension}
@@ -166,9 +227,14 @@ jump is the per-footstep correction.
 
 \section{Ledger integration}
 This document seals as \texttt{proof\_class: code} under
-\texttt{GARDEN.EVENT.v1}. Gates A1--A4 are machine-checkable;
-the workload \texttt{toivelocity-gradient-check} asserts A1--A4
-alongside G1--G3 of the benchmark. All quantities are ordinary
-rigid-body mechanics.
+\texttt{GARDEN.EVENT.v1}, registrable once the declared conventions
+hold: sign convention frozen (Conv.~\ref{conv:sign}), $\beta_k$
+absorption stated (Prop.~\ref{prop:jump}), transpose claim
+qualified (§5), A4 split (§6). Gates for the
+\texttt{toivelocity-gradient-check} workload:
+G1--G3 (manifold document) $+$ A1--A3 (general) $+$ A4a
+(benchmark regression). Nothing in this adjoint consults
+$\mathcal{S}$ or $\mathcal{T}$ as more than event and flow labels,
+same as the forward gradient — coherent with the envelope file.
 
 \end{document}
