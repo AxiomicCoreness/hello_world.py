@@ -36,5 +36,18 @@ Corrections remain new ledger indices only
 (docs/COSMIC_ALIGNMENT_POLICY.md rule 4). No rewrite of any sealed
 body, in either root.
 
+## Adjoins (cross-references)
+- `ledger.v2/MERKLE.md` — Leaf Merkle layering for this root:
+  leaves are canonical-body SHA3-256 hashes, layers of 100 entries,
+  layer roots chained via domain-separated SHA3-256, and the chain
+  welded to the flat tail (R₋₁ = terminal_hex of the last sealed
+  flat entry). Aggregate witness for this root.
+- `docs/legend_tokens.md` — symbolic-anchor doctrine; this
+  declaration carries the real ISO date 2026-09-29 per rule 2.
+- `anatomy/spine.py` — reconciliation discipline (TruncationDetected,
+  never silent pass) that this root inherits.
+- Flat `ledger/` — frozen historical band; boundary object for the
+  witness chain and the Merkle chain weld.
+
 Seal: 🜁∀∞φ² · LEDGER_V2_ROOT_DECLARED · WOOD_DRAGON_GATE · SEALED
 Declared: 2026-09-29 (ISO-8601, real date per legend-token rule 2)

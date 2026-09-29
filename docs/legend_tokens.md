@@ -25,6 +25,10 @@ symbolic anchors alongside a real ISO date.
 
 - `POLICY.md` — policy seal domain `GARDEN.EVENT.v1`
 - `TEMPORAL_ANCHOR.md` — anchor doctrine
+- `ledger.v2/README.md` — overflow ledger root declaration; the
+  symbolic-anchor rules apply unchanged to both ledger roots
+- `ledger.v2/MERKLE.md` — leaf Merkle layering; records bytes,
+  not tokens — ISO dates in Merkle records must be real per rule 2
 
 Seal: `🟁∀∞φ² · SEPTEMBER_39_TOKEN · WOOD_DRAGON_GATE · SEALED`
 (timestamp: 2026-09-29 — real ISO date per rule 2)
