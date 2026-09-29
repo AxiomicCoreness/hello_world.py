@@ -1,0 +1,174 @@
+% =====================================================================
+% TOI-VELOCITY ADJOINT — HYBRID BACKWARD PASS (OPERATIVE TRACK, FILE 4)
+% Adjoins: docs/toi_manifold.tex (surface + TOI gradient),
+%          the formal envelope (M = <L,S,T>),
+%          the Fibonacci/floating-base reference (Part II).
+% Pure mechanics. No narrative constants. Compile: pdflatex toi_adjoint.tex
+% =====================================================================
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+
+\title{The Adjoint of Time-of-Impact Hybrid Dynamics\\
+      (Backward Pass for $\partial J/\partial u$)}
+\date{2026-09-29}
+
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------------
+\section{Problem}
+% ---------------------------------------------------------------------
+Minimise
+\begin{equation}
+  J(u) \;=\; \Phi(s(T)) \;+\; \int_0^T \! L(s,u)\,dt,
+  \qquad s \in \mathbb{R}^{4d},
+\end{equation}
+subject to the hybrid dynamics of the adjoining manifold document:
+free flow $\dot s = f(s,u)$ between impacts, and reset
+$s^+ = g(s^-)$ at impact times $\gamma_k$ satisfying
+$\psi(s(\gamma_k)) = 0$ with $\nabla\psi^\top f < 0$ (transversality).
+
+% ---------------------------------------------------------------------
+\section{The adjoint states}
+% ---------------------------------------------------------------------
+\begin{definition}[Continuous-phase adjoint]
+Between impacts, the adjoint $(\lambda, \mu)$ obeys the standard
+ODEs of the Pontryagin maximum principle:
+\begin{align}
+  \dot\lambda &= -\Bigl(\tfrac{\partial f}{\partial s}\Bigr)^\top \lambda
+                 \;-\; \nabla_s L, \\
+  \dot\mu     &= -\Bigl(\tfrac{\partial f}{\partial u}\Bigr)^\top \lambda
+                 \;-\; \nabla_u L,
+\end{align}
+with terminal conditions $\lambda(T) = \nabla\Phi(s(T))$, $\mu(T) = 0$,
+and the reduced gradient of $J$ with respect to the control on any
+interval $(\gamma_k, \gamma_{k+1})$ is
+$\partial J/\partial u = \mu$ evaluated on that interval.
+\end{definition}
+
+% ---------------------------------------------------------------------
+\section{The jump map of the adjoint (the load-bearing step)}
+% ---------------------------------------------------------------------
+Naive hybrid adjoints carry only the Jacobian factor
+$(\partial g/\partial s)^\top$ across the impact. That is wrong
+whenever $\partial\gamma_k/\partial u \neq 0$, exactly as the forward
+gradient is wrong without the transport term.
+
+\begin{proposition}[Adjoint jump at an impact]
+\label{prop:jump}
+Integrating the adjoint backward across $\gamma_k$ gives
+\begin{equation}
+  \lambda(\gamma_k^-) \;=\;
+  \Bigl(\tfrac{\partial g}{\partial s}\Bigr)^\top \lambda(\gamma_k^+)
+  \;+\;
+  \beta_k \, \nabla\psi\bigl(s(\gamma_k)\bigr),
+\end{equation}
+where the scalar impact multiplier $\beta_k$ is fixed by the
+Hamiltonian jump condition at the impact (the adjoint image of
+the forward transport term), and the control-side jump is
+\begin{equation}
+  \mu(\gamma_k^-) \;=\;
+  \mu(\gamma_k^+) \;+\;
+  \beta_k\,
+  \frac{\nabla\psi^\top \tfrac{\partial s}{\partial u}}
+       {\nabla\psi^\top f}\Big|_{\gamma_k}.
+\end{equation}
+\end{proposition}
+
+Two remarks make the structure visible:
+
+\begin{itemize}
+  \item \textbf{The $\beta_k\,\nabla\psi$ term is the adjoint image of
+        the forward transport term.} Forward:
+        $f \otimes \partial\gamma_k/\partial u$ moves the impact time;
+        backward: $\beta_k\,\nabla\psi$ moves the impact
+        \emph{constraint}. They arise from the same differentiated
+        manifold condition $\psi(s(\gamma_k))=0$.
+  \item \textbf{Dropping $\beta_k$ is the adjoint false witness.}
+        A backward pass that omits the multiplier reproduces exactly
+        the published failure: pre-collision control that decreases
+        when it should increase.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section{Discrete form (matches the code layer)}
+% ---------------------------------------------------------------------
+For the discretised problem with steps $\Delta t$ and a step map
+that may contain one impact, the discrete adjoint of the
+TOI-velocity step is the exact transpose of the forward
+sensitivity — one multiplication by
+$\bigl(\partial \operatorname{step}/\partial s\bigr)^\top$
+per step, where the step Jacobian \emph{already contains} the
+transport term of the adjoining document:
+\begin{equation}
+  \frac{\partial s_{i+1}}{\partial u_i}
+  \;=\;
+  \frac{\partial \operatorname{step}}{\partial s}\,
+  \frac{\partial s_i}{\partial u_i}
+  \;+\;
+  \frac{\partial \operatorname{step}}{\partial \gamma}\,
+  \frac{\partial \gamma}{\partial u_i},
+  \qquad
+  \frac{\partial \gamma}{\partial u_i}
+  \;=\;
+  -\,\frac{\nabla\psi^\top \tfrac{\partial s_i}{\partial u_i}}
+          {\nabla\psi^\top f}.
+\end{equation}
+Backward-mode differentiation of this same expression
+(autograd over the step) yields the adjoint automatically and
+exactly; a correct TOI forward gradient and a correct TOI
+adjoint are one object, not two.
+
+% ---------------------------------------------------------------------
+\section{Verification protocol (gate for the benchmark)}
+% ---------------------------------------------------------------------
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Gate & Check & Assertion \\
+\midrule
+A1 & directional derivative & $\nabla J^\top \delta u \approx
+      \bigl(J(u+\varepsilon\delta u) - J(u)\bigr)/\varepsilon$
+      to $O(\varepsilon)$ \\
+A2 & adjoint vs forward & adjoint gradient $\equiv$ forward-mode
+      gradient (same TOI terms) \\
+A3 & impact-count robustness & gates hold for $1..m$ impacts in
+      $(0,T)$ \\
+A4 & pre-collision $u_y$ & monotonically increasing (the
+      discriminating signature, gate G2 of the benchmark) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Gate A1 is the brute-force truth: finite differences on the
+loss. Gate A2 catches transpose errors. Gate A3 catches
+accumulated drift over multiple impacts. Gate A4 is inherited
+from the adjoining benchmark and is the one naive adjoints fail.
+
+% ---------------------------------------------------------------------
+\section{Floating-base extension}
+% ---------------------------------------------------------------------
+For the legged robot the same jump applies at each touch-down,
+with the manifold condition supplied by the unilateral foot
+constraint and $g$ by the contact-impulse solution of
+\begin{equation}
+  M(q)\bigl(\ddot q + [0;g;0]\bigr) + n(q,\dot q)
+  = u + \sum_i C_i(q)^\top f_i ,
+\end{equation}
+so the adjoint multiplier $\beta_k$ attaches to the foot-contact
+constraint gradient, exactly as Proposition~\ref{prop:jump}
+prescribes for balls. Every footstep is a TOI event; the adjoint
+jump is the per-footstep correction.
+
+\section{Ledger integration}
+This document seals as \texttt{proof\_class: code} under
+\texttt{GARDEN.EVENT.v1}. Gates A1--A4 are machine-checkable;
+the workload \texttt{toivelocity-gradient-check} asserts A1--A4
+alongside G1--G3 of the benchmark. All quantities are ordinary
+rigid-body mechanics.
+
+\end{document}
