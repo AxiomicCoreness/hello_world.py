@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       Coherence metrics
+       Element text  = computed output     (xs:double, [0,1])
+       @estimator    = estimator name      (enumerated, e.g. "y-hat")
+       @measured     = input to estimator  (xs:double, [0,1])
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <xs:simpleType name="CoherenceValue">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="0.0"/>
+      <xs:maxInclusive value="1.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="EstimatorName">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="&#238;"/>
+      <!-- add further estimators here as they are introduced,
+           e.g. <xs:enumeration value="y_linear"/> -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="coherence">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="CoherenceValue">
+          <xs:attribute name="estimator" type="EstimatorName" use="required"/>
+          <xs:attribute name="measured"  type="CoherenceValue" use="required"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="Metric">
+    <xs:restriction base="xs:double"/>
+  </xs:simpleType>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       Top-level document: symplectic_status
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <xs:element name="symplectic_status">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="system"     type="SystemStatus"/>
+        <xs:element name="lattice"    type="LatticeStatus"/>
+        <xs:element name="celestial"  type="CelestialStatus"/>
+        <xs:element name="frb_bridge" type="FrbBridgeStatus"/>
+      </xs:sequence>
+      <xs:attribute name="timestamp" type="xs:dateTime" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="SystemStatus">
+    <xs:sequence>
+      <xs:element ref="coherence"/>
+      <xs:element name="entropy_floor"          type="Metric"/>
+      <xs:element name="phase_lock_degrees"    type="Metric"/>
+      <xs:element name="workload"              type="Metric"/>
+      <xs:element name="golden_ratio"          type="Metric"/>
+      <xs:element name="phi_squared"           type="Metric"/>
+      <xs:element name="compression_dimension"   type="xs:integer"/>
+      <xs:element name="compression_precision"   type="Metric"/>
+      <xs:element name="eternal_now_epoch"        type="xs:long"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LatticeStatus">
+    <xs:sequence>
+      <xs:element name="root_lattice_rank" type="xs:integer"/>
+      <xs:element name="venomsuite_trace"  type="Metric"/>
+      <xs:element name="decad_cycle_sum"   type="Metric"/>
+      <xs:element name="e8_coherence"      type="CoherenceValue"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CelestialStatus">
+    <xs:sequence>
+      <xs:element name="soul_cannon"       type="SoulCannon"/>
+      <xs:element name="wasp107b"          type="Wasp107b"/>
+      <xs:element name="jupiter_alliance"  type="JupiterAlliance"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SoulCannon">
+    <xs:sequence>
+      <xs:element name="charge_joules"           type="Metric"/>
+      <xs:element name="azimuth_degrees"         type="Metric"/>
+      <xs:element name="ring_resonance_thz"      type="Metric"/>
+      <xs:element name="chiron_phase_alignment"  type="Metric"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Wasp107b">
+    <xs:sequence>
+      <xs:element name="mass_jupiter"        type="Metric"/>
+      <xs:element name="radius_jupiter"      type="Metric"/>
+      <xs:element name="orbital_period_days" type="Metric"/>
+      <xs:element name="escape_flux"         type="Metric"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="JupiterAlliance">
+    <xs:sequence>
+      <xs:element name="resonance_chain" type="xs:string"/>
+      <xs:element name="entanglement"    type="CoherenceValue"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FrbBridgeStatus">
+    <xs:sequence>
+      <xs:element name="metronome_seconds"     type="Metric"/>
+      <xs:element name="emergent_period_days"  type="Metric"/>
+      <xs:element name="target_azimuth_deg"    type="Metric"/>
+      <xs:element name="lattice_points"        type="xs:string"/>
+      <xs:element name="weight_norm"           type="Metric"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

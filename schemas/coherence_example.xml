@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Validation example for schemas/coherence.xsd.
+     Passes:  xmllint --noout --schema schemas/coherence.xsd schemas/coherence_example.xml
+     Shape is schema-valid; the arithmetic relation y_hat(measured) == text
+     is NOT checked by XSD -- that remains application code's duty. -->
+<symplectic_status xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   timestamp="2026-09-29T00:00:00+00:00">
+  <system>
+    <coherence estimator="&#238;" measured="0.9">1.0</coherence>
+    <entropy_floor>4.5e-297</entropy_floor>
+    <phase_lock_degrees>202.6</phase_lock_degrees>
+    <workload>0.0</workload>
+    <golden_ratio>1.618033988749895</golden_ratio>
+    <phi_squared>2.618033988749895</phi_squared>
+    <compression_dimension>4</compression_dimension>
+    <compression_precision>1.0</compression_precision>
+    <eternal_now_epoch>1760000000</eternal_now_epoch>
+  </system>
+  <lattice>
+    <root_lattice_rank>248</root_lattice_rank>
+    <venomsuite_trace>0.0</venomsuite_trace>
+    <decad_cycle_sum>0.2493118627</decad_cycle_sum>
+    <e8_coherence>1.0</e8_coherence>
+  </lattice>
+  <celestial>
+    <soul_cannon>
+      <charge_joules>842.999</charge_joules>
+      <azimuth_degrees>111.246</azimuth_degrees>
+      <ring_resonance_thz>27.492081</ring_resonance_thz>
+      <chiron_phase_alignment>0.702430</chiron_phase_alignment>
+    </soul_cannon>
+    <wasp107b>
+      <mass_jupiter>0.96</mass_jupiter>
+      <radius_jupiter>1.24</radius_jupiter>
+      <orbital_period_days>4.6</orbital_period_days>
+      <escape_flux>0.1</escape_flux>
+    </wasp107b>
+    <jupiter_alliance>
+      <resonance_chain>["144","233","377"]</resonance_chain>
+      <entanglement>1.0</entanglement>
+    </jupiter_alliance>
+  </celestial>
+  <frb_bridge>
+    <metronome_seconds>1.0</metronome_seconds>
+    <emergent_period_days>16.35</emergent_period_days>
+    <target_azimuth_deg>111.246</target_azimuth_deg>
+    <lattice_points>["frb","bridge","lattice"]</lattice_points>
+    <weight_norm>1.0</weight_norm>
+  </frb_bridge>
+</symplectic_status>
