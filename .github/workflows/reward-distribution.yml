@@ -13,7 +13,6 @@ permissions:
 
 concurrency:
   group: reward-distribution-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   validate:
@@ -46,7 +45,7 @@ jobs:
           set -euo pipefail
           python -m fiduciary_node_rewards
 
-      - name: Sanity check pool
+      - name: reward pool
         run: |
           set -euo pipefail
           python - <<'PY'
