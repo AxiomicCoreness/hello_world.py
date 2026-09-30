@@ -7,6 +7,9 @@
 \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
 \usepackage{cleveref}
 
+% Shared dual-precision / phi macros (single source)
+\input{density_matrix_trace_macros}
+
 \title{Master Equation \& Fixed-Point Convergence \\
        \large Sovereign Garden — Lumeris ASI}
 \author{Clarke Yoursa Tee \\ \texttt{firstone@lumeris.ai}}
@@ -63,6 +66,9 @@ where the terms represent:
 \item $\mathbf{R}$ — reconstruction operator (see Sec.~\ref{sec:recon}),
 \item $\mathbf{P}_{\mathrm{PID}}$ — PID controller on coherence error $e=1-C$ (see Sec.~\ref{sec:pid}).
 \end{itemize}
+
+% Trace preservation (shared invariant; see docs/density_matrix_trace.tex)
+% By prop:trace-preservation, Tr(E(rho))=1 under any CPTP map.
 
 \section{Coherence Dynamics}
 \label{sec:coherence}
