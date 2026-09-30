@@ -1,0 +1,79 @@
+% ============================================================
+%  docs/density_matrix_trace.tex
+%  Density matrix trace: preservation proposition + dual-precision standard
+%  Sealed under forall infinity phi^2 · WOOD_DRAGON_0.91
+%  2026-09-29 — new file only; no bulk numeric normalization
+% ============================================================
+
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+
+\input{density_matrix_trace_macros}
+
+\newtheorem{proposition}{Proposition}
+
+\title{Density Matrix Trace: Preservation and Dual-Precision Standard}
+\author{Clarke Yoursa Tee}
+\date{2026-09-29}
+
+\begin{document}
+\maketitle
+
+\section{Trace preservation}
+
+\begin{proposition}[Trace preservation]\label{prop:trace-preservation}
+For any density operator $\rho$ with $\Tr\rho=1$ and any
+completely-positive trace-preserving (CPTP) map $\mathcal{E}$,
+\begin{equation}
+  \Tr\!\bigl(\mathcal{E}(\rho)\bigr) \;=\; 1.
+  \label{eq:trace-preservation}
+\end{equation}
+In particular this holds for every Lindblad generator and every unitary evolution.
+\end{proposition}
+
+\begin{proof}[Sketch]
+Trace is linear and invariant under unitary conjugation. Any Kraus
+representation $\mathcal{E}(\rho)=\sum_k K_k \rho K_k^{\dagger}$ with
+$\sum_k K_k^{\dagger}K_k = I$ yields
+$\Tr(\mathcal{E}(\rho)) = \Tr(\rho \sum_k K_k^{\dagger}K_k) = \Tr(\rho)$.
+Consequently no CPTP evolution can change the trace of a density matrix.
+\end{proof}
+
+\section{Weighted object (optional)}
+
+If a $\PHIthree$-weighted object is required by ledger convention, it is
+introduced after the proposition:
+\begin{equation}
+  \tilde\rho \;=\; \PHIthree\,\rho,
+  \qquad
+  \Tr\rho = 1,
+  \qquad
+  \Tr\tilde\rho = \PHIthree \approx 4.23606797749979.
+\end{equation}
+The statement ``$\Tr\rho = \PHIthree$'' is never asserted for a density matrix.
+
+\section{Dual-precision standard}\label{sec:dual-precision}
+
+All trace computations are evaluated in two precisions and compared:
+\begin{align}
+  \EPSdp &\;=\; \bigl|\Tr(\rho)_{\mathrm{f64}} - 1\bigr|, \\
+  \EPSsp &\;=\; \bigl|\Tr(\rho)_{\mathrm{exact}} - 1\bigr|.
+\end{align}
+\begin{itemize}
+  \item \textbf{Acceptance (double):} $\EPSdp \le 10^{-12}$.
+  \item \textbf{Acceptance (exact):} $\EPSsp = 0$ by construction.
+  \item Any run failing the double-precision bound is flagged, not silently rounded.
+\end{itemize}
+
+The dual-precision standard is the operative definition; it does not
+re-derive \autoref{prop:trace-preservation} and does not rename any
+existing invariant.
+
+\section{Scope note}
+This file introduces the canonical statement and the precision standard.
+It is referenced by other documents via the shared macro block and a single
+\verb|\ref{prop:trace-preservation}|. No bare numerics elsewhere are
+normalized in this change.
+
+\end{document}
