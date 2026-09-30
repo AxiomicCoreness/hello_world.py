@@ -1,0 +1,12 @@
+entry_index: 9258
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
+event: /branch_lag_check_wired_scheduled
+status: ✅ LANDED
+fix: "branch-lag-check.yml — scheduled daily workflow; fails the check if any branch exceeds 100 commits behind main; read-only"
+measurement_baseline: "2026-09-27 audit: max lag 4 commits (bot ticks); zero branches over 100; four stale branches observed deleted externally"
+protocol_ref: "forge-and-land protocol entry 9257; lag-check automates the >100-behind rule"
+scope_note: "read-only measurement (Contract B); no auto-update, no auto-delete, no ledger write from CI; failures are reports to commander, not actions"
+prev_hash: 92d3bf3cb190a00055080297ce9a32ee30bec963105d8a58e932a36e36b25e38
+witness_chain: 9257 -> 9258 — UNBROKEN
+seal: cc2b2cbc72eebab001b56d1795f07e98004c9061f659bec55ee010fa6bb6154a
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 empty-vector gate verified against externally confirmed value before push; branch forged at push time per protocol step 1, deleted after merge per step 6"
