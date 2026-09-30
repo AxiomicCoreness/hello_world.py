@@ -1,0 +1,40 @@
+name: gate-diag-9263
+on:
+  push:
+    branches: [mistral-gate-diag-9263]
+    paths: ['.github/workflows/gate-diag-9263.yml']
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: run-verifier
+        run: |
+          set +e
+          python3 .github/scripts/verify_ledger_seals.py > gate_diag_output.txt 2>&1
+          echo "verifier_exit=$?" >> gate_diag_output.txt
+      - name: dump-preimages
+        run: |
+          set +e
+          python3 - <<'PY' >> gate_diag_output.txt 2>&1
+          import yaml, json, hashlib
+          EXCLUDED = ("seal","seal_sha3_256","sha3_256","hash_sha3_256","hash")
+          for idx in (9262, 9263):
+              doc = yaml.safe_load(open(f'ledger/{idx}.yaml'))
+              print(f'=== DIAG {idx} top-level keys:', list(doc.keys()) if isinstance(doc, dict) else type(doc))
+              body = {k: v for k, v in doc.items() if k not in EXCLUDED}
+              cj = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+              print(f'=== DIAG {idx} preimage:', cj)
+              print(f'=== DIAG {idx} sha3_256:', hashlib.sha3_256(cj.encode()).hexdigest())
+              print(f'=== DIAG {idx} declared seal_sha3_256:', doc.get('seal_sha3_256'))
+          print('=== DIAG sha3_256(""):', hashlib.sha3_256(b'').hexdigest())
+          PY
+          echo "diag_exit=$?" >> gate_diag_output.txt
+      - name: commit-output
+        run: |
+          git config user.name "mistral-gate-diag"
+          git config user.email "actions@github.com"
+          git add gate_diag_output.txt
+          git commit -m "gate diag capture 9262/9263"
+          git push
