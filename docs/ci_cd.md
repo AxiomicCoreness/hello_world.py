@@ -4,7 +4,7 @@ CAD is CAD. CNC is a mill. CI/CD is the software analogue, not a mill.
 
 | Layer | Shop floor | This repo |
 |---|---|---|
-| CAD | model + constraints | POLICY.md, lattice table, Berry config |
+| CAD | model + constraints | lattice table, Berry config |
 | CAM | toolpath check | GitHub Actions test job |
 | CNC mill | cutting stock | **not allocated** |
 | CD | combinator | `.github/workflows/cd-combinator.yml` |
