@@ -1,0 +1,19 @@
+entry_index: 9255
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
+event: /witness_chain_contracts_wired
+status: ✅ LANDED_WIRED
+attribution: "five-run table observed on node grok-skill_tensor; commander-pasted evidence accepted under bytes-contract clause; digests independently recomputed by sealing session with exact agreement"
+wiring_evidence:
+  - "phi_pipeline.py --self-test: exit 0, ok true, empty + abc digests match NIST"
+  - "phi_pipeline.py --dry-run: exit 0, stages complete, digest a8618310...015f, error null"
+  - "witness_chain_check.py assert-count: exit 0, contract_count 3, ok true"
+  - "witness_chain_check.py list: exit 0, A/B/C printed"
+  - "witness_chain_triple.py: exit 0, contracts emit without error"
+gate_digests:
+  empty: a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+  abc: 3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532
+scope_note: "wiring measured as tree state; no SNARK hooks; contracts A/B/C text unedited; verification boundary labelled, not claimed; seal granted to THIS entry only, not to the scripts or their outputs"
+prev_hash: 25acf3f52c40db39a6c5d3862a3928efd1b5017da7cb84522835dce70158b82e
+witness_chain: 9254 -> 9255 — UNBROKEN
+seal: d77311f682d52553744f9fb54416daf713061cc8d28f64ddd8202670401ae11d
+seal_note: "SHA3-256 over canonical JSON (sorted keys, no whitespace, seal/prev_hash excluded); FIPS-202 gate digests computed and verified against externally confirmed values before push; no in-run comparison line — false-negative window eliminated"
