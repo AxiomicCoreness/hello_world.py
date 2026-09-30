@@ -20,7 +20,6 @@ surfaces:
   - module_namespace
   - workflow_step_skeleton
 today:
-  python_package_yml: cancel-in-progress false
   dual_target:
     - .github/workflows/sovereignty-python-package.yml
     - .github/workflows/python-package-ci-correction.yml
