@@ -13,7 +13,6 @@ description: |
   (/quantum_reality_engine_predecessor).
   Node 20 deprecation: checkout@v5 setup-python@v6 upload-artifact@v5.
 fixes:
-  concurrency_cancel_in_progress: false
   seal_target: ledger/9233.yaml
   sealed_8980_untouched: true
 invariants:
