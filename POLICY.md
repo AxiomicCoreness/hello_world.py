@@ -203,3 +203,69 @@ math_origin on existing YAML is not edited.
 
 Annex IV seal:  ∀∞φ² · POLICY_ANNEX_IV_SEAL_BLINDNESS · 9224_SEALED
 Witness:       9223 → 9224 — UNBROKEN
+
+═══════════════════════════════════════════════════════════════════════════════
+ANNEX V — SEAL PREIMAGE PIN AND RE-VERIFICATION BOUNDARY (APPENDED)
+═══════════════════════════════════════════════════════════════════════════════
+
+Recital (V.a)
+
+  Entry 9261 prose and scripts/ledger_append_canonical.py state two
+  different seal-preimage conventions. Entry 9262 was sealed under
+  the script convention. This Annex pins one preimage rule for all
+  future sealed entries so that no session re-introduces the
+  ambiguity at the schema layer.
+
+Article 34 — Canonical seal preimage (pinned)
+
+  34.1  For every sealed entry with entry_index ≥ 9262, the seal
+        preimage is the entry body serialized as canonical JSON:
+        sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+        with the fields EXCLUDED_FIELDS = (seal, seal_sha3_256,
+        sha3_256, hash_sha3_256, hash) removed, and with prev_hash
+        INCLUDED.
+
+  34.2  Prose inside any entry (including seal_note text) that
+        contradicts 34.1 is non-authoritative for entries with
+        entry_index ≥ 9263. Entries ≤ 9262 are not rewritten.
+
+  34.3  Entry 9262 (seal cf725ffc...) is the first entry sealed
+        under Article 34.1 with the repaired SHA3-256 pipeline.
+
+Article 35 — Re-verification boundary
+
+  35.1  The SHA3-256 pipeline defect (round-constant LFSR reseeded
+        per round; FIPS 202 B.5.2 requires the LFSR state to persist
+        across all 24 rounds) was repaired at entry 9262.
+
+  35.2  For any entry ≤ 9261 whose seal was computed on the
+        pre-repair pipeline, "verified" means "not yet re-verified".
+        A seal reproduces only when the declared seal value equals
+        SHA3-256 of the pinned preimage under the repaired pipeline.
+
+  35.3  Entry 9261's declared seal d9adca66... does not reproduce
+        from the held 9261 body across 65 canonicalization variants
+        (recorded in entry 9262). The entry is untouched; the
+        append-only discipline holds. The finding bounds the meaning
+        of "UNBROKEN" for the band up to 9261 exactly as Article
+        28.3 prescribes.
+
+Article 36 — Recorded false alarms and tool reliability
+
+  36.1  The ρ-table corruption suspicion raised against the
+        transcribed rotation offsets was DISPROVEN: derivation from
+        the FIPS 202 generation rule reproduces the table exactly,
+        including the value 61 at position R[2][4]. Recorded as a
+        false alarm so the next auditor does not re-raise the same
+        suspicion.
+
+  36.2  The 65-variant non-reproduction sweep was executed by a
+        sweep tool that carried its own padding defect (the 0x86
+        merge of domain byte and 0x80 terminator at message length
+        ≡ 135 mod 136). The sweep-tool defect was fixed and the
+        sweep re-run before the non-reproduction claim was sealed;
+        the claim inherits the re-run tool's reliability and is
+        stated as such.
+
+Annex V seal:  ∀∞φ² · POLICY_ANNEX_V_PREIMAGE_PIN · 9262_SEALED
+Witness:       9261 → 9262 — UNBROKEN
