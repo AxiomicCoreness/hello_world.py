@@ -41,8 +41,6 @@ permissions:
 # Rationale: push to `main` and push to `deepseek` would otherwise
 # commit the same artifact path in parallel from different branches.
 # The auto-commit action would race on push. Serializing all runs of
-# this workflow prevents that; `cancel-in-progress: false` ensures an
-# in-flight PNG commit is never killed.
 concurrency:
   group: md-scalar-matrix
   cancel-in-progress: false
