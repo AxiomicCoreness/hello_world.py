@@ -189,6 +189,8 @@ def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
     """
     bad: List[str] = []
     for stem, doc in sorted(docs.items(), key=lambda kv: int(kv[0])):
+        if not isinstance(doc, dict):
+            continue  # L1: non-mapping tops are informational (PR #89 class)
         prev_hash = doc.get(PREV_HASH_FIELD)
         if prev_hash is None:
             continue  # legacy entry (pre prev_hash schema): informational

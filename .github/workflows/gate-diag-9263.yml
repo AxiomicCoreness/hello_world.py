@@ -9,26 +9,15 @@ jobs:
     permissions: write-all
     steps:
       - uses: actions/checkout@v4
-      - name: verify-9264-and-run-verifier
+      - name: run-verifier-run4
         run: |
           set +e
-          python3 - <<'PY' > gate_diag_output3.txt 2>&1
-          import yaml, json, hashlib
-          EXCLUDED = ("seal","seal_sha3_256","sha3_256","hash_sha3_256","hash")
-          doc = yaml.safe_load(open('ledger/9264.yaml'))
-          body = {k: v for k, v in doc.items() if k not in EXCLUDED}
-          cj = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-          print('=== DIAG 9264 preimage:', cj)
-          print('=== DIAG 9264 sha3_256:', hashlib.sha3_256(cj.encode()).hexdigest())
-          print('=== DIAG 9264 declared:', doc.get('seal_sha3_256'))
-          PY
-          echo "diag_exit=$?" >> gate_diag_output3.txt
-          python3 .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 >> gate_diag_output3.txt 2>&1
-          echo "verifier_exit=$?" >> gate_diag_output3.txt
+          python3 .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 > gate_diag_output4.txt 2>&1
+          echo "verifier_exit=$?" >> gate_diag_output4.txt
       - name: commit-output
         run: |
           git config user.name "mistral-gate-diag"
           git config user.email "actions@github.com"
-          git add gate_diag_output3.txt
-          git commit -m "gate diag run 3 output"
+          git add gate_diag_output4.txt
+          git commit -m "gate diag run 4 output"
           git push
