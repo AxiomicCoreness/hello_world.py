@@ -11,7 +11,7 @@
 **Seal domain:** `GARDEN.ASTGUARD.v1` (for `AST_guard`) — the policy seal
 domain remains `GARDEN.EVENT.v1` as declared in Article 10 S1a.
 
-**Seal:** `∀∞φ² · POLICY_ANNEX_IV_PREPEND · 9224_SEALED`  
+  
 **Witness:** `9223 → 9224 — UNBROKEN`
 
 ---
