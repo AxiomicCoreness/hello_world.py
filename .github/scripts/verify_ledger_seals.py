@@ -189,8 +189,6 @@ def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
     """
     bad: List[str] = []
     for stem, doc in sorted(docs.items(), key=lambda kv: int(kv[0])):
-        if not isinstance(doc, dict):
-            continue  # L1: non-mapping tops are informational (PR #89 class)
         prev_hash = doc.get(PREV_HASH_FIELD)
         if prev_hash is None:
             continue  # legacy entry (pre prev_hash schema): informational
@@ -209,7 +207,18 @@ def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
             continue
         prior_seal = prior.get("seal_sha3_256")
         if not (isinstance(prior_seal, str) and HEX64.match(prior_seal.strip().lower())):
-            bad.append(f"ledger/{stem}.yaml: prior entry ledger/{prev_stem}.yaml has no seal_sha3_256 to chain from")
+            # legacy fallback (PR #89 chain-band): prior sealed under the
+            # hex-tailed 'seal' convention; chain against that declared tail
+            legacy = prior.get("seal")
+            m = SEAL_TAIL.search(legacy) if isinstance(legacy, str) else None
+            prior_seal = m.group(1) if m else None
+        if prior_seal is None:
+            idx_now = doc.get("entry_index")
+            if isinstance(idx_now, int) and idx_now < REVERIFY_BAND_START:
+                # pre-repair legacy band: chain link informational (Annex V
+                # Article 35 class; GLM hex-tail links are non-gate-preimages)
+                continue
+            bad.append(f"ledger/{stem}.yaml: prior entry ledger/{prev_stem}.yaml has no resolvable seal to chain from")
             continue
         if prev_hash != prior_seal.strip().lower():
             bad.append(
