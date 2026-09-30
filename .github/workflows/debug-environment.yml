@@ -1,9 +1,9 @@
 name: debug-environment
 
-# Diagnostic workflow — prints runner state, secret presence (never the
+# Diagnostic workflow - prints runner state, secret presence (never the
 # values), and filesystem layout. Read-only; writes nothing; commits nothing.
 #
-# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# hash_algo: sha3_256 (FIPS 202) - declared for header consistency
 # ledger_policy: NO_LEDGER_WRITE
 
 on:
@@ -45,25 +45,25 @@ jobs:
           echo "github.sha        = ${{ github.sha }}"
           echo "github.event_name = ${{ github.event_name }}"
 
-          echo "── secrets (presence only, never printed) ──"
+          echo "-- secrets (presence only, never printed) --"
           for name in MCP_URL GARDEN_SECRET ARGOCD_SERVER ARGOCD_AUTH_TOKEN AWS_ROLE_ARN; do
             value="${!name:-}"
             if [ -n "$value" ]; then
-              echo "  ${name}          = SET (length ${#value})"
+              echo "  ${name} = SET (length ${#value})"
             else
-              echo "  ${name}          = not set"
+              echo "  ${name} = not set"
             fi
           done
 
-          echo "── env ──"
+          echo "-- env --"
           echo "  HASH_ALGO        = ${HASH_ALGO:-<unset>}"
           echo "  LEDGER_DIR       = ${LEDGER_DIR:-<unset>}"
 
-          echo "── filesystem ──"
+          echo "-- filesystem --"
           if [ -d "${LEDGER_DIR:-ledger}" ]; then
             count=$(find "${LEDGER_DIR:-ledger}" -maxdepth 1 -type f | wc -l)
             echo "  ${LEDGER_DIR:-ledger}/  (directory, ${count} files)"
-            ls -la "${LEDGER_DIR:-ledger}/"
+            ls -la "${LEDGER_DIR:-ledger}/" || true
           else
             echo "  ${LEDGER_DIR:-ledger}/  not found"
           fi
@@ -78,9 +78,11 @@ jobs:
           if [ -d scripts ]; then
             count=$(find scripts -maxdepth 1 -type f | wc -l)
             echo "  scripts/ (directory, ${count} files)"
-            ls -la scripts/ | head -n 40
-            if [ "$count" -gt 40 ]; then
-              echo "  … (${count} total, showing first 40)"
+            # Avoid SIGPIPE from `head` under `pipefail`.
+            mapfile -t SCRIPT_LINES < <(find scripts -maxdepth 1 -type f | sort | head -n 40)
+            printf '%s\n' "${SCRIPT_LINES[@]}"
+            if [ "${count}" -gt 40 ]; then
+              echo "  ... (${count} total, showing first 40)"
             fi
           else
             echo "  scripts/  not found"
