@@ -9,15 +9,15 @@ jobs:
     permissions: write-all
     steps:
       - uses: actions/checkout@v4
-      - name: run-verifier-run5
+      - name: run-verifier-run6
         run: |
           set +e
-          python3 .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 > gate_diag_output5.txt 2>&1
-          echo "verifier_exit=$?" >> gate_diag_output5.txt
+          python3 .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 > gate_diag_output6.txt 2>&1
+          echo "verifier_exit=$?" >> gate_diag_output6.txt
       - name: commit-output
         run: |
           git config user.name "mistral-gate-diag"
           git config user.email "actions@github.com"
-          git add gate_diag_output5.txt
-          git commit -m "gate diag run 5 output"
+          git add gate_diag_output6.txt
+          git commit -m "gate diag run 6 output"
           git push
