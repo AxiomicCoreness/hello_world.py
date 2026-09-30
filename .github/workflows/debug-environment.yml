@@ -16,7 +16,6 @@ permissions:
 
 concurrency:
   group: debug-environment-${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   HASH_ALGO: sha3_256
