@@ -1,0 +1,1055 @@
+  OK  ledger/0000.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0001.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0002.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0003.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0004.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0005.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0006.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0007.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0008.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0009.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0010.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0011.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0012.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0013.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0014.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0015.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0016.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0017.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0018.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0019.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0020.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0021.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0022.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0023.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0024.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0025.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0026.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0027.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0028.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0029.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0030.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0031.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0032.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0033.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0034.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0035.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0036.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0037.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0038.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0039.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0040.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0041.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0042.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0043.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0044.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0045.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0046.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0047.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0048.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0049.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0050.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0051.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0052.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0053.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0054.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0055.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0056.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0057.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0058.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0059.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0060.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0061.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0062.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0063.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0064.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0065.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0066.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0067.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0068.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0069.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0070.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0071.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0072.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0073.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0074.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0075.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0076.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0077.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0078.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0079.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0080.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0081.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0082.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0083.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0084.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0085.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0086.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0087.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0088.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0089.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0090.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0091.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0092.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0093.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0094.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0095.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0096.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0097.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0098.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0099.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0100.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0101.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0102.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0103.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0104.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0105.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 427bc51f2c2e2e53...
+  OK  ledger/0106.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0107.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0108.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0109.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0110.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0111.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0112.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0113.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0114.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0115.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0116.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0117.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0118.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0119.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0120.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0121.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0122.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0123.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0124.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0125.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0126.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0127.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0128.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0129.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0130.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0131.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0132.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0133.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0134.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0135.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0136.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0137.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0138.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0139.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0140.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0141.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0142.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0143.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0144.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0145.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0146.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0147.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0148.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0149.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0150.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0151.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0152.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0153.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0154.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0155.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0156.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0157.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0158.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0159.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0160.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0161.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0162.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0163.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0164.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0165.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0166.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0167.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0168.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0169.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0170.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0171.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0172.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0173.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0174.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0175.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0176.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0177.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0178.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0179.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0180.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0181.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0182.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0183.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0184.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0185.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0186.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0187.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0188.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0189.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0190.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0191.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0192.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0193.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0194.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0195.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0196.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0197.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0198.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0199.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0200.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0201.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0202.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0203.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0204.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0205.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0206.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0207.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0208.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0209.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0210.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0211.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0212.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0213.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0214.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0215.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0216.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0217.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0218.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0219.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0220.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0221.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0222.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0223.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0224.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0225.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0226.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0227.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0228.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0229.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0230.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0231.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0232.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0233.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0234.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0235.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0236.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0237.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0238.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0239.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0240.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0241.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0242.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0243.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0244.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0245.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0246.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0247.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0248.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0249.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0250.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0251.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0252.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 64650b7870d3cccf...
+  OK  ledger/0253.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b85efdf56b0ac52b...
+  OK  ledger/0254.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0255.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0256.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0257.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0258.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4a8f7a20f234da12...
+  OK  ledger/0259.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0260.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0261.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0262.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0263.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0264.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0265.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0266.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0267.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0268.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0269.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0270.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0271.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0272.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0273.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0274.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0275.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0276.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0277.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0278.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0279.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0280.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0281.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0282.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0283.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0284.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0285.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0286.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0287.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0288.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0289.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0290.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0291.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0292.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0293.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0294.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0295.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0296.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0297.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0298.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0299.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0300.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0301.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0302.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0303.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0304.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0305.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0306.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0307.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0308.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0309.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0310.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0311.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0312.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0313.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0314.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0315.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0316.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0317.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0318.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0319.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0320.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0321.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0322.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0323.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0324.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0325.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0326.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0327.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0328.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0329.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0330.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0331.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0332.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0333.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0334.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0335.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0336.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0337.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0338.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0339.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0340.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0341.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0342.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0343.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0344.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0345.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0346.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0347.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0348.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0349.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0350.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0351.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0352.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0353.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0354.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0355.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0356.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0357.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0358.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0359.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0360.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0361.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0362.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0363.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0364.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0365.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0366.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0367.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0368.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0369.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0370.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0371.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1ef5d501949afb3c...
+  OK  ledger/0372.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0d65f55074fa1e42...
+  OK  ledger/0373.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b841a307f577b44c...
+  OK  ledger/0374.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 724d8d902f9cee7f...
+  OK  ledger/0375.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2873f0f156260c03...
+  OK  ledger/0376.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 00d51883f9a6ce1a...
+  OK  ledger/0377.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b17d1e225bcf8534...
+  OK  ledger/0378.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d6c83361694fd145...
+  OK  ledger/0379.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2770ef4180536bef...
+  OK  ledger/0380.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e5e1be820bcdca53...
+  OK  ledger/0381.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9f297dcaa99abc08...
+  OK  ledger/0382.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4cda3a8ba33b91b1...
+  OK  ledger/0383.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3fc58e20bb314eae...
+  OK  ledger/0384.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 685f107a34062b82...
+  OK  ledger/0385.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail ed2eedba16a7e5cb...
+  OK  ledger/0386.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e9cba49257099e00...
+  OK  ledger/0387.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 23bb527a6fe0b225...
+  OK  ledger/0388.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail bdca4fa2cca2e512...
+  OK  ledger/0389.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail ca4a11135e6b8d0c...
+  OK  ledger/0390.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a42feb86f6585ce3...
+  OK  ledger/0391.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c4537cd2062c765f...
+  OK  ledger/0392.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 8e37dd119a170ef8...
+  OK  ledger/0393.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 64145998531f853d...
+  OK  ledger/0394.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 5ed0a6373128207b...
+  OK  ledger/0395.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail f52aa3c7a89b526b...
+  OK  ledger/0396.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9fd4fb2c5d146ad2...
+  OK  ledger/0397.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9ed17d34d091c1f5...
+  OK  ledger/0398.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b1c5a5eee4212e9a...
+  OK  ledger/0399.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d3f26e12059a22d2...
+  OK  ledger/0400.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7ec933a4b3eb11f5...
+  OK  ledger/0401.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 5e03e05af44049e0...
+  OK  ledger/0402.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 38d280bb22af2305...
+  OK  ledger/0403.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail cb0b1fd7701fc7b8..., hash cb0b1fd7701fc7b8...  WARN ledger/0468.yaml: YAML parse error (informational): while parsing a block mapping
+  in "ledger/0468.yaml", line 1, column 1
+expected <block end>, but found '<scalar>'
+  in "ledger/0468.yaml", line 19, column 59
+
+  OK  ledger/0404.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0405.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0406.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0407.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0408.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0409.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0410.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0411.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0412.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0413.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0414.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0415.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0416.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0417.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0418.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0419.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0420.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0421.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0422.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0423.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0424.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0425.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0426.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0427.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0428.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0429.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0430.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0431.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0432.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0433.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0434.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0435.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0436.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0437.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0438.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0439.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0440.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0441.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0442.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0443.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0444.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0445.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0446.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0447.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0448.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0449.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0450.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0451.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0452.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0453.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0454.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0455.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0456.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0457.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a7f7f7f4a5b6c7d8...
+  OK  ledger/0458.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b8f8f8f5a6b7c8d9...
+  OK  ledger/0459.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0460.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0461.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0462.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0463.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0464.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0465.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0466.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0467.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0469.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0470.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0471.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0472.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0473.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0474.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0475.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0476.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0477.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0478.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0479.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0480.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0481.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0482.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0483.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0484.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0485.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0486.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0487.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0488.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0489.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0490.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0491.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0492.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0493.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0494.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0495.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0496.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0497.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0498.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0499.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0500.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0501.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0502.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0503.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0504.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0505.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0506.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0507.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0508.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0509.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0510.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0511.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0512.yaml: no declared seal_sha3_256 (skipped, informational)  WARN ledger/8339.yaml: YAML parse error (informational): day is out of range for month
+  WARN ledger/8501.yaml: top-level not a mapping (informational)
+
+  OK  ledger/0513.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0514.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0515.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0516.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0517.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0518.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0519.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0530.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/0635.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/510510.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/510511.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/517.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/518.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8197.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8201.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3016f29838900b95...
+  OK  ledger/8202.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3d8b25edbc0b40a5...
+  OK  ledger/8203.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c7f7c1d148a3d3bd...
+  OK  ledger/8204.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0242cbfc96fe26a6...
+  OK  ledger/8205.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e6c020a86577073f...
+  OK  ledger/8206.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e46de633154a35b1...
+  OK  ledger/8207.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0101519e41a451e1...
+  OK  ledger/8210.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail fe55a000780710ba...
+  OK  ledger/8211.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 38cf528b30b1b866...
+  OK  ledger/8212.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2ac51d9baf36625c...
+  OK  ledger/8213.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 8abceae61b47e9a0...
+  OK  ledger/8214.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 409ea71c123d0f72...
+  OK  ledger/8215.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1a54690fc9f0ab85...
+  OK  ledger/8216.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 260cd0f91ada26ab...
+  OK  ledger/8217.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c966b16fbc7941b8...
+  OK  ledger/8218.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail f0fa58688a3933ab...
+  OK  ledger/8219.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4079abd407c23048...
+  OK  ledger/8220.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 06eff665d38aa797...
+  OK  ledger/8221.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9389bdd8597fdfee...
+  OK  ledger/8222.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail eb56775021c5f4cb...
+  OK  ledger/8223.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8224.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2cec979afc57fc15...
+  OK  ledger/8255.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8330.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e116816e4d05affa...
+  OK  ledger/8335.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d24d0d57ad4f2627...
+  OK  ledger/8336.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a7e8f65e2fd3b689...
+  OK  ledger/8337.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 216d61a1dd7dd01d...
+  OK  ledger/8338.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8367.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8368.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8517.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8530.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8531.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8532.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8533.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8534.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8535.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8536.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8540.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8542.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8547.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d7e2b7333586dfeb...
+  OK  ledger/8548.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 91495147b284411b...
+  OK  ledger/8549.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8550.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail be817a98c0ff2514...
+  OK  ledger/8567.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8586.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8587.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8598.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8611.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8612.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8617.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8618.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8620.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8622.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8623.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8624.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8625.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8631.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8632.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8633.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8634.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8635.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8636.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8637.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8638.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8639.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8641.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8642.yaml: no declared seal_sha3_256 (skipped, informational)  WARN ledger/8807.yaml: YAML parse error (informational): while scanning a double-quoted scalar
+  in "ledger/8807.yaml", line 9, column 11
+found unknown escape character 'i'
+  in "ledger/8807.yaml", line 9, column 24
+  WARN ledger/8829.yaml: YAML parse error (informational): while parsing a block mapping
+  in "ledger/8829.yaml", line 1, column 1
+expected <block end>, but found '<scalar>'
+  in "ledger/8829.yaml", line 8, column 57
+
+  OK  ledger/8643.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8644.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8645.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8646.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8647.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8648.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8650.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8652.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8653.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8654.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8655.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8656.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8657.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8658.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8659.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8660.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8661.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8662.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8663.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8664.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8665.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8666.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8667.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8668.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8669.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8670.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8672.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8673.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8675.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8676.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8677.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8678.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8679.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8680.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8684.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8688.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8689.yaml: other declared digests (informational, no declared preimage convention for this verifier): hash 3cd600646506b261...
+  OK  ledger/8734.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8735.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8741.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8742.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8745.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8746.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8747.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8748.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8749.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8750.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8751.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8752.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8755.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8756.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8757.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8758.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8759.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8760.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8762.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8766.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8767.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8769.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8770.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8771.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8772.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8773.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8774.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8775.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8776.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8777.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 73c94c0b209f490d...
+  OK  ledger/8789.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8793.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8794.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8797.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 18afd6847222b7be...
+  OK  ledger/8798.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail cdab7db9fa51d7f1...
+  OK  ledger/8799.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 18fc968620d9c9af...
+  OK  ledger/8800.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 88d70c0cfc8df319...
+  OK  ledger/8801.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8802.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 04c348cc18756835...
+  OK  ledger/8803.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8804.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8805.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8806.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8809.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8811.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8812.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8813.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8814.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8816.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8817.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8818.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8819.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 25adcea627e9acb3...
+  OK  ledger/8824.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8825.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8826.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8828.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8830.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8831.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8832.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8833.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 28225f72388a67d1...
+  OK  ledger/8834.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8835.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8845.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8846.yaml: no declared seal_sha3_256 (skipped, informational)  WARN ledger/8853.yaml: YAML parse error (informational): mapping values are not allowed here
+  in "ledger/8853.yaml", line 4, column 103
+  WARN ledger/8858.yaml: YAML parse error (informational): while scanning a block scalar
+  in "ledger/8858.yaml", line 13, column 5
+expected chomping or indentation indicators, but found 'W'
+  in "ledger/8858.yaml", line 13, column 6
+
+  OK  ledger/8847.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8848.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8849.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8850.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8851.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8852.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8854.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8855.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8856.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8857.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8859.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8861.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8862.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8890.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8891.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8902.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8903.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8904.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8906.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8923.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8924.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8925.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 647c9ce01c807c83...
+  OK  ledger/8927.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8928.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8930.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8932.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8933.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8934.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8935.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8936.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8937.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8938.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8939.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8940.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8941.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8942.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8943.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8944.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8945.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8946.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8948.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8949.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8951.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8953.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8956.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8957.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8958.yaml: seal_sha3_256 OK  043a211926eb2459...
+  OK  ledger/8959.yaml: seal_sha3_256 OK  f40870c2155aba25...
+  OK  ledger/8972.yaml: seal_sha3_256 OK  2c58db4a292eacb0...
+  OK  ledger/8973.yaml: seal_sha3_256 OK  11893a24ca9a82a2...
+  OK  ledger/8974.yaml: seal_sha3_256 OK  38740c6f84839c26...
+  OK  ledger/8975.yaml: seal_sha3_256 OK  843d67ecf698343b...
+  OK  ledger/8976.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8977.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2d6387ff82df90b0...
+  OK  ledger/8978.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8979.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8980.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8981.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8982.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8983.yaml: seal_sha3_256 OK  940576bfc375c3f9...
+  OK  ledger/8984.yaml: seal_sha3_256 OK  d68f77a863ef9774...
+  OK  ledger/8985.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/8986.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 98ddb08f0cadff5c...
+  OK  ledger/8988.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 827e71dc382c73b3...
+  OK  ledger/9001.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9002.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9003.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9004.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9005.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9006.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9007.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9008.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9009.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d3480fa863425881...
+  OK  ledger/9012.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9013.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9020.yaml: other declared digests (informational, no declared preimage convention for this verifier): sha3_256 c9487ce91d578d0d...
+  OK  ledger/9021.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9022.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9023.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9024.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9025.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9026.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9027.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9028.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9029.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9030.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9031.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9032.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9033.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9034.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9035.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9036.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9037.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9038.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9039.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9040.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9041.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9042.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9043.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9044.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9045.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9046.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9047.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9048.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9049.yaml: no declared seal_sha3_256 (skipped, informational)  WARN ledger/9117.yaml: YAML parse error (informational): while scanning for the next token
+found character '`' that cannot start any token
+  in "ledger/9117.yaml", line 19, column 1
+  WARN ledger/9120.yaml: YAML parse error (informational): while scanning a simple key
+  in "ledger/9120.yaml", line 45, column 1
+could not find expected ':'
+  in "ledger/9120.yaml", line 47, column 1
+  WARN ledger/9121.yaml: YAML parse error (informational): mapping values are not allowed here
+  in "ledger/9121.yaml", line 37, column 36
+  WARN ledger/9128.yaml: YAML parse error (informational): while parsing a block mapping
+  in "ledger/9128.yaml", line 26, column 3
+expected <block end>, but found '<scalar>'
+  in "ledger/9128.yaml", line 32, column 5
+
+  OK  ledger/9050.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9051.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9052.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9053.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9054.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9055.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9056.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9057.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9058.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9059.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9061.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9062.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9063.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9064.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9065.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9066.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9067.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9068.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9069.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9070.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 485fe86b5b648761...
+  OK  ledger/9071.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9072.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9073.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9074.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9075.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9076.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9077.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9078.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9079.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9080.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9081.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9082.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9083.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9084.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9085.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9086.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9087.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9089.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9090.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9091.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9092.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9093.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9094.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9095.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9096.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9097.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9098.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9099.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9100.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9101.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9102.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9103.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9104.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9105.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9106.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9107.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9108.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9109.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9110.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9111.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9112.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9113.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9114.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9115.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9116.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9118.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9119.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9122.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9123.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9124.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9125.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9126.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9127.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9129.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9130.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9131.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9132.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9133.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9134.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9135.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9136.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9137.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9138.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9139.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9140.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9141.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9142.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4fec315023cb3583...
+  OK  ledger/9143.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e19eae7a33455b52...
+  OK  ledger/9144.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9145.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a7b3c9d2e1f4a5b6...
+  OK  ledger/9146.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3a7bd3e2360a3d29...
+  OK  ledger/9147.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 43e8226e75d5d51b...
+  OK  ledger/9148.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c62cd103f73c75b4...
+  OK  ledger/9149.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 77d5fde74bf632fc...
+  OK  ledger/9150.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1cfda382bef3ba97...
+  OK  ledger/9151.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1cfda382bef3ba97...
+  OK  ledger/9152.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3d8ea7fe33046a0d...
+  OK  ledger/9153.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7e081623e65a277a...
+  OK  ledger/9154.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c6a5c10ef8a38f00...
+  OK  ledger/9155.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a2f2ab9ed8c6c5f5...
+  OK  ledger/9156.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c4e0f1f27fcc722c...
+  OK  ledger/9157.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7243974c3e3c081b...
+  OK  ledger/9158.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c1242a69c86b67a0...
+  OK  ledger/9159.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 034f3ffcca6b91f0...
+  OK  ledger/9160.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7c1bfd4eebc7e044...
+  OK  ledger/9161.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail ffa2f3554f21f045...
+  OK  ledger/9162.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 8b0977c222991c83...
+  OK  ledger/9163.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4088325bef85f95c...
+  OK  ledger/9164.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7dc297b28178370d...
+  OK  ledger/9165.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 42be11918cd6c7cb...
+  OK  ledger/9166.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2d2b7fb77e793e93...
+  OK  ledger/9167.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 6188a0fb162d9db6...
+  OK  ledger/9168.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9e6633123f53de60...
+  OK  ledger/9169.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 8324fa2b01c313e6...
+  OK  ledger/9170.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail aabfb0f3c6bcd50c...
+  OK  ledger/9171.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 46da043fe13bdb6a...
+  OK  ledger/9172.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4733966ea548d9c7...
+  OK  ledger/9173.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 446713777738ec67...
+  OK  ledger/9174.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail fdd9c7ea4933bfcb...
+  OK  ledger/9175.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d310df7d2987fbf0...
+  OK  ledger/9176.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9bbb38f86173ef6a...
+  OK  ledger/9177.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 16431245bec6c101...
+  OK  ledger/9178.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7940ed939df2fcc1...
+  OK  ledger/9179.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail bc8b108d4078ca91...
+  OK  ledger/9180.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 5c35200d5115b3e8...
+  OK  ledger/9181.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 2357594cbd469fd7...
+  OK  ledger/9182.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a2a096e5dc067a87...
+  OK  ledger/9183.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3c9295aa06c7b563...
+  OK  ledger/9184.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e7e9fd895851c148...
+  OK  ledger/9185.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 19f8a63f579fdd0a...
+  OK  ledger/9186.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b3aaa50b7736bc3c...
+  OK  ledger/9187.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 69bf06c51b12a973...
+  OK  ledger/9188.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3df44cdd2b84883b...
+  OK  ledger/9189.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 8ca7b656db88f23e...
+  OK  ledger/9190.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b403994069f52b8e...
+  OK  ledger/9191.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail d9bc7eccf94f6374...
+  OK  ledger/9192.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 40457d0bbddbce92...
+  OK  ledger/9193.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1c9f8571c77ef0c4...
+  OK  ledger/9194.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 05185b31866e862e...
+  OK  ledger/9195.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9196.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0ed8450a2b1b7bcd...
+  OK  ledger/9197.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 79f0a2f419df8b10...
+  OK  ledger/9198.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail af1776d8d2b1d1d0...
+  OK  ledger/9199.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 5ad1d66764c9b951...
+  OK  ledger/9200.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 87fbafca6ec35186...
+  OK  ledger/9201.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 29d1415421611bfd...
+  OK  ledger/9202.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 52c30a6f4e2a92f1...
+  OK  ledger/9203.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 23fe52f39d904145...
+  OK  ledger/9204.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0c038fb1058055aa...
+  OK  ledger/9205.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail aad1ee479dab81ca...
+  OK  ledger/9206.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 38d907929ae6ed61...
+  OK  ledger/9207.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 177f614d7bdc5c9a...
+  OK  ledger/9208.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 1ff59bb59d114fbd...
+  OK  ledger/9209.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9841d3354928954a...  WARN ledger/9260.yaml: ANNEX_V_PRE_REPAIR_BAND — seal_sha3_256 mismatch at entry 9260 (below re-verification band start 9262); seal computed on the pre-repair pipeline; per POLICY.md Annex V Article 35 this reads as not-yet-re-verified (recorded, not a gate failure); declared: 25f3b92a483d72b60e71236dc43b0dcb51b683c37eed3887e46f1a55e45d6d29 expected: 4f44dff0bb0b15630d800520aadb1f28d9ba6ea4e4c213b4c852cb753a3a41b8
+  WARN ledger/9261.yaml: ANNEX_V_PRE_REPAIR_BAND — seal_sha3_256 mismatch at entry 9261 (below re-verification band start 9262); seal computed on the pre-repair pipeline; per POLICY.md Annex V Article 35 this reads as not-yet-re-verified (recorded, not a gate failure); declared: d9adca66dd3eb6dbfb98190a686094382363683da9fd39ff820c5f0882dd6330 expected: 3202fc772e256277efee886f31394373afb3f734169e4715a0d3993483e502b9
+  FAIL ledger/9263.yaml: seal_sha3_256 MISMATCH
+    declared: 41a2bd3097c527d1f225161dffb0ff8dac9af5dc16cfd6de2486d01dbf007f42
+    expected: 5afba9103e5373292721b5856d606a82c0cc4fce7338739497ba73bba1f783ee
+
+  OK  ledger/9210.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a468f46a3c06bbb4...
+  OK  ledger/9211.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 639313752f92c771...
+  OK  ledger/9212.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c4ac038a702a015f...
+  OK  ledger/9213.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail e1afae2d8a307fb9...
+  OK  ledger/9214.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 6481d161a81413bd...
+  OK  ledger/9215.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 35c25fff71f8ceb6...
+  OK  ledger/9216.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail f3817770fcc5f707...
+  OK  ledger/9217.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a90355de6d3a6bbe...
+  OK  ledger/9218.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9a114325f9d835f5...
+  OK  ledger/9219.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail eb1ab4bdd59f4558...
+  OK  ledger/9220.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 491f71baa0f5f020...
+  OK  ledger/9221.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3f25731e27d970e7...
+  OK  ledger/9222.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 12fef51f5904d7d0...
+  OK  ledger/9223.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 6b10fde568a3a763...
+  OK  ledger/9224.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 0ee7a00bff46fada...
+  OK  ledger/9225.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9226.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9227.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 29eecf3c5f9caaa8...
+  OK  ledger/9228.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 277c1dde28adb359...
+  OK  ledger/9229.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3eda7b08615192dc...
+  OK  ledger/9230.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 60f166e25ccc3527...
+  OK  ledger/9231.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 40bcd10d0c4ab03f...
+  OK  ledger/9232.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail aad9574a75374bd4...
+  OK  ledger/9233.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a8d004598a4a2c4d...
+  OK  ledger/9234.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 7e9295556ff9c7c6...
+  OK  ledger/9235.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 5b353c7cea1ebfcc...
+  OK  ledger/9236.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail b8632d42ca593fcf...
+  OK  ledger/9237.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail cb89b9025476f019...
+  OK  ledger/9238.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 4631f38d87f1df95...
+  OK  ledger/9239.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail f324fd140ab5ef1b...
+  OK  ledger/9240.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail a131bc542df4762b...
+  OK  ledger/9241.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 33ba0b83ce206380...
+  OK  ledger/9242.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail cb05ce827fa002df...
+  OK  ledger/9243.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail dff228bca1a20758...
+  OK  ledger/9244.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 9fd8f8a993259210...
+  OK  ledger/9245.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 3c4eb278eaf7ec1e...
+  OK  ledger/9246.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail c034f1d33519005b...
+  OK  ledger/9247.yaml: other declared digests (informational, no declared preimage convention for this verifier): seal hex tail 487f3b09d7931b9e...
+  OK  ledger/9248.yaml: seal_sha3_256 OK  00d34365bcffe913...
+  OK  ledger/9249.yaml: seal_sha3_256 OK  58e62e554ec63950...
+  OK  ledger/9250.yaml: seal_sha3_256 OK  80a40c3a4587d6a3...
+  OK  ledger/9251.yaml: seal_sha3_256 OK  eef5dfdfe295bfee...
+  OK  ledger/9252.yaml: seal_sha3_256 OK  637de1fb6ff360a1...
+  OK  ledger/9253.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9254.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9255.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9256.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9257.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9258.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9259.yaml: no declared seal_sha3_256 (skipped, informational)
+  OK  ledger/9262.yaml: seal_sha3_256 OK  cf725ffc3146d32d...
+Traceback (most recent call last):
+  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 266, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 233, in main
+    chain_bad = check_chain(docs)
+                ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/hello_world.py/hello_world.py/.github/scripts/verify_ledger_seals.py", line 164, in check_chain
+    prev_hash = doc.get(PREV_HASH_FIELD)
+                ^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+verifier_exit=1
