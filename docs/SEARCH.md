@@ -65,7 +65,6 @@ gh repo edit AxiomicCoreness/hello_world.py \
 | `docs/spu_reward_loops.md` | Mermaid loops + sidecar contract |
 | `scripts/spu_reward.py` | Minimal SPU reference |
 | `mcp/port380_mcp.py` | MCP gate (`/healthz`) |
-| `POLICY.md` | Constitutional policy |
 
 ---
 
