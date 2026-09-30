@@ -51,7 +51,6 @@ HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
 # ============================================================================
 # SECURITY HEADER CONSTANTS
 # ============================================================================
-CONTENT_SECURITY_POLICY = "Content-Security-Policy"
 STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security"
 X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options"
 X_FRAME_OPTIONS = "X-Frame-Options"
