@@ -28,7 +28,7 @@ permissions:
 
 concurrency:
   group: master-equation-integration-${{ github.ref }}
-  cancel-in-progress: true
+
 
 env:
   HASH_ALGO: sha3_256
