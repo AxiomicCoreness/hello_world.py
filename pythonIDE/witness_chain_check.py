@@ -8,6 +8,13 @@ Source-of-record (main) reports WIRED (exit 0) when imports succeed.
 Does not claim seal-preimage knowledge (Contract A).
 assert-count measures the run tree only (Contract B).
 
+CI note: GitHub Actions checkouts are detached HEADs, so
+git rev-parse --abbrev-ref HEAD returns "HEAD" and can never report the
+branch. current_branch() therefore prefers the GitHub event context
+(GITHUB_HEAD_REF for pull_request events, GITHUB_REF_NAME for push events)
+before falling back to git. Without this, a run on main misclassifies as
+a node run (exit 5) and renders red in CI.
+
 Exit codes:
   0  verified on source-of-record
   1  assert-count import failures
@@ -21,6 +28,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +36,10 @@ from typing import Any, Dict, List
 
 
 def current_branch() -> str:
+    # CI-aware: prefer the GitHub event context when present.
+    env = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+    if env and env.strip():
+        return env.strip()
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
@@ -41,6 +53,9 @@ def current_branch() -> str:
 
 
 def current_head() -> str:
+    env = os.environ.get("GITHUB_SHA")
+    if env and env.strip():
+        return env.strip()
     try:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"],
