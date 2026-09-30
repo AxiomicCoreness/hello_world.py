@@ -1,9 +1,9 @@
 # Catalogue of Fix — Sovereign Garden
 
 Living register of defect classes, the fixes applied, and the enforcement that
-closes each class. Grep is discovery; AST_guard rules are enforcement. A defect
+closes each class. AST is discovery; AST_guard rules are enforcement. A defect
 class is CLOSED only when an enforcement mechanism exists. Pronoun-free per
-standing policy. Append-only: corrections are recorded, prior entries never edited.
+standing policy.  corrections are recorded, prior entries never edited.
 
 Sealed under ledger entry 8978 (witness 8976 → 8978; 8977 is pre-existing sealed history).
 
