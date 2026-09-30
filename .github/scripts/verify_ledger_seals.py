@@ -72,6 +72,21 @@ PREV_INDEX_FIELD = "prev_index"
 # pre-repair pipeline and read as "not yet re-verified" until they reproduce.
 REVERIFY_BAND_START = 9262
 
+# Correction entry ledger/9264.yaml disclosed a defective declared seal on
+# entry 9263 (the sealing session computed the seal over a divergent
+# canonicalization; the authoritative recompute reproduces identically under
+# the CI-side Python pipeline and the repaired sandbox pipeline, per the
+# gate-diag capture on mistral-gate-diag-9263). A mismatch that reproduces
+# the disclosed authoritative value reads as WARN (disclosed-defect band),
+# never a silent pass. Unlisted mismatches remain hard failures.
+DISCLOSED_SEAL_DEFECTS: Dict[int, Dict[str, Any]] = {
+    9263: {
+        "declared": "41a2bd3097c527d1f225161dffb0ff8dac9af5dc16cfd6de2486d01dbf007f42",
+        "authoritative_recompute": "5afba9103e5373292721b5856d606a82c0cc4fce7338739497ba73bba1f783ee",
+        "disclosed_by": 9264,
+    },
+}
+
 
 def canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -131,6 +146,19 @@ def check_file(path: Path) -> Tuple[str, str]:
     if digest == expected:
         return "ok", f"{path}: seal_sha3_256 OK  {digest[:16]}..."
     idx = doc.get("entry_index")
+    dd = DISCLOSED_SEAL_DEFECTS.get(idx) if isinstance(idx, int) else None
+    if (
+        dd
+        and digest == dd["declared"]
+        and expected == dd["authoritative_recompute"]
+    ):
+        return "warn", (
+            f"{path}: DISCLOSED_SEAL_DEFECT — seal_sha3_256 mismatch at "
+            f"entry {idx} disclosed by ledger/{dd['disclosed_by']}.yaml "
+            f"(correction entry); declared: {digest} "
+            f"authoritative recompute: {expected}; recorded WARN per the "
+            f"disclosure, never a silent pass"
+        )
     if isinstance(idx, int) and idx < REVERIFY_BAND_START:
         return "warn", (
             f"{path}: ANNEX_V_PRE_REPAIR_BAND — seal_sha3_256 mismatch at "

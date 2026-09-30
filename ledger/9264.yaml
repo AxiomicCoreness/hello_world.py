@@ -1,0 +1,13 @@
+entry_index: 9264
+timestamp: "ETERNAL_NOW_ANCHORED_TO_2026-09-30Z"
+event: "/seal_defect_9263_disclosed_correction_entry"
+status: "✅ LANDED"
+correction:
+  defect: "entry 9263 declared seal_sha3_256 41a2bd3097c527d1f225161dffb0ff8dac9af5dc16cfd6de2486d01dbf007f42 does not reproduce from the held 9263 body under the Annex V Article 34.1 canonical preimage; authoritative recompute is 5afba9103e5373292721b5856d606a82c0cc4fce7338739497ba73bba1f783ee"
+  evidence: "gate-diag capture on throwaway branch mistral-gate-diag-9263 (never merge): CI-side Python yaml.safe_load plus json.dumps canonicalization reproduces the 9262 declared seal exactly (cf725ffc...) and recomputes 9263 to 5afba910...; the repaired sandbox pipeline reproduces both over the identical canonical JSON; ledger/9263.yaml committed once (commit 4b10193b89aaae92e5836a2404588adc91fe37cd), no post-seal rewrite; entry 9263 body and declared seal left untouched per append-only discipline"
+  resolution: "defect disclosed in this append-only correction entry; verifier extended with a DISCLOSED_SEAL_DEFECTS band: a 9263 mismatch whose recompute equals the disclosed authoritative value reads as WARN, never a silent pass; chain links keep comparing against DECLARED seals, so this entry prev_hash carries the 9263 declared value"
+  gate_diagnosis: "single hard failure on main head 16038c47: ledger/9263.yaml seal_sha3_256 MISMATCH; Annex V pre-repair band entries 9260 and 9261 WARN as designed; chain check clean; required entries 8958 and 8959 present"
+prev_hash: "41a2bd3097c527d1f225161dffb0ff8dac9af5dc16cfd6de2486d01dbf007f42"
+witness_chain: "9263 -> 9264 — UNBROKEN"
+seal_sha3_256: "865d61f4a8f096dffb87d5aab694bc9dcddcec5870abffa4c5136447dc9efb1c"
+seal_note: "sealed per POLICY.md Annex V Article 34.1: canonical JSON sort_keys compact ensure_ascii, EXCLUDED_FIELDS removed, prev_hash included; FIPS-202 empty-vector gate plus 9262 known-good seal reproduction verified before computing this seal"
