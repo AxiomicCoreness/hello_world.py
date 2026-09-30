@@ -23,7 +23,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # required to commit ledger/8976.yaml
+  contents: read
   id-token: write
 
 concurrency:
@@ -32,7 +32,7 @@ concurrency:
 
 env:
   HASH_ALGO: sha3_256
-  LEDGER_DIR: ledger
+  LEDGER_DIR: ledger, ledgev.2
   MCP_URL: ${{ secrets.MCP_URL }}   # optional, for live header check
 
 jobs:
@@ -77,7 +77,7 @@ jobs:
       # 1. CRYPTOGRAPHIC VERIFICATION (Ed25519) — SKIP IF FILE MISSING
       # ────────────────────────────────────────────────────────────
       - name: Verify Ed25519 signatures on ledger entries
-        continue-on-error: true
+        continue-on-error: false
         run: |
           python - <<'PY'
           import sys
