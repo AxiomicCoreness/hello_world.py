@@ -23,7 +23,7 @@ This revision therefore:
     'hash_sha3_256:', 'hash:') as INFORMATIONAL only;
   - L1: YAML parse errors and non-mapping tops are informational (warn),
     not hard failures; only seal_sha3_256 mismatches and missing --require
-    entries hard-fail
+    entries hard-fail;
   - keep the --require behaviour and the exit-code contract:
       exit 0  all seal_sha3_256 seals verified + all --require entries present
       exit 1  at least one seal_sha3_256 mismatch OR a required entry missing
@@ -34,6 +34,15 @@ equal the seal_sha3_256 of the referenced prior entry (prev_index if
 present, else entry_index - 1). prev_hash: null is an explicit region
 start. Entries without prev_hash are legacy (informational). Schema
 change, not a re-hash of history; old entries remain as they are.
+
+Revision note (Annex V Article 35 band): seals with entry_index below
+REVERIFY_BAND_START (9262) were computed on the pre-repair SHA3-256
+pipeline (round-constant LFSR reseeded per round; repaired at entry
+9262 per ledger/9262.yaml and POLICY.md Annex V). Per Annex V Article
+35.2 such seals read as "not yet re-verified": a mismatch in the
+pre-repair band is a recorded WARN (ANNEX_V_PRE_REPAIR_BAND), never a
+hard gate failure and never silently passed. Mismatches at or above
+REVERIFY_BAND_START remain hard failures.
 """
 
 from __future__ import annotations
@@ -59,6 +68,10 @@ OTHER_DIGEST_FIELDS = ("sha3_256", "hash_sha3_256", "hash")
 PREV_HASH_FIELD = "prev_hash"
 PREV_INDEX_FIELD = "prev_index"
 
+# POLICY.md Annex V Article 35: seals below this index were computed on the
+# pre-repair pipeline and read as "not yet re-verified" until they reproduce.
+REVERIFY_BAND_START = 9262
+
 
 def canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -79,7 +92,8 @@ def check_file(path: Path) -> Tuple[str, str]:
     """Return (status, message) where status is ok | warn | fail.
 
     L1: YAML parse errors and non-mapping tops are informational (warn),
-    not hard failures. Real seal mismatches remain hard failures.
+    not hard failures. Real seal mismatches remain hard failures — except
+    in the pre-repair band, where Annex V Article 35 applies.
     """
     try:
         with path.open("r", encoding="utf-8") as f:
@@ -116,6 +130,15 @@ def check_file(path: Path) -> Tuple[str, str]:
     expected = expected_digest(doc)
     if digest == expected:
         return "ok", f"{path}: seal_sha3_256 OK  {digest[:16]}..."
+    idx = doc.get("entry_index")
+    if isinstance(idx, int) and idx < REVERIFY_BAND_START:
+        return "warn", (
+            f"{path}: ANNEX_V_PRE_REPAIR_BAND — seal_sha3_256 mismatch at "
+            f"entry {idx} (below re-verification band start {REVERIFY_BAND_START}); "
+            f"seal computed on the pre-repair pipeline; per POLICY.md Annex V "
+            f"Article 35 this reads as not-yet-re-verified (recorded, not a gate "
+            f"failure); declared: {digest} expected: {expected}"
+        )
     return "fail", (
         f"{path}: seal_sha3_256 MISMATCH\n"
         f"    declared: {digest}\n"
@@ -133,6 +156,8 @@ def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
                           prior entry (prev_index if present, else
                           entry_index - 1); that prior entry must itself
                           declare seal_sha3_256.
+    The chain check compares against the DECLARED prior seal, so a
+    pre-repair-band warning on the prior entry does not break the chain.
     """
     bad: List[str] = []
     for stem, doc in sorted(docs.items(), key=lambda kv: int(kv[0])):
