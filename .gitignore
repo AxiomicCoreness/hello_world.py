@@ -19,7 +19,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-uv.lock
 
 # Virtual environments
 .env
