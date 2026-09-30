@@ -13,4 +13,4 @@ def seal_policy(prev_hash: str, policy_data: str) -> str:
     return hashlib.sha3_256(data.encode()).hexdigest()
 
 def verify_policy_seal(seal: str, prev_hash: str, policy_data: str) -> bool:
-    return seal == seal_policy(prev_hash, policy_data)
+    return seal == seal_policy(prev_hash, math_origin)
