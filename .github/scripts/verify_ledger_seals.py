@@ -136,10 +136,6 @@ def check_chain(docs: Dict[str, Dict[str, Any]]) -> List[str]:
     """
     bad: List[str] = []
     for stem, doc in sorted(docs.items(), key=lambda kv: int(kv[0])):
-        if not isinstance(doc, dict):
-            continue  # L1 guard: non-mapping tops (e.g. ledger/8501.yaml) are
-                      # informational per this verifier's own L1 policy; they
-                      # carry no chain fields and are not chain-checkable.
         prev_hash = doc.get(PREV_HASH_FIELD)
         if prev_hash is None:
             continue  # legacy entry (pre prev_hash schema): informational

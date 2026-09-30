@@ -15,6 +15,10 @@ from __future__ import annotations
 import subprocess
 from typing import Dict, Tuple
 
+# ─────────────────────────────────────────────────────────────────────
+# CONTRACT A — Knowledge Must Be Demonstrable
+# ─────────────────────────────────────────────────────────────────────
+
 CONTRACT_A = """
 CONTRACT A: KNOWLEDGE MUST BE DEMONSTRABLE
 
@@ -44,6 +48,10 @@ A green assert-count proves modules imported on the run tree; it
 does not prove knowledge of any seal preimage.
 """
 
+# ─────────────────────────────────────────────────────────────────────
+# CONTRACT B — Succinct Proof Does Not Replace Measurement
+# ─────────────────────────────────────────────────────────────────────
+
 CONTRACT_B = """
 CONTRACT B: SUCCINCT PROOF DOES NOT REPLACE MEASUREMENT
 
@@ -69,6 +77,10 @@ Workload 0.0 and an unfilled MCP slot are observable facts.
 They are established by reading the slot or the process table,
 not by producing a proof about a different system.
 """
+
+# ─────────────────────────────────────────────────────────────────────
+# CONTRACT C — Future Instruments Stay Future Until Wired
+# ─────────────────────────────────────────────────────────────────────
 
 CONTRACT_C = """
 CONTRACT C: FUTURE INSTRUMENTS STAY FUTURE UNTIL WIRED
@@ -120,6 +132,7 @@ SOURCE_OF_RECORD = "main"
 
 
 def _git_ls(branch: str, path: str) -> bool:
+    """True if path exists on branch (local ref). Best-effort."""
     try:
         out = subprocess.run(
             ["git", "cat-file", "-e", f"{branch}:{path}"],
@@ -133,10 +146,12 @@ def _git_ls(branch: str, path: str) -> bool:
 
 
 def distribution_probe() -> Dict[str, Dict[str, bool]]:
+    """{ file: { branch: present } } — local refs only; absent ref ≠ remote absence."""
     return {f: {b: _git_ls(b, f) for b in PROBED_BRANCHES} for f in GOVERNED_FILES}
 
 
 def wiredness() -> Dict[str, bool]:
+    """Wired only if present on SOURCE_OF_RECORD (main)."""
     matrix = distribution_probe()
     return {f: matrix[f].get(SOURCE_OF_RECORD, False) for f in GOVERNED_FILES}
 
@@ -155,9 +170,17 @@ def emit() -> None:
 
 
 __all__ = [
-    "CONTRACT_A", "CONTRACT_B", "CONTRACT_C", "CONTRACTS",
-    "GOVERNED_FILES", "PROBED_BRANCHES", "SOURCE_OF_RECORD",
-    "distribution_probe", "wiredness", "contracts", "emit",
+    "CONTRACT_A",
+    "CONTRACT_B",
+    "CONTRACT_C",
+    "CONTRACTS",
+    "GOVERNED_FILES",
+    "PROBED_BRANCHES",
+    "SOURCE_OF_RECORD",
+    "distribution_probe",
+    "wiredness",
+    "contracts",
+    "emit",
 ]
 
 if __name__ == "__main__":

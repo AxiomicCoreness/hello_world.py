@@ -5,6 +5,15 @@ witness_chain_check.py — emit | list | assert-count | distribution
 
 Node runs report PRESENT_ON_NODE (exit 5).
 Source-of-record (main) reports WIRED (exit 0) when imports succeed.
+Does not claim seal-preimage knowledge (Contract A).
+assert-count measures the run tree only (Contract B).
+
+Exit codes:
+  0  verified on source-of-record
+  1  assert-count import failures
+  2  triple import failed
+  5  verified on node only (tree-distribution pending)
+  6  distribution probe failed
 """
 
 from __future__ import annotations
@@ -22,7 +31,9 @@ def current_branch() -> str:
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return out.stdout.strip() or "UNKNOWN"
     except Exception:
@@ -33,7 +44,9 @@ def current_head() -> str:
     try:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         return out.stdout.strip() or "UNKNOWN"
     except Exception:
@@ -48,7 +61,16 @@ def _load_triple():
         try:
             return importlib.import_module("pythonIDE.witness_chain_triple")
         except Exception as e:
-            print(json.dumps({"status": "FAIL", "reason": "triple_import_failed", "error": str(e)}, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "status": "FAIL",
+                        "reason": "triple_import_failed",
+                        "error": str(e),
+                    },
+                    indent=2,
+                )
+            )
             sys.exit(2)
 
 
@@ -61,10 +83,26 @@ def emit() -> int:
         matrix = triple.distribution_probe()
         wired = triple.wiredness()
     except Exception as e:
-        print(json.dumps({"status": "FAIL", "reason": "distribution_probe_failed", "error": str(e), "branch": branch, "head": head}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "status": "FAIL",
+                    "reason": "distribution_probe_failed",
+                    "error": str(e),
+                    "branch": branch,
+                    "head": head,
+                },
+                indent=2,
+            )
+        )
         return 6
+
     status = "WIRED" if is_sor else "PRESENT_ON_NODE"
-    scope = "verified_on_source_of_record" if is_sor else "verified_on_node_only_tree_distribution_pending"
+    scope = (
+        "verified_on_source_of_record"
+        if is_sor
+        else "verified_on_node_only_tree_distribution_pending"
+    )
     payload: Dict[str, Any] = {
         "status": status,
         "scope": scope,
@@ -76,7 +114,10 @@ def emit() -> int:
         "governed_files": list(triple.GOVERNED_FILES),
         "distribution": matrix,
         "wiredness": wired,
-        "claim_language_note": "assert-count measures the run tree only; wiredness requires presence on the source-of-record tree",
+        "claim_language_note": (
+            "assert-count measures the run tree only; "
+            "wiredness requires presence on the source-of-record tree"
+        ),
     }
     print(json.dumps(payload, indent=2, default=str))
     return 0 if is_sor else 5
@@ -131,8 +172,15 @@ def assert_count() -> int:
         "checked": checked,
         "distribution": matrix,
         "wiredness": wired,
-        "scope": "verified_on_source_of_record" if is_sor else "verified_on_node_only_tree_distribution_pending",
-        "contract_B_note": "assert-count measures the run tree; wiredness requires presence on source-of-record",
+        "scope": (
+            "verified_on_source_of_record"
+            if is_sor
+            else "verified_on_node_only_tree_distribution_pending"
+        ),
+        "contract_B_note": (
+            "assert-count measures the run tree; wiredness requires "
+            "presence on source-of-record"
+        ),
     }
     print(json.dumps(payload, indent=2, default=str))
     if failures:
@@ -142,9 +190,16 @@ def assert_count() -> int:
 
 def main(argv: List[str]) -> int:
     ap = argparse.ArgumentParser(prog="witness_chain_check.py")
-    ap.add_argument("cmd", choices=["emit", "list", "assert-count", "distribution"])
+    ap.add_argument(
+        "cmd", choices=["emit", "list", "assert-count", "distribution"]
+    )
     args = ap.parse_args(argv)
-    return {"emit": emit, "list": list_files, "assert-count": assert_count, "distribution": distribution}[args.cmd]()
+    return {
+        "emit": emit,
+        "list": list_files,
+        "assert-count": assert_count,
+        "distribution": distribution,
+    }[args.cmd]()
 
 
 if __name__ == "__main__":
