@@ -9,11 +9,15 @@
 %   (3) 'exact transpose' qualified: correct-handler-conditional
 %   (4) A4 split into A4a (scenario regression) / A4b (subsumed by A2)
 % Pure mechanics. No narrative constants. Compile: pdflatex toi_adjoint.tex
+% 2026-09-30: density_matrix_trace_macros input (shared dual-precision)
 % =====================================================================
 \documentclass[11pt]{article}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[margin=1in]{geometry}
 \usepackage{booktabs}
+
+% Shared dual-precision / phi macros (single source; providecommand)
+\input{density_matrix_trace_macros}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{definition}{Definition}
@@ -236,5 +240,7 @@ G1--G3 (manifold document) $+$ A1--A3 (general) $+$ A4a
 (benchmark regression). Nothing in this adjoint consults
 $\mathcal{S}$ or $\mathcal{T}$ as more than event and flow labels,
 same as the forward gradient — coherent with the envelope file.
+% Trace preservation invariant available via docs/density_matrix_trace.tex
+% (prop:trace-preservation); not required by the pure-mechanics scope of this file.
 
 \end{document}
