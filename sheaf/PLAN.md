@@ -15,7 +15,6 @@ Do not reuse indices 9202 or 9203.
 | Source | Target | Note |
 |--------|--------|------|
 | README.md | sheaf/meta/README.md | not moved |
-| POLICY.md | sheaf/meta/POLICY.md | append-only at root; do not relocate |
 | docs/SEARCH.md | sheaf/meta/SEARCH.md | path is docs/SEARCH.md |
 | LEDGER_GAPS_README.md | sheaf/meta/LEDGER_GAPS_README.md | scope 0000-0514 only |
 | docs/fastMCP_spec.md | sheaf/meta/fastMCP_spec.md | |
