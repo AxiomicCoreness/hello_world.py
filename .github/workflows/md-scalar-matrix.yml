@@ -43,7 +43,7 @@ permissions:
 # The auto-commit action would race on push. Serializing all runs of
 concurrency:
   group: md-scalar-matrix
-  cancel-in-progress: false
+
 
 env:
   HASH_ALGO: sha3_256
