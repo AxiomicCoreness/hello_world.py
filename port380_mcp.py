@@ -55,8 +55,6 @@ CONTENT_SECURITY_POLICY = "Content-Security-Policy"
 STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security"
 X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options"
 X_FRAME_OPTIONS = "X-Frame-Options"
-REFERRER_POLICY = "Referrer-Policy"
-PERMISSIONS_POLICY = "Permissions-Policy"
 
 DEFAULT_CSP = (
     "default-src 'self'; "
