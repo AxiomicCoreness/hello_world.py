@@ -605,7 +605,7 @@ jobs:
 #        with:
 #          name: worker-hook-${{ matrix.worker.name }}-${{ github.run_id }}
 #          path: .worker-hooks/${{ matrix.worker.name }}.log
-#          retention-days: 14
+#          retention-days: 90
 #
 #  synthesis:
 #    runs-on: ubuntu-latest
