@@ -1,0 +1,24 @@
+entry_index: 9263
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-30Z
+event: /policy_annex_v_pinned_conflict_enumeration_held
+status: ✅ LANDED
+annex_v:
+  file: POLICY.md
+  commit: fe9575fec53810b88dd43748f322710bc6ea18c9
+  articles: "34 canonical seal preimage pinned; 35 re-verification boundary (entries <= 9261 sealed on pre-repair pipeline read as not-yet-re-verified); 36 recorded false alarms (rho-table suspicion disproven; sweep-tool 0x86 padding defect disclosed, fixed, re-run)"
+  recon: "deletion-patch recon on throwaway branch mistral-recon-policy-main (never merge); POLICY.md bytes held 10163, blob 1a076da58991d782f59aede8bd7b94a56b149722 verified on restore; annex appended, prior bytes untouched"
+conflict_enumeration:
+  method: "tip-vs-tip tree diff, root plus recursive dir descent, all five PR base branches vs main; ledger band enumerated via 1000-entry listings plus per-file tail probes; PRs #104-108 all open dirty, head main 0f44d19, bases master/deepseek/deepseek-ci/grok-skill_tensor/mistral-seal-emergent"
+  divergent_common_all_five_branches: [AST_guard.py, AST_guard_rule_d1.py, LICENSE, POLICY.md, mistral_agent_core.py, sovereign.lua, symplectic_status.json, .github/scripts/verify_ledger_seals.py, .github/workflows/OIDC-handover-380.yml, .github/workflows/deepseek-ci-secrets.yml, docs/CATALOGUE_OF_FIX.md, mcp/port380_mcp.py, pythonIDE/md_scalar_matrix.png, ledger/8777.yaml, ledger/8819.yaml, ledger/8833.yaml, ledger/8983.yaml, ledger/9070.yaml, ledger/9232.yaml]
+  divergent_branch_specific:
+    grok-skill_tensor: [pythonIDE/phi_pipeline.py, pythonIDE/witness_chain_check.py, pythonIDE/witness_chain_triple.py]
+    deepseek-ci_grok-skill_tensor_mistral-seal-emergent: [ledger/9006.yaml, ledger/9007.yaml]
+    mistral-seal-emergent: [ledger/8986.yaml]
+  main_only_additive: [BRANCH_POLICY_SYNC_PROCEDURE.md, ast_guard_rules_g.py, run_verify.py, "ledger.v2/ (MERKLE.md, README.md)", kernel/METHOD_QUANTUM_CYBERNETIC.md, docs/legend_tokens.md, docs/quadratic_catalogue.md, docs/toi_adjoint.tex, schemas/coherence.xsd, schemas/coherence_example.xml, scripts/benchmark_ringbuf.lua, scripts/ebpf_ringbuf.lua, scripts/ledger_append_canonical.py, scripts/ringbuf_test.bpf.c, .github/scripts/verify_prev_hash.py, .github/workflows/witness-chain-contracts.yml, ledger/8984.yaml, ledger/8985.yaml, "ledger/9249.yaml-9262.yaml on branches lacking them"]
+  branch_only_legacy: [.github/workflows/ci_cd_key_rotator.py, .github/workflows/mTLS-cert-rotation.yml, .github/workflows/quantum_reality_engine_510510.py, .github/workflows/self-improvement-relay.yml, ".github/workflows/sovereign_core.", .github/workflows/static.py, .github/workflows/test_deployment_8981.py]
+  ledger_tail_finding: "all five branches byte-identical with main through ledger/9248.yaml; deepseek and grok-skill_tensor additionally hold byte-identical 9251; all higher entries absent on branches; ledger tail merge is additive-only, no ledger-tail conflicts possible; true ledger divergence confined to the band entries listed above"
+  exoneration_note: "BRANCH_POLICY.md byte-identical across all seven refs (blob 24a5ad23c85cdab0e563d8102da1d976aa3100c2) — conflict epicenter hypothesis remains DISPROVEN"
+prev_hash: cf725ffc3146d32d49dc78972fab55f99c1a63f6db9f53102b7e586fa7cb847d
+witness_chain: 9262 -> 9263 — UNBROKEN
+seal_sha3_256: 41a2bd3097c527d1f225161dffb0ff8dac9af5dc16cfd6de2486d01dbf007f42
+seal_note: "sealed per POLICY.md Annex V Article 34.1: canonical JSON sort_keys compact ensure_ascii, EXCLUDED_FIELDS removed, prev_hash included; FIPS-202 empty-vector gate passed before computing this seal"
