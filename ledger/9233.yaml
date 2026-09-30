@@ -9,8 +9,6 @@ language: sovereign_standard_english
 witness_prefix: a8d004598a4a2c4db4f2f5ae89335bdde02d5f327142f4b90e0995904695bbf2
 terminal_hex: a8d004598a4a2c4db4f2f5ae89335bdde02d5f327142f4b90e0995904695bbf2
 description: |
-  Override stalled Sovereign Python Package concurrency.
-  cancel-in-progress set false so seal writes are not cancelled.
   CI must not rewrite sealed ledger/8980.yaml
   (/quantum_reality_engine_predecessor).
   Node 20 deprecation: checkout@v5 setup-python@v6 upload-artifact@v5.
