@@ -1,24 +1,34 @@
 # ─────────────────────────────────────────────────────────────────────────
-# Ledger seal gate + Clifford smoke — additive CI lane.
+# Ledger seal advisory report + Clifford smoke.
 #
-# Wired here because in-place edits to Hamiltonian_Full_Immersion.yml are
-# blocked in the landing environment (full-file reads return stubs; a blind
-# overwrite would be unsafe). This lane achieves the wiring additively:
-#   - Option 3: Clifford smoke as a red-capable CI gate
-#   - (b): --require on the seal verifier, so required ledger entries
-#     (8958 catalogue, 8959 handoff) are hard CI dependencies
+# SENSITIVITY RULING (commander, 2026-09-30): the hard-red seal gate drove a
+# month of clobber-and-repair churn across the ledger and branch construct.
+# The ledger is append-only history; CI must never react to a seal defect by
+# forcing a rewrite. Standing policy from this revision:
+#   - CI NEVER writes to ledger/, never pushes, never rewrites branches.
+#   - Ledger changes happen ONLY by explicit order, append-only, on main.
+#   - The verifier becomes an ADVISORY REPORT: findings are recorded in the
+#     job summary (and as a step-summary artifact of the run), not as a
+#     red check that demands history surgery.
+#   - Hard failure remains ONLY for structural absence: no ledger directory
+#     at all (exit 2). Every entry-level finding (mismatch, disclosed
+#     defect, pre-repair band, missing optional required entry) is a
+#     recorded WARN in the report.
+#   - Required entries 8958/8959: reported as WARN when absent (catalogue
+#     drift is a recorded observation, not a reason to mutate history).
+#
 # The Hamiltonian workflow keeps its own lanes; this file adds none of its
-# jobs and removes none of them.
+# jobs and removes none of them. Clifford smoke and the beacon anchor stay
+# red-capable: those assert code correctness, not ledger history.
 #
-# Exit-code contract:
-#   verify_ledger_seals.py  0 ok | 1 mismatch/missing-required | 2 no ledger
-#   clifford_euclid3.py     smoke asserts (any failure -> nonzero exit)
+# Exit-code contract of verify_ledger_seals.py:
+#   0 ok | 1 mismatch/missing-required | 2 no ledger
 # ─────────────────────────────────────────────────────────────────────────
 name: ledger-seal-gate
 
 on:
   push:
-    branches: [mistral-agent-cluster, main]
+    branches: [mistral-agent-cluster, main, mistral-fix-simulation]
   pull_request:
     branches: [main]
 
@@ -39,8 +49,8 @@ jobs:
           set -euo pipefail
           python substrates/pyroclastic_ice/clifford_euclid3.py
 
-  ledger-seal-gate:
-    name: Ledger seal_sha3_256 gate
+  ledger-seal-report:
+    name: Ledger seal advisory report
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,10 +59,35 @@ jobs:
           python-version: '3.11'
       - name: Install PyYAML
         run: pip install --quiet pyyaml
-      - name: Verify seals; require entries 8958 and 8959
+      - name: Verify seals (advisory); report findings
         run: |
-          set -euo pipefail
-          python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959
+          set +e
+          python .github/scripts/verify_ledger_seals.py . --require 8958 --require 8959 > ledger_report.txt 2>&1
+          rc=$?
+          set -e
+          {
+            echo "## Ledger seal advisory report"
+            echo
+            if [ "$rc" -eq 2 ]; then
+              echo "HARD FAIL: no ledger directory found (structural)."
+              exit 2
+            fi
+            if [ "$rc" -eq 0 ]; then
+              echo "All seal_sha3_256 seals verified; required entries 8958 and 8959 present."
+            fi
+            if [ "$rc" -eq 1 ]; then
+              echo "Findings recorded below. Per the sensitivity ruling these are WARN:"
+              echo "no ledger rewrite, no branch surgery, no history mutation follows"
+              echo "from this report. Defects are fixed only by explicit order,"
+              echo "append-only (correction entries like ledger/9264.yaml)."
+            fi
+            echo
+            echo '~~~'
+            cat ledger_report.txt
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # rc 1 is advisory: findings live in the summary; the job stays green.
+          exit 0
 
   beacon-anchor:
     name: Beacon timestamp-anchor verifier
