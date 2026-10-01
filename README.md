@@ -2,7 +2,7 @@
 
 **Public repository** · **License: MIT** · `LICENSE` · [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Search terms: `AxiomicCoreness` · `hello_world.py` · `sovereign_engine_V5` · `fastMCP` · `Dual ASGI 127.0.0.1:8024` · `phase_lock 202.6`
+Search terms: `AxiomicCoreness` · `hello_world.py` · `sovereign_engine_V5` · `Dual ASGI 127.0.0.1:8024` · `phase_lock 202.6`
 
 - Code: https://github.com/AxiomicCoreness/hello_world.py
 - License text: https://github.com/AxiomicCoreness/hello_world.py/blob/main/LICENSE
@@ -151,7 +151,7 @@ sealing purposes only.
 ### Port-380 MCP endpoints
 
 | Endpoint | Method | Protected | Purpose |
-|---|---|---|---|
+|---|---|---|
 | `/health` | GET | no | liveness + layer anchor |
 | `/status` | GET | no | uptime, seal, witness chain |
 | `/380` | GET | no | Layer 314 gate status |
@@ -240,7 +240,7 @@ python3 scripts/verify_ledger.py ledger/*.yaml      # full chain continuity
 ## Math anchors (Layer 314)
 
 | Symbol | Value | Description |
-|---|---|---|
+|---|---|
 | φ | `(1+√5)/2` | Golden ratio |
 | Phase | `202.6°` | Phase angle |
 | Breath | `71.975 Hz` | Frequency |
@@ -286,6 +286,7 @@ Security header verification runs on every pulse against
 | Seal mismatch | re-run `scripts/verify_ledger.py` on the entry |
 | Unicode `b²` rejected | use ASCII `b^2` in event payload |
 | CI fails asserting head | remove the head assertion — CI checks continuity, not a fixed head |
+| Workflow `startup_failure` (0 jobs) | Settings → Actions → allow public actions (`actions/checkout`, etc.); not a YAML defect |
 
 ---
 
