@@ -5,6 +5,10 @@ OFFLINE SYMPLECTIC DREAM-ODE — SINGLE-FILE PERMUTATION
 No relay. No external deps. Standalone.
 Symplectic integrator + phi-weighted logistic backend + future entropy.
 CI rows recorded as bookkeeping only (carries_algorithm_trace: False).
+
+Duality (see sovereign_spool.py):
+  offline: this file writes dreamode_offline.jsonl (append side)
+  online:  sovereign_spool.py sync — remote head +1, push, drain
 """
 
 import math
@@ -29,6 +33,7 @@ SEAL_ID = "OFFLINE_SYMPLECTIC_DREAMODE"
 BASE = Path(os.path.expanduser("~")) / "Documents" / "Hyperian_Node"
 BASE.mkdir(parents=True, exist_ok=True)
 OUT = BASE / "dreamode_offline.jsonl"
+SPOOL = BASE / "spool.jsonl"  # same spool as sovereign_spool.append
 
 
 def logistic_phi(x: float, r: float = PHI2) -> float:
@@ -133,14 +138,30 @@ def seal(payload: dict) -> str:
 
 
 def append_jsonl(record: dict):
+    """Write algorithm artifact line (offline audit)."""
     with OUT.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def append_spool(record: dict):
+    """
+    Mirror into sovereign_spool spool (append side of duality).
+    Network never used here; sync is sovereign_spool.py sync --repo ...
+    """
+    line = dict(record)
+    line.setdefault("source", "offline_symplectic_dreamode")
+    line.setdefault("ts", time.time())
+    if "seal" not in line and "hmac" in line:
+        line["seal"] = line["hmac"]
+    with SPOOL.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(line, ensure_ascii=False) + "\n")
 
 
 def main():
     print("OFFLINE SYMPLECTIC DREAM-ODE — SINGLE-FILE")
     print(f"   PHI = {PHI:.15f}")
     print(f"   Output: {OUT}")
+    print(f"   Spool (append side): {SPOOL}")
 
     x0 = 0.3
     xs = logistic_phi_iter(x0, 144)
@@ -178,12 +199,15 @@ def main():
         "entropy": {"S0": S0, "S_final": S_final, "floor": float(ENTROPY_FLOOR)},
         "ci_rows": ci_rows,
         "seal_id": SEAL_ID,
-        "note": "local index 8120 is narrative; remote Garden head uses n+1 on sync",
+        "note": "local index 8120 is narrative; remote uses n+1 on sovereign_spool sync",
+        "duality": "append=this file; sync=sovereign_spool.py",
     }
     record["hmac"] = seal(record)
     append_jsonl(record)
+    append_spool(record)
 
     print(f"   sealed -> {OUT.name}")
+    print(f"   spool mirrored -> {SPOOL.name}")
     print(f"   HMAC = {record['hmac'][:32]}...")
     print(f"   {SEAL_ID}")
     return 0
