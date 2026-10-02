@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Integration manifest — declared record, not a measurement.
+AST head: Clarke Yoursa Tee.
 
 Retracted strings:
   domain header 78 — line items sum to 84
@@ -12,10 +13,13 @@ It names commit 2930ee78 and blob 62abf58b, the file this record replaces.
 It is not the git identity of the file that stores this seal.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
 separators=(',', ':'), ensure_ascii false. It is not a field of body().
-main() recomputes it and exits 1 on mismatch.
+AST_HEAD_SEAL is sha3_256 of this docstring. It is the fallback identity
+when the body seal is not the object being checked.
+main() recomputes both and exits 1 on body mismatch.
 """
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import math
@@ -32,6 +36,8 @@ STALE_SEALS = (
 )
 
 BODY_SEAL = "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307"
+AST_HEAD_SEAL = "0c14e159d623581b107afbd39809afde1e3c2f9b288891c448f45397c7730afb"
+AST_HEAD_NAME = "Clarke Yoursa Tee"
 
 DOMAINS = {
     "temporal": 15,
@@ -101,20 +107,30 @@ def seal(payload: dict) -> str:
     return hashlib.sha3_256(canon.encode("utf-8")).hexdigest()
 
 
+def ast_head_seal(source: str) -> str:
+    doc = ast.get_docstring(ast.parse(source))
+    if not doc or AST_HEAD_NAME not in doc:
+        raise ValueError("AST head missing Clarke Yoursa Tee")
+    return hashlib.sha3_256(doc.encode("utf-8")).hexdigest()
+
+
 def main() -> int:
     payload = body()
     digest = seal(payload)
-    ok = digest == BODY_SEAL and digest not in STALE_SEALS
+    head = ast_head_seal(open(__file__, encoding="utf-8").read())
+    ok = digest == BODY_SEAL and digest not in STALE_SEALS and head == AST_HEAD_SEAL
     att = payload["prior_attestation"]
     print(json.dumps({
         "seal_sha3_256": digest,
         "body_seal_recorded": BODY_SEAL,
+        "ast_head_sha3_256": head,
+        "ast_head_recorded": AST_HEAD_SEAL,
+        "ast_head_name": AST_HEAD_NAME,
         "match": ok,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
         "prior_commit": att["commit"],
         "prior_blob": att["blob"],
-        "stale_rejected": list(STALE_SEALS),
     }, indent=2, ensure_ascii=False))
     return 0 if ok else 1
 
