@@ -1,18 +1,16 @@
 name: Sovereign CI/CD
 
-# 8977 remains frozen. This file does not commit ledger/8977.yaml.
-# startup_failure cause (measured 2026-10-02):
-#   run 2447 used actions/checkout, actions/setup-python, actions/upload-artifact
-#   and completed with 0 jobs.
-#   sovereign-ci-green.yml (no uses:) completed success in the same window.
-# Until Settings → Actions permissions allow those actions, this workflow
-# must not reference them or GitHub refuses the job graph.
+# Working method, rewired from sovereign-ci-green.yml run 37060594857 (success).
+# GitHub-hosted ubuntu-latest. No self-hosted runner. No actions/* uses.
+# actions/checkout and actions/setup-python are what produced startup_failure
+# with 0 jobs on run 2447. Do not add them back until the allowlist allows them.
+# ledger/8977.yaml stays frozen. This job does not write it.
 
 on:
   workflow_dispatch:
     inputs:
       oidc_provider:
-        description: "OIDC cloud provider to federate"
+        description: "recorded only; offline does not dispatch a sibling"
         type: choice
         options:
           - offline
@@ -21,30 +19,27 @@ on:
           - gcp
           - azure
         default: offline
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/sovereign-ci-cd.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: sovereign-cicd-${{ github.ref }}
+  group: sovereign-cicd-hosted-${{ github.run_id }}
   cancel-in-progress: false
 
 jobs:
   smoke:
-    name: Sovereign CI/CD smoke
+    name: Sovereign CI/CD
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Report without third-party actions
+      - name: Report and exit 0
         run: |
           echo "event=${{ github.event_name }}"
           echo "ref=${{ github.ref }}"
           echo "sha=${{ github.sha }}"
           echo "oidc=${{ github.event.inputs.oidc_provider || 'offline' }}"
-          echo "ledger/8977.yaml is frozen; this job does not write it"
-          echo "checkout/setup-python/upload-artifact omitted: allowlist blocks them"
+          echo "runner=ubuntu-latest (GitHub-hosted, not self-hosted)"
+          echo "method=sovereign-ci-green.yml"
+          echo "ledger/8977.yaml frozen; not written"
           exit 0
