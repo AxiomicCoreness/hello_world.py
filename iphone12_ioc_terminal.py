@@ -26,6 +26,7 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import List
 
 # ---------------------------------------------------------------------------
 # Contract
@@ -59,7 +60,7 @@ def mvt_available() -> bool:
 # ---------------------------------------------------------------------------
 # Command 1 analogue: download-iocs | grep | head
 # ---------------------------------------------------------------------------
-def download_iocs(limit: int = HOST_MAX) -> list[str]:
+def download_iocs(limit: int = HOST_MAX) -> List[str]:
     """
     Run `mvt-ios download-iocs`, parse the names it prints, return the
     first `limit`. Raises RuntimeError if mvt-ios is not installed.
@@ -97,7 +98,7 @@ def summarize(iocs_dir: Path) -> dict:
             "total_indicators": 0,
             "status":       "EMPTY",
         }
-    families: Counter = Counter()
+    families: Counter[str] = Counter()
     total = 0
     files = 0
     for p in sorted(iocs_dir.rglob("*.json")):
@@ -127,15 +128,18 @@ def summarize(iocs_dir: Path) -> dict:
 # ---------------------------------------------------------------------------
 # FastAPI sub-app (optional — only imported when --serve is used)
 # ---------------------------------------------------------------------------
-def build_app():
+def build_app(iocs_dir: Path | None = None):
     from fastapi import FastAPI, HTTPException
     app = FastAPI(title="iPhone12 IOC Terminal", version="1.0.0")
-    iocs_dir = Path(os.environ.get("IOCS_DIR", DEFAULT_IOCS_DIR))
+    resolved = iocs_dir or Path(os.environ.get("IOCS_DIR", DEFAULT_IOCS_DIR))
 
     @app.get("/ioc/healthz")
     def healthz():
-        return {"ok": True, "mvt_available": mvt_available(),
-                "iocs_dir": str(iocs_dir)}
+        return {
+            "ok": True,
+            "mvt_available": mvt_available(),
+            "iocs_dir": str(resolved),
+        }
 
     @app.get("/ioc/indicators")
     def indicators(limit: int = HOST_MAX):
@@ -147,7 +151,7 @@ def build_app():
 
     @app.get("/ioc/summary")
     def summary():
-        return summarize(iocs_dir)
+        return summarize(resolved)
 
     return app
 
@@ -162,11 +166,14 @@ def main() -> int:
                     help="mirror: mvt-ios download-iocs | grep | head")
     ap.add_argument("--summarize", action="store_true",
                     help="mirror: python3 iocs.py")
-    ap.add_argument("--iocs-dir", default=DEFAULT_IOCS_DIR)
+    ap.add_argument("--iocs-dir", default=DEFAULT_IOCS_DIR,
+                    help=f"IOC JSON root (default: {DEFAULT_IOCS_DIR})")
     ap.add_argument("--limit", type=int, default=HOST_MAX)
     ap.add_argument("--serve", action="store_true",
                     help="run FastAPI on 127.0.0.1:8025")
     args = ap.parse_args()
+
+    iocs_path = Path(args.iocs_dir)
 
     if args.check_config:
         print(json.dumps(check_config(), indent=2))
@@ -182,12 +189,14 @@ def main() -> int:
             return 2
 
     if args.summarize:
-        print(json.dumps(summarize(Path(args.iocs_dir)), indent=2))
+        print(json.dumps(summarize(iocs_path), indent=2))
         return 0
 
     if args.serve:
         import uvicorn
-        uvicorn.run(build_app(), host=BIND_HOST, port=BIND_PORT)
+        # Honor --iocs-dir for the server process (not only env).
+        os.environ["IOCS_DIR"] = str(iocs_path)
+        uvicorn.run(build_app(iocs_path), host=BIND_HOST, port=BIND_PORT)
         return 0
 
     ap.print_help()
