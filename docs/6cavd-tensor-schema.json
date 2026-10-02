@@ -1,0 +1,19 @@
+{
+  "expansion": "Cadence-Aligned Visibility Domain",
+  "note": "Operational domain only — not physics. Canvas contract: docs/6cavd-channel-canvas.md",
+  "axes": {
+    "i": { "name": "branch", "range": ["main"] },
+    "j": { "name": "heartbeat_class", "range": ["seal-verify", "rotate-keys", "mesh-pulse", "workflow-sync-6cavd", "other"] },
+    "k": { "name": "time_bucket", "range": "UTC day YYYY-MM-DD" },
+    "l": { "name": "completion", "range": ["completed", "incomplete", "gap"], "note": "gap is scan-derived; explicit writes use completed|incomplete" },
+    "m": { "name": "ci_class", "range": ["ubuntu-latest", "self-hosted", "unknown"] },
+    "n": { "name": "event_kind", "range": ["live", "attest", "analysis", "ci_row_bookkeeping"] }
+  },
+  "properties": {
+    "monotonicity": "for observed coords c1 < c2 (lexicographic), H[c1] < H[c2] when values > 0",
+    "null_completion": "H[c] = 0 reserved for started-not-completed; positive ints for completed",
+    "gap": "missing coordinate in lexicographic sweep",
+    "rate": "HCR_A = |gaps| / |expected| over declared lexicographic window"
+  },
+  "storage": "sparse dict keyed by coordinate tuple"
+}
