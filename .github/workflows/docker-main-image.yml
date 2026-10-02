@@ -194,9 +194,10 @@ jobs:
           fi
 
           # Digest of the local image (deterministic content marker)
-          DIGEST="$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE" 2>/dev/null \
-                    || docker inspect --format='{{.Id}}' "$IMAGE" 2>/dev/null \
-                    || echo "")"
+          DIGEST="$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE" 2>/dev/null || true)"
+          if [ -z "$DIGEST" ]; then
+            DIGEST="$(docker inspect --format='{{.Id}}' "$IMAGE" 2>/dev/null || true)"
+          fi
           echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
           echo "PUSHED=${PUSHED}" >> "$GITHUB_ENV"
           echo "image digest: ${DIGEST:-<none>}"
