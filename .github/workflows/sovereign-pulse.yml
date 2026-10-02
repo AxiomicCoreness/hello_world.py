@@ -1,13 +1,12 @@
 name: Sovereign Pulse
 
 # Entry 8755
-# Emits a periodic heartbeat to the MCP gate. Read-only; writes no ledger.
+# Manual only. Removed from the parity slot and from cron.
+# Emits a heartbeat to the MCP gate. Read-only; writes no ledger.
 # Seal label only (no terminal hex in this file).
 # Policy: NO_LEDGER_WRITE · MCP FILLED=False · bind 127.0.0.1:8024
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -71,7 +70,7 @@ jobs:
           echo
 
           if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "202" ]; then
-            echo "Pulse returned ${HTTP_CODE} — not fatal (scheduled heartbeat)"
+            echo "Pulse returned ${HTTP_CODE} — not fatal (manual heartbeat)"
           fi
 
       - name: Summary
@@ -88,7 +87,7 @@ jobs:
             echo "| pulse_id | ${PULSE_ID:-<none>} |"
             echo "| http_code | ${HTTP_CODE:-<skipped>} |"
             echo "| source | ${PULSE_SOURCE} |"
-            echo "| schedule | every 6 hours |"
+            echo "| trigger | workflow_dispatch only |"
             echo ""
             echo "Policy: read-only · no ledger write · MCP FILLED=False"
           } >> "$GITHUB_STEP_SUMMARY"
