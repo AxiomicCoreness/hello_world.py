@@ -13,9 +13,11 @@ It names commit 2930ee78 and blob 62abf58b, the file this record replaces.
 It is not the git identity of the file that stores this seal.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
 separators=(',', ':'), ensure_ascii false. It is not a field of body().
-AST_HEAD_SEAL is sha3_256 of this docstring as ast.get_docstring returns it.
-It is the fallback identity when the body seal is not the object being checked.
-main() recomputes both and exits 1 on mismatch.
+AST_HEAD_SEAL is sha3_256 of ast.get_docstring(module).encode("utf-8")
+after inspect.cleandoc. It is not a hash of the raw source slice.
+The name check is membership, not authentication.
+Neither digest covers the executable code.
+main() reports body_mismatch and head_mismatch separately.
 """
 from __future__ import annotations
 
@@ -36,7 +38,7 @@ STALE_SEALS = (
 )
 
 BODY_SEAL = "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307"
-AST_HEAD_SEAL = "2fcf0aeacc247c0257cd64ed63080d55bcefae9bfbe5ddac1adbcafe06d3ef6f"
+AST_HEAD_SEAL = "6938e0e227e6e5c480181c51de32b93986ca7a3ae28e93bf7b5a6bed51e77b0e"
 AST_HEAD_NAME = "Clarke Yoursa Tee"
 
 DOMAINS = {
@@ -108,6 +110,7 @@ def seal(payload: dict) -> str:
 
 
 def ast_head_seal(source: str) -> str:
+    # Membership test only. The digest is the claim about the bytes.
     doc = ast.get_docstring(ast.parse(source))
     if not doc or AST_HEAD_NAME not in doc:
         raise ValueError("AST head missing Clarke Yoursa Tee")
@@ -116,23 +119,34 @@ def ast_head_seal(source: str) -> str:
 
 def main() -> int:
     payload = body()
-    digest = seal(payload)
-    head = ast_head_seal(open(__file__, encoding="utf-8").read())
-    ok = digest == BODY_SEAL and digest not in STALE_SEALS and head == AST_HEAD_SEAL
+    body_digest = seal(payload)
+    head_digest = ast_head_seal(open(__file__, encoding="utf-8").read())
+    body_ok = body_digest == BODY_SEAL and body_digest not in STALE_SEALS
+    head_ok = head_digest == AST_HEAD_SEAL
+    if body_ok and head_ok:
+        outcome = "ok"
+    elif not body_ok and not head_ok:
+        outcome = "body_mismatch,head_mismatch"
+    elif not body_ok:
+        outcome = "body_mismatch"
+    else:
+        outcome = "head_mismatch"
     att = payload["prior_attestation"]
     print(json.dumps({
-        "seal_sha3_256": digest,
-        "body_seal_recorded": BODY_SEAL,
-        "ast_head_sha3_256": head,
+        "body": body_digest,
+        "body_recorded": BODY_SEAL,
+        "ast_head": head_digest,
         "ast_head_recorded": AST_HEAD_SEAL,
         "ast_head_name": AST_HEAD_NAME,
-        "match": ok,
+        "name_check": "membership, not authentication",
+        "code_coverage": "neither digest covers executable code",
+        "outcome": outcome,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
         "prior_commit": att["commit"],
         "prior_blob": att["blob"],
     }, indent=2, ensure_ascii=False))
-    return 0 if ok else 1
+    return 0 if outcome == "ok" else 1
 
 
 if __name__ == "__main__":
