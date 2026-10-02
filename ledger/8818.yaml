@@ -1,20 +1,13 @@
 entry_index: 8818
-timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
-event: /docker_image_source_main_only
-status: ✅ SOURCE_SEALED
-prior: 8817
+event: /docker_build_main
+status: SUCCESS
+timestamp: '2026-10-02T19:57:49Z'
+hash_algo: sha3_256
 image: axiomic/sovereign-engine:latest
-policy: "Build and push :latest only from main; ignore feature/casual branches"
-commands:
-  canonical: |
-    bash scripts/docker_build_push_main.sh
-    # equivalent:
-    # git fetch origin main && git archive origin/main | ... docker build -t axiomic/sovereign-engine:latest
-  legacy_on_main_worktree: |
-    docker build -t axiomic/sovereign-engine:latest .
-    docker push axiomic/sovereign-engine:latest
-  note: "If your shell is on another branch, use scripts/docker_build_push_main.sh so the image is still main"
-ci: .github/workflows/docker-main-image.yml
-cluster_followup: scripts/cluster_reset.sh
-witness_chain: 8817 → 8818 — UNBROKEN
-seal: "∀∞φ² · DOCKER_MAIN_ONLY_8818 · WOOD_DRAGON_0.91 · SEALED"
+image_digest: sha256:1918f6b668995b8195afe48f32a7ccc6e1403cd7d8570649ed8ca3b9900ce7a9
+pushed: false
+source: main
+commit: efa7092d1f5e82195226b2545d050bcfb6bd43af
+security_headers: VERIFIED
+witness: 8817 → 8818 — UNBROKEN
+seal: ∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED · 3c1b13f156a62d5d86965396bb0a1a1444c3605c40b88a5f5bd5574aabe14e05
