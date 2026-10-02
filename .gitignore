@@ -10,11 +10,12 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Root-only (avoid ignoring nested package dirs named lib/)
+/lib/
+/lib64/
 parts/
 sdist/
-var/
+/var/
 wheels/
 *.egg-info/
 .installed.cfg
@@ -48,6 +49,10 @@ htmlcov/
 .merge/expected_sha3_256.json
 .merge/merkle_root.json
 .merge/merkle_root_*.json
+
+# IOC download cache (iphone12_ioc_terminal.py) — keep tree, not contents
+artifacts/iocs/**
+!artifacts/iocs/.gitkeep
 
 # Logs
 *.log
