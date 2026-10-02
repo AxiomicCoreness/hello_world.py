@@ -55,7 +55,18 @@ Sample ~every 100 runs or 30 days; aggregate median. Calibrated estimate:
 
 ## 5. CAVD tensor
 
-**Blocked.** Rank-6 shape only until six axes are named on `docs/6cavd-channel-canvas.md`.
+**Defined** on `docs/6cavd-channel-canvas.md` as **Cadence-Aligned Visibility Domain** (operational, not physics).
+
+| Axis | Name |
+|------|------|
+| i | `branch` |
+| j | `heartbeat_class` |
+| k | `time_bucket` |
+| l | `completion` |
+| m | `ci_class` |
+| n | `event_kind` |
+
+Sparse `H[i,j,k,l,m,n]`; scalar HCR is the collapsed view over these axes.
 
 ## Payload seal (canonical JSON of analysis body, sha3-256)
 
