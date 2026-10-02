@@ -1,0 +1,80 @@
+name: Workflow parity
+
+# Not a clone of every workflow. One tick every 15 minutes dispatches
+# only the slot for that quarter-hour. 24 slots cover 6 hours.
+# 61 sibling workflows, at most 3 per tick. sovereign-ci-cd.yml is not
+# in this list; it has its own 0 */6 * * * schedule.
+# No actions/* uses. gh is on the GitHub-hosted image.
+# Sibling workflows that still call actions/checkout will startup_fail
+# on their own runs. This file only queues them.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "0-23; blank uses current UTC quarter-hour"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: workflow-parity-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    name: parity tick
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch this slot only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SLOT_INPUT: ${{ github.event.inputs.slot }}
+        run: |
+          set -u
+          if [ -n "${SLOT_INPUT}" ]; then
+            slot="${SLOT_INPUT}"
+          else
+            minute=$(date -u +%M)
+            hour=$(date -u +%H)
+            slot=$(( (10#$hour * 60 + 10#$minute) / 15 % 24 ))
+          fi
+          echo "slot=${slot}"
+          case "$slot" in
+            0) files="Hamiltonian_Full_Immersion.yml hypersurface.yml sovereign-run.yml" ;;
+            1) files="OIDC-handover-380.yml ledger-math-framework.yml sovereign-stack-ci.yml" ;;
+            2) files="agent-service-control.yml ledger-witness-continuity.yml sovereign-workload-matrix.yml" ;;
+            3) files="api-key-rotator.yml master-equation-ci.yml sovereignty-python-package.yml" ;;
+            4) files="argo-ci.yml md-scalar-matrix.yml symplectic-status.yml" ;;
+            5) files="catalogue.yml merge-engine.yml toolkit-54-exorcise.yml" ;;
+            6) files="cd-combinator-argo-rollout.yml mtls-cert-lifecycle.yml validate-contract.yml" ;;
+            7) files="cd-combinator.yml multibody-toi.yml verify-ledger.yml" ;;
+            8) files="debug-environment.yml north-star-witness.yml witness-chain-contracts.yml" ;;
+            9) files="deepseek-cd.yml oidc-cloud-providers.yml witness-chain-sqlite.yml" ;;
+            10) files="deepseek-ci-secrets.yml producer-axiom-verify.yml wood-dragon-dispatch.yml" ;;
+            11) files="deepseek-mesh-terminal.yml pytest.yml workflow-sync-6cavd.yml" ;;
+            12) files="deepseek-ndjson-ci.yml python-package-ci-correction.yml workload-smoke.yml" ;;
+            13) files="docker-main-image.yml python-package.yml" ;;
+            14) files="dual-ci-venv.yml quantum_reality_engine_510510.yml" ;;
+            15) files="e10-hyperbolic-pytest.yml restore-deepseek-cd-frozen.yml" ;;
+            16) files="e2e-key-check.yml reward-distribution.yml" ;;
+            17) files="eridanus-dual-smoke.yml scheduled-ci-sweep.yml" ;;
+            18) files="garden-surgery.yml secrets-context-example.yml" ;;
+            19) files="generate-frb-bridge.yml singularity-stream-ci.yml" ;;
+            20) files="generate-lock.yml sovereign-cicd.yml" ;;
+            21) files="gravastar-long-horizon.yml sovereign-core-sidecar.yml" ;;
+            22) files="gravastar-mcp-connector.yml sovereign-engine-final.yml" ;;
+            23) files="handover-via-380.yml sovereign-pulse.yml" ;;
+            *) echo "slot out of 0-23"; exit 1 ;;
+          esac
+          for f in $files; do
+            echo "dispatch $f"
+            gh workflow run "$f" --ref "${{ github.ref_name }}" || echo "dispatch soft-fail: $f"
+          done
