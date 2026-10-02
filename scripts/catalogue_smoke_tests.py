@@ -2,14 +2,11 @@
 """
 Smoke Test Catalogue — Entry 8958
 
-Revived from history, not rewritten:
-  source commit de3e470642bdce51050141707e103a336c1f1530
-  (Create catalogue_smoke_tests.py, 2026-08-22)
-
-Rev 2 (a7e2678) exited 1 when a target was missing. That is what failed
-Generate Smoke Catalogue #162. This file is the historical runner:
-it records FAILED and still writes docs/smoke_catalogue.json, then returns.
-History itself is unchanged.
+Runner revived from de3e470642bdce51050141707e103a336c1f1530.
+seal_sha3_256 backfill from a7e2678: digest is sha3-256 over the
+canonical body with the seal_sha3_256 field excluded.
+Missing targets are recorded. The catalogue is still written.
+Exit 0 so the workflow can version; status carries PASSED or FAILED.
 """
 
 import subprocess
@@ -17,6 +14,8 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+
+import yaml
 
 SMOKE_TESTS = [
     ["python", "quantum/security/soft_harness.py"],
@@ -28,91 +27,88 @@ SMOKE_TESTS = [
 ]
 
 ENTRY_INDEX = 8958
-LEDGER_DIR = Path("ledger")
-LEDGER_DIR.mkdir(exist_ok=True)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+LEDGER_DIR = REPO_ROOT / "ledger"
+CATALOGUE_PATH = REPO_ROOT / "docs" / "smoke_catalogue.json"
 
-def run_tests():
+
+def canonical(body: dict) -> str:
+    return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def run_tests() -> dict:
     results = []
     combined_output = b""
     all_passed = True
 
     for cmd in SMOKE_TESTS:
         print(f"Running: {' '.join(cmd)}")
+        record = {"command": " ".join(cmd)}
         try:
             proc = subprocess.run(
                 cmd,
-                cwd=Path(__file__).resolve().parent.parent,
+                cwd=REPO_ROOT,
                 capture_output=True,
                 text=True,
                 timeout=120,
             )
-            stdout = proc.stdout
-            stderr = proc.stderr
-            passed = proc.returncode == 0
-            all_passed = all_passed and passed
-            results.append({
-                "command": " ".join(cmd),
-                "returncode": proc.returncode,
-                "passed": passed,
-                "stdout": stdout[-2000:],
-                "stderr": stderr[-2000:],
-            })
-            combined_output += stdout.encode() + stderr.encode()
+            record["returncode"] = proc.returncode
+            record["passed"] = proc.returncode == 0
+            record["stdout"] = proc.stdout
+            record["stderr"] = proc.stderr
+            combined_output += proc.stdout.encode() + proc.stderr.encode()
         except subprocess.TimeoutExpired:
-            results.append({
-                "command": " ".join(cmd),
-                "returncode": -1,
-                "passed": False,
-                "error": "TIMEOUT",
-            })
-            all_passed = False
+            record["returncode"] = None
+            record["passed"] = False
+            record["error"] = "TIMEOUT"
         except (FileNotFoundError, OSError) as exc:
-            results.append({
-                "command": " ".join(cmd),
-                "returncode": None,
-                "passed": False,
-                "error": f"{type(exc).__name__}: {exc}",
-            })
-            all_passed = False
+            record["returncode"] = None
+            record["passed"] = False
+            record["error"] = f"{type(exc).__name__}: {exc}"
+        all_passed = all_passed and record["passed"]
+        results.append(record)
 
-    sha = hashlib.sha256(combined_output).hexdigest()
-    prefix = f"{ENTRY_INDEX}_{sha[:12]}"
     return {
         "entry": ENTRY_INDEX,
-        "prefix": prefix,
+        "output_sha3_256": hashlib.sha3_256(combined_output).hexdigest(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "all_passed": all_passed,
         "results": results,
-        "source_commit": "de3e470642bdce51050141707e103a336c1f1530",
-        "seal": f"∀∞φ² · SMOKE_CATALOGUE_{ENTRY_INDEX} · WOOD_DRAGON_0.91 · SEALED",
+        "revived_from": "de3e470642bdce51050141707e103a336c1f1530",
     }
 
-def main():
-    catalogue = run_tests()
-    out_path = Path("docs/smoke_catalogue.json")
-    out_path.parent.mkdir(exist_ok=True)
-    with open(out_path, "w") as f:
-        json.dump(catalogue, f, indent=2)
-    print(f"Catalogue written to {out_path}")
-    print(f"   Prefix: {catalogue['prefix']}")
-    print(f"   All passed: {catalogue['all_passed']}")
 
-    ledger_entry = {
+def main() -> int:
+    catalogue = run_tests()
+    CATALOGUE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CATALOGUE_PATH.write_text(json.dumps(catalogue, indent=2), encoding="utf-8")
+    print(f"Catalogue written to {CATALOGUE_PATH}")
+    print(f"  output_sha3_256: {catalogue['output_sha3_256']}")
+    print(f"  all_passed: {catalogue['all_passed']}")
+
+    entry = {
         "entry_index": ENTRY_INDEX,
         "event": "/smoke_test_catalogue",
         "status": "PASSED" if catalogue["all_passed"] else "FAILED",
         "timestamp": catalogue["timestamp"],
-        "prefix": catalogue["prefix"],
-        "hash": catalogue["prefix"].split("_")[1],
-        "seal": catalogue["seal"],
-        "witness": "8957 → 8958 — UNBROKEN",
-        "revived_from": "de3e470642bdce51050141707e103a336c1f1530",
+        "output_sha3_256": catalogue["output_sha3_256"],
+        "revived_from": catalogue["revived_from"],
+        "hash_algo": "sha3_256",
     }
+    entry["seal_sha3_256"] = hashlib.sha3_256(
+        canonical(entry).encode("utf-8")
+    ).hexdigest()
+
+    LEDGER_DIR.mkdir(parents=True, exist_ok=True)
     ledger_path = LEDGER_DIR / f"{ENTRY_INDEX}.yaml"
-    import yaml
-    with open(ledger_path, "w") as f:
-        yaml.dump(ledger_entry, f, default_flow_style=False)
+    ledger_path.write_text(
+        yaml.safe_dump(entry, sort_keys=True, allow_unicode=True),
+        encoding="utf-8",
+    )
     print(f"Ledger entry written: {ledger_path}")
+    print(f"  seal_sha3_256: {entry['seal_sha3_256']}")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
