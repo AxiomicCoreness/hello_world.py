@@ -1,0 +1,17 @@
+{
+  "kind": "status_receipt",
+  "subject": "pythonIDE/integration_manifest.py",
+  "subject_commit": "cc6b20e3dc007d710323268c140479daf444f44e",
+  "subject_blob": "33a8fa3a01d8d833415e5edbd67180418a8a7bff",
+  "body_digest": "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307",
+  "match": true,
+  "exit": 0,
+  "domain_total": 84,
+  "phi713_float": 1.019031240108485e+149,
+  "prior_commit": "2930ee78c7875debfd3e53ddf889199a48a74f61",
+  "prior_blob": "62abf58b14d7ed704510a3f37ac10d9e5ebf7f9e",
+  "memo_commit": "8844a4b37c0dd0364a6b11e9b37b2ca1517580f4",
+  "memo_blob": "5edfe030a86dc9498a0e2b9ddd3a3f002a6a284e",
+  "note": "seal covers this object only; not the manifest body and not this file's git blob",
+  "seal_sha3_256": "4c8653afe91be2ad4a368d2284105dcb4f22f1f1e1988c9de54e32a96f65cbaa"
+}
