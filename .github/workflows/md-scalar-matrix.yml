@@ -1,25 +1,7 @@
 name: MD Scalar Matrix
 
-# ─── Legal & Licensing Status (repository self-declaration) ───
-# Public repo license:   MIT — permission-only, no identity transfer.
-# Ledger entries:        MIT-licensed (YAML data) — no legal effect.
-# TOI optimizer:         MIT (public).
-# MCP fill / OIDC:       NOT in MIT tree — may be proprietary.
-# Dual-licensing value:  only for unreleased modules, not the MIT base.
-#
-# ─── Invariants ───
-# φ², ln φ, χ, θ — all hold.
-# MCP binding: 127.0.0.1:8024 — no external exposure.
-#
-# ─── Repository self-declaration ───
-# Identity: Clarke Yoursa Tee · H6VSH2 / LUMERIS ∀
-# (Preserved as the repository's own declaration.)
-#
-# ─── Workflow policy ───
-# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
-# ledger_policy: NO_LEDGER_WRITE — commits pythonIDE/md_scalar_matrix.png
-#                                  only; never touches ledger/**
-# role: scalar-matrix visualization + artifact persistence
+# Manual and path-push only. Removed from the parity slot and from cron.
+# ledger_policy: NO_LEDGER_WRITE — commits pythonIDE/md_scalar_matrix.png only.
 
 on:
   push:
@@ -30,20 +12,13 @@ on:
       - "README.md"
       - "docs/**"
       - ".github/workflows/md-scalar-matrix.yml"
-  schedule:
-    - cron: "17 */6 * * *"   # φ-harmonic: every 6 hours at :17
   workflow_dispatch:
 
 permissions:
-  contents: write   # required to commit pythonIDE/md_scalar_matrix.png
+  contents: write
 
-# Repo-scoped group (deliberately NOT ref-scoped).
-# Rationale: push to `main` and push to `deepseek` would otherwise
-# commit the same artifact path in parallel from different branches.
-# The auto-commit action would race on push. Serializing all runs of
 concurrency:
   group: md-scalar-matrix
-
 
 env:
   HASH_ALGO: sha3_256
@@ -90,7 +65,7 @@ jobs:
             echo "::error::${SCRIPT} did not produce ${ARTIFACT}"
             exit 1
           fi
-          echo "✅ generated ${ARTIFACT}"
+          echo "generated ${ARTIFACT}"
           ls -la "${ARTIFACT}"
 
       - name: Upload PNG
@@ -114,11 +89,8 @@ jobs:
         if: always()
         run: |
           {
-            echo "✅ MD Scalar Matrix completed."
-            echo "🔐 hash_algo: ${HASH_ALGO}"
-            echo "📦 artifact: ${ARTIFACT}"
-            echo "📄 ledger_policy: NO_LEDGER_WRITE — PNG only, never ledger/**"
-            echo "⚖️  license: MIT (public repo base) — permission-only, no identity transfer"
-            echo "🖥  MCP binding: 127.0.0.1:8024 — no external exposure"
-            echo "🎯 invariants: φ² · ln φ · χ · θ"
+            echo "MD Scalar Matrix completed."
+            echo "trigger: workflow_dispatch or path push"
+            echo "artifact: ${ARTIFACT}"
+            echo "ledger_policy: NO_LEDGER_WRITE"
           } >> "$GITHUB_STEP_SUMMARY"
