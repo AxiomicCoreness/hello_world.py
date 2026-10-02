@@ -13,9 +13,9 @@ It names commit 2930ee78 and blob 62abf58b, the file this record replaces.
 It is not the git identity of the file that stores this seal.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
 separators=(',', ':'), ensure_ascii false. It is not a field of body().
-AST_HEAD_SEAL is sha3_256 of this docstring. It is the fallback identity
-when the body seal is not the object being checked.
-main() recomputes both and exits 1 on body mismatch.
+AST_HEAD_SEAL is sha3_256 of this docstring as ast.get_docstring returns it.
+It is the fallback identity when the body seal is not the object being checked.
+main() recomputes both and exits 1 on mismatch.
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ STALE_SEALS = (
 )
 
 BODY_SEAL = "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307"
-AST_HEAD_SEAL = "0c14e159d623581b107afbd39809afde1e3c2f9b288891c448f45397c7730afb"
+AST_HEAD_SEAL = "d0bdfe583685c7a1cd1295bf92497e40cff3b65ce159c4bb4e9d1c3d1092c9a9"
 AST_HEAD_NAME = "Clarke Yoursa Tee"
 
 DOMAINS = {
