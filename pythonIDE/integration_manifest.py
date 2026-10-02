@@ -7,8 +7,10 @@ Retracted strings:
   9.96e148 is also wrong for this runtime
   7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root
 
+prior_attestation is inside body(), so changing it changes BODY_SEAL.
+It names the previous file. It is not the git identity of this file.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
-separators=(',', ':'). It is not inside the sealed payload.
+separators=(',', ':'). It is not a field of body().
 main() recomputes it and exits 1 on mismatch.
 """
 from __future__ import annotations
@@ -23,9 +25,10 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 STALE_SEALS = (
     "87301398874b89f98c9646bc8c0e5bdd361840db07ec282a8cf84e6f5157c528",
     "1360889a2f31a67737788ea1ef0ce6e36657d9c8f37c9af1eb1a03283604c3f2",
+    "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331",
 )
 
-BODY_SEAL = "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331"
+BODY_SEAL = "3b4ff596c8694275e22cda733632d5f7cd3dee22f8969aa4babc0a68960bae87"
 
 DOMAINS = {
     "temporal": 15,
@@ -48,6 +51,12 @@ LABELS = {
     "merkle_label_note": "32 hex chars; not a SHA3-256 digest",
 }
 
+PRIOR_ATTESTATION = {
+    "commit": "b4d42a1c6ad4b9abc23b4cc06fba1384184bfd15",
+    "blob": "3e3dd8018c8721dbf4729579d2be083f3a754c55",
+    "note": "identifies the previous file; not the git identity of the file that stores this seal",
+}
+
 
 def phi_powers() -> dict:
     out = {n: PHI ** n for n in range(-4, 8)}
@@ -67,6 +76,7 @@ def body() -> dict:
         "domain_total": sum(DOMAINS.values()),
         "domain_note": "declared tally, not a repo scan",
         "labels": LABELS,
+        "prior_attestation": PRIOR_ATTESTATION,
         "phi": PHI,
         "phi_powers": {str(k): powers[k] for k in sorted(powers)},
         "trinity_3_phi4": 3.0 * (PHI ** 4),
@@ -75,8 +85,8 @@ def body() -> dict:
         "phi713_note": "binary64 1.0190312401084850e+149; not 1; not 9.96e148",
         "half_phi_neg709": 0.5 * (PHI ** (-709)),
         "retracted_strings": [
-            "phi**713 ≈ 1",
-            "phi**713 ≈ 9.96e148",
+            "phi**713 \u2248 1",
+            "phi**713 \u2248 9.96e148",
             "78 total capabilities",
             "merkle_label is a SHA3-256 root",
         ],
@@ -99,6 +109,7 @@ def main() -> int:
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
         "phi_neg1000": payload["phi_powers"]["-1000"],
+        "prior_attestation": payload["prior_attestation"],
         "stale_rejected": list(STALE_SEALS),
     }, indent=2))
     return 0 if ok else 1
