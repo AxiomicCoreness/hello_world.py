@@ -1,12 +1,14 @@
 name: Sovereign CI/CD
 
-# Working method, rewired from sovereign-ci-green.yml run 37060594857 (success).
-# GitHub-hosted ubuntu-latest. No self-hosted runner. No actions/* uses.
-# actions/checkout and actions/setup-python are what produced startup_failure
-# with 0 jobs on run 2447. Do not add them back until the allowlist allows them.
-# ledger/8977.yaml stays frozen. This job does not write it.
+# Working method: GitHub-hosted ubuntu-latest, no self-hosted runner, no actions/*.
+# Schedule replaces manual-only dispatch. Every 6 hours UTC.
+# The other workflows are not fired here. workflow-parity.yml spaces them
+# across the same 6 hours, at most 3 per 15-minute tick.
+# ledger/8977.yaml stays frozen.
 
 on:
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -39,7 +41,7 @@ jobs:
           echo "ref=${{ github.ref }}"
           echo "sha=${{ github.sha }}"
           echo "oidc=${{ github.event.inputs.oidc_provider || 'offline' }}"
-          echo "runner=ubuntu-latest (GitHub-hosted, not self-hosted)"
-          echo "method=sovereign-ci-green.yml"
+          echo "schedule=0 */6 * * * UTC"
+          echo "runner=ubuntu-latest"
           echo "ledger/8977.yaml frozen; not written"
           exit 0
