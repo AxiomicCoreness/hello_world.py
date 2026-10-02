@@ -8,9 +8,10 @@ Retracted strings:
   7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root
 
 prior_attestation is inside body(), so changing it changes BODY_SEAL.
-It names the previous file. It is not the git identity of this file.
+It names commit 525ea945 and blob f94a585b, the file this record replaces.
+It is not the git identity of the file that stores this seal.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
-separators=(',', ':'). It is not a field of body().
+separators=(',', ':'), ensure_ascii false. It is not a field of body().
 main() recomputes it and exits 1 on mismatch.
 """
 from __future__ import annotations
@@ -26,9 +27,10 @@ STALE_SEALS = (
     "87301398874b89f98c9646bc8c0e5bdd361840db07ec282a8cf84e6f5157c528",
     "1360889a2f31a67737788ea1ef0ce6e36657d9c8f37c9af1eb1a03283604c3f2",
     "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331",
+    "3b4ff596c8694275e22cda733632d5f7cd3dee22f8969aa4babc0a68960bae87",
 )
 
-BODY_SEAL = "3b4ff596c8694275e22cda733632d5f7cd3dee22f8969aa4babc0a68960bae87"
+BODY_SEAL = "6a33f52cd4aedaf596a5296babd4c4d798294bb5f9d882a5c72122e7e75c1bc9"
 
 DOMAINS = {
     "temporal": 15,
@@ -52,9 +54,9 @@ LABELS = {
 }
 
 PRIOR_ATTESTATION = {
-    "commit": "b4d42a1c6ad4b9abc23b4cc06fba1384184bfd15",
-    "blob": "3e3dd8018c8721dbf4729579d2be083f3a754c55",
-    "note": "identifies the previous file; not the git identity of the file that stores this seal",
+    "commit": "525ea9457bde90a4fac7333b16754797e98f5b02",
+    "blob": "f94a585b8251614a21136b41da89854efce8ffaa",
+    "note": "commit and blob of the file this record replaces; not the git identity of the file that stores this seal",
 }
 
 
@@ -85,8 +87,8 @@ def body() -> dict:
         "phi713_note": "binary64 1.0190312401084850e+149; not 1; not 9.96e148",
         "half_phi_neg709": 0.5 * (PHI ** (-709)),
         "retracted_strings": [
-            "phi**713 \u2248 1",
-            "phi**713 \u2248 9.96e148",
+            "phi**713 ≈ 1",
+            "phi**713 ≈ 9.96e148",
             "78 total capabilities",
             "merkle_label is a SHA3-256 root",
         ],
@@ -94,7 +96,7 @@ def body() -> dict:
 
 
 def seal(payload: dict) -> str:
-    canon = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    canon = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha3_256(canon.encode("utf-8")).hexdigest()
 
 
@@ -102,16 +104,17 @@ def main() -> int:
     payload = body()
     digest = seal(payload)
     ok = digest == BODY_SEAL and digest not in STALE_SEALS
+    att = payload["prior_attestation"]
     print(json.dumps({
         "seal_sha3_256": digest,
         "body_seal_recorded": BODY_SEAL,
         "match": ok,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
-        "phi_neg1000": payload["phi_powers"]["-1000"],
-        "prior_attestation": payload["prior_attestation"],
+        "prior_commit": att["commit"],
+        "prior_blob": att["blob"],
         "stale_rejected": list(STALE_SEALS),
-    }, indent=2))
+    }, indent=2, ensure_ascii=False))
     return 0 if ok else 1
 
 
