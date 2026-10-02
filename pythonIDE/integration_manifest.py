@@ -6,11 +6,10 @@ Retracted strings:
   phi**713 ≈ 1 — binary64 returns 1.0190312401084850e+149
   9.96e148 is also wrong for this runtime
   7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root
-  87301398874b89f98c9646bc8c0e5bdd361840db07ec282a8cf84e6f5157c528
-    was the seal of the previous body; it does not match this body
 
-BODY_SEAL below is sha3_256 of canonical JSON of body(), sort_keys,
+BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
 separators=(',', ':'). It is not inside the sealed payload.
+main() recomputes it and exits 1 on mismatch.
 """
 from __future__ import annotations
 
@@ -21,13 +20,12 @@ import sys
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 
-# Superseded. Do not treat as the current body digest.
 STALE_SEALS = (
     "87301398874b89f98c9646bc8c0e5bdd361840db07ec282a8cf84e6f5157c528",
+    "1360889a2f31a67737788ea1ef0ce6e36657d9c8f37c9af1eb1a03283604c3f2",
 )
 
-# sha3_256(canonical body()). Recomputed in main(); mismatch is exit 1.
-BODY_SEAL = "1360889a2f31a67737788ea1ef0ce6e36657d9c8f37c9af1eb1a03283604c3f2"
+BODY_SEAL = "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331"
 
 DOMAINS = {
     "temporal": 15,
