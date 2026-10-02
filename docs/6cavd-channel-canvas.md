@@ -1,41 +1,55 @@
-# 6CAVD channel canvas (write-first)
+# 6CAVD channel canvas
 
 **Ground:** GitHub `AxiomicCoreness/hello_world.py` / `main` only.
-**Role:** Design canvas for workflow_sync on the 6CAVD channel.
-**Not physics:** This file does not claim QM bounds, forces, or telekinesis.
+**Expansion (this repo):** **C**adence-**A**ligned **V**isibility **D**omain — operational coordinates for heartbeat / clobber / workflow_sync visibility.  
+**Not physics:** Not a QM, medical, or telekinetic domain. Payload claims do not become physics by sealing.
 
 ## Ledger vs payload
 
 | Layer | Rule |
 |-------|------|
 | Ledger | Append-only; attest at tail; no rewrite of past `e_i` |
-| 6CAVD payload | Optional structured data in a live or attest entry |
+| 6CAVD payload | Optional coordinate + count in a live or attest entry |
 | Workflow | Sync / report only; does not insert history |
 
-## Six channels (placeholders — names required before tensor schema)
+## Six axes (defined)
 
-Earlier work left rank-6 CAVD **blocked** until axes are named. Until then:
+Tensor index `H[i,j,k,l,m,n]` is sparse; values are monotone counters or `{0=started-incomplete, ≥1=completed seq}`.
 
-| Slot | Name | Range / enum | Status |
-|------|------|--------------|--------|
-| 0 | _TBD_ | _TBD_ | open |
-| 1 | _TBD_ | _TBD_ | open |
-| 2 | _TBD_ | _TBD_ | open |
-| 3 | _TBD_ | _TBD_ | open |
-| 4 | _TBD_ | _TBD_ | open |
-| 5 | _TBD_ | _TBD_ | open |
+| Slot | Axis | Name | Range / enumeration |
+|------|------|------|---------------------|
+| **i** | 0 | `branch` | `{main}` (extend only when a branch exists on this remote) |
+| **j** | 1 | `heartbeat_class` | `{seal-verify, rotate-keys, mesh-pulse, workflow-sync-6cavd, other}` |
+| **k** | 2 | `time_bucket` | UTC calendar day `YYYY-MM-DD` (or run window id) |
+| **l** | 3 | `completion` | `{completed, incomplete, gap}` — gap = missing id in monotone sweep |
+| **m** | 4 | `ci_class` | `{ubuntu-latest, self-hosted, unknown}` |
+| **n** | 5 | `event_kind` | `{live, attest, analysis, ci_row_bookkeeping}` |
 
-Do not invent axis names in CI. Fill this table, then enable tensor checks.
+### Monotonicity
+
+Within fixed `(i,j,k,m,n)` and `l=completed`, `heartbeat_id` increases by 1.  
+`l=incomplete` ↔ `completed_at: null`.  
+`l=gap` ↔ expected id missing in the sweep (observable clobber).
+
+### Storage
+
+Sparse map keyed by `(branch, heartbeat_class, time_bucket, completion, ci_class, event_kind)`.  
+Dense array only if product of cardinalities stays small.
 
 ## workflow_sync contract
 
-1. **Canvas first** — this document is the human-readable contract.
-2. **Workflow** — `.github/workflows/workflow-sync-6cavd.yml` reads/reports status; does not rewrite `ledger/`.
-3. **Append path** — any sealed outcome is a **new tail** entry (live or `kind: attest`), never a mid-chain insert.
-4. **Duality** — offline compute optional; online step is sync/report on GitHub only.
+1. **Canvas first** — this document is the axis contract.
+2. **Workflow** — `.github/workflows/workflow-sync-6cavd.yml` reports status; does not rewrite `ledger/`.
+3. **Append path** — sealed outcomes are **new tail** entries only.
+4. **Duality** — offline optional; online = GitHub sync/report only.
 
-## Acceptance (minimal)
+## Acceptance
 
-- [ ] Six axis names filled above
-- [ ] Workflow runs without claiming incomplete tensor schema
-- [ ] No `ledger/` rewrites in the workflow
+- [x] Six axis names filled
+- [ ] Workflow step summary lists axes by name (optional follow-up)
+- [x] No `ledger/` rewrites required by this canvas
+
+## Cross-ref
+
+- Scalar HCR: `docs/hcr-scalar-schema.md`
+- Workflow: `.github/workflows/workflow-sync-6cavd.yml`
