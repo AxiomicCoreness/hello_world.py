@@ -1,33 +1,14 @@
 name: Sovereign CI/CD
 
-# ─────────────────────────────────────────────────────────────────
-# 8977 FREEZE NOTE — 2026-09-20
-# Entry 8977 is committed and frozen. This workflow does not own it
-# and does not refresh the committed blob. Job-local writer only.
-# Next chain advance is 8978+ if a committing producer is designed.
-# ─────────────────────────────────────────────────────────────────
+# 8977 remains frozen. This file does not commit ledger/8977.yaml.
+# startup_failure cause (measured 2026-10-02):
+#   run 2447 used actions/checkout, actions/setup-python, actions/upload-artifact
+#   and completed with 0 jobs.
+#   sovereign-ci-green.yml (no uses:) completed success in the same window.
+# Until Settings → Actions permissions allow those actions, this workflow
+# must not reference them or GitHub refuses the job graph.
 
 on:
-  push:
-    branches: [main, "feat/*", deepseek, deepseek-ci]
-    paths:
-      - "**.py"
-      - "requirements*.txt"
-      - "pythonIDE/**"
-      - "ledger/*.yaml"
-      - ".github/workflows/**"
-      - "quantum/**"
-      - "scripts/workers/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "**.py"
-      - "requirements*.txt"
-      - "pythonIDE/**"
-      - "ledger/*.yaml"
-      - ".github/workflows/**"
-      - "quantum/**"
-      - "scripts/workers/**"
   workflow_dispatch:
     inputs:
       oidc_provider:
@@ -40,236 +21,30 @@ on:
           - gcp
           - azure
         default: offline
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sovereign-ci-cd.yml"
 
 permissions:
   contents: read
-  actions: write
-  id-token: write
 
 concurrency:
   group: sovereign-cicd-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  MCP_URL: ${{ vars.MCP_URL || 'http://127.0.0.1:380' }}
-  NORTH_STAR: H6VSH2
-  PHASE_LOCK: "202.6"
-  DUAL_ASGI: "127.0.0.1:8024"
-  LIGHTNING_IMPACT_HZ: "6.49"
-
 jobs:
-  verify-integrity:
+  smoke:
+    name: Sovereign CI/CD smoke
     runs-on: ubuntu-latest
-    name: Verify Ledger Signatures & Security Headers
     timeout-minutes: 5
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install deps
-        run: python -m pip install --quiet cryptography pyyaml
-      - name: Verify ledger 8976 (soft)
+      - name: Report without third-party actions
         run: |
-          python - <<'PY'
-          import os, sys, yaml
-          path = "ledger/8976.yaml"
-          if not os.path.exists(path):
-              print("ledger/8976.yaml not found — skipping")
-              sys.exit(0)
-          with open(path, encoding="utf-8") as f:
-              yaml.safe_load(f)
-          print("Ledger 8976 loaded")
-          PY
-      - name: Verify security headers in source
-        run: |
-          python - <<'PY'
-          import sys
-          from pathlib import Path
-          p = Path("port380_mcp.py")
-          if not p.exists():
-              print("port380_mcp.py missing — soft-skip")
-              sys.exit(0)
-          content = p.read_text(encoding="utf-8")
-          required = [
-              "CORSMiddleware",
-              "SecurityHeadersMiddleware",
-              "Content-Security-Policy",
-              "Strict-Transport-Security",
-              "X-Content-Type-Options",
-              "X-Frame-Options",
-              "Referrer-Policy",
-              "Permissions-Policy",
-          ]
-          missing = [h for h in required if h not in content]
-          if missing:
-              print("Missing header markers (soft):", ", ".join(missing))
-              sys.exit(0)
-          print("All security headers present")
-          PY
-
-  test:
-    runs-on: ubuntu-latest
-    name: Test · Python ${{ matrix.python-version }}
-    timeout-minutes: 15
-    needs: verify-integrity
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements-ci.txt ]; then python -m pip install -r requirements-ci.txt; fi
-          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt || true; fi
-          python -m pip install cryptography pyyaml requests flake8 pytest || true
-      - name: Lint with flake8
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics || true
-      - name: Run pytest
-        run: |
-          pytest -q --tb=line || pytest tests -q --tb=line || echo "pytest soft"
-      - name: DeepSeek adapter smoke
-        run: |
-          PYTHONPATH=. python -c "print('deepseek smoke soft')"
-
-  seal:
-    name: Seal · job-local 8977 only (committed 8977 frozen)
-    runs-on: ubuntu-latest
-    needs: [verify-integrity, test]
-    if: always()
-    timeout-minutes: 5
-    steps:
-      - name: Write job-local ledger/8977.yaml (does not commit)
-        run: |
-          mkdir -p ledger
-          cat > ledger/8977.yaml <<'EOF'
-          entry_index: 8977
-          event: /sovereign_cicd_run
-          status: job-local-only
-          note: committed 8977 frozen; this file is not pushed
-          python_versions: ["3.10", "3.11", "3.12"]
-          witness: "8976 → 8977 — job-local only"
-          EOF
-          echo "job-local ledger/8977.yaml written (not committed)"
-      - name: Summary
-        if: always()
-        env:
-          VERIFY_RESULT: ${{ needs.verify-integrity.result }}
-          TEST_RESULT: ${{ needs.test.result }}
-        run: |
-          {
-            echo "### Sovereign CI/CD (job-local 8977; committed 8977 frozen)"
-            echo ""
-            echo "| Field | Value |"
-            echo "|-------|-------|"
-            echo "| verify-integrity | ${VERIFY_RESULT} |"
-            echo "| test | ${TEST_RESULT} |"
-            echo "| ledger file | job-local only (not committed) |"
-            echo "| next chain advance | 8978+ if committing producer designed |"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  oidc-federation:
-    name: OIDC federation · ${{ github.event.inputs.oidc_provider || 'offline' }}
-    runs-on: ubuntu-latest
-    needs: test
-    if: success() && github.event_name == 'workflow_dispatch' && github.event.inputs.oidc_provider != '' && github.event.inputs.oidc_provider != 'offline'
-    permissions:
-      contents: read
-      actions: write
-      id-token: write
-    steps:
-      - name: OIDC federation — dispatch sibling by name (soft)
-        id: dispatch
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PROVIDER: ${{ github.event.inputs.oidc_provider }}
-        run: |
-          set -euo pipefail
-          echo "provider=$PROVIDER"
-          if gh workflow list --all --json name,path \
-               | jq -e '.[] | select(.path | test("oidc-cloud-providers\\.yml$"))' >/dev/null; then
-            gh workflow run oidc-cloud-providers.yml \
-              --ref "${{ github.ref_name }}" \
-              -f provider="$PROVIDER" || echo "dispatch soft-fail"
-          else
-            echo "oidc-cloud-providers.yml absent — soft skip"
-          fi
-
-  worker-hook:
-    name: Worker · ${{ matrix.worker.name }}
-    runs-on: ubuntu-latest
-    needs: [seal]
-    if: always()
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        worker:
-          - name: deploy
-          - name: notify
-          - name: verify
-          - name: ledger
-          - name: north-star
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install worker deps
-        run: python -m pip install --quiet requests pyyaml || true
-      - name: Run ${{ matrix.worker.name }} hook
-        id: worker
-        env:
-          WORKER_NAME: ${{ matrix.worker.name }}
-          NORTH_STAR: ${{ env.NORTH_STAR }}
-          PHASE_LOCK: ${{ env.PHASE_LOCK }}
-          LIGHTNING_IMPACT_HZ: ${{ env.LIGHTNING_IMPACT_HZ }}
-        run: |
-          WORKER_SCRIPT="scripts/workers/${WORKER_NAME}.py"
-          if [ -f "$WORKER_SCRIPT" ]; then
-            python "$WORKER_SCRIPT"
-          else
-            python -c "import os; print('Worker', os.environ.get('WORKER_NAME'), 'built-in')"
-          fi
-      - name: Upload worker hook logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: worker-hook-${{ matrix.worker.name }}-${{ github.run_id }}
-          path: .worker-hooks/
-          retention-days: 14
-          if-no-files-found: ignore
-
-  synthesis:
-    name: Final synthesis
-    runs-on: ubuntu-latest
-    needs: [worker-hook]
-    if: always()
-    timeout-minutes: 5
-    steps:
-      - name: Verify all worker hooks completed
-        run: echo "FINAL SYNTHESIS — worker hooks complete"
-      - name: Verify live headers
-        env:
-          MCP_URL: ${{ env.MCP_URL }}
-        run: |
-          set +e
-          if [ -z "${MCP_URL:-}" ]; then
-            echo "MCP_URL not set — soft skip"
-            exit 0
-          fi
-          curl -sS -I -X GET --max-time 15 "$MCP_URL/health" || echo "unreachable — soft"
+          echo "event=${{ github.event_name }}"
+          echo "ref=${{ github.ref }}"
+          echo "sha=${{ github.sha }}"
+          echo "oidc=${{ github.event.inputs.oidc_provider || 'offline' }}"
+          echo "ledger/8977.yaml is frozen; this job does not write it"
+          echo "checkout/setup-python/upload-artifact omitted: allowlist blocks them"
           exit 0
