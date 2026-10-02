@@ -1,0 +1,29 @@
+name: Sovereign CI Green
+
+# No actions/* uses. If the repo allowlist blocks checkout/setup-python,
+# this workflow can still schedule. It does not touch ledger/8977.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sovereign-ci-green-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: green smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report and exit 0
+        run: |
+          echo "event=${{ github.event_name }}"
+          echo "ref=${{ github.ref }}"
+          echo "sha=${{ github.sha }}"
+          echo "working order: docs/WORKING_ORDER.md"
+          echo "ledger 8977 remains frozen; this job does not write it"
+          exit 0
