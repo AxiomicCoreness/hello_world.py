@@ -15,9 +15,9 @@ produced_by_blob dirt is this file only, compared with HEAD:this path.
 Dirt in any other path does not mark it dirty. Untracked means this
 file is not at HEAD.
 
-docstring_mode is asserted by the subject (ast.get_docstring, cleandoc).
-This tool does not derive it. A call-site change to clean=False would
-not be seen here.
+docstring_mode is asserted by the subject and checked there:
+hashed text must equal inspect.cleandoc of the raw slice. This tool
+does not derive it.
 """
 from __future__ import annotations
 
@@ -28,9 +28,9 @@ import sys
 from pathlib import Path
 
 SUBJECT = "pythonIDE/integration_manifest.py"
-SUBJECT_COMMIT = "15fc1c471892c5669146e4c800b8154f72593d3b"
-SUBJECT_BLOB = "d957c0a84c6c96acabf5e6cd0d9e690f3c26938b"
-FILE_SHA3_256 = "53196c0470792eecda7ed7b4adf9dbd354259be79211dc9654ecbad9900d6d96"
+SUBJECT_COMMIT = "3b467f3fc86328bc2e7f5bbcfd82f8cc2cdecdeb"
+SUBJECT_BLOB = "86abe338a5c0d7d68d5471ee8c2a31f15848e7bf"
+FILE_SHA3_256 = "b04c3625f4ce982a868badbf8d89712d1400841c08ae34bd0b3af3e7e163bd63"
 TOOL = "pythonIDE/seal_manifest_bytes.py"
 
 
@@ -78,7 +78,7 @@ def main() -> int:
         "file_sha3_256": digest,
         "recorded_file_sha3_256": FILE_SHA3_256,
         "docstring_mode": "cleandoc",
-        "docstring_via": "asserted by subject, not derived here",
+        "docstring_via": "subject checks equals inspect.cleandoc(raw)",
         "outcome": "ok" if ok else "file_mismatch",
         "floor": "this tool is unsealed",
         **who,
