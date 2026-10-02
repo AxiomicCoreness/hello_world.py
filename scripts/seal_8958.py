@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""scripts/seal_8958.py — write and seal ledger/8958.yaml (SHA3-256).
+"""scripts/seal_8958.py — write ledger/8958.yaml with seal_sha3_256.
 
-Column-zero source so YAML block scalars cannot inject IndentationError.
-Seal: ∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED
-Witness: 8957 → 8958 — UNBROKEN
+Ceremonial seal string is a label. The verifiable field is seal_sha3_256,
+sha3-256 over the canonical body with that field excluded.
+status is FAILED when the catalogue records all_passed false.
 """
 from __future__ import annotations
 
@@ -19,6 +19,10 @@ HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
 LEDGER_DIR = os.environ.get("LEDGER_DIR", "ledger")
 
 
+def canonical(body: dict) -> str:
+    return json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
 def main() -> None:
     path = Path(LEDGER_DIR) / "8958.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -26,50 +30,39 @@ def main() -> None:
 
     catalogue = Path("docs/smoke_catalogue.json")
     catalogue_digest = ""
-    catalogue_count = 0
+    all_passed = False
     if catalogue.exists():
         raw = catalogue.read_bytes()
-        catalogue_digest = hashlib.new(HASH_ALGO, raw).hexdigest()
+        catalogue_digest = hashlib.sha3_256(raw).hexdigest()
         try:
             parsed = json.loads(raw.decode("utf-8"))
             if isinstance(parsed, dict):
-                catalogue_count = len(
-                    parsed.get("tests") or parsed.get("catalogue") or parsed
-                )
-            elif isinstance(parsed, list):
-                catalogue_count = len(parsed)
+                all_passed = bool(parsed.get("all_passed"))
         except Exception:
-            catalogue_count = 0
+            all_passed = False
 
     entry = {
         "entry_index": 8958,
         "event": "/generate_smoke_catalogue",
-        "status": "SUCCESS",
+        "status": "PASSED" if all_passed else "FAILED",
         "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "hash_algo": HASH_ALGO,
         "catalogue_path": "docs/smoke_catalogue.json",
         "catalogue_sha3_256": catalogue_digest,
-        "catalogue_count": catalogue_count,
-        "witness": "8957 → 8958 — UNBROKEN",
-        "seal": "∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED",
+        "revived_from": "de3e470642bdce51050141707e103a336c1f1530",
     }
-    body = {k: v for k, v in entry.items() if k != "seal"}
-    canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
-    h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-    entry["seal"] = entry["seal"] + " · " + h
+    entry["seal_sha3_256"] = hashlib.sha3_256(
+        canonical(entry).encode("utf-8")
+    ).hexdigest()
 
     path.write_text(
-        yaml.dump(
-            entry,
-            sort_keys=False,
-            default_flow_style=False,
-            allow_unicode=True,
-        )
+        yaml.safe_dump(entry, sort_keys=True, allow_unicode=True),
+        encoding="utf-8",
     )
-    print("📋 Ledger entry 8958 written.")
-    print(f"✅ Sealed 8958 · {HASH_ALGO}:{h[:16]}...")
-    print(f"   catalogue_sha3_256 = {catalogue_digest[:16] or '(none)'}...")
-    print(f"   catalogue_count    = {catalogue_count}")
+    print("Ledger entry 8958 written.")
+    print(f"seal_sha3_256: {entry['seal_sha3_256']}")
+    print(f"status: {entry['status']}")
+    print(f"catalogue_sha3_256: {catalogue_digest or '(none)'}")
 
 
 if __name__ == "__main__":
