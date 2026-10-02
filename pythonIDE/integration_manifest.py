@@ -8,7 +8,7 @@ Retracted strings:
   7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root
 
 prior_attestation is inside body(), so changing it changes BODY_SEAL.
-It names commit 525ea945 and blob f94a585b, the file this record replaces.
+It names commit 2930ee78 and blob 62abf58b, the file this record replaces.
 It is not the git identity of the file that stores this seal.
 BODY_SEAL is sha3_256 of canonical JSON of body(), sort_keys,
 separators=(',', ':'), ensure_ascii false. It is not a field of body().
@@ -28,9 +28,10 @@ STALE_SEALS = (
     "1360889a2f31a67737788ea1ef0ce6e36657d9c8f37c9af1eb1a03283604c3f2",
     "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331",
     "3b4ff596c8694275e22cda733632d5f7cd3dee22f8969aa4babc0a68960bae87",
+    "6a33f52cd4aedaf596a5296babd4c4d798294bb5f9d882a5c72122e7e75c1bc9",
 )
 
-BODY_SEAL = "6a33f52cd4aedaf596a5296babd4c4d798294bb5f9d882a5c72122e7e75c1bc9"
+BODY_SEAL = "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307"
 
 DOMAINS = {
     "temporal": 15,
@@ -54,8 +55,8 @@ LABELS = {
 }
 
 PRIOR_ATTESTATION = {
-    "commit": "525ea9457bde90a4fac7333b16754797e98f5b02",
-    "blob": "f94a585b8251614a21136b41da89854efce8ffaa",
+    "commit": "2930ee78c7875debfd3e53ddf889199a48a74f61",
+    "blob": "62abf58b14d7ed704510a3f37ac10d9e5ebf7f9e",
     "note": "commit and blob of the file this record replaces; not the git identity of the file that stores this seal",
 }
 
