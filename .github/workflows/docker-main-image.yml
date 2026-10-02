@@ -20,7 +20,7 @@ on:
       - "quantum/**"
       - "deepseek/**"
       - "scripts/docker_build_push_main.sh"
-      - ".github/workflows/docker_main_image.yml"
+      - ".github/workflows/docker-main-image.yml"
   workflow_dispatch:
     inputs:
       no_cache:
