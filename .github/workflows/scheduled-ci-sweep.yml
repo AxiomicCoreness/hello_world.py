@@ -1,0 +1,58 @@
+name: Scheduled CI Sweep
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-ci-sweep
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate workflows and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install CI dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-ci.txt pyyaml
+
+      - name: Parse every workflow YAML file
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          import yaml
+
+          workflow_dir = Path(".github/workflows")
+          workflows = sorted((*workflow_dir.glob("*.yml"), *workflow_dir.glob("*.yaml")))
+          if not workflows:
+              raise SystemExit("No workflow YAML files found")
+
+          for workflow in workflows:
+              try:
+                  yaml.compose(workflow.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+              except yaml.YAMLError as error:
+                  raise SystemExit(f"Invalid workflow YAML: {workflow}: {error}") from error
+
+          print(f"Parsed {len(workflows)} workflow YAML files")
+          PY
+
+      - name: Run repository tests
+        run: python -m pytest -q tests/test_reward_protocol.py tests/test_quantum_deepseek_mesh_terminal.py --maxfail=5
