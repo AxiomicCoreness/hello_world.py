@@ -2,11 +2,11 @@ name: Workflow parity
 
 # Not a clone of every workflow. One tick every 15 minutes dispatches
 # only the slot for that quarter-hour. 24 slots cover 6 hours.
-# 61 sibling workflows, at most 3 per tick. sovereign-ci-cd.yml is not
-# in this list; it has its own 0 */6 * * * schedule.
+# Manual-only (not in a slot): Hamiltonian_Full_Immersion.yml,
+# OIDC-handover-380.yml, sovereign-workload-matrix.yml,
+# api-key-rotator.yml, md-scalar-matrix.yml, sovereign-pulse.yml.
+# Those six stay workflow_dispatch. sovereign-ci-cd.yml has its own cron.
 # No actions/* uses. gh is on the GitHub-hosted image.
-# Sibling workflows that still call actions/checkout will startup_fail
-# on their own runs. This file only queues them.
 
 on:
   schedule:
@@ -48,11 +48,11 @@ jobs:
           fi
           echo "slot=${slot}"
           case "$slot" in
-            0) files="Hamiltonian_Full_Immersion.yml hypersurface.yml sovereign-run.yml" ;;
-            1) files="OIDC-handover-380.yml ledger-math-framework.yml sovereign-stack-ci.yml" ;;
-            2) files="agent-service-control.yml ledger-witness-continuity.yml sovereign-workload-matrix.yml" ;;
-            3) files="api-key-rotator.yml master-equation-ci.yml sovereignty-python-package.yml" ;;
-            4) files="argo-ci.yml md-scalar-matrix.yml symplectic-status.yml" ;;
+            0) files="hypersurface.yml sovereign-run.yml" ;;
+            1) files="ledger-math-framework.yml sovereign-stack-ci.yml" ;;
+            2) files="agent-service-control.yml ledger-witness-continuity.yml" ;;
+            3) files="master-equation-ci.yml sovereignty-python-package.yml" ;;
+            4) files="argo-ci.yml symplectic-status.yml" ;;
             5) files="catalogue.yml merge-engine.yml toolkit-54-exorcise.yml" ;;
             6) files="cd-combinator-argo-rollout.yml mtls-cert-lifecycle.yml validate-contract.yml" ;;
             7) files="cd-combinator.yml multibody-toi.yml verify-ledger.yml" ;;
@@ -71,7 +71,7 @@ jobs:
             20) files="generate-lock.yml sovereign-cicd.yml" ;;
             21) files="gravastar-long-horizon.yml sovereign-core-sidecar.yml" ;;
             22) files="gravastar-mcp-connector.yml sovereign-engine-final.yml" ;;
-            23) files="handover-via-380.yml sovereign-pulse.yml" ;;
+            23) files="handover-via-380.yml" ;;
             *) echo "slot out of 0-23"; exit 1 ;;
           esac
           for f in $files; do
