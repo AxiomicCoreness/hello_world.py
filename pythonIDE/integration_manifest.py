@@ -110,7 +110,8 @@ def seal(payload: dict) -> str:
 
 
 def ast_head_seal(source: str) -> str:
-    # Membership test only. The digest is the claim about the bytes.
+    # docstring_mode: cleandoc. ast.get_docstring runs inspect.cleandoc.
+    # Not the literal source slice. Membership test only, not authentication.
     doc = ast.get_docstring(ast.parse(source))
     if not doc or AST_HEAD_NAME not in doc:
         raise ValueError("AST head missing Clarke Yoursa Tee")
@@ -140,6 +141,8 @@ def main() -> int:
         "ast_head_name": AST_HEAD_NAME,
         "name_check": "membership, not authentication",
         "code_coverage": "neither digest covers executable code",
+        "docstring_mode": "cleandoc",
+        "docstring_via": "ast.get_docstring",
         "outcome": outcome,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
