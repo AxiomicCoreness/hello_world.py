@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """External byte seal for pythonIDE/integration_manifest.py.
 
-This file is not the subject. It is the floor of this chain: nothing
-here seals this tool. Its authority is the review of commit 11e535c3
-and of whatever commit replaces it. Editing this file to print a
-constant would not move the subject seals.
+This file is the floor. Nothing in the subject seals it.
 
-Which bytes: git cat-file blob SUBJECT_BLOB. That is the committed
-object, LF as stored. open(path).read() is a working-tree read and is
-rejected. CRLF checkout bytes are a different digest.
+Which bytes, three different numbers:
+  file_sha3_256 = SHA3-256(raw bytes from git cat-file blob).
+    Content hash. Not a git OID. No CRLF conversion, no cleandoc.
+  subject_blob = SHA-1(b"blob " + len + b"\0" + raw bytes).
+    Git blob object ID, SHA-1 mode. 40 hex.
+  A SHA-256 git OID is not used. This repo is not a SHA-256 repo.
 
-Which Python: hashlib.sha3_256 is the hash. Interpreter pin below is
-the version that produced the recorded digest, not a claim that every
-interpreter will agree on ast.get_docstring. This tool does not call
-ast.get_docstring.
+Working-tree reads are rejected. A path argument exits 2.
+
+docstring_mode is not computed here. The subject prints
+docstring_mode=cleandoc via ast.get_docstring. That is a stdlib
+contract, not a raw slice of the docstring.
+
+produced_by_blob is the git blob ID of this file at HEAD. If the
+working tree differs, the receipt says dirty. If the file is not in
+git, the field is null.
 """
 from __future__ import annotations
 
@@ -21,57 +26,63 @@ import hashlib
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 SUBJECT = "pythonIDE/integration_manifest.py"
-SUBJECT_COMMIT = "dd69eb8b028822d2b15c94db98fb93786b1c78f9"
-SUBJECT_BLOB = "72ba21ef87d001e3e0b7eda70dbb7c35b6ee4ef7"
-FILE_SHA3_256 = "8f3e4eb6434d3fc079491c7763b454c15d00095a928b934f1b01e311862859e1"
-INTERPRETER = "3.10.21 (main, Sep 19 2026, 01:08:03) [GCC 12.2.0]"
+SUBJECT_COMMIT = "15fc1c471892c5669146e4c800b8154f72593d3b"
+SUBJECT_BLOB = "d957c0a84c6c96acabf5e6cd0d9e690f3c26938b"
+FILE_SHA3_256 = "53196c0470792eecda7ed7b4adf9dbd354259be79211dc9654ecbad9900d6d96"
+TOOL = "pythonIDE/seal_manifest_bytes.py"
 
 
-def committed_blob() -> bytes:
-    proc = subprocess.run(
-        ["git", "cat-file", "blob", SUBJECT_BLOB],
-        capture_output=True,
-    )
+def git_bytes(args: list[str]) -> bytes | None:
+    proc = subprocess.run(["git", *args], capture_output=True)
     if proc.returncode != 0:
-        raise RuntimeError(proc.stderr.decode("utf-8", "replace").strip() or "git cat-file failed")
+        return None
     return proc.stdout
+
+
+def producer() -> dict:
+    head = git_bytes(["rev-parse", f"HEAD:{TOOL}"])
+    if head is None:
+        return {"produced_by_blob": None, "producer_state": "untracked"}
+    blob = head.decode().strip()
+    raw = git_bytes(["cat-file", "blob", blob])
+    here = Path(__file__).read_bytes()
+    if raw is None:
+        return {"produced_by_blob": blob, "producer_state": "unreadable"}
+    if raw != here:
+        return {"produced_by_blob": blob, "producer_state": "dirty"}
+    return {"produced_by_blob": blob, "producer_state": "clean"}
 
 
 def main() -> int:
     if len(sys.argv) > 1:
-        print(json.dumps({
-            "outcome": "rejected",
-            "reason": "path arguments are working-tree reads; use git cat-file blob",
-        }, indent=2))
+        print(json.dumps({"outcome": "rejected", "reason": "path arguments are working-tree reads"}, indent=2))
         return 2
-    try:
-        raw = committed_blob()
-        source = "git cat-file blob"
-    except (OSError, RuntimeError) as exc:
-        print(json.dumps({
-            "outcome": "unread",
-            "reason": str(exc),
-            "recorded": FILE_SHA3_256,
-            "subject_blob": SUBJECT_BLOB,
-        }, indent=2))
+    raw = git_bytes(["cat-file", "blob", SUBJECT_BLOB])
+    who = producer()
+    if raw is None:
+        print(json.dumps({"outcome": "unread", "subject_blob": SUBJECT_BLOB, **who}, indent=2))
         return 2
     digest = hashlib.sha3_256(raw).hexdigest()
-    ok = digest == FILE_SHA3_256
+    oid = hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
+    ok = digest == FILE_SHA3_256 and oid == SUBJECT_BLOB
     print(json.dumps({
-        "tool": "pythonIDE/seal_manifest_bytes.py",
-        "source": source,
+        "tool": TOOL,
+        "source": "git cat-file blob",
+        "hash_kind": "sha3_256 of raw blob bytes, not a git OID",
+        "git_oid_kind": "sha1 blob header",
         "subject": SUBJECT,
         "subject_commit": SUBJECT_COMMIT,
-        "subject_blob": SUBJECT_BLOB,
+        "subject_blob": oid,
         "file_sha3_256": digest,
-        "recorded": FILE_SHA3_256,
-        "interpreter_pin": INTERPRETER,
-        "interpreter_now": sys.version,
+        "recorded_file_sha3_256": FILE_SHA3_256,
+        "docstring_mode": "cleandoc",
+        "docstring_via": "ast.get_docstring in the subject, not this tool",
         "outcome": "ok" if ok else "file_mismatch",
-        "covers": "committed blob bytes, including executable code",
         "floor": "this tool is unsealed",
+        **who,
     }, indent=2))
     return 0 if ok else 1
 
