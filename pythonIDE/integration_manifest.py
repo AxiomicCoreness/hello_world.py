@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Integration manifest — declared record, not a measurement.
 
-Domain counts and labels are the commander's declaration.
-phi powers are computed. Two earlier claims are not asserted:
-  phi**713 is not 1 (it is ~1.02e149 in float, and overflows exact int).
-  7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root.
+Retracted strings:
+  domain header 78 — line items sum to 84
+  phi**713 ≈ 1 — binary64 returns 1.019031e+149, not 9.96e148 and not 1
+  7f3a8e2c4b6d0f1a9c8e2f4a6b8d0c2e is a 32-hex label, not a SHA3-256 root
 """
 from __future__ import annotations
 
@@ -37,9 +37,7 @@ LABELS = {
 
 
 def phi_powers() -> dict:
-    out = {}
-    for n in range(-4, 8):
-        out[n] = PHI ** n
+    out = {n: PHI ** n for n in range(-4, 8)}
     out[9] = PHI ** 9
     out[12] = PHI ** 12
     out[26] = PHI ** 26
@@ -50,11 +48,10 @@ def phi_powers() -> dict:
 
 def body() -> dict:
     powers = phi_powers()
-    total = sum(DOMAINS.values())
     return {
         "kind": "declared_record",
         "domains": DOMAINS,
-        "domain_total": total,
+        "domain_total": sum(DOMAINS.values()),
         "domain_note": "declared tally, not a repo scan",
         "labels": LABELS,
         "phi": PHI,
@@ -62,8 +59,13 @@ def body() -> dict:
         "trinity_3_phi4": 3.0 * (PHI ** 4),
         "idem_m87_153_phi4": 153.0 * (PHI ** 4),
         "phi713_float": PHI ** 713,
-        "phi713_note": "not 1",
+        "phi713_note": "binary64 1.019031e+149; not 1; not 9.96e148",
         "half_phi_neg709": 0.5 * (PHI ** (-709)),
+        "retracted_strings": [
+            "phi**713 ≈ 1",
+            "78 total capabilities",
+            "merkle_label is a SHA3-256 root",
+        ],
     }
 
 
@@ -74,8 +76,12 @@ def seal(payload: dict) -> str:
 
 def main() -> int:
     payload = body()
-    digest = seal(payload)
-    print(json.dumps({"seal_sha3_256": digest, "domain_total": payload["domain_total"], "phi713_float": payload["phi713_float"]}, indent=2))
+    print(json.dumps({
+        "seal_sha3_256": seal(payload),
+        "domain_total": payload["domain_total"],
+        "phi713_float": payload["phi713_float"],
+        "phi713_note": payload["phi713_note"],
+    }, indent=2))
     return 0
 
 
