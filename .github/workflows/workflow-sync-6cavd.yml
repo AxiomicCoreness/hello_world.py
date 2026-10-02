@@ -6,8 +6,11 @@ on:
       note:
         description: "Optional note for the run summary"
         required: false
+        type: string
         default: ""
   push:
+    branches:
+      - main
     paths:
       - "docs/6cavd-channel-canvas.md"
       - ".github/workflows/workflow-sync-6cavd.yml"
@@ -15,10 +18,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: workflow-sync-6cavd-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   canvas-sync:
     name: 6CAVD channel — canvas status
     runs-on: ubuntu-latest
+    env:
+      # Safe on both workflow_dispatch and push (push has no inputs)
+      NOTE: ${{ github.event.inputs.note || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,24 +38,28 @@ jobs:
           set -euo pipefail
           test -f docs/6cavd-channel-canvas.md
           echo "Canvas: docs/6cavd-channel-canvas.md"
+          echo "Event: ${{ github.event_name }}"
 
       - name: Report 6CAVD placeholders (no invented axes)
         run: |
           set -euo pipefail
-          echo "### workflow-sync-6cavd" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Slot | Status |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| 0–5 | TBD until canvas axis table is filled |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Ledger: append/attest only; this job does **not** write ledger/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Physics claims in payloads are not validated here" >> "$GITHUB_STEP_SUMMARY"
-          if [ -n "${{ inputs.note }}" ]; then
-            echo "- Note: ${{ inputs.note }}" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            echo "### workflow-sync-6cavd"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| event | ${{ github.event_name }} |"
+            echo "| ref | ${{ github.ref_name }} |"
+            echo "| slots 0–5 | TBD until canvas axis table is filled |"
+            echo ""
+            echo "- Ledger: append/attest only; this job does **not** write ledger/"
+            echo "- Physics claims in payloads are not validated here"
+            if [ -n "${NOTE}" ]; then
+              echo "- Note: ${NOTE}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guard — no ledger mutation
         run: |
           set -euo pipefail
-          # This workflow must never stage or commit under ledger/
           echo "OK: no ledger write steps in workflow-sync-6cavd"
