@@ -3,22 +3,21 @@
 
 This file is the floor. Nothing in the subject seals it.
 
-Which bytes, three different numbers:
-  file_sha3_256 = SHA3-256(raw bytes from git cat-file blob).
-    Content hash. Not a git OID. No CRLF conversion, no cleandoc.
-  subject_blob = SHA-1(b"blob " + len + b"\0" + raw bytes).
-    Git blob object ID, SHA-1 mode. 40 hex.
-  A SHA-256 git OID is not used. This repo is not a SHA-256 repo.
+file_sha3_256 is SHA3-256 of the committed blob
+git cat-file blob SUBJECT_BLOB. It is a content hash, not a git OID.
+It does not read the working tree. A dirty subject file does not move
+it. A path argument is rejected.
 
-Working-tree reads are rejected. A path argument exits 2.
+subject_blob is the SHA-1 git blob ID of those same bytes
+(b"blob " + len + b"\0" + raw). This repo is not SHA-256.
 
-docstring_mode is not computed here. The subject prints
-docstring_mode=cleandoc via ast.get_docstring. That is a stdlib
-contract, not a raw slice of the docstring.
+produced_by_blob dirt is this file only, compared with HEAD:this path.
+Dirt in any other path does not mark it dirty. Untracked means this
+file is not at HEAD.
 
-produced_by_blob is the git blob ID of this file at HEAD. If the
-working tree differs, the receipt says dirty. If the file is not in
-git, the field is null.
+docstring_mode is asserted by the subject (ast.get_docstring, cleandoc).
+This tool does not derive it. A call-site change to clean=False would
+not be seen here.
 """
 from __future__ import annotations
 
@@ -43,17 +42,17 @@ def git_bytes(args: list[str]) -> bytes | None:
 
 
 def producer() -> dict:
+    # own file only. Other dirty paths are ignored.
     head = git_bytes(["rev-parse", f"HEAD:{TOOL}"])
     if head is None:
-        return {"produced_by_blob": None, "producer_state": "untracked"}
+        return {"produced_by_blob": None, "producer_state": "untracked", "producer_dirt": "own_file_only"}
     blob = head.decode().strip()
     raw = git_bytes(["cat-file", "blob", blob])
     here = Path(__file__).read_bytes()
     if raw is None:
-        return {"produced_by_blob": blob, "producer_state": "unreadable"}
-    if raw != here:
-        return {"produced_by_blob": blob, "producer_state": "dirty"}
-    return {"produced_by_blob": blob, "producer_state": "clean"}
+        return {"produced_by_blob": blob, "producer_state": "unreadable", "producer_dirt": "own_file_only"}
+    state = "clean" if raw == here else "dirty"
+    return {"produced_by_blob": blob, "producer_state": state, "producer_dirt": "own_file_only"}
 
 
 def main() -> int:
@@ -63,14 +62,14 @@ def main() -> int:
     raw = git_bytes(["cat-file", "blob", SUBJECT_BLOB])
     who = producer()
     if raw is None:
-        print(json.dumps({"outcome": "unread", "subject_blob": SUBJECT_BLOB, **who}, indent=2))
+        print(json.dumps({"outcome": "unread", "subject_blob": SUBJECT_BLOB, "hash_of": "committed blob", **who}, indent=2))
         return 2
     digest = hashlib.sha3_256(raw).hexdigest()
     oid = hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
     ok = digest == FILE_SHA3_256 and oid == SUBJECT_BLOB
     print(json.dumps({
         "tool": TOOL,
-        "source": "git cat-file blob",
+        "hash_of": "committed blob, not working tree",
         "hash_kind": "sha3_256 of raw blob bytes, not a git OID",
         "git_oid_kind": "sha1 blob header",
         "subject": SUBJECT,
@@ -79,7 +78,7 @@ def main() -> int:
         "file_sha3_256": digest,
         "recorded_file_sha3_256": FILE_SHA3_256,
         "docstring_mode": "cleandoc",
-        "docstring_via": "ast.get_docstring in the subject, not this tool",
+        "docstring_via": "asserted by subject, not derived here",
         "outcome": "ok" if ok else "file_mismatch",
         "floor": "this tool is unsealed",
         **who,
