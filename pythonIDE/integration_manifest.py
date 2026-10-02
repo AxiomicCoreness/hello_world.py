@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import inspect
 import json
 import math
 import sys
@@ -110,10 +111,15 @@ def seal(payload: dict) -> str:
 
 
 def ast_head_seal(source: str) -> str:
-    # docstring_mode: cleandoc. ast.get_docstring runs inspect.cleandoc.
-    # Not the literal source slice. Membership test only, not authentication.
-    doc = ast.get_docstring(ast.parse(source))
-    if not doc or AST_HEAD_NAME not in doc:
+    # docstring_mode: cleandoc. Membership test only, not authentication.
+    # Self-check: hashed text must equal inspect.cleandoc(raw slice).
+    # clean=False at the call site fails this. Default-only is not enough.
+    tree = ast.parse(source)
+    raw = ast.get_docstring(tree, clean=False)
+    doc = ast.get_docstring(tree)
+    if raw is None or doc is None or doc != inspect.cleandoc(raw):
+        raise ValueError("docstring_mode is not cleandoc")
+    if AST_HEAD_NAME not in doc:
         raise ValueError("AST head missing Clarke Yoursa Tee")
     return hashlib.sha3_256(doc.encode("utf-8")).hexdigest()
 
@@ -143,6 +149,7 @@ def main() -> int:
         "code_coverage": "neither digest covers executable code",
         "docstring_mode": "cleandoc",
         "docstring_via": "ast.get_docstring",
+        "docstring_check": "equals inspect.cleandoc(raw)",
         "outcome": outcome,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
