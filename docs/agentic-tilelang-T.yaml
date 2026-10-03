@@ -1,0 +1,53 @@
+# agentic-tilelang-T.yaml — Clarke Yoursa Tee
+#
+# Precise definition of the Tile Set T of the Agentic Tile Language
+# T_lang = (Sigma, T, P, R). Record-level mathematics: no physics claim.
+# Closes the empty "T: set of tile types" gap with an operational semantics
+# and a verified cardinality.
+
+alphabet:
+  name: "Sigma"
+  symbols: ["sigma_1", "sigma_2", "sigma_3", "sigma_4", "sigma_5"]
+  cardinality: 5
+
+tile_set:
+  name: "T"
+  form: "T = { t_ij | (i, j) in Z_5 x Z_5 }"
+  domain: "Sigma* -> Sigma*"
+  cardinality: 25
+  operation_semantics: |
+    t_ij, input string s = sigma_{s_0} ... sigma_{s_{L-1}}:
+      for each 0-based position k:
+        sigma_{s_k} maps to sigma_{s_k} sigma_{a_k}
+        where a_k = (i*k + j) mod 5, and sigma index is a_k + 1.
+      empty string maps to empty string.
+    Append one symbol per position. The appended index is an affine
+    function of the position, parametrized by the tile (i, j).
+  distinctness: "verified by enumeration — 25 of 25 functions distinct"
+  verification_notes:
+    - "k=0 pins j (first appended index)"
+    - "k=1 pins i (second appended index minus j)"
+    - "(i, j) -> function is injective on Z_5^2; |T| = 25 exact"
+  samples:
+    t_00: "appends sigma_1 at every position (appended index 0)"
+    t_23_on_sigma1_sigma2: ["sigma_1 sigma_4", "sigma_2 sigma_1"]
+
+production_rules:
+  name: "P"
+  form: "sigma_i -> sigma_i sigma_j"
+  probability: "p_ij = |<psi_i|psi_j>|^2"
+  note: "lives in P, not in T"
+
+routing:
+  name: "R"
+  form: "G = (V, E, W), |V| = 144, W(e) = phi^(-d(e))"
+  note: "declared; not re-asserted by this file"
+
+harness:
+  name: "H"
+  form: "H = (T_lang, Omega, Phi, Lambda)"
+  components:
+    - "T_lang = (Sigma, T, P, R)"
+    - "Omega: state space"
+    - "Phi: flow field"
+    - "Lambda: lattice substrate"
