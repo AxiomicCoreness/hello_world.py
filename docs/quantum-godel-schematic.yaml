@@ -1,0 +1,30 @@
+# quantum-godel-schematic.yaml — Clarke Yoursa Tee
+# Status: proposal. Not a seal. Not a ledger entry. Not an executed run.
+
+status: proposal
+kind: schematic
+
+checked:
+  primorial_7: 510510
+  factors: [2, 3, 5, 7, 11, 13, 17]
+  product_equals_510510: true
+  note: "7# = 2*3*5*7*11*13*17. Arithmetic only. Not a Hilbert-space dimension."
+
+established:
+  diagonal: "G <-> not Prov(code(G))"
+  von_neumann_closed: "L_k = 0 implies d(rho)/dt = -i[H, rho]"
+  note: "standard statements. The closed equation is not a claim that a run occurred."
+
+proposal:
+  quantum_diagonal: "G <-> not P_prov |G>"
+  missing:
+    - "Hilbert space not defined in this file"
+    - "P_prov not defined in this file"
+  qiskit_block: "not executed"
+
+not_in_this_file:
+  - seal
+  - ledger entry
+  - executed circuit
+  - tile-lang rewrite
+  - host dispatch
