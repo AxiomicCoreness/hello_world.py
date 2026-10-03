@@ -28,9 +28,9 @@ import sys
 from pathlib import Path
 
 SUBJECT = "pythonIDE/integration_manifest.py"
-SUBJECT_COMMIT = "3b467f3fc86328bc2e7f5bbcfd82f8cc2cdecdeb"
-SUBJECT_BLOB = "86abe338a5c0d7d68d5471ee8c2a31f15848e7bf"
-FILE_SHA3_256 = "b04c3625f4ce982a868badbf8d89712d1400841c08ae34bd0b3af3e7e163bd63"
+SUBJECT_COMMIT = "8232e6e51fd455e8d4ee51325b8f5396bed27135"
+SUBJECT_BLOB = "d13dea749b7cd29d081d41e2d14c8267bbaebeeb"
+FILE_SHA3_256 = "48cdba9c2d3a64f48ae892afa7db61c1e12aa526c42e9d3bad4d6f0632d75510"
 TOOL = "pythonIDE/seal_manifest_bytes.py"
 
 
@@ -42,7 +42,6 @@ def git_bytes(args: list[str]) -> bytes | None:
 
 
 def producer() -> dict:
-    # own file only. Other dirty paths are ignored.
     head = git_bytes(["rev-parse", f"HEAD:{TOOL}"])
     if head is None:
         return {"produced_by_blob": None, "producer_state": "untracked", "producer_dirt": "own_file_only"}
