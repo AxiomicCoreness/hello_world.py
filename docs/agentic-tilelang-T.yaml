@@ -51,3 +51,10 @@ harness:
     - "Omega: state space"
     - "Phi: flow field"
     - "Lambda: lattice substrate"
+
+verified_propositions:
+  length_doubled: "|t_ij(w)| = 2|w| for every w, including the empty word"
+  not_closed_under_composition: "|(t_ij o t_kl)(w)| = 4|w|, which is not 2|w|, so a composition is not an element of T"
+  only_empty_fixed: "2|w| = |w| only when |w| = 0"
+  twenty_five_distinct: "affine map over Z_5 is fixed by values at k=0 (j) and k=1 (i); enumeration 25 of 25"
+  framing: "string morphism only; naming a host does not invoke it; P, R, H remain declared"
