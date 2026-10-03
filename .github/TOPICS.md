@@ -135,3 +135,18 @@ Cybernetics stop condition: **met**.
 **Terminal axiom:** Location stems from propagated root.  
 **Append (2026-09-18):** Mathematical form admission for T₀ / P₀ / C₀.  
 **Append (2026-09-18):** `∀∞φ² · TRIUNE_ENGINE_COMPLETE · SEALED`
+
+---
+
+## Relay — Step 0 to local daemon (2026-10-03)
+
+Cross-reference: POLICY.md Article 37.
+
+| Item | Value |
+|------|--------|
+| Step 0 digest | `c733497fdc7c5a6d45a50572d81abaa311047799b1a1c56496c2fe73c9ada3c5` |
+| Daemon file digest | `af943acfcebcce5c6806d1134dbfdf10c98b7493768da8e69aa05eeb14fce882` |
+| Daemon status | local, uncommitted |
+| Floor blob | `d13dea749b7cd29d081d41e2d14c8267bbaebeeb` unchanged |
+
+The daemon digest is a hash of the local file, not a ledger seal. It relays the Step 0 reference; it does not seal index 9265.
