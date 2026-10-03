@@ -435,13 +435,11 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
-      - name: Commit ledger entry 8986
+      - name: Do not rewrite ledger 8986
         if: success()
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: seal four-contract validation entry 8986 (sha3_256)"
-          file_pattern: ledger/8986.yaml
-          commit_options: '--no-verify'
+        run: |
+          echo "ledger/8986.yaml is historical. This job does not commit or push it."
+          echo "A push here was rejected non-fast-forward on run 37142538905."
 
       # ────────────────────────────────────────────────────────────
       # 8. Summary
