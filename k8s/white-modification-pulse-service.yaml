@@ -1,0 +1,15 @@
+# Pulse listens on nothing. Overlapping workflow crons are gone.
+# workflow_dispatch remains on those files. This Service publishes no port.
+apiVersion: v1
+kind: Service
+metadata:
+  name: white-modification-pulse
+  labels:
+    app: white-modification-pulse
+    listen: none
+    schedule: workflow-dispatch-only
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: white-modification-pulse
