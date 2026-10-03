@@ -36,9 +36,10 @@ STALE_SEALS = (
     "f845f9b291e0253ca6c5417fe180054f48ae18d74244fafcec044eda41bc1331",
     "3b4ff596c8694275e22cda733632d5f7cd3dee22f8969aa4babc0a68960bae87",
     "6a33f52cd4aedaf596a5296babd4c4d798294bb5f9d882a5c72122e7e75c1bc9",
+    "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307",
 )
 
-BODY_SEAL = "48f9f3df32cb2f5c1d1855855074d2d65b99716966c25dbb2ed639e81aea3307"
+BODY_SEAL = "cf5d38f84f9a40792bb6ad4f424ea01679edf764896278402e1b35b558d276ef"
 AST_HEAD_SEAL = "6938e0e227e6e5c480181c51de32b93986ca7a3ae28e93bf7b5a6bed51e77b0e"
 AST_HEAD_NAME = "Clarke Yoursa Tee"
 
@@ -96,11 +97,14 @@ def body() -> dict:
         "phi713_float": PHI ** 713,
         "phi713_note": "binary64 1.0190312401084850e+149; not 1; not 9.96e148",
         "half_phi_neg709": 0.5 * (PHI ** (-709)),
+        "epsilon_floor": PHI ** -1418,
+        "epsilon_floor_note": "binary64 phi**-1418 = 4.524036764254231e-297; 1.04e-300 retracted",
         "retracted_strings": [
             "phi**713 ≈ 1",
             "phi**713 ≈ 9.96e148",
             "78 total capabilities",
             "merkle_label is a SHA3-256 root",
+            "epsilon = 1.04e-300",
         ],
     }
 
@@ -150,6 +154,7 @@ def main() -> int:
         "docstring_mode": "cleandoc",
         "docstring_via": "ast.get_docstring",
         "docstring_check": "equals inspect.cleandoc(raw)",
+        "epsilon_floor": payload["epsilon_floor"],
         "outcome": outcome,
         "domain_total": payload["domain_total"],
         "phi713_float": payload["phi713_float"],
