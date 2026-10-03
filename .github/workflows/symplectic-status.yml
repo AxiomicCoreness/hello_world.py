@@ -14,8 +14,6 @@ on:
       - "scripts/seal_symplectic_8984.py"
       - ".github/workflows/symplectic-status-generation.yml"   # FIX 5: match file name
   workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"
 
 permissions:
   contents: write
