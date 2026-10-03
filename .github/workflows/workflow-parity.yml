@@ -107,4 +107,4 @@ jobs:
             *) echo "slot out of 0-54"; exit 1 ;;
           esac
           echo "dispatch $file"
-          gh workflow run "$file" --ref "${{ github.ref_name }}" || echo "dispatch soft-fail: $file"
+          gh workflow run "$file" --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"
