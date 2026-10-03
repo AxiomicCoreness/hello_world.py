@@ -1,0 +1,25 @@
+entry_index: 9265
+timestamp: '2026-10-03T20:37:00Z'
+event: /traffic_cop_jax_mirror_verified
+status: SEALED
+prev_hash: 865d61f4a8f096dffb87d5aab694bc9dcddcec5870abffa4c5136447dc9efb1c
+witness_chain: 9264 -> 9265
+prior_recompute:
+  entry: 9264
+  declared: 865d61f4a8f096dffb87d5aab694bc9dcddcec5870abffa4c5136447dc9efb1c
+  recomputed_here: 0596ec067b3223a688760a1e9c3eb4c90b5e4b894828cbc7391892dcb3c350b8
+  match: false
+  note: chain link uses the declared seal; this recompute does not reproduce it
+checked:
+  router: scripts/traffic_cop.py
+  router_commit: 4e5c9b6638f8efeaa050702a2439eddf45d80024
+  mirror: scripts/traffic_cop_jax.py
+  mirror_commit: a40c85312b95ce013c9a371caa261cedf85c2cc4
+  mirror_blob: 2ca44c2b430016cc4183ba17835f5f08e520ebc1
+  run: python3 scripts/traffic_cop_jax.py
+  stdout:
+  - hypersurface.yml
+  - '0'
+  exit: 0
+  dispatch: false
+seal_sha3_256: a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177
