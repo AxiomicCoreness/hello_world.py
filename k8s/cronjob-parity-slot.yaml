@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: parity-slot
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: slot
+              image: python:3.12-alpine
+              command: ["python", "-c"]
+              args:
+                - |
+                  from datetime import datetime, timezone
+                  now = datetime.now(timezone.utc)
+                  slot = (now.hour * 60 + now.minute) // 15 % 24
+                  print(f"slot={slot} utc={now.isoformat()} dispatch=false")
