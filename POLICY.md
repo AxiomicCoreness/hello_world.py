@@ -269,3 +269,23 @@ Article 36 — Recorded false alarms and tool reliability
 
 Annex V seal:  ∀∞φ² · POLICY_ANNEX_V_PREIMAGE_PIN · 9262_SEALED
 Witness:       9261 → 9262 — UNBROKEN
+
+Article 37 — Step 0 relay to the local daemon
+
+  37.1  Step 0 is a canonicalizer check, not a ledger entry and not
+        a proof of the Riemann hypothesis. The vector is the imaginary
+        parts of the first 144 nontrivial zeros from mpmath.zetazero,
+        mp.dps = 50, serialized as strings.
+        Canonical JSON: sort_keys, separators=(",", ":"), ensure_ascii=True.
+        Reference digest (mpmath 1.3.0, 7864 canonical bytes):
+        c733497fdc7c5a6d45a50572d81abaa311047799b1a1c56496c2fe73c9ada3c5
+
+  37.2  The local daemon at the time of this note is uncommitted.
+        Its file digest is SHA3-256 of those bytes, not a body seal:
+        af943acfcebcce5c6806d1134dbfdf10c98b7493768da8e69aa05eeb14fce882
+        SIGINT, SIGTERM, and SIGQUIT share one handler. os._exit is not used.
+        The daemon writes its checkpoint outside the repo.
+
+  37.3  This article does not move blob d13dea749b7cd29d081d41e2d14c8267bbaebeeb
+        or body seal cf5d38f84f9a40792bb6ad4f424ea01679edf764896278402e1b35b558d276ef.
+        The Kubernetes Service apply remains blocked: no kubeconfig on the writer.
