@@ -22,8 +22,6 @@
 #   6. Summary block: same 3-region phrasing as the header
 
 on:
-  schedule:
-    - cron: '0 0,6,12,18 * * *'  # φ-harmonic: every 6 hours
   workflow_dispatch:
     inputs:
       rotate_keys:
