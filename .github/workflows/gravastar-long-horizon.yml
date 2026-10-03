@@ -22,8 +22,6 @@ on:
         description: "legacy horizon event path (9008 left intact)"
         required: false
         default: "/workflow_dispatch_gravastar_long_horizon"
-  schedule:
-    - cron: "0 10 * * *"
 
 permissions:
   contents: write   # required to commit ledger/9070.yaml
