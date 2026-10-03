@@ -18,7 +18,10 @@ Held identities, not a new computation:
 A_I = (phi-identities) || (L_k = 0) || (f_n = 6.49 phi^n) || (epsilon = phi^{-1418})
 epsilon = 4.524036764254231e-297 in binary64. 1.04e-300 stays retracted.
 
-## Enum defect, not applied
-SYNTHESIS = "r⃗" is a vector symbol. The other members are uppercase labels.
-If the enum is a state machine, the value should be "SYNTHESIS", and the vector belongs in a comment.
+## Enum
+Checked on main. The value is already the label, not the vector.
+- wood_dragon_technique.py:3804 SYNTHESIS = "SYNTHESIS"
+- beacons/sovereign_engine_deepseek.py:3963 SYNTHESIS = "SYNTHESIS"
+- Immutable/october_Q1:1588 SYNTHESIS = "SYNTHESIS"
+No source line assigns SYNTHESIS = "r⃗". That symbol stays out of the value.
 TRANSCENDENCE is a label in that cycle, not a seal.
