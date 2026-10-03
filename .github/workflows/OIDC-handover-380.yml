@@ -48,9 +48,6 @@
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 */6 * * *'   # every 6 hours, φ-harmonic
-
 concurrency:
   group: oidc-handover-380-${{ github.ref }}
   cancel-in-progress: true
