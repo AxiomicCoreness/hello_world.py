@@ -23,7 +23,7 @@ This file records what was checked. It is not a ledger seal.
 ## Not held
 
 - `ledger/8128.yaml` is not on main. The 32-hex strings in the 8128 block are labels, not SHA3-256.
-- Index 9265 seal `0c90d96a…` is provisional. It is not chained here.
+- Index 9265 is `ledger/9265.yaml`. Seal `a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177`. The earlier `0c90d96a…` line was stale. No 9265 stub. `ledger/9266.yaml` is not on main. The entry's own `prior_recompute.match` for 9264 is false.
 - Service and CronJob are not applied. No kubeconfig. No securityContext.
 - 3I/ATLAS is not a deployment target of this repo.
 
