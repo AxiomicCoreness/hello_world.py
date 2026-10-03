@@ -1,0 +1,28 @@
+name: Daemon listener contract
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - contracts/daemon_listener_contract.json
+      - .github/workflows/daemon-listener-contract.yml
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: refuse a public bind
+        run: |
+          python3 - << 'PY'
+          import json
+          doc = json.load(open("contracts/daemon_listener_contract.json"))
+          assert doc["listener"] == "none"
+          assert doc["binds"] == []
+          assert "0.0.0.0" in doc["refuses"]
+          assert set(doc["decisions"]) == {"wait", "record_only", "nudge_cronjob"}
+          print("daemon listener contract: no bind")
+          PY
