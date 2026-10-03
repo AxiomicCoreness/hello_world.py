@@ -1,11 +1,11 @@
 name: Workflow parity
 
-# Not a clone of every workflow. One tick every 15 minutes dispatches
-# only the slot for that quarter-hour. 24 slots cover 6 hours.
-# Manual-only (not in a slot): Hamiltonian_Full_Immersion.yml,
+# One tick every 15 minutes dispatches exactly one workflow.
+# 55 files, index modulo 55. A full pass is 55 ticks, 13 hours 45 minutes.
+# Manual-only (not in the list): Hamiltonian_Full_Immersion.yml,
 # OIDC-handover-380.yml, sovereign-workload-matrix.yml,
 # api-key-rotator.yml, md-scalar-matrix.yml, sovereign-pulse.yml.
-# Those six stay workflow_dispatch. sovereign-ci-cd.yml has its own cron.
+# sovereign-ci-cd.yml keeps its own cron and is not dispatched here.
 # No actions/* uses. gh is on the GitHub-hosted image.
 
 on:
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       slot:
-        description: "0-23; blank uses current UTC quarter-hour"
+        description: "0-54; blank uses current UTC quarter-hour modulo 55"
         required: false
         type: string
         default: ""
@@ -24,7 +24,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: workflow-parity-${{ github.run_id }}
+  group: workflow-parity
   cancel-in-progress: false
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Dispatch this slot only
+      - name: Dispatch one file
         env:
           GH_TOKEN: ${{ github.token }}
           SLOT_INPUT: ${{ github.event.inputs.slot }}
@@ -44,37 +44,67 @@ jobs:
           else
             minute=$(date -u +%M)
             hour=$(date -u +%H)
-            slot=$(( (10#$hour * 60 + 10#$minute) / 15 % 24 ))
+            day=$(date -u +%d)
+            slot=$(( (10#$day * 24 * 60 + 10#$hour * 60 + 10#$minute) / 15 % 55 ))
           fi
           echo "slot=${slot}"
           case "$slot" in
-            0) files="hypersurface.yml sovereign-run.yml" ;;
-            1) files="ledger-math-framework.yml sovereign-stack-ci.yml" ;;
-            2) files="agent-service-control.yml ledger-witness-continuity.yml" ;;
-            3) files="master-equation-ci.yml sovereignty-python-package.yml" ;;
-            4) files="argo-ci.yml symplectic-status.yml" ;;
-            5) files="catalogue.yml merge-engine.yml toolkit-54-exorcise.yml" ;;
-            6) files="cd-combinator-argo-rollout.yml mtls-cert-lifecycle.yml validate-contract.yml" ;;
-            7) files="cd-combinator.yml multibody-toi.yml verify-ledger.yml" ;;
-            8) files="debug-environment.yml north-star-witness.yml witness-chain-contracts.yml" ;;
-            9) files="deepseek-cd.yml oidc-cloud-providers.yml witness-chain-sqlite.yml" ;;
-            10) files="deepseek-ci-secrets.yml producer-axiom-verify.yml wood-dragon-dispatch.yml" ;;
-            11) files="deepseek-mesh-terminal.yml pytest.yml workflow-sync-6cavd.yml" ;;
-            12) files="deepseek-ndjson-ci.yml python-package-ci-correction.yml workload-smoke.yml" ;;
-            13) files="docker-main-image.yml python-package.yml" ;;
-            14) files="dual-ci-venv.yml quantum_reality_engine_510510.yml" ;;
-            15) files="e10-hyperbolic-pytest.yml restore-deepseek-cd-frozen.yml" ;;
-            16) files="e2e-key-check.yml reward-distribution.yml" ;;
-            17) files="eridanus-dual-smoke.yml scheduled-ci-sweep.yml" ;;
-            18) files="garden-surgery.yml secrets-context-example.yml" ;;
-            19) files="generate-frb-bridge.yml singularity-stream-ci.yml" ;;
-            20) files="generate-lock.yml sovereign-cicd.yml" ;;
-            21) files="gravastar-long-horizon.yml sovereign-core-sidecar.yml" ;;
-            22) files="gravastar-mcp-connector.yml sovereign-engine-final.yml" ;;
-            23) files="handover-via-380.yml" ;;
-            *) echo "slot out of 0-23"; exit 1 ;;
+            0) file="hypersurface.yml" ;;
+            1) file="sovereign-run.yml" ;;
+            2) file="ledger-math-framework.yml" ;;
+            3) file="sovereign-stack-ci.yml" ;;
+            4) file="agent-service-control.yml" ;;
+            5) file="ledger-witness-continuity.yml" ;;
+            6) file="master-equation-ci.yml" ;;
+            7) file="sovereignty-python-package.yml" ;;
+            8) file="argo-ci.yml" ;;
+            9) file="symplectic-status.yml" ;;
+            10) file="catalogue.yml" ;;
+            11) file="merge-engine.yml" ;;
+            12) file="toolkit-54-exorcise.yml" ;;
+            13) file="cd-combinator-argo-rollout.yml" ;;
+            14) file="mtls-cert-lifecycle.yml" ;;
+            15) file="validate-contract.yml" ;;
+            16) file="cd-combinator.yml" ;;
+            17) file="multibody-toi.yml" ;;
+            18) file="verify-ledger.yml" ;;
+            19) file="debug-environment.yml" ;;
+            20) file="north-star-witness.yml" ;;
+            21) file="witness-chain-contracts.yml" ;;
+            22) file="deepseek-cd.yml" ;;
+            23) file="oidc-cloud-providers.yml" ;;
+            24) file="witness-chain-sqlite.yml" ;;
+            25) file="deepseek-ci-secrets.yml" ;;
+            26) file="producer-axiom-verify.yml" ;;
+            27) file="wood-dragon-dispatch.yml" ;;
+            28) file="deepseek-mesh-terminal.yml" ;;
+            29) file="pytest.yml" ;;
+            30) file="workflow-sync-6cavd.yml" ;;
+            31) file="deepseek-ndjson-ci.yml" ;;
+            32) file="python-package-ci-correction.yml" ;;
+            33) file="workload-smoke.yml" ;;
+            34) file="docker-main-image.yml" ;;
+            35) file="python-package.yml" ;;
+            36) file="dual-ci-venv.yml" ;;
+            37) file="quantum_reality_engine_510510.yml" ;;
+            38) file="e10-hyperbolic-pytest.yml" ;;
+            39) file="restore-deepseek-cd-frozen.yml" ;;
+            40) file="e2e-key-check.yml" ;;
+            41) file="reward-distribution.yml" ;;
+            42) file="eridanus-dual-smoke.yml" ;;
+            43) file="scheduled-ci-sweep.yml" ;;
+            44) file="garden-surgery.yml" ;;
+            45) file="secrets-context-example.yml" ;;
+            46) file="generate-frb-bridge.yml" ;;
+            47) file="singularity-stream-ci.yml" ;;
+            48) file="generate-lock.yml" ;;
+            49) file="sovereign-cicd.yml" ;;
+            50) file="gravastar-long-horizon.yml" ;;
+            51) file="sovereign-core-sidecar.yml" ;;
+            52) file="gravastar-mcp-connector.yml" ;;
+            53) file="sovereign-engine-final.yml" ;;
+            54) file="handover-via-380.yml" ;;
+            *) echo "slot out of 0-54"; exit 1 ;;
           esac
-          for f in $files; do
-            echo "dispatch $f"
-            gh workflow run "$f" --ref "${{ github.ref_name }}" || echo "dispatch soft-fail: $f"
-          done
+          echo "dispatch $file"
+          gh workflow run "$file" --ref "${{ github.ref_name }}" || echo "dispatch soft-fail: $file"
