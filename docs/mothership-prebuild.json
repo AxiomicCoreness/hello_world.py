@@ -1,0 +1,28 @@
+{
+  "kind": "prebuild_draft",
+  "codename": "mothership",
+  "status": "concept",
+  "not_a_seal": true,
+  "not_apple_hardware": true,
+  "jax": "unspecified; not Google JAX until named",
+  "repo": "AxiomicCoreness/hello_world.py",
+  "branch": "main",
+  "phi": 1.618033988749895,
+  "epsilon_floor_binary64": 4.524036764254231e-297,
+  "frequency_ladder_hz": {
+    "0": 6.49,
+    "1": 10.501040586986818,
+    "2": 16.99104058698682,
+    "3": 27.492081173973638,
+    "4": 44.48312176096046,
+    "5": 71.9752029349341,
+    "6": 116.45832469589458,
+    "7": 188.43352763082868
+  },
+  "acceptance": "one JSON object, exit 0",
+  "untouched": [
+    "blob d13dea749b7cd29d081d41e2d14c8267bbaebeeb",
+    "body seal cf5d38f84f9a40792bb6ad4f424ea01679edf764896278402e1b35b558d276ef"
+  ],
+  "draft_sha3_256": "d6d4017b077671952c0d53f17e523428d395cfdad81a55f479bf9f32d9d76b82"
+}
