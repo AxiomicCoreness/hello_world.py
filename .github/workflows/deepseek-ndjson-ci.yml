@@ -30,8 +30,6 @@ on:
       - "quantum/deepseek_mesh/**"
       - "tests/test_deepseek_ndjson.py"
       - ".github/workflows/deepseek_ndjson_ci.yml"
-  schedule:
-    - cron: "0 6 * * *"   # daily 06:00 UTC
   workflow_dispatch:
 
 permissions:
