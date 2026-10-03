@@ -8,8 +8,6 @@ name: mTLS Cert Lifecycle
 # role: rotation-readiness monitor (badge must stay green on gaps)
 
 on:
-  schedule:
-    - cron: "20 */6 * * *"   # φ-harmonic: every 6 hours at :20
   workflow_dispatch:
     inputs:
       note:
