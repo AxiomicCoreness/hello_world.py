@@ -34,8 +34,6 @@ name: Sovereign Key Rotation (Entry 632)
 #    636  — mTLS cert boundary regulation (B_mtls)
 
 on:
-  schedule:
-    - cron: '0 0,6,12,18 * * *'
   workflow_dispatch:
     inputs:
       force:
