@@ -53,3 +53,16 @@ Dense array only if product of cardinalities stays small.
 
 - Scalar HCR: `docs/hcr-scalar-schema.md`
 - Workflow: `.github/workflows/workflow-sync-6cavd.yml`
+
+## Anomaly map (2026-10-03)
+
+The four spine content anomalies, mapped onto the six axes. This is a coordinate reading. It does not rewrite `ledger/`.
+
+| Anomaly | i branch | j heartbeat_class | k time_bucket | l completion | m ci_class | n event_kind |
+|---|---|---|---|---|---|---|
+| `365 → 366`, stored `8513 → 8514` | main | other | 2026-10-03 | gap | unknown | analysis |
+| `8530 → 8531`, stored `8340 → 8501`, `8339 → 8502` | main | other | 2026-10-03 | gap | unknown | analysis |
+| `8617 → 8618`, stored chain ends at `8611` | main | other | 2026-10-03 | gap | unknown | analysis |
+| `8852 → 8853`, stored `8851 → 8852` | main | other | 2026-10-03 | gap | unknown | analysis |
+
+`l=gap` means the expected successor id is not the id the stored arrow ends on. The 22 derived links are not in this map: they have no stored arrow. `9264 → 9265` is not an anomaly.
