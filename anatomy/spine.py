@@ -21,7 +21,7 @@ def as_working_default(text: str) -> str:
 
 def load_index(path: Path) -> int:
     text = path.read_text(encoding="utf-8")
-    m = re.search(r"^entry_index:\s*(\d+)$", text, re.M)
+    m = re.search(r'^entry_index:\s*"?(\d+)"?\s*$', text, re.M)
     if not m:
         raise ValueError(f"entry_index missing in {path}")
     return int(m.group(1))
