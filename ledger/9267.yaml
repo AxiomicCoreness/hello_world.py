@@ -1,13 +1,13 @@
 entry_index: 9267
 timestamp: '2026-10-04T04:07:00Z'
-event: /godel_sentence_hash_recorded
-status: RECORDED
-prev_hash: a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177
+event: '/godel_sentence_hash_recorded'
+status: 'RECORDED'
+prev_hash: 'a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177'
 skipped_index: 9266
-witness_chain: 9265 -> 9267
-note: 9266 left free by command. This entry records the sentence hash. It does not prove the sentence.
-sentence: a stored arrow that does not end at its successor is not proved by deriving the numeric sibling
+witness_chain: '9265 -> 9267'
+note: '9266 left free by command. This entry records the sentence hash. It does not prove the sentence.'
+sentence: 'a stored arrow that does not end at its successor is not proved by deriving the numeric sibling'
 godel_incompleteness_status: 1
-godel_transcendence_count: not measured
-godel_sentence_hash: 59009f8ebf563630091303bfcbde58d5aa11eb72d5b958ba9bf0a7ba10e507a1
-seal_sha3_256: 54a2a8e90ae2e65fc13dc9b8428c9b2335d17281ebe06ed951b9822e9fb937cc
+godel_transcendence_count: 'not measured'
+godel_sentence_hash: '59009f8ebf563630091303bfcbde58d5aa11eb72d5b958ba9bf0a7ba10e507a1'
+seal_sha3_256: 8dd76df212990c062af093065f5071e77f3ff79a8e8fce28ff69208479cdbbe4
