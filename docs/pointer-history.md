@@ -34,3 +34,16 @@ These 26 links are reader assertions. The files do not carry them. 0365.yaml has
 - 8617 -> 8618
 - 8734 -> 8735
 - 8852 -> 8853
+
+## Form counts
+
+| Form | Example | Count |
+|---|---|---|
+| immediate pair | 9264 → 9265 | 776 |
+| span | stored reference ahead of successor | 136 |
+| skip | pair with missing intermediates | 14 |
+| rewired, derived | 365 → 366 | 26 |
+| boolean flag | Witness_Chain_Unbroken = TRUE | 1 |
+| stored cross-statement | Witness_Continuity = 8513 → 8514 — UNBROKEN | 1, ledger/0366.yaml |
+
+The boolean flag is in ledger/0365.yaml. It is not an arrow. The cross-statement is in the successor, not in 0365. Derived links are not stored.
