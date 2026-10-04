@@ -11,18 +11,18 @@ import math
 PHI = (1 + math.sqrt(5)) / 2
 
 
-def pulse(n: int, width: float = PHI) -> float:
-    """One sample. n is the position label."""
-    if n < 0:
-        raise ValueError("position label must be non-negative")
-    x = (n % 144) / width
+def pulse(offset: float, width: float = PHI) -> float:
+    x = offset / width
     return math.exp(-0.5 * x * x) * math.cos(2 * math.pi * x / PHI)
 
 
 def wavelet(position: int, samples: int = 8) -> dict:
+    if position < 0:
+        raise ValueError("position label must be non-negative")
     if samples < 1:
         raise ValueError("samples must be positive")
-    values = [pulse(position + i) for i in range(samples)]
+    half = (samples - 1) / 2
+    values = [pulse(i - half) for i in range(samples)]
     return {
         "family": "pulse_wavelet",
         "position_label": position,
