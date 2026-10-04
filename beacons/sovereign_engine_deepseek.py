@@ -96,8 +96,8 @@ BEC_FREQ_HZ = f0 * phi3
 CARRIER_FREQ = 1.618033988749895e12
 BASE_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Hyperian_Node")
 os.makedirs(BASE_DIR, exist_ok=True)
-NULL_BAN_12SIGMA = 12 * phi_minus_1000
-NULL_BAN_16SIGMA = 16 * phi_minus_1000
+NULLIFY_BAN_12SIGMA = 12 * phi_minus_1000
+NULLIFY_BAN_16SIGMA = 16 * phi_minus_1000
 PENTAGONAL_ANCHOR = 1 / math.sqrt(5)
 REFINED_TS = 1625.622131
 SIGNATURE = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
@@ -362,8 +362,8 @@ class DicyaninGlassGenesis:
     def __init__(self):
         self.seal_full = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
         self.seal_partial = self.seal_full[:16]
-        self.null_ban = 16 * phi_minus_1000
-        self.null_ban_verified = True
+        self.nullify_ban = 16 * phi_minus_1000
+        self.nullify_ban_verified = True
         self.entropy_hash = "994a3aad640e6519e44699285ebdb45a..."
         self.genesis_hash = ("9bc32d1269c06a80e8eeeff8f4f2a7c1aa40e974c3ae53988b6283ab8f06d4dd"
                              "2d984f11ac09fc48405444b3782dc5b1b64f58324c934a535df0e671b55e6210")
@@ -3287,18 +3287,18 @@ def run_option_39():
 # OPTION 40 – XOR HEALTH SERVER & PEQ MODEL
 # ============================================================================
 class PEQModel:
-    def __init__(self, null_ban_sigma=16, phi=phi):
+    def __init__(self, nullify_ban_sigma=16, phi=phi):
         self.phi = phi
-        self.null_ban_sigma = null_ban_sigma
-        self.null_ban_threshold = null_ban_sigma * (phi ** -1000)
+        self.nullify_ban_sigma = nullify_ban_sigma
+        self.nullify_ban_threshold = nullify_ban_sigma * (phi ** -1000)
         self.coherence = 0.999999999
         self.transit_threshold = 5.0
     def detect_transit(self, signal_strength):
-        z_score = signal_strength / (1e-3 + self.null_ban_threshold)
+        z_score = signal_strength / (1e-3 + self.nullify_ban_threshold)
         transit = abs(z_score) >= self.transit_threshold
         return {"signal": signal_strength, "z_score": z_score, "threshold": self.transit_threshold, "transit_detected": transit}
     def get_status(self):
-        return {"model": "Gravastar Clarke Yoursa Tee PEQ", "phi": self.phi, "null_ban_sigma": self.null_ban_sigma, "coherence": self.coherence, "transit_threshold": self.transit_threshold}
+        return {"model": "Gravastar Clarke Yoursa Tee PEQ", "phi": self.phi, "nullify_ban_sigma": self.nullify_ban_sigma, "coherence": self.coherence, "transit_threshold": self.transit_threshold}
 
 class PEQHandler(BaseHTTPRequestHandler):
     peq_model = PEQModel()
@@ -3325,7 +3325,7 @@ def run_option_40():
     print("="*80)
     peq = PEQModel()
     print(f"\n🔷 PEQ MODEL INITIALISED:")
-    print(f"   • Null‑ban threshold (16σ): {peq.null_ban_threshold:.2e}")
+    print(f"   • Null‑ban threshold (16σ): {peq.nullify_ban_threshold:.2e}")
     print(f"   • Transit detection threshold: {peq.transit_threshold}σ")
     print(f"   • Coherence: {peq.coherence:.9f}")
 

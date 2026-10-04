@@ -60,7 +60,7 @@ class SovereignToolkit:
         self._reg("entropy_calc", self._entropy, needs_args=True)
         self._reg("commutator", self._commutator, needs_args=True)
         self._reg("trace_preservation", lambda rho: abs(sum(rho[i][i] for i in range(len(rho))) - 1.0) < 1e-9 if rho else False, needs_args=True)
-        self._reg("null_ban_check", lambda value: abs(float(value)) < 1e-12, needs_args=True)
+        self._reg("nullify_ban_check", lambda value: abs(float(value)) < 1e-12, needs_args=True)
 
         # B · Celestial (8)
         self._reg("conjunction_coherence", lambda: 1.0)

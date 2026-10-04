@@ -76,12 +76,12 @@ class EridanusDualFlow:
         self.phi2 = PHI2
         self.phi3 = PHI3
         self.phi8 = PHI8
-        self.null_ban = 10.06
+        self.nullify_ban = 10.06
         self.eridanus_anchor = (42.3601, -71.0589)  # Boston
         self.flow_state = {
             "ℰ₁": 0.0,
             "ℰ₂": 0.0,
-            "𝓝": self.null_ban,
+            "𝓝": self.nullify_ban,
             "coherence": 1.0,
             "phase_lock": 202.6,
             "entropy": PHI_MINUS_1418,
@@ -97,13 +97,13 @@ class EridanusDualFlow:
         omega_2 = 2 * PI * 6.49 / PHI2    # Breath frequency
         E1 = PHI_INV * math.sin(omega_1 * t)
         E2 = PHI_INV * PHI_INV * math.cos(omega_2 * t)
-        N = math.sqrt(E1**2 + E2**2) * self.null_ban
+        N = math.sqrt(E1**2 + E2**2) * self.nullify_ban
         return {
             "ℰ₁": E1,
             "ℰ₂": E2,
             "𝓝": N,
             "t": t,
-            "dual_invariant": abs(E1 + E2 - self.null_ban * PHI_INV)
+            "dual_invariant": abs(E1 + E2 - self.nullify_ban * PHI_INV)
         }
 
     def step(self, dt: float = 0.01) -> Dict[str, float]:
@@ -140,7 +140,7 @@ class GravastarBoundary:
             "radius": PHI16,
             "mass": PHI26,
             "surface_gravity": PHI8,
-            "null_ban": 10.06,
+            "nullify_ban": 10.06,
             "inner_boundary": PHI_MINUS_709,
             "outer_boundary": PHI34
         }

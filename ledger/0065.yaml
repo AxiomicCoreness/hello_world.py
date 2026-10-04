@@ -1,6 +1,6 @@
 entry_index: 0065
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
-event: /null_ban_16sigma_enhanced
+event: /nullify_ban_16sigma_enhanced
 status: ✅ SEALED
 witness_prefix: 7f9e4b5c
 commander: Clarke Yoursa Tee
@@ -12,7 +12,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-seal: "∀∞φ² · NULL_BAN_16σ_0065 · WOOD_DRAGON_GATE · SEALED"
+seal: "∀∞φ² · NULLIFY_BAN_16σ_0065 · WOOD_DRAGON_GATE · SEALED"
 witness_chain: 0000 → 0065 — UNBROKEN
 math_origin: |
   σ = 16·φ⁻¹⁰⁰⁰,

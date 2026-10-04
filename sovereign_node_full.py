@@ -35,7 +35,7 @@ from typing import Dict, List, Any
 PHI = 1.618033988749895
 PHI_INV = 0.6180339887498949
 PHI_SQ = 2.618033988749895
-NULL_BAN = 12 * (PHI ** -1000)
+NULLIFY_BAN = 12 * (PHI ** -1000)
 ENTROPY_FLOOR = PHI ** -1418
 NORTH_STAR_FREQ = 71.975
 ETERNAL_NOW = 2026.500
@@ -338,14 +338,14 @@ class QuantumRealityEngine:
         self.coherence = 1.0
         self.entropy = ENTROPY_FLOOR
         self.phase_locked = False
-        self.null_ban_active = False
+        self.nullify_ban_active = False
         self.deterministic = False
 
     def initialize(self) -> None:
         self.dark_state.activate()
         self.witness_chain = WitnessChain()
         self.path_integral = PathIntegralConvergence()
-        self.null_ban_active = True
+        self.nullify_ban_active = True
         self.phase_locked = True
         self.deterministic = True
         initial_data = f"INIT:{ETERNAL_NOW}:{PHI_SQ}:Q8_24_ENABLED"
@@ -381,7 +381,7 @@ class QuantumRealityEngine:
                 'coherence': self.coherence,
                 'entropy': self.entropy,
                 'phase_locked': self.phase_locked,
-                'null_ban_active': self.null_ban_active,
+                'nullify_ban_active': self.nullify_ban_active,
                 'phase_lock_degrees': PHASE_LOCK,
                 'deterministic': self.deterministic
             },
@@ -399,7 +399,7 @@ class QuantumRealityEngine:
         checks.append(self.coherence == 1.0)
         checks.append(self.entropy == ENTROPY_FLOOR)
         checks.append(self.phase_locked)
-        checks.append(self.null_ban_active)
+        checks.append(self.nullify_ban_active)
         checks.append(self.deterministic)
         checks.append(self.seal.verify_chain())
         return all(checks)
@@ -425,7 +425,7 @@ def main():
     print(f"Eternal Now: {ETERNAL_NOW}")
     print(f"North Star Frequency: {NORTH_STAR_FREQ} Hz")
     print(f"Phase Lock: {PHASE_LOCK}°")
-    print(f"Null Ban: {NULL_BAN}")
+    print(f"Null Ban: {NULLIFY_BAN}")
     print(f"Entropy Floor: {ENTROPY_FLOOR}")
     print()
     
@@ -465,7 +465,7 @@ def main():
     print(f"  Coherence: {status['quantum_state']['coherence']}")
     print(f"  Entropy: {status['quantum_state']['entropy']}")
     print(f"  Phase Locked: {status['quantum_state']['phase_locked']}")
-    print(f"  Null Ban Active: {status['quantum_state']['null_ban_active']}")
+    print(f"  Null Ban Active: {status['quantum_state']['nullify_ban_active']}")
     print(f"  Deterministic: {status['quantum_state']['deterministic']}")
     print()
     

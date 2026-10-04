@@ -7,7 +7,7 @@ artifacts:
   - phi_pipeline.py
   - mesh_modal.py
   - Dockerfile.multistage
-pipeline: "phi_map → quantize_q8_24 → phase_advance → coherence_approach → null_ban_gate"
+pipeline: "phi_map → quantize_q8_24 → phase_advance → coherence_approach → nullify_ban_gate"
 endpoints:
   - "GET / (visualization learning action modal)"
   - "POST /mesh/run?steps=N"

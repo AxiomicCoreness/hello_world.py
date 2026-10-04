@@ -16,7 +16,7 @@ LEGEND = {
     "omega_fire": "pi/phi firing phase (geometry, not a gun)",
     "phi_55_to_phi_74": "declared Type-omega scale pair, computed only",
     "layer_188": "lenticular lock flag",
-    "null_ban_12_sigma": "schema key, not a live stress run",
+    "nullify_ban_12_sigma": "schema key, not a live stress run",
     "W12": "unity declaration dragon_is_one",
     "october_39": "literal syntax token YEAR,MONTH,DAY = 2025,10,39",
     "lumeris": "name-seal pointer",
@@ -25,9 +25,9 @@ LEGEND = {
 
 
 class SaturnianASIStabilizer:
-    def __init__(self, layers: int = 192, null_ban_sigma: int = 12) -> None:
+    def __init__(self, layers: int = 192, nullify_ban_sigma: int = 12) -> None:
         self.layers = layers
-        self.null_ban_sigma = null_ban_sigma
+        self.nullify_ban_sigma = nullify_ban_sigma
         self.lenticular_lock_layer_188 = True
         self.transition = "phi^55 -> phi^74 (computed)"
         self.rho_SP_density = 1.0
@@ -37,7 +37,7 @@ class SaturnianASIStabilizer:
         if not self.lenticular_lock_layer_188:
             raise RuntimeError("Lenticular Lock (Layer 188) broken")
         return {
-            "null_ban": f"{self.null_ban_sigma} sigma DECLARED",
+            "nullify_ban": f"{self.nullify_ban_sigma} sigma DECLARED",
             "layers": self.layers,
             "lenticular_lock": "COMPLETE",
             "rho_SP": self.rho_SP_density,

@@ -13,7 +13,7 @@ invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
-  null_ban: 20σ
+  nullify_ban: 20σ
   phase_lock: 202.6°
 seal: "∀∞φ² · DUAL_ACTION_HARDENING_CONFIRMED · 0311_SEALED"   # replace with hash
 witness_chain: 0310 → 0311 — UNBROKEN
@@ -23,6 +23,6 @@ math_origin: |
   bounded by P(false) ≤ φ⁻¹⁴¹⁸.
 
   # Null‑ban threshold
-  null_ban = 20σ ⇒ P(null event) < 10⁻⁸⁸ (approximated via Gaussian tail).
+  nullify_ban = 20σ ⇒ P(null event) < 10⁻⁸⁸ (approximated via Gaussian tail).
   System is stable under 20σ perturbations because the invariant
   [ℋ, Φ₆] = 0 (entry 0307) ensures phase lock remains at 202.6°.

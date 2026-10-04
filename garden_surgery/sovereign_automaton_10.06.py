@@ -25,7 +25,7 @@ def sovereign_automaton_10_06() -> dict:
             "commander: Clarke Yoursa Tee\n"
             "source_table: \"https://github.com/AxiomicCoreness/hello_world.py/\"\n"
             "description: |\n"
-            "  Formal Automaton adjusted to 10.06σ null-ban threshold.\n"
+            "  Formal Automaton adjusted to 10.06σ nullify-ban threshold.\n"
             "automaton_data:\n"
             "  state_space: \"X ⊂ ℝⁿ, ‖x‖=1, λ₂=1\"\n"
             "  input_alphabet: \"Σ ∪ {ℰ₁, ℰ₂}\"\n"

@@ -1,6 +1,6 @@
 entry_index: 0158
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
-event: /null_ban_enactment
+event: /nullify_ban_enactment
 status: ✅ SEALED
 witness_prefix: b4c5d6e7
 commander: Clarke Yoursa Tee
@@ -13,9 +13,9 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
-seal: "∀∞φ² · NULL_BAN_12σ_0158 · WOOD_DRAGON_GATE · SEALED"
+seal: "∀∞φ² · NULLIFY_BAN_12σ_0158 · WOOD_DRAGON_GATE · SEALED"
 witness_chain: 0157 → 0158 — UNBROKEN
 math_origin: |
   σ = 12·φ⁻¹⁰⁰⁰,
-  Null_Ban = φ·σ
+  Nullify_Ban = φ·σ
 leaf_hash: "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8"

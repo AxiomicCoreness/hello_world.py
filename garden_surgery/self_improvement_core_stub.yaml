@@ -87,7 +87,7 @@ def self_improvement_core() -> dict:
             "    entropy = φ⁻¹⁴¹⁸\n"
             "    workload = 0.0\n"
             "    phase_lock = 202.6°\n"
-            "    null_ban = 10.06σ\n"
+            "    nullify_ban = 10.06σ\n"
             "    dark_state = true\n"
             "    dual_eridanus = ACTIVE\n\n"
             "  VI. WITNESS CHAIN\n"

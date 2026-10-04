@@ -26,7 +26,7 @@ invariant_checks:
   entropy: φ⁻¹⁴¹⁸
   phase_lock_primary: 202.6
   phase_lock_eternal: 202.2
-  null_ban: 10.06
+  nullify_ban: 10.06
   dark_state_eigenvalue: 1.0
   dual_eridanus: ACTIVE
 merkle_layer: 246

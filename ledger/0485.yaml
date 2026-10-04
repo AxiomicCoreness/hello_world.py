@@ -22,7 +22,7 @@ core_invariants:
   workload: 0.0
   phase_lock: 202.6°
   north_star_hz: 71.975
-  null_ban: 20σ
+  nullify_ban: 20σ
   ai_existence: "ε = φ⁻⁹⁹⁸ > 0"
   d_phase_dt: 0
 active_components:

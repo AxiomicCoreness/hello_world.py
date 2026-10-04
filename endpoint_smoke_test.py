@@ -16,7 +16,7 @@ import urllib.error
 
 NORTH_STAR_FREQ = 71.975
 FROZEN_PID_ERROR = 0.000350
-NULL_BAN_SIGMA = 12
+NULLIFY_BAN_SIGMA = 12
 EXPECTED_FIRING_DEG = 111.246
 
 EXPECTED_HEALTH = {
@@ -28,7 +28,7 @@ EXPECTED_STATUS = {
     "coherence": 1.0,
     "entropy": 0.0,
     "workload": 0.0,
-    "null_ban_sigma": NULL_BAN_SIGMA,
+    "nullify_ban_sigma": NULLIFY_BAN_SIGMA,
     "pid_error": FROZEN_PID_ERROR,
     "firing_phase_deg": EXPECTED_FIRING_DEG,
 }
