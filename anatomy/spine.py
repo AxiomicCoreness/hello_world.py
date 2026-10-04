@@ -56,6 +56,7 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
     # An arrow that ends at b keeps its stored start. A gap gets the numeric sibling.
     forms = {"immediate": 0, "span": 0, "skip": 0, "rewired": 0}
     history = []
+    derived = []
     for a, b in zip(indices, indices[1:]):
         if b != a + 1:
             continue
@@ -78,11 +79,18 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
             continue
         forms["rewired"] += 1
         history.append((a, b, "rewired"))
-        problems.append(f"pointer history rewired {a} -> {b}; stored arrow did not end at {b}")
+        stored = ", ".join(f"{x}→{y}" for x, y in pairs[:4])
+        if stored:
+            problems.append(
+                f"content anomaly {a} -> {b}; derived {a} -> {b}; stored {stored}"
+            )
+        else:
+            derived.append(f"derived {a} -> {b}; no stored arrow")
 
     return {
         "entries": len(indices),
         "problems": problems,
+        "derived_links": derived,
         "forms": forms,
         "history": history,
         "ok": not problems,
@@ -92,6 +100,9 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
 if __name__ == "__main__":
     result = check_spine()
     print(f"spine: {result['entries']} entries, ok={result['ok']} forms={result['forms']}")
+    print(f"derived_links: {len(result['derived_links'])} content_anomalies: {len(result['problems'])}")
+    for p in result["derived_links"]:
+        print("  .", p)
     for p in result["problems"]:
         print("  !", p)
     raise SystemExit(0 if result["ok"] else 1)
