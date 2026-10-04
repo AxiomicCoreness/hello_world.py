@@ -61,7 +61,11 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
         if b != a + 1:
             continue
         text = as_working_default(entries[b].read_text(encoding="utf-8"))
-        pairs = witness_pairs(text)
+        witness_lines = "\n".join(
+            line for line in text.splitlines()
+            if line.lower().lstrip().startswith(("witness_chain:", "witness:"))
+        )
+        pairs = witness_pairs(witness_lines)
         ends = [(x, y) for x, y in pairs if y == b]
         if (a, b) in ends:
             forms["immediate"] += 1
