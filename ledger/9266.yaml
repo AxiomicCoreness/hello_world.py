@@ -1,0 +1,9 @@
+entry_index: 9266
+timestamp: '2026-10-04T04:09:00Z'
+event: /index_reserved
+status: RESERVED
+prev_hash: a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177
+witness_chain: 9265 -> 9266
+note: Intentionally held. Not an off-by-one. 9267 and 9268 were appended by command before this reservation. Their witness skips this index; this file names the gap.
+purpose: held
+seal_sha3_256: 71d68b879a42ac4393bd08d859632bbfc084cc8adb3480e5b441622f43908936

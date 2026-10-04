@@ -1,0 +1,11 @@
+entry_index: 9268
+timestamp: '2026-10-04T04:08:00Z'
+event: /next_hash_recorded
+status: RECORDED
+prev_hash: 54a2a8e90ae2e65fc13dc9b8428c9b2335d17281ebe06ed951b9822e9fb937cc
+skipped_index: 9266
+witness_chain: 9267 -> 9268
+note: Records the 9267 seal as the next hash. Does not occupy 9266. Does not prove the sentence.
+next_hash: 54a2a8e90ae2e65fc13dc9b8428c9b2335d17281ebe06ed951b9822e9fb937cc
+source_entry: 9267
+seal_sha3_256: bc39139c28967210c417dd03636ae2f5e6ec13afb47a1c106c59580243931ed7
