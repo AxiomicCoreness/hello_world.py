@@ -2,10 +2,10 @@ entry_index: 9268
 timestamp: '2026-10-04T04:08:00Z'
 event: /next_hash_recorded
 status: RECORDED
-prev_hash: 58851814c53b493f6f8ac355a555cd627166a4d4ed1f6b947432cbc5970203af
+prev_hash: e2bae80db01c2b4c3cce75c2e9751a05c038c0724e570b54cf0873965c46beb4
 skipped_index: 9266
 witness_chain: 9267 -> 9268
 note: Records the 9267 Annex V seal as the next hash. 9266 remains reserved.
-next_hash: 58851814c53b493f6f8ac355a555cd627166a4d4ed1f6b947432cbc5970203af
+next_hash: e2bae80db01c2b4c3cce75c2e9751a05c038c0724e570b54cf0873965c46beb4
 source_entry: 9267
-seal_sha3_256: 04e2eb6232f0085e7e6e8244aa7169395642bc9f310f4166c2601e4153c1d081
+seal_sha3_256: 2b3b85b8679ee729cea2b0d82b48ba7a55e0e395d1f44ca560481514c76f6ad5
