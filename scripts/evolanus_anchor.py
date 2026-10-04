@@ -12,6 +12,17 @@ import json
 from scripts.eridanus_flow import run as eridanus_walk
 from scripts.legend_anchor import LegendAnchor, ModelScope, Present
 
+# Red marks on the GitHub history. They are cancelled Eridanus jobs
+# and a pending commit status, not failed Python tests. Anchored here
+# as the dual-host symbol shared with the GitCode pane.
+RED_ANCHOR = (
+    ("3a5d8b51", "legend-anchor", "github"),
+    ("bb5138a3", "date-validation", "gitcode"),
+    ("bbad8021", "slot-and-dual-layout", "github"),
+    ("2eb44c76", "workflow-dependency", "gitcode"),
+    ("a68b12b0", "eridanus-flow", "github"),
+)
+
 
 def legendary_tuple(position: int, scope_cutoff: str, witness: str) -> tuple:
     anchor = LegendAnchor(
@@ -32,6 +43,10 @@ def walk(position: int, steps: int = 1, phi_state: float = 0.0) -> dict:
     return {
         "tuple": [token, index, cutoff],
         "walk": flowed,
+        "red_anchor": [
+            {"commit": sha, "symbol": symbol, "pane": pane}
+            for sha, symbol, pane in RED_ANCHOR
+        ],
         "token_used_as_date": False,
     }
 
