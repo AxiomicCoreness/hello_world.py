@@ -17,7 +17,7 @@ legend_anchor.py ----> dual_interaction_layout.py
         | label only             | read only
         v                        v
 eridanus_flow.py          GitHub pane | GitCode pane
-(not written)             no dispatch
+position label only       no dispatch
 ```
 
 | Edge | Kind | Rule |
@@ -30,4 +30,4 @@ eridanus_flow.py          GitHub pane | GitCode pane
 | parity → eridanus-dual-smoke | slot name | smoke lane is read-only |
 | smoke → ledger | forbidden | no ledger growth from the smoke workflow |
 
-The DE family is not chosen. Lagrangian, three-term Hamiltonian, and Eridanus flow stay out of `scripts/legend_anchor.py`.
+The DE family chosen here is the Eridanus flow, `scripts/eridanus_flow.py`. It cites a position label and does not date the token. It is not appended to `scripts/legend_anchor.py`.

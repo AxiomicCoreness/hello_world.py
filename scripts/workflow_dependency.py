@@ -24,7 +24,7 @@ EDGES = (
 def graph() -> dict:
     return {
         "legend_anchor": "position, not a time, not a DE input",
-        "de_home": "scripts/eridanus_flow.py — not yet written; not appended to legend_anchor.py",
+        "de_home": "scripts/eridanus_flow.py — position label only; not a date",
         "dual_layout": "read-only panes; dispatch forbidden",
         "edges": list(EDGES),
     }
