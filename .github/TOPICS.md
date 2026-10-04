@@ -164,11 +164,11 @@ Cross-reference: POLICY.md Article 38.
 | boolean flag | Witness_Chain_Unbroken = TRUE | 1, ledger/0365.yaml |
 | stored cross-statement | Witness_Continuity = 8513 → 8514 — UNBROKEN | 1, ledger/0366.yaml |
 
-Derived links are not stored. The cross-statement stays in the successor. Index 9266 was not taken.
+Derived links are not stored. The cross-statement stays in the successor. Index 9266 is reserved.
 
 ## Issuance fix (2026-10-04)
 
-Cross-reference: POLICY.md Article 39. Main `9179dbed`.
+Cross-reference: POLICY.md Article 39. Main `5eb7f534`.
 
 | Entry | Seal after Annex V issuance |
 |------|------------------------------|
@@ -179,3 +179,4 @@ Cross-reference: POLICY.md Article 39. Main `9179dbed`.
 | 9268 | `2b3b85b8679ee729cea2b0d82b48ba7a55e0e395d1f44ca560481514c76f6ad5` |
 
 9267 witnesses `9266 -> 9267`. 9268 witnesses `9267 -> 9268`. The old declared `865d61f4…` is not the link.
+
