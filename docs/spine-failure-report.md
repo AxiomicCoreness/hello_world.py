@@ -1,15 +1,242 @@
 # Spine failure report
 
-entries: 0
-ok: True
-problems: 0
+Checker: anatomy/spine.py requires the pair predecessor → successor anywhere in the successor file.
+ASCII -> is normalized to → before compare. The first arrow in the file is no longer the pair under test.
 
-Checker now requires the pair predecessor → successor anywhere in the successor file. First-arrow false failures are removed.
+spine: 1020 entries, ok=False
+problems: 229
 
-- genesis span `0→n`: 0
-- skip-one witness: 0
-- no arrow: 0
-- other: 0
+9264 → 9265 is not in this list.
+9266 was not taken.
 
 ## Remaining
 
+- witness pointer 1 -> 2 missing; found 0→1
+- witness pointer 3 -> 4 missing; found 0→1, 2→3
+- witness pointer 5 -> 6 missing; found 0→1, 2→3, 4→5
+- witness pointer 7 -> 8 missing; found 0→8
+- witness pointer 8 -> 9 missing; found 0→9
+- witness pointer 9 -> 10 missing; found 0→10
+- witness pointer 10 -> 11 missing; found 0→11
+- witness pointer 11 -> 12 missing; found 0→12
+- witness pointer 12 -> 13 missing; found 0→13
+- witness pointer 13 -> 14 missing; found 0→14
+- witness pointer 14 -> 15 missing; found 0→15
+- witness pointer 15 -> 16 missing; found 0→16
+- witness pointer 16 -> 17 missing; found 0→17
+- witness pointer 17 -> 18 missing; found 0→18
+- witness pointer 18 -> 19 missing; found 0→19
+- witness pointer 19 -> 20 missing; found 0→20
+- witness pointer 20 -> 21 missing; found 0→21
+- witness pointer 21 -> 22 missing; found 0→22
+- witness pointer 22 -> 23 missing; found 0→23
+- witness pointer 23 -> 24 missing; found 0→24
+- witness pointer 24 -> 25 missing; found 0→25
+- witness pointer 25 -> 26 missing; found 0→26
+- witness pointer 26 -> 27 missing; found 0→27
+- witness pointer 27 -> 28 missing; found 0→28
+- witness pointer 28 -> 29 missing; found 0→29
+- witness pointer 29 -> 30 missing; found 0→30
+- witness pointer 30 -> 31 missing; found 0→31
+- witness pointer 31 -> 32 missing; found 0→32
+- witness pointer 32 -> 33 missing; found 0→33
+- witness pointer 33 -> 34 missing; found 0→34
+- witness pointer 34 -> 35 missing; found 0→35
+- witness pointer 35 -> 36 missing; found 0→36
+- witness pointer 36 -> 37 missing; found 0→37
+- witness pointer 37 -> 38 missing; found 0→38
+- witness pointer 38 -> 39 missing; found 0→39
+- witness pointer 39 -> 40 missing; found 0→40
+- witness pointer 40 -> 41 missing; found 0→41
+- witness pointer 41 -> 42 missing; found 0→42
+- witness pointer 42 -> 43 missing; found 0→43
+- witness pointer 43 -> 44 missing; found 0→44
+- witness pointer 44 -> 45 missing; found 0→45
+- witness pointer 45 -> 46 missing; found 0→46
+- witness pointer 46 -> 47 missing; found 0→47
+- witness pointer 47 -> 48 missing; found 0→48
+- witness pointer 48 -> 49 missing; found 0→49
+- witness pointer 49 -> 50 missing; found 0→50
+- witness pointer 50 -> 51 missing; found 0→51
+- witness pointer 51 -> 52 missing; found 0→52
+- witness pointer 52 -> 53 missing; found 0→53
+- witness pointer 53 -> 54 missing; found 0→54
+- witness pointer 54 -> 55 missing; found 0→55
+- witness pointer 55 -> 56 missing; found 0→56
+- witness pointer 56 -> 57 missing; found 0→57
+- witness pointer 57 -> 58 missing; found 0→58
+- witness pointer 58 -> 59 missing; found 0→59
+- witness pointer 59 -> 60 missing; found 0→60
+- witness pointer 60 -> 61 missing; found 0→61
+- witness pointer 61 -> 62 missing; found 0→62
+- witness pointer 62 -> 63 missing; found 0→63
+- witness pointer 63 -> 64 missing; found 0→64
+- witness pointer 64 -> 65 missing; found 0→65
+- witness pointer 65 -> 66 missing; found 0→66
+- witness pointer 66 -> 67 missing; found 0→67
+- witness pointer 67 -> 68 missing; found 0→68
+- witness pointer 68 -> 69 missing; found 0→69
+- witness pointer 69 -> 70 missing; found 0→70
+- witness pointer 70 -> 71 missing; found 0→71
+- witness pointer 71 -> 72 missing; found 0→72
+- witness pointer 72 -> 73 missing; found 0→73
+- witness pointer 73 -> 74 missing; found 0→74
+- witness pointer 74 -> 75 missing; found 0→75
+- witness pointer 75 -> 76 missing; found 0→76
+- witness pointer 76 -> 77 missing; found 0→77
+- witness pointer 77 -> 78 missing; found 0→78
+- witness pointer 78 -> 79 missing; found 0→79
+- witness pointer 79 -> 80 missing; found 0→80
+- witness pointer 80 -> 81 missing; found 0→81
+- witness pointer 81 -> 82 missing; found 0→82
+- witness pointer 82 -> 83 missing; found 0→83
+- witness pointer 83 -> 84 missing; found 0→84
+- witness pointer 84 -> 85 missing; found 0→85
+- witness pointer 85 -> 86 missing; found 0→86
+- witness pointer 86 -> 87 missing; found 0→87
+- witness pointer 87 -> 88 missing; found 0→88
+- witness pointer 88 -> 89 missing; found 0→89
+- witness pointer 89 -> 90 missing; found 0→90
+- witness pointer 90 -> 91 missing; found 0→91
+- witness pointer 91 -> 92 missing; found 0→92
+- witness pointer 92 -> 93 missing; found 0→93
+- witness pointer 93 -> 94 missing; found 0→94
+- witness pointer 94 -> 95 missing; found 0→95
+- witness pointer 95 -> 96 missing; found 0→96
+- witness pointer 96 -> 97 missing; found 0→97
+- witness pointer 97 -> 98 missing; found 0→98
+- witness pointer 98 -> 99 missing; found 0→99
+- witness pointer 99 -> 100 missing; found 0→100
+- witness pointer 100 -> 101 missing; found 0→101
+- witness pointer 101 -> 102 missing; found 0→102
+- witness pointer 102 -> 103 missing; found 0→103
+- witness pointer 103 -> 104 missing; found 0→104
+- witness pointer 104 -> 105 missing; found 0→105
+- witness pointer 105 -> 106 missing; found 0→106
+- witness pointer 106 -> 107 missing; found 0→107
+- witness pointer 107 -> 108 missing; found 0→108
+- witness pointer 108 -> 109 missing; found 0→109
+- witness pointer 109 -> 110 missing; found 0→110
+- witness pointer 110 -> 111 missing; found 0→111
+- witness pointer 111 -> 112 missing; found 0→112
+- witness pointer 112 -> 113 missing; found 0→113
+- witness pointer 113 -> 114 missing; found 0→114
+- witness pointer 114 -> 115 missing; found 0→115
+- witness pointer 115 -> 116 missing; found 0→116
+- witness pointer 116 -> 117 missing; found 0→117
+- witness pointer 117 -> 118 missing; found 0→118
+- witness pointer 118 -> 119 missing; found 0→119
+- witness pointer 119 -> 120 missing; found 0→120
+- witness pointer 120 -> 121 missing; found 0→121
+- witness pointer 121 -> 122 missing; found 0→122
+- witness pointer 122 -> 123 missing; found 0→123
+- witness pointer 123 -> 124 missing; found 0→124
+- witness pointer 124 -> 125 missing; found 0→125
+- witness pointer 125 -> 126 missing; found 0→126
+- witness pointer 126 -> 127 missing; found 0→127
+- witness pointer 127 -> 128 missing; found 0→128
+- witness pointer 128 -> 129 missing; found 0→129
+- witness pointer 129 -> 130 missing; found 0→130
+- witness pointer 130 -> 131 missing; found 0→131
+- witness pointer 131 -> 132 missing; found 0→132
+- witness pointer 132 -> 133 missing; found 0→133
+- witness pointer 133 -> 134 missing; found 0→134
+- witness pointer 134 -> 135 missing; found 0→135
+- witness pointer 135 -> 136 missing; found 0→136
+- witness pointer 136 -> 137 missing; found 0→137
+- witness pointer 137 -> 138 missing; found 0→138
+- witness pointer 138 -> 139 missing; found 0→139
+- witness pointer 139 -> 140 missing; found 0→140
+- witness pointer 140 -> 141 missing; found 0→141
+- witness pointer 141 -> 142 missing; found 0→142
+- witness pointer 142 -> 143 missing; found 0→143
+- witness pointer 335 -> 336 missing; found none
+- witness pointer 350 -> 351 missing; found none
+- witness pointer 351 -> 352 missing; found none
+- witness pointer 352 -> 353 missing; found none
+- witness pointer 353 -> 354 missing; found none
+- witness pointer 354 -> 355 missing; found none
+- witness pointer 355 -> 356 missing; found none
+- witness pointer 356 -> 357 missing; found none
+- witness pointer 357 -> 358 missing; found none
+- witness pointer 358 -> 359 missing; found none
+- witness pointer 359 -> 360 missing; found none
+- witness pointer 360 -> 361 missing; found none
+- witness pointer 361 -> 362 missing; found none
+- witness pointer 362 -> 363 missing; found none
+- witness pointer 363 -> 364 missing; found none
+- witness pointer 364 -> 365 missing; found none
+- witness pointer 365 -> 366 missing; found 8513→8514
+- witness pointer 366 -> 367 missing; found none
+- witness pointer 367 -> 368 missing; found none
+- witness pointer 368 -> 369 missing; found none
+- witness pointer 369 -> 370 missing; found none
+- witness pointer 376 -> 377 missing; found none
+- witness pointer 377 -> 378 missing; found none
+- witness pointer 469 -> 470 missing; found none
+- witness pointer 470 -> 471 missing; found none
+- witness pointer 471 -> 472 missing; found none
+- witness pointer 472 -> 473 missing; found none
+- witness pointer 473 -> 474 missing; found none
+- witness pointer 474 -> 475 missing; found none
+- witness pointer 475 -> 476 missing; found none
+- witness pointer 476 -> 477 missing; found none
+- witness pointer 477 -> 478 missing; found none
+- witness pointer 478 -> 479 missing; found none
+- witness pointer 479 -> 480 missing; found none
+- witness pointer 480 -> 481 missing; found none
+- witness pointer 481 -> 482 missing; found none
+- witness pointer 482 -> 483 missing; found none
+- witness pointer 483 -> 484 missing; found none
+- witness pointer 484 -> 485 missing; found none
+- witness pointer 485 -> 486 missing; found none
+- witness pointer 486 -> 487 missing; found none
+- witness pointer 487 -> 488 missing; found none
+- witness pointer 488 -> 489 missing; found none
+- witness pointer 489 -> 490 missing; found none
+- witness pointer 490 -> 491 missing; found none
+- witness pointer 491 -> 492 missing; found none
+- witness pointer 492 -> 493 missing; found none
+- witness pointer 493 -> 494 missing; found none
+- witness pointer 494 -> 495 missing; found none
+- witness pointer 495 -> 496 missing; found none
+- witness pointer 496 -> 497 missing; found none
+- witness pointer 497 -> 498 missing; found none
+- witness pointer 498 -> 499 missing; found none
+- witness pointer 499 -> 500 missing; found none
+- witness pointer 500 -> 501 missing; found none
+- witness pointer 501 -> 502 missing; found none
+- witness pointer 502 -> 503 missing; found none
+- witness pointer 503 -> 504 missing; found none
+- witness pointer 504 -> 505 missing; found none
+- witness pointer 505 -> 506 missing; found none
+- witness pointer 506 -> 507 missing; found none
+- witness pointer 507 -> 508 missing; found none
+- witness pointer 508 -> 509 missing; found none
+- witness pointer 509 -> 510 missing; found none
+- witness pointer 510 -> 511 missing; found none
+- witness pointer 511 -> 512 missing; found none
+- witness pointer 512 -> 513 missing; found none
+- witness pointer 513 -> 514 missing; found none
+- witness pointer 514 -> 515 missing; found none
+- witness pointer 515 -> 516 missing; found none
+- witness pointer 516 -> 517 missing; found none
+- witness pointer 517 -> 518 missing; found none
+- witness pointer 518 -> 519 missing; found none
+- witness pointer 8223 -> 8224 missing; found 8221→8224, 8221→8224
+- witness pointer 8530 -> 8531 missing; found 8340→8501, 8339→8502
+- witness pointer 8617 -> 8618 missing; found 8537→8539, 8540→8598, 8611→8612, 8616→8617
+- witness pointer 8734 -> 8735 missing; found none
+- witness pointer 8769 -> 8770 missing; found 8767→8770
+- witness pointer 8802 -> 8803 missing; found 8801→8803
+- witness pointer 8847 -> 8848 missing; found 8846→8848
+- witness pointer 8852 -> 8853 missing; found 8851→8852
+- witness pointer 8977 -> 8978 missing; found 8976→8978
+- witness pointer 8980 -> 8981 missing; found 8981→8982, 8978→8981
+- witness pointer 9165 -> 9166 missing; found 9164→9166
+- witness pointer 9166 -> 9167 missing; found 9165→9167
+- witness pointer 9167 -> 9168 missing; found 9166→9168
+- witness pointer 9168 -> 9169 missing; found 9167→9169
+- witness pointer 9169 -> 9170 missing; found 9168→9170
+- witness pointer 9170 -> 9171 missing; found 9169→9171
+- witness pointer 9240 -> 9241 missing; found 9239→9240
