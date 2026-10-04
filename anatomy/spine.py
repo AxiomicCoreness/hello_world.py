@@ -43,13 +43,17 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
             problems.append(f"duplicate entry_index {idx}")
         seen.add(idx)
 
-    # Prior pointer: consecutive numeric siblings must witness each other.
+    # Prior pointer: a consecutive successor must contain the pair a → b.
+    # Cumulative chains (0000 → 0001 → 0002) are valid if that pair appears.
+    # The first arrow in the file is not the pair under test.
     for a, b in zip(indices, indices[1:]):
-        if b == a + 1:
-            text = as_working_default(entries[b].read_text(encoding="utf-8"))
-            m = POINTER_RE.search(text)
-            if not m or int(m.group(1)) != a:
-                problems.append(f"witness pointer {a} -> {b} missing or broken")
+        if b != a + 1:
+            continue
+        text = as_working_default(entries[b].read_text(encoding="utf-8"))
+        pairs = [(int(m.group(1)), int(m.group(2))) for m in POINTER_RE.finditer(text)]
+        if (a, b) not in pairs:
+            found = ", ".join(f"{x}→{y}" for x, y in pairs[:4]) or "none"
+            problems.append(f"witness pointer {a} -> {b} missing; found {found}")
 
     return {"entries": len(indices), "problems": problems, "ok": not problems}
 
