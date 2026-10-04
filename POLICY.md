@@ -289,3 +289,45 @@ Article 37 — Step 0 relay to the local daemon
   37.3  This article does not move blob d13dea749b7cd29d081d41e2d14c8267bbaebeeb
         or body seal cf5d38f84f9a40792bb6ad4f424ea01679edf764896278402e1b35b558d276ef.
         The Kubernetes Service apply remains blocked: no kubeconfig on the writer.
+
+Article 38 — Pointer form partition
+
+  38.1  Consecutive witness links are classified by the stored arrow, not by
+        rewriting the file. Counts on rename-nullify-ban, 1020 entries,
+        952 consecutive links:
+
+        immediate pair          9264 → 9265                         776
+        span                    stored reference ahead of successor 136
+        skip                    pair with missing intermediates      14
+        rewired, derived        365 → 366                            26
+        boolean flag            Witness_Chain_Unbroken = TRUE         1
+        stored cross-statement  Witness_Continuity = 8513 → 8514      1
+
+  38.2  The 26 rewired links are reader assertions. They are not stored.
+        ledger/0365.yaml carries the boolean flag and no arrow.
+        The cross-statement is in ledger/0366.yaml, the successor.
+        A derived 365 → 366 does not replace 8513 → 8514.
+
+  38.3  The remaining 68 of 1020 are the head, which has no predecessor,
+        plus 67 index steps that are not n → n+1. That is not a fifth
+        pointer class. 9264 → 9265 stays immediate. Index 9266 is free.
+
+Article 39 — Issuance fix, Annex V reseal
+
+  39.1  The governing seal is Annex V: SHA3-256 over canonical JSON,
+        sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+        seal and seal_sha3_256 stripped, prev_hash retained.
+        Body-minus-seal-line is not the ledger convention.
+
+  39.2  Issuance after the fix, main 9179dbed:
+
+        9264  0596ec067b3223a688760a1e9c3eb4c90b5e4b894828cbc7391892dcb3c350b8
+        9265  10edff7b41571aa002a22222e44cbc8fd19e8eef49c20dbe1d0ceeea4514f377
+        9266  70367c04ab3199b1f19e89f580be1a974e768e04cb22acd0a9b7ab40c36bec1e
+        9267  58851814c53b493f6f8ac355a555cd627166a4d4ed1f6b947432cbc5970203af
+        9268  04e2eb6232f0085e7e6e8244aa7169395642bc9f310f4166c2601e4153c1d081
+
+  39.3  9264's declared seal was replaced with the Annex V recompute.
+        9265, 9266, and 9267 link to the new predecessor seals.
+        9266 remains reserved. 9267 still witnesses 9265 -> 9267.
+        The old declared value 865d61f4… is no longer the chain link.
