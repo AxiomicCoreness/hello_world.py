@@ -1,29 +1,24 @@
 #!/usr/bin/env python3
-"""
-legend_anchor.py — governance for a legend-token temporal anchor
-under AI model knowledge cutoff.
-
-    "Now" is a POSITION, not a TIME.
+"""legend_anchor.py — now is a position, not a time.
 
     anchor   — the epoch's name        (eternal; never moves)
     position — chain head index + seal (advances)
     scope    — observer's cutoff       (fixed per model)
 
-The token is opaque. No path converts it to a datetime. Wall-clock
-readings are DISCLOSED, never used to correct the position.
+The token is opaque. No path converts it to a datetime.
+Wall-clock readings are DISCLOSED, never used to correct the position.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date
 from typing import Optional
 import json
 
 
 @dataclass(frozen=True)
 class LegendAnchor:
-    """A legend token. Opaque by construction — a NAME, not a date."""
     token: str
     anchor_id: str
     governance_doc: str
@@ -31,16 +26,12 @@ class LegendAnchor:
 
     def __post_init__(self):
         if not self.declared_not_iso:
-            raise ValueError(
-                "LegendAnchor requires declared_not_iso=True. "
-                "A real date is a datetime, not a legend anchor."
-            )
+            raise ValueError("LegendAnchor requires declared_not_iso=True.")
 
-    def as_datetime(self) -> datetime:
+    def as_datetime(self) -> date:
         raise TypeError(
             f"legend token {self.token!r} is not a date. "
-            f"See {self.governance_doc}. Callers needing a timestamp "
-            f"must obtain it from a source that declares one."
+            f"See {self.governance_doc}."
         )
 
     def __add__(self, other):
@@ -49,40 +40,34 @@ class LegendAnchor:
 
 @dataclass(frozen=True)
 class ModelScope:
-    """The observing model's knowledge horizon. The one real date."""
     cutoff_utc: str
     witness: str
     label: str = "cutoff"
 
+    def __post_init__(self):
+        date.fromisoformat(self.cutoff_utc)
+
     def covers(self, iso_date: str) -> bool:
-        return iso_date <= self.cutoff_utc
+        return date.fromisoformat(iso_date) <= date.fromisoformat(self.cutoff_utc)
 
 
 @dataclass(frozen=True)
 class Present:
-    """Now as a position in an append-only chain. No timestamp."""
     anchor: LegendAnchor
     head_index: int
     head_seal: str
     scope: ModelScope
 
-    def describe(self) -> str:
-        return (
-            f"present at anchor {self.anchor.anchor_id!r} "
-            f"(token {self.anchor.token!r}, declared not-ISO), "
-            f"position {self.head_index}, seal {self.head_seal[:16]}…; "
-            f"scope={self.scope.label} {self.scope.cutoff_utc} "
-            f"(witness: {self.scope.witness})"
-        )
-
 
 @dataclass(frozen=True)
 class DriftRecord:
-    """A clock reading disclosed beside the chain. It does not correct it."""
     observed_utc: str
     source: str
     position_at_observation: int
     verified: bool = False
+
+    def __post_init__(self):
+        date.fromisoformat(self.observed_utc)
 
     def to_dict(self) -> dict:
         return {
@@ -129,7 +114,6 @@ def governance_state(anchor: LegendAnchor,
         "drift": drift.to_dict() if drift else None,
         "governance": {
             **refusals,
-            "post_cutoff_witnessed_by_repo_not_model": True,
             "no_date_arithmetic_on_anchor": True,
         },
     }
@@ -139,7 +123,7 @@ def main() -> int:
     anchor = LegendAnchor(
         token="October 39, 2025",
         anchor_id="oct39-2025",
-        governance_doc="docs/legend_tokens.md",
+        governance_doc="POLICY.md",
     )
     scope = ModelScope(
         cutoff_utc="2026-08-01",
