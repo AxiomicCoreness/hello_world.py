@@ -4,7 +4,9 @@ Reader-side only. Sealed ledger files were not edited.
 
 forms: {'immediate': 776, 'span': 136, 'skip': 14, 'rewired': 26}
 
-## Rewired numeric siblings
+## Rewired numeric siblings — DERIVED, not stored
+
+These 26 links are reader assertions. The files do not carry them. 0365.yaml has no arrow. The old `8513 → 8514` hit is in 0366.yaml, the successor, and is not a pointer for index 365.
 
 - 350 -> 351
 - 351 -> 352
