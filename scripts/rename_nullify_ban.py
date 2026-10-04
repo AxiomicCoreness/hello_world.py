@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Search-and-replace incoming NULLIFY_BAN instances with NULLIFY_BAN.
+"""Search-and-replace incoming NULL_BAN instances with NULLIFY_BAN.
 
-Dry-run by default. --apply writes bytes. Does not walk .md (sealed prose).
+Dry-run by default. --apply writes bytes. Does not walk .md.
+Does not rewrite this file. Does not walk ledger/ unless --include-ledger.
 Does not issue a ledger seal.
 
-Boundary: NULLIFY_BAN matches as a prefix of a compound, so an incoming
-NULLIFY_BAN_12SIGMA / NULLIFY_BAN_16SIGMA / any later NULLIFY_BAN_* is rewritten.
-A following letter or digit still blocks (NULL_BANx is not a compound).
+Boundary fix: a leading underscore is part of the token, not a blocker.
+shield_null_ban and SHIELD_NULL_BAN are incoming instances.
+NULL_BANx still does not match. NULLIFY_BAN does not contain NULL_BAN.
 """
 
 from __future__ import annotations
@@ -18,42 +19,36 @@ from pathlib import Path
 
 SCAN_SUFFIXES = {".py", ".yml", ".yaml"}
 EXCLUDED_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".mypy_cache"}
+SELF_NAMES = {"rename_nullify_ban.py"}
 
-TOKEN_MAP = (
-    ("NULLIFY_BAN_16SIGMA", "NULLIFY_BAN_16SIGMA"),
-    ("NULLIFY_BAN_12SIGMA", "NULLIFY_BAN_12SIGMA"),
-    ("NULLIFY_BAN_FACTOR", "NULLIFY_BAN_FACTOR"),
-    ("NULLIFY_BAN_SIGMA", "NULLIFY_BAN_SIGMA"),
-    ("NULLIFY_BAN", "NULLIFY_BAN"),
-    ("nullify_ban_sigma", "nullify_ban_sigma"),
-    ("nullify_ban_threshold", "nullify_ban_threshold"),
-    ("automaton_null_ban", "automaton_nullify_ban"),
-    ("nullify_ban", "nullify_ban"),
-    ("Nullify-Ban", "Nullify-Ban"),
-    ("Nullify_Ban", "Nullify_Ban"),
-    ("nullify-ban", "nullify-ban"),
-)
-
+# Leading _ is allowed. A letter or digit still blocks.
 PREFIX_RULES = (
-    (re.compile(r"(?<![A-Za-z0-9_])NULLIFY_BAN(?=_|[^A-Za-z0-9_]|$)"), "NULLIFY_BAN"),
-    (re.compile(r"(?<![A-Za-z0-9_])nullify_ban(?=_|[^A-Za-z0-9_]|$)"), "nullify_ban"),
-    (re.compile(r"(?<![A-Za-z0-9_])Nullify_Ban(?=_|[^A-Za-z0-9_]|$)"), "Nullify_Ban"),
-    (re.compile(r"(?<![A-Za-z0-9_])Nullify-Ban(?=[^A-Za-z0-9_]|$)"), "Nullify-Ban"),
-    (re.compile(r"(?<![A-Za-z0-9_])nullify-ban(?=[^A-Za-z0-9_]|$)"), "nullify-ban"),
+    (re.compile(r"(?<![A-Za-z0-9])NULL_BAN(?![A-Za-z0-9])"), "NULLIFY_BAN"),
+    (re.compile(r"(?<![A-Za-z0-9])null_ban(?![A-Za-z0-9])"), "nullify_ban"),
+    (re.compile(r"(?<![A-Za-z0-9])Null_Ban(?![A-Za-z0-9])"), "Nullify_Ban"),
+    (re.compile(r"(?<![A-Za-z0-9])Null-Ban(?![A-Za-z0-9])"), "Nullify-Ban"),
+    (re.compile(r"(?<![A-Za-z0-9])null-ban(?![A-Za-z0-9])"), "nullify-ban"),
 )
+DISCOVERY = re.compile(r"(?<![A-Za-z0-9])(?:NULL_BAN|null_ban|Null_Ban|Null-Ban|null-ban)(?![A-Za-z0-9])")
 
 
-def skipped(path: Path) -> bool:
-    return any(part in EXCLUDED_DIRS for part in path.parts)
+def skipped(path: Path, include_ledger: bool) -> bool:
+    if path.name in SELF_NAMES:
+        return True
+    if any(part in EXCLUDED_DIRS for part in path.parts):
+        return True
+    if not include_ledger and "ledger" in path.parts:
+        return True
+    return False
 
 
-def candidates(root: Path) -> list[Path]:
+def candidates(root: Path, include_ledger: bool) -> list[Path]:
     found = []
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix not in SCAN_SUFFIXES or skipped(path):
+        if not path.is_file() or path.suffix not in SCAN_SUFFIXES or skipped(path, include_ledger):
             continue
         text = path.read_bytes().decode("utf-8")
-        if any(old in text for old, _ in TOKEN_MAP):
+        if DISCOVERY.search(text):
             found.append(path)
     return found
 
@@ -67,18 +62,19 @@ def rewrite(text: str) -> tuple[str, int]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Replace incoming NULLIFY_BAN instances")
+    parser = argparse.ArgumentParser(description="Replace incoming NULL_BAN instances")
     parser.add_argument("--root", default=".")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--include-ledger", action="store_true")
     args = parser.parse_args(argv)
     root = Path(args.root)
-    files = candidates(root)
-    if not files:
-        if root.is_dir():
-            print("rename already applied; nothing to do")
-            return 0
+    if not root.is_dir():
         print("REFUSING: root is not a directory")
         return 1
+    files = candidates(root, args.include_ledger)
+    if not files:
+        print("rename already applied; nothing to do")
+        return 0
     changed = 0
     for path in files:
         text = path.read_bytes().decode("utf-8")
