@@ -65,4 +65,16 @@ The six axes are provenance and disposition, not the anomaly shape. Uniform valu
 | `8617 → 8618` | chain ends at `8611` | `8617 → 8618` | −6 | short chain |
 | `8852 → 8853` | `8851 → 8852` | `8852 → 8853` | −1 | off-by-one |
 
-Coordinate for all four: `i=main`, `j=other`, `k=2026-10-03`, `l=gap`, `m=unknown`, `n=analysis`. `l=gap` does not separate these from the 22 derived links; the payload does. The 22 have no stored arrow and are not in this table. `9264 → 9265` is not an anomaly.
+Shared coordinate: `i=main`, `j=other`, `k=2026-10-03`, `l=gap`, `m=unknown`, `n=analysis`. `l=gap` does not separate these from the 22 derived links. The payload does: the 22 have no stored arrow and are not in this table. `9264 → 9265` is not an anomaly.
+
+## Completion labels
+
+These are payload labels on `l` (completion). They are not a seventh axis.
+
+| Label | Meaning | Value on this reading |
+|---|---|---|
+| `godel_incompleteness_status` | 0 if the sentence is provable in the recorded system, 1 if unprovable and triggered | 1 |
+| `godel_transcendence_count` | times transcendence fired | not measured |
+| `godel_sentence_hash` | label hash of the current Gödel sentence | `59009f8ebf563630091303bfcbde58d5aa11eb72d5b958ba9bf0a7ba10e507a1` |
+
+The sentence labeled here is: a stored arrow that does not end at its successor is not proved by deriving the numeric sibling. Status 1 means that sentence is the triggered unprovable case for the four anomalies. The hash is a label, not a ledger seal. Transcendence count is absent from the files read.
