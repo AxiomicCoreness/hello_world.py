@@ -2,4 +2,5 @@
 pyyaml>=6.0.1
 numpy>=1.24.0
 
-# stdlib, not a pip pin: hmac
+# stdlib imports — do not pip-install
+# hmac
