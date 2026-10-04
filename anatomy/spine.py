@@ -10,8 +10,17 @@ import re
 from pathlib import Path
 
 LEDGER_DIR = Path("ledger")
-POINTER_RE = re.compile(r"(\d{4,6})\s*→\s*(\d{4,6})")
 ASCII_ARROW = re.compile(r"(\d{4,6})\s*->\s*(\d{4,6})")
+CHAIN_RE = re.compile(r"(\d{4,6}(?:\s*→\s*\d{4,6})+)")
+
+
+def witness_pairs(text: str) -> list[tuple[int, int]]:
+    """Pairs from a chain, including the shared middle of A → B → C."""
+    pairs = []
+    for chain in CHAIN_RE.finditer(text):
+        nums = [int(n) for n in re.findall(r"\d{4,6}", chain.group(0))]
+        pairs.extend(zip(nums, nums[1:]))
+    return pairs
 
 
 def as_working_default(text: str) -> str:
@@ -50,7 +59,7 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
         if b != a + 1:
             continue
         text = as_working_default(entries[b].read_text(encoding="utf-8"))
-        pairs = [(int(m.group(1)), int(m.group(2))) for m in POINTER_RE.finditer(text)]
+        pairs = witness_pairs(text)
         if (a, b) not in pairs:
             found = ", ".join(f"{x}→{y}" for x, y in pairs[:4]) or "none"
             problems.append(f"witness pointer {a} -> {b} missing; found {found}")
