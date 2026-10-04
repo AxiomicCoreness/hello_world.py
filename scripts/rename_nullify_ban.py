@@ -22,9 +22,14 @@ EXCLUDED_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".mypy_
 PROTECTED_PARTS = {"Immutable"}
 SELF_NAMES = {"rename_nullify_ban.py"}
 
-# Intentionally unmatched: test_pipeline_null_ban. The leading underscore is the
-# word boundary. Do not relax that lookbehind. Add an explicit map entry only
-# if that test identifier itself must be renamed.
+# Explicit compounds whose leading underscore is part of the name.
+# test_pipeline_null_ban is not in this map: intentionally unmatched.
+EXPLICIT = (
+    ("SHIELD_NULL_BAN", "SHIELD_NULLIFY_BAN"),
+    ("shield_null_ban", "shield_nullify_ban"),
+    ("NULL_BAN_16SIGMA", "NULLIFY_BAN_16SIGMA"),
+    ("NULL_BAN_12SIGMA", "NULLIFY_BAN_12SIGMA"),
+)
 #
 # Trailing underscore is not a blocker, so NULL_BAN_12SIGMA matches without a map entry.
 PREFIX_RULES = (
@@ -64,6 +69,11 @@ def candidates(root: Path, include_ledger: bool) -> list[Path]:
 
 def rewrite(text: str) -> tuple[str, int]:
     count = 0
+    for old, new in EXPLICIT:
+        n = text.count(old)
+        if n:
+            text = text.replace(old, new)
+            count += n
     for pattern, repl in PREFIX_RULES:
         text, n = pattern.subn(repl, text)
         count += n
