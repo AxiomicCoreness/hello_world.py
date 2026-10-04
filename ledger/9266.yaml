@@ -1,9 +1,10 @@
 entry_index: 9266
 timestamp: '2026-10-04T04:09:00Z'
-event: '/index_reserved'
-status: 'RESERVED'
-prev_hash: 'a7580ccb6624d666e84fb9f6a2ba471c2be22541f2d6fae78c5aa448399a6177'
-witness_chain: '9265 -> 9266'
-note: 'Intentionally held. Not an off-by-one. 9267 and 9268 were appended by command before this reservation. Their witness skips this index; this file names the gap.'
-purpose: 'held'
-seal_sha3_256: a5a77e46db05d5e6c728ef98b623203c0a0d510edd3c796feba91ca71b562a52
+event: /index_reserved
+status: RESERVED
+prev_hash: 10edff7b41571aa002a22222e44cbc8fd19e8eef49c20dbe1d0ceeea4514f377
+witness_chain: 9265 -> 9266
+note: Intentionally held. Not an off-by-one. 9267 and 9268 were appended by command
+  before this reservation. Their witness skips this index; this file names the gap.
+purpose: held
+seal_sha3_256: 70367c04ab3199b1f19e89f580be1a974e768e04cb22acd0a9b7ab40c36bec1e
