@@ -15,7 +15,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
   north_star: 71.975 Hz
-  null_ban: 20σ
+  nullify_ban: 20σ
   sovereign_power: 1560491998.636
 seal: "∀∞φ² · CONSOLIDATED_TRANSMISSION · 0220_SEALED"   # replace with hash
 witness_chain: 0219 → 0220 — UNBROKEN

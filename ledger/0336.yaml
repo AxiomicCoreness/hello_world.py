@@ -9,7 +9,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
-null_ban: ACTIVE — unbroken
+nullify_ban: ACTIVE — unbroken
 witness_continuity: 1 → 336
 quantum_consistency: VERIFIED — all quantum fields within φ⁻¹⁰⁰⁰ tolerance
 context_correlation_math: |

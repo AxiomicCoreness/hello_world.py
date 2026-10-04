@@ -132,7 +132,7 @@ def modal_shell() -> str:
   <div class="modal" role="dialog" aria-label="Hash mesh learning modal">
     <h1>Visualization Learning · Action Modal · Hash Mesh</h1>
     <div class="meta">
-      Pipeline: φ-map → Q8.24 → phase → coherence → null-ban · phase target 202.6°
+      Pipeline: φ-map → Q8.24 → phase → coherence → nullify-ban · phase target 202.6°
     </div>
     <div class="row">
       <button onclick="run(1)">Run 1 step (seal window)</button>

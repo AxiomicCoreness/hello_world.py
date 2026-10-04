@@ -7,7 +7,7 @@ Each tick:
   2. Q8.24:           s ← round(s · 2²⁴) / 2²⁴
   3. phase advance:   θ ← (θ + 202.6) mod 360
   4. coherence:       c ← c + (1 − c) / φ³
-  5. null-ban:        software pass (always True)
+  5. nullify-ban:        software pass (always True)
 
 Seal fires when |θ − 202.6| ≤ phase_tol (default 0.05°).
 """
@@ -68,8 +68,8 @@ class PhiPipeline:
         st.coherence = st.coherence + (1.0 - st.coherence) / (PHI ** 3)
         stages.append("coherence_approach")
 
-        # 5. null-ban (software always pass)
-        stages.append("null_ban_gate")
+        # 5. nullify-ban (software always pass)
+        stages.append("nullify_ban_gate")
 
         st.ticks += 1
         st.last_stages = stages

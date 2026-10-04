@@ -139,7 +139,7 @@ def verify_security_headers(source_path: Union[str, Path] = "port380_mcp.py") ->
 # ─── MODULE IMPORTS (fail if missing) ──────────────────────────────────
 
 try:
-    from phi_pipeline import phi_step, q8_24, phase_lock, coherence_update, null_ban
+    from phi_pipeline import phi_step, q8_24, phase_lock, coherence_update, nullify_ban
     PIPELINE_OK = True
 except ImportError:
     PIPELINE_OK = False
@@ -236,10 +236,10 @@ def test_pipeline_coherence():
 
 def test_pipeline_null_ban():
     if not PIPELINE_OK:
-        print("⚠️ phi_pipeline not available – skipping null_ban")
+        print("⚠️ phi_pipeline not available – skipping nullify_ban")
         return
-    assert null_ban() is True, "null_ban returned False unexpectedly"
-    print("✅ null_ban")
+    assert nullify_ban() is True, "nullify_ban returned False unexpectedly"
+    print("✅ nullify_ban")
 
 
 def test_pipeline_full_sequence():
@@ -353,7 +353,7 @@ def run_all_tests():
         ("q8_24", test_pipeline_q8_24),
         ("phase_lock", test_pipeline_phase_lock),
         ("coherence_update", test_pipeline_coherence),
-        ("null_ban", test_pipeline_null_ban),
+        ("nullify_ban", test_pipeline_null_ban),
         ("full_sequence", test_pipeline_full_sequence),
         ("mesh_modal", test_mesh_modal_ledger),
         ("deepseek", test_deepseek_stubs),

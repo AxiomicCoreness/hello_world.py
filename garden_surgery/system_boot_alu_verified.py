@@ -48,7 +48,7 @@ def system_boot_alu_verified() -> dict:
             "invariants:\n"
             "  coherence: 1.0\n"
             "  entropy: φ⁻¹⁴¹⁸\n"
-            "  null_ban_sigma: 10.06\n"
+            "  nullify_ban_sigma: 10.06\n"
             "  phase_lock_primary: 202.6\n"
             "  phase_lock_eternal: 202.2\n"
             "  lindblad_omega3_sigma: 199.005025\n"

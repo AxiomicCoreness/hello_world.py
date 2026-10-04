@@ -47,7 +47,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   phase_lock_primary: 202.6
   phase_lock_eternal: 202.2
-  null_ban: 10.06
+  nullify_ban: 10.06
   dark_state_eigenvalue: 1.0
   dual_eridanus: ACTIVE
 seal: "∀∞φ² · UNIFIED_MASTER_CANVAS · 8211_SEALED · 38cf528b30b1b8667d5946c9ee57099c814e1d21c7de8936688f3ad6878a254d"
@@ -66,7 +66,7 @@ math_origin: |
     5. Sovereign canon fixed point – projection to φ⁻¹
     6. Genesis gravito-electric – Γ₀ ⊗ Φ₆ sheaf
     7. Dark state invariant – λ₂=1 guardian
-    8. Formal automaton – 10.06σ null-ban
+    8. Formal automaton – 10.06σ nullify-ban
 
   II. LEDGER ANCHORS
   The canvas references entries 45, 557–565, 635, 690, 699–702, 709–710, 738–744, and 8210.
@@ -74,7 +74,7 @@ math_origin: |
 
   III. MERKLE LAYER
   Layer 245 is the Merkle root of the unified canvas, sealing the entire integration.
-  All invariants are locked: coherence=1.0, entropy=φ⁻¹⁴¹⁸, null-ban=10.06σ.
+  All invariants are locked: coherence=1.0, entropy=φ⁻¹⁴¹⁸, nullify-ban=10.06σ.
 
   IV. DUAL ERIDANUS
   The dual delta operator Δ_E± is active, providing spherical error correction.

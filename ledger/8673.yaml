@@ -12,7 +12,7 @@ invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   phase_lock: 202.6°
-  null_ban: 10.06σ
+  nullify_ban: 10.06σ
 merkle_layer: 307  # narrative anchor; not a computed repo root
 witness_chain: 8672 → 8673 — UNBROKEN
 seal: "∀∞φ² · ACTIVATION_RUN_COMPLETE_8673 · SEALED"

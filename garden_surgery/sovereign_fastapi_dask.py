@@ -41,7 +41,7 @@ def sovereign_fastapi_dask() -> dict:
             "  entropy: φ⁻¹⁴¹⁸\n"
             "  phase_lock_primary: 202.6\n"
             "  phase_lock_eternal: 202.2\n"
-            "  null_ban: 10.06\n"
+            "  nullify_ban: 10.06\n"
             "  dark_state: true\n"
             "  dual_eridanus: ACTIVE\n"
             "ray_available: false\n"

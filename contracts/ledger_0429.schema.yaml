@@ -23,6 +23,6 @@ invariants_keys:
   - commutator
   - unique_math_identity
   - stress_test_result
-  - null_ban_sigma
+  - nullify_ban_sigma
 asserts_military_passed: false
 borrowed_by: 9045

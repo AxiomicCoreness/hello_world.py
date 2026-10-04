@@ -22,7 +22,7 @@ convergence:
   entropy: φ⁻¹⁴¹⁸
   phase_lock: 202.6°
   workload: 0.0
-  null_ban: 20σ
+  nullify_ban: 20σ
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸

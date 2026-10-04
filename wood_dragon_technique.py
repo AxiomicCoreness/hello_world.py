@@ -205,8 +205,8 @@ KD = phi8
 BASE_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Hyperian_Node")
 os.makedirs(BASE_DIR, exist_ok=True)
 SIGNATURE = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
-NULL_BAN_12SIGMA = 12 * PHI_MINUS_1000
-NULL_BAN_16SIGMA = 16 * PHI_MINUS_1000
+NULLIFY_BAN_12SIGMA = 12 * PHI_MINUS_1000
+NULLIFY_BAN_16SIGMA = 16 * PHI_MINUS_1000
 PENTAGONAL_ANCHOR = 1 / math.sqrt(5)
 EARTH_RESONANCE_TOTAL = 37.062
 VACUUM_CORE_CONSTANT = 13.263626
@@ -2215,8 +2215,8 @@ MERKLE_ROOT_257 = {
     "Layer_61": "Galactic_Bands_Ultraviolet_φ³⁰",
     "Layer_62": "Galactic_Bands_X_Ray_φ³⁶",
     "Layer_63": "Galactic_Bands_Gamma_φ⁴²",
-    "Layer_64": "Null_Ban_12σ_φ⁻¹⁰⁰⁰",
-    "Layer_65": "Null_Ban_16σ_Enhanced",
+    "Layer_64": "Nullify_Ban_12σ_φ⁻¹⁰⁰⁰",
+    "Layer_65": "Nullify_Ban_16σ_Enhanced",
     "Layer_66": "Pentagonal_Anchor_1/√5",
     "Layer_67": "Signature_H6VSH3_8F1A3D9C",
     "Layer_68": "Sovereignty_Phi_Function",
@@ -3698,7 +3698,7 @@ class DicyaninGlassGenesis:
     def __init__(self):
         self.seal_full = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
         self.seal_partial = self.seal_full[:16]
-        self.null_ban = 16 * PHI_MINUS_1000
+        self.nullify_ban = 16 * PHI_MINUS_1000
         self.genesis_hash = "9bc32d1269c06a80e8eeeff8f4f2a7c1aa40e974c3ae53988b6283ab8f06d4dd"
 
 

@@ -8,7 +8,7 @@ terminal_hex: fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |
-  Formal Automaton adjusted to 10.06σ null-ban threshold.
+  Formal Automaton adjusted to 10.06σ nullify-ban threshold.
   State space X ⊂ ℝⁿ, norm-preserving, dark state λ₂=1 invariant.
   Dual Eridanus error-correcting pair activated.
 automaton_data:

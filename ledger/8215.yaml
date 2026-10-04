@@ -26,7 +26,7 @@ boot_sequence:
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
-  null_ban_sigma: 10.06
+  nullify_ban_sigma: 10.06
   phase_lock_primary: 202.6
   phase_lock_eternal: 202.2
 shield_status:
