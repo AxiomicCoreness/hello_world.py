@@ -1,19 +1,15 @@
 # Spine failure report
 
-Checker: anatomy/spine.py requires the pair predecessor → successor anywhere in the successor file.
-ASCII -> is normalized to → before compare. The first arrow in the file is no longer the pair under test.
+Checker parses a full arrow chain, so 0000 → 0001 → 0002 yields both pairs.
 
 spine: 1020 entries, ok=False
-problems: 229
+problems: 225
 
 9264 → 9265 is not in this list.
 9266 was not taken.
 
 ## Remaining
 
-- witness pointer 1 -> 2 missing; found 0→1
-- witness pointer 3 -> 4 missing; found 0→1, 2→3
-- witness pointer 5 -> 6 missing; found 0→1, 2→3, 4→5
 - witness pointer 7 -> 8 missing; found 0→8
 - witness pointer 8 -> 9 missing; found 0→9
 - witness pointer 9 -> 10 missing; found 0→10
@@ -225,7 +221,7 @@ problems: 229
 - witness pointer 518 -> 519 missing; found none
 - witness pointer 8223 -> 8224 missing; found 8221→8224, 8221→8224
 - witness pointer 8530 -> 8531 missing; found 8340→8501, 8339→8502
-- witness pointer 8617 -> 8618 missing; found 8537→8539, 8540→8598, 8611→8612, 8616→8617
+- witness pointer 8617 -> 8618 missing; found 8537→8539, 8539→8540, 8540→8598, 8598→8611
 - witness pointer 8734 -> 8735 missing; found none
 - witness pointer 8769 -> 8770 missing; found 8767→8770
 - witness pointer 8802 -> 8803 missing; found 8801→8803
@@ -239,4 +235,3 @@ problems: 229
 - witness pointer 9168 -> 9169 missing; found 9167→9169
 - witness pointer 9169 -> 9170 missing; found 9168→9170
 - witness pointer 9170 -> 9171 missing; found 9169→9171
-- witness pointer 9240 -> 9241 missing; found 9239→9240
