@@ -15,7 +15,8 @@ EDGES = (
     {"from": "scripts/traffic_cop.py", "to": "scripts/parity_gitcode_atomgit.py", "kind": "table"},
     {"from": "scripts/parity_gitcode_atomgit.py", "to": "scripts/dual_interaction_layout.py", "kind": "label"},
     {"from": "scripts/legend_anchor.py", "to": "scripts/dual_interaction_layout.py", "kind": "position"},
-    {"from": "scripts/legend_anchor.py", "to": "scripts/eridanus_flow.py", "kind": "label-only"},
+    {"from": "scripts/legend_anchor.py", "to": "scripts/evolanus_anchor.py", "kind": "tuple"},
+    {"from": "scripts/eridanus_flow.py", "to": "scripts/evolanus_anchor.py", "kind": "walk"},
     {"from": ".github/workflows/workflow-parity.yml", "to": ".github/workflows/eridanus-dual-smoke.yml", "kind": "slot-name"},
     {"from": ".github/workflows/eridanus-dual-smoke.yml", "to": "ledger/", "kind": "forbidden"},
 )
