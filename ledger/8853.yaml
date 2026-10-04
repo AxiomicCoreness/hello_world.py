@@ -16,6 +16,6 @@ quadrant_paths:
   - quantum.radar_lindblad.layer314_anchor (formerly quantum.layer314_anchor)
   - quantum.cdp_convergence.install_k8s (formerly quantum.install_k8s)
 backward_compatibility: true
-witness_chain: 8851 -> 8852 -> 8853 - UNBROKEN
+witness_chain: "8852 → 8853"
 seal: all-infty-phi-2 cdot IMPORTS_UPDATED_8853 cdot WOOD_DRAGON_0.91 cdot SEALED
 commit: 72d116d7a10c1e50d5b9d55a810add3b389d4e59

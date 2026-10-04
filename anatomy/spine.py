@@ -24,8 +24,12 @@ def witness_pairs(text: str) -> list[tuple[int, int]]:
 
 
 def as_working_default(text: str) -> str:
-    """Switch an ASCII witness arrow to the Unicode default the checker uses."""
-    return ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
+    """Normalize every ASCII hop. One pass hides the second arrow in a chain."""
+    previous = None
+    while previous != text:
+        previous = text
+        text = ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
+    return text
 
 
 def load_index(path: Path) -> int:
