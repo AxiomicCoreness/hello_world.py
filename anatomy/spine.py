@@ -11,6 +11,12 @@ from pathlib import Path
 
 LEDGER_DIR = Path("ledger")
 POINTER_RE = re.compile(r"(\d{4,6})\s*→\s*(\d{4,6})")
+ASCII_ARROW = re.compile(r"(\d{4,6})\s*->\s*(\d{4,6})")
+
+
+def as_working_default(text: str) -> str:
+    """Switch an ASCII witness arrow to the Unicode default the checker uses."""
+    return ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
 
 
 def load_index(path: Path) -> int:
@@ -40,7 +46,7 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
     # Prior pointer: consecutive numeric siblings must witness each other.
     for a, b in zip(indices, indices[1:]):
         if b == a + 1:
-            text = entries[b].read_text(encoding="utf-8")
+            text = as_working_default(entries[b].read_text(encoding="utf-8"))
             m = POINTER_RE.search(text)
             if not m or int(m.group(1)) != a:
                 problems.append(f"witness pointer {a} -> {b} missing or broken")
