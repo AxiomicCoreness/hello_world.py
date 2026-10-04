@@ -52,10 +52,10 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
             problems.append(f"duplicate entry_index {idx}")
         seen.add(idx)
 
-    # Accept three stored forms. Do not rewrite the file.
-    # immediate: a → b. span: 0 → b. skip: x → b with x < a.
-    # Flag only when no arrow ends at b.
-    forms = {"immediate": 0, "span": 0, "skip": 0}
+    # Rewire pointer history on the reader. Sealed files are not edited.
+    # An arrow that ends at b keeps its stored start. A gap gets the numeric sibling.
+    forms = {"immediate": 0, "span": 0, "skip": 0, "rewired": 0}
+    history = []
     for a, b in zip(indices, indices[1:]):
         if b != a + 1:
             continue
@@ -64,22 +64,27 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
         ends = [(x, y) for x, y in pairs if y == b]
         if (a, b) in ends:
             forms["immediate"] += 1
+            history.append((a, b, "immediate"))
             continue
         spans = [x for x, y in ends if x == 0]
         skips = [x for x, y in ends if x < a]
         if spans:
             forms["span"] += 1
+            history.append((spans[0], b, "span"))
             continue
         if skips:
             forms["skip"] += 1
+            history.append((skips[0], b, "skip"))
             continue
-        found = ", ".join(f"{x}→{y}" for x, y in pairs[:4]) or "none"
-        problems.append(f"witness pointer {a} -> {b} missing; found {found}")
+        forms["rewired"] += 1
+        history.append((a, b, "rewired"))
+        problems.append(f"pointer history rewired {a} -> {b}; stored arrow did not end at {b}")
 
     return {
         "entries": len(indices),
         "problems": problems,
         "forms": forms,
+        "history": history,
         "ok": not problems,
     }
 
