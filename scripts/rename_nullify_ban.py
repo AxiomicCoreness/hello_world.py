@@ -19,26 +19,37 @@ from pathlib import Path
 
 SCAN_SUFFIXES = {".py", ".yml", ".yaml", ".json"}
 EXCLUDED_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".mypy_cache"}
+PROTECTED_PARTS = {"Immutable"}
 SELF_NAMES = {"rename_nullify_ban.py"}
-UNSUFFIXED = {"october_Q1"}
 
-# Leading and trailing underscores are allowed. A letter or digit still blocks.
-# NULL_BAN_12SIGMA matches: the character after NULL_BAN is _, not a letter or digit.
-# NULL_BANx does not match. NULLIFY_BAN does not contain NULL_BAN.
-PREFIX_RULES = (
-    (re.compile(r"(?<![A-Za-z0-9])NULL_BAN(?![A-Za-z0-9])"), "NULLIFY_BAN"),
-    (re.compile(r"(?<![A-Za-z0-9])null_ban(?![A-Za-z0-9])"), "nullify_ban"),
-    (re.compile(r"(?<![A-Za-z0-9])Null_Ban(?![A-Za-z0-9])"), "Nullify_Ban"),
-    (re.compile(r"(?<![A-Za-z0-9])Null-Ban(?![A-Za-z0-9])"), "Nullify-Ban"),
-    (re.compile(r"(?<![A-Za-z0-9])null-ban(?![A-Za-z0-9])"), "nullify-ban"),
+# Explicit compounds whose leading underscore is part of the name.
+# test_pipeline_null_ban is not in this map: intentionally unmatched.
+EXPLICIT = (
+    ("SHIELD_NULL_BAN", "SHIELD_NULLIFY_BAN"),
+    ("shield_null_ban", "shield_nullify_ban"),
+    ("NULL_BAN_16SIGMA", "NULLIFY_BAN_16SIGMA"),
+    ("NULL_BAN_12SIGMA", "NULLIFY_BAN_12SIGMA"),
 )
-DISCOVERY = re.compile(r"(?<![A-Za-z0-9])(?:NULL_BAN|null_ban|Null_Ban|Null-Ban|null-ban)(?![A-Za-z0-9])")
+#
+# Trailing underscore is not a blocker, so NULL_BAN_12SIGMA matches without a map entry.
+PREFIX_RULES = (
+    (re.compile(r"(?<![A-Za-z0-9_])NULL_BAN(?![A-Za-z0-9])"), "NULLIFY_BAN"),
+    (re.compile(r"(?<![A-Za-z0-9_])null_ban(?![A-Za-z0-9])"), "nullify_ban"),
+    (re.compile(r"(?<![A-Za-z0-9_])Null_Ban(?![A-Za-z0-9])"), "Nullify_Ban"),
+    (re.compile(r"(?<![A-Za-z0-9_])Null-Ban(?![A-Za-z0-9])"), "Nullify-Ban"),
+    (re.compile(r"(?<![A-Za-z0-9_])null-ban(?![A-Za-z0-9])"), "nullify-ban"),
+)
+DISCOVERY = re.compile(
+    r"(?<![A-Za-z0-9_])(?:NULL_BAN|null_ban|Null_Ban|Null-Ban|null-ban)(?![A-Za-z0-9])"
+)
 
 
 def skipped(path: Path, include_ledger: bool) -> bool:
     if path.name in SELF_NAMES:
         return True
-    if any(part in EXCLUDED_DIRS for part in path.parts):
+    if any(part in EXCLUDED_DIRS or part in PROTECTED_PARTS for part in path.parts):
+        return True
+    if path.name.startswith("ledger_") and path.name.endswith(".schema.json"):
         return True
     if not include_ledger and "ledger" in path.parts:
         return True
@@ -48,9 +59,7 @@ def skipped(path: Path, include_ledger: bool) -> bool:
 def candidates(root: Path, include_ledger: bool) -> list[Path]:
     found = []
     for path in root.rglob("*"):
-        if not path.is_file() or skipped(path, include_ledger):
-            continue
-        if path.suffix not in SCAN_SUFFIXES and path.name not in UNSUFFIXED:
+        if not path.is_file() or path.suffix not in SCAN_SUFFIXES or skipped(path, include_ledger):
             continue
         text = path.read_bytes().decode("utf-8")
         if DISCOVERY.search(text):
@@ -60,6 +69,11 @@ def candidates(root: Path, include_ledger: bool) -> list[Path]:
 
 def rewrite(text: str) -> tuple[str, int]:
     count = 0
+    for old, new in EXPLICIT:
+        n = text.count(old)
+        if n:
+            text = text.replace(old, new)
+            count += n
     for pattern, repl in PREFIX_RULES:
         text, n = pattern.subn(repl, text)
         count += n
