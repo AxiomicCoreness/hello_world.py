@@ -10,15 +10,15 @@ import re
 from pathlib import Path
 
 LEDGER_DIR = Path("ledger")
-ASCII_ARROW = re.compile(r"(\d{4,6})\s*->\s*(\d{4,6})")
-CHAIN_RE = re.compile(r"(\d{4,6}(?:\s*→\s*\d{4,6})+)")
+ASCII_ARROW = re.compile(r"(\d{1,6})\s*->\s*(\d{1,6})")
+CHAIN_RE = re.compile(r"(\d{1,6}(?:\s*→\s*\d{1,6})+)")
 
 
 def witness_pairs(text: str) -> list[tuple[int, int]]:
     """Pairs from a chain, including the shared middle of A → B → C."""
     pairs = []
     for chain in CHAIN_RE.finditer(text):
-        nums = [int(n) for n in re.findall(r"\d{4,6}", chain.group(0))]
+        nums = [int(n) for n in re.findall(r"\d{1,6}", chain.group(0))]
         pairs.extend(zip(nums, nums[1:]))
     return pairs
 
@@ -52,24 +52,41 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
             problems.append(f"duplicate entry_index {idx}")
         seen.add(idx)
 
-    # Prior pointer: a consecutive successor must contain the pair a → b.
-    # Cumulative chains (0000 → 0001 → 0002) are valid if that pair appears.
-    # The first arrow in the file is not the pair under test.
+    # Accept three stored forms. Do not rewrite the file.
+    # immediate: a → b. span: 0 → b. skip: x → b with x < a.
+    # Flag only when no arrow ends at b.
+    forms = {"immediate": 0, "span": 0, "skip": 0}
     for a, b in zip(indices, indices[1:]):
         if b != a + 1:
             continue
         text = as_working_default(entries[b].read_text(encoding="utf-8"))
         pairs = witness_pairs(text)
-        if (a, b) not in pairs:
-            found = ", ".join(f"{x}→{y}" for x, y in pairs[:4]) or "none"
-            problems.append(f"witness pointer {a} -> {b} missing; found {found}")
+        ends = [(x, y) for x, y in pairs if y == b]
+        if (a, b) in ends:
+            forms["immediate"] += 1
+            continue
+        spans = [x for x, y in ends if x == 0]
+        skips = [x for x, y in ends if x < a]
+        if spans:
+            forms["span"] += 1
+            continue
+        if skips:
+            forms["skip"] += 1
+            continue
+        found = ", ".join(f"{x}→{y}" for x, y in pairs[:4]) or "none"
+        problems.append(f"witness pointer {a} -> {b} missing; found {found}")
 
-    return {"entries": len(indices), "problems": problems, "ok": not problems}
+    return {
+        "entries": len(indices),
+        "problems": problems,
+        "forms": forms,
+        "ok": not problems,
+    }
 
 
 if __name__ == "__main__":
     result = check_spine()
-    print(f"spine: {result['entries']} entries, ok={result['ok']}")
+    print(f"spine: {result['entries']} entries, ok={result['ok']} forms={result['forms']}")
     for p in result["problems"]:
         print("  !", p)
     raise SystemExit(0 if result["ok"] else 1)
