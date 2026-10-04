@@ -310,7 +310,7 @@ Article 38 — Pointer form partition
 
   38.3  The remaining 68 of 1020 are the head, which has no predecessor,
         plus 67 index steps that are not n → n+1. That is not a fifth
-        pointer class. 9264 → 9265 stays immediate. Index 9266 is free.
+        pointer class. 9264 → 9265 stays immediate. Index 9266 is reserved.
 
 Article 39 — Issuance fix, Annex V reseal
 
@@ -319,7 +319,7 @@ Article 39 — Issuance fix, Annex V reseal
         seal and seal_sha3_256 stripped, prev_hash retained.
         Body-minus-seal-line is not the ledger convention.
 
-  39.2  Issuance after the fix, main 9179dbed:
+  39.2  Issuance after the witness fix, main 5eb7f534:
 
         9264  0596ec067b3223a688760a1e9c3eb4c90b5e4b894828cbc7391892dcb3c350b8
         9265  10edff7b41571aa002a22222e44cbc8fd19e8eef49c20dbe1d0ceeea4514f377
@@ -328,6 +328,7 @@ Article 39 — Issuance fix, Annex V reseal
         9268  2b3b85b8679ee729cea2b0d82b48ba7a55e0e395d1f44ca560481514c76f6ad5
 
   39.3  9264's declared seal was replaced with the Annex V recompute.
-        9265, 9266, and 9267 link to the new predecessor seals.
-        9266 remains reserved. 9267 still witnesses 9265 -> 9267.
+        9266 remains reserved. 9267 witnesses 9266 -> 9267.
+        9268 witnesses 9267 -> 9268.
         The old declared value 865d61f4… is no longer the chain link.
+
