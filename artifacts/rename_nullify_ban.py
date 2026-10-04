@@ -17,11 +17,14 @@ import re
 import sys
 from pathlib import Path
 
-SCAN_SUFFIXES = {".py", ".yml", ".yaml"}
+SCAN_SUFFIXES = {".py", ".yml", ".yaml", ".json"}
 EXCLUDED_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules", ".mypy_cache"}
 SELF_NAMES = {"rename_nullify_ban.py"}
+UNSUFFIXED = {"october_Q1"}
 
-# Leading _ is allowed. A letter or digit still blocks.
+# Leading and trailing underscores are allowed. A letter or digit still blocks.
+# NULL_BAN_12SIGMA matches: the character after NULL_BAN is _, not a letter or digit.
+# NULL_BANx does not match. NULLIFY_BAN does not contain NULL_BAN.
 PREFIX_RULES = (
     (re.compile(r"(?<![A-Za-z0-9])NULL_BAN(?![A-Za-z0-9])"), "NULLIFY_BAN"),
     (re.compile(r"(?<![A-Za-z0-9])null_ban(?![A-Za-z0-9])"), "nullify_ban"),
@@ -45,7 +48,9 @@ def skipped(path: Path, include_ledger: bool) -> bool:
 def candidates(root: Path, include_ledger: bool) -> list[Path]:
     found = []
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix not in SCAN_SUFFIXES or skipped(path, include_ledger):
+        if not path.is_file() or skipped(path, include_ledger):
+            continue
+        if path.suffix not in SCAN_SUFFIXES and path.name not in UNSUFFIXED:
             continue
         text = path.read_bytes().decode("utf-8")
         if DISCOVERY.search(text):
