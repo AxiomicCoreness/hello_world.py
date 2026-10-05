@@ -1,0 +1,72 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  artifact : omega-engine                                                  ║
+# ║  kind     : GitHub Actions workflow                                       ║
+# ║  path     : .github/workflows/omega-engine.yml                            ║
+# ║  purpose  : run verify_math_framework.py over a ledger index range        ║
+# ║  scope    : workflow_dispatch only — manual, no schedule, no push         ║
+# ║  writes   : none to the repository; one artifact (verifier-output)        ║
+# ║  boundary : no kubectl, no cluster contact, no ledger append              ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+name: omega-engine
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "Starting ledger index (inclusive)"
+        required: true
+        default: "0"
+        type: string
+      end:
+        description: "Ending ledger index (exclusive)"
+        required: true
+        default: "300"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: omega-engine-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify mathematical ledger entries
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Verify entry-point file exists
+        run: test -f verify_math_framework.py
+
+      - name: Verify entry-point class exists
+        run: grep -q "class EvolanusFlowEngine" verify_math_framework.py
+
+      - name: Run mathematical verifier
+        env:
+          START: ${{ inputs.start }}
+          END: ${{ inputs.end }}
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python verify_math_framework.py --start "$START" --end "$END" \
+            | tee verifier_output.log
+
+      - name: Upload verifier log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verifier-output
+          path: verifier_output.log
+          if-no-files-found: warn
+          retention-days: 30
