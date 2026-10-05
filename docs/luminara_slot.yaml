@@ -1,0 +1,19 @@
+# Unfilled. Four earlier uses are names, not this object.
+# Do not treat a filled copy of this file as a seal.
+
+name: Luminara
+status: unfilled
+prior_uses_not_definitions:
+  - alphabet_symbol_sigma_4
+  - stillness_tensor
+  - signature_string
+  - automaton_mouthpiece
+slots:
+  role: null
+  holder: null
+  gamma: null
+  lambda: null
+  channel: null
+  log: null
+filled_by: null
+commit_identity: null
