@@ -50,9 +50,10 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
-          with:
-            python-version: "3.11"
-            cache: pip
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       # ────────────────────────────────────────────────────────────
       # 1. Compile engine (soft-skip if canvas absent)
