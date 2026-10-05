@@ -1,12 +1,10 @@
-# ╔══════════════════════════════════════════════════════════════════════════╗
-# ║  artifact : omega-engine                                                  ║
-# ║  kind     : GitHub Actions workflow                                       ║
-# ║  path     : .github/workflows/omega-engine.yml                            ║
-# ║  purpose  : run verify_math_framework.py over a ledger index range        ║
-# ║  scope    : workflow_dispatch only — manual, no schedule, no push         ║
-# ║  writes   : none to the repository; one artifact (verifier-output)        ║
-# ║  boundary : no kubectl, no cluster contact, no ledger append              ║
-# ╚══════════════════════════════════════════════════════════════════════════╝
+# artifact : omega-engine
+# kind     : GitHub Actions workflow
+# path     : .github/workflows/omega-engine.yml
+# purpose  : run verify_math_framework.py over a ledger index range
+# scope    : workflow_dispatch only -- manual, no schedule, no push
+# writes   : none to the repository; one artifact (verifier-output)
+# boundary : no kubectl, no cluster contact, no ledger append
 
 name: omega-engine
 
