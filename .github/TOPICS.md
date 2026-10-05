@@ -150,3 +150,33 @@ Cross-reference: POLICY.md Article 37.
 | Floor blob | `d13dea749b7cd29d081d41e2d14c8267bbaebeeb` unchanged |
 
 The daemon digest is a hash of the local file, not a ledger seal. It relays the Step 0 reference; it does not seal index 9265.
+
+## Pointer form partition (2026-10-03)
+
+Cross-reference: POLICY.md Article 38.
+
+| Form | Example | Count |
+|------|---------|-------|
+| immediate pair | 9264 → 9265 | 776 |
+| span | stored reference ahead of successor | 136 |
+| skip | pair with missing intermediates | 14 |
+| rewired, derived | 365 → 366 | 26 |
+| boolean flag | Witness_Chain_Unbroken = TRUE | 1, ledger/0365.yaml |
+| stored cross-statement | Witness_Continuity = 8513 → 8514 — UNBROKEN | 1, ledger/0366.yaml |
+
+Derived links are not stored. The cross-statement stays in the successor. Index 9266 is reserved.
+
+## Issuance fix (2026-10-04)
+
+Cross-reference: POLICY.md Article 39. Main `5eb7f534`.
+
+| Entry | Seal after Annex V issuance |
+|------|------------------------------|
+| 9264 | `0596ec067b3223a688760a1e9c3eb4c90b5e4b894828cbc7391892dcb3c350b8` |
+| 9265 | `10edff7b41571aa002a22222e44cbc8fd19e8eef49c20dbe1d0ceeea4514f377` |
+| 9266 | `70367c04ab3199b1f19e89f580be1a974e768e04cb22acd0a9b7ab40c36bec1e` reserved |
+| 9267 | `e2bae80db01c2b4c3cce75c2e9751a05c038c0724e570b54cf0873965c46beb4` |
+| 9268 | `2b3b85b8679ee729cea2b0d82b48ba7a55e0e395d1f44ca560481514c76f6ad5` |
+
+9267 witnesses `9266 -> 9267`. 9268 witnesses `9267 -> 9268`. The old declared `865d61f4…` is not the link.
+

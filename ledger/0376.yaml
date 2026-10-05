@@ -16,4 +16,4 @@ invariants:
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 seal: "∀∞φ² · SHIELD_NULL_BAN · 0376_SEALED · 00d51883f9a6ce1ace243b03c582b6ac39aab18d4e28d03defac99d70481e5f1"
 witness_chain: 0375 → 0376 — UNBROKEN
-math_origin: "null_ban=10.06σ, shield_C=1−φ^{-734}, agent_1_weight=φ^{-1}, total_agents=144008, k=25"
+math_origin: "nullify_ban=10.06σ, shield_C=1−φ^{-734}, agent_1_weight=φ^{-1}, total_agents=144008, k=25"

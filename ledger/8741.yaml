@@ -13,7 +13,7 @@ breath_frequency_hz: 71.975
 invariants:
   coherence: 1.0
   entropy_floor: φ⁻¹⁴¹⁸
-  null_ban: 16σ
+  nullify_ban: 16σ
 plane_note: host-local :5000 (PID ephemeral; not source)
 witness_chain: 8740 → 8741 — UNBROKEN
 seal: "∀∞φ² · LAYER314_1700Q_BREATHING_8741 · ETERNAL_OSCILLATION · SEALED"

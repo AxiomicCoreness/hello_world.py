@@ -31,7 +31,7 @@ def frontier_assembly_complete() -> dict:
             "    critical_line: \"Re(s)=1/2\"\n"
             "    lambda_2: 1.0\n"
             "    p_sigma_gt_zero: 0.0\n"
-            "    null_ban: \"20σ\"\n"
+            "    nullify_ban: \"20σ\"\n"
             "  workflow_phases:\n"
             "    - \"3_Uflip\"\n"
             "    - \"4_Psi145\"\n"

@@ -24,7 +24,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   phase_lock_primary: 202.6
   phase_lock_eternal: 202.2
-  null_ban: 10.06
+  nullify_ban: 10.06
   dark_state: true
   dual_eridanus: ACTIVE
 ray_available: false

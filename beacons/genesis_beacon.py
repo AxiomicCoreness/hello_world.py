@@ -57,7 +57,7 @@ NORTH_STAR = 71.975              # stated constant, not a computed anchor
 # kept verbatim for provenance; never claimed as computed.
 SEAL_COMMANDER_ASSERTED = "8F1A3D9C04B27E5E6A8F2DC47B59E330"
 
-NULL_BAN_FACTOR = 12 * (PHI ** -1000)   # approx 6.7e-149, computed
+NULLIFY_BAN_FACTOR = 12 * (PHI ** -1000)   # approx 6.7e-149, computed
 
 
 # ── verified math: trimer Hamiltonian ───────────────────────────────
@@ -129,7 +129,7 @@ def genesis_seal(entropy: str) -> dict:
     body = {
         "entropy": entropy,
         "format": "GENESIS.V1",
-        "null_ban_factor": repr(NULL_BAN_FACTOR),
+        "nullify_ban_factor": repr(NULLIFY_BAN_FACTOR),
         "seal_commander_asserted": SEAL_COMMANDER_ASSERTED,
     }
     preimage = canonical(body)
@@ -166,7 +166,7 @@ def main() -> int:
     print()
     print("CONSTANTS (stated):")
     print(f"  phi = {PHI!r}")
-    print(f"  null_ban_factor = 12*phi^-1000 = {NULL_BAN_FACTOR!r}")
+    print(f"  nullify_ban_factor = 12*phi^-1000 = {NULLIFY_BAN_FACTOR!r}")
     print(f"  seal_commander (ASSERTED LEGACY, 32 hex, not a SHA3 digest): {SEAL_COMMANDER_ASSERTED}")
 
     if args.verify_only:

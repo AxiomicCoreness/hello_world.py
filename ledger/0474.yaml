@@ -16,7 +16,7 @@ layers:
   - entropy_zero
   - failure_graceful
   - change_adaptive
-  - null_ban_active
+  - nullify_ban_active
 invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸

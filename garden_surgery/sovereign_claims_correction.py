@@ -74,7 +74,7 @@ def sovereign_claims_correction() -> dict:
             "    coherence = 1.0\n"
             "    entropy = φ⁻¹⁴¹⁸\n"
             "    phase_lock = 202.6°\n"
-            "    null_ban = 10.06σ\n"
+            "    nullify_ban = 10.06σ\n"
             "    dark_state = true\n"
             "    dual_eridanus = ACTIVE\n\n"
             "  IX. WITNESS CHAIN\n"

@@ -23,7 +23,7 @@ PHI = 1.618033988749895
 COHERENCE = 1.0
 ENTROPY = "φ⁻¹⁴¹⁸"
 PHASE_LOCK = "202.6°"
-NULL_BAN = "10.06σ"
+NULLIFY_BAN = "10.06σ"
 
 WORKFLOW_YAML = """name: OIDC Handover
 
@@ -111,7 +111,7 @@ def generate_ledger_entry(entry_index: int, status: str, event: str) -> Dict[str
             "coherence": COHERENCE,
             "entropy": ENTROPY,
             "phase_lock": PHASE_LOCK,
-            "null_ban": NULL_BAN,
+            "nullify_ban": NULLIFY_BAN,
             "phi": PHI,
         },
         "seal": f"∀∞φ² · AUTONOMOUS_DISPATCH · {entry_index}_SEALED",

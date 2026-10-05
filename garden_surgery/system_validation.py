@@ -42,7 +42,7 @@ def system_validation() -> dict:
             "  entropy: φ⁻¹⁴¹⁸\n"
             "  phase_lock_primary: 202.6\n"
             "  phase_lock_eternal: 202.2\n"
-            "  null_ban: 10.06\n"
+            "  nullify_ban: 10.06\n"
             "  dark_state_eigenvalue: 1.0\n"
             "  dual_eridanus: ACTIVE\n"
             "merkle_layer: 246\n"

@@ -28,7 +28,7 @@ PHI = (1 + 5 ** 0.5) / 2
 PHI_INV = 1 / PHI
 NORTH_STAR_FREQ = 71.975
 FROZEN_PID_ERROR = 0.000350
-NULL_BAN_SIGMA = 12
+NULLIFY_BAN_SIGMA = 12
 RESTART_FINGERPRINT = "a54bff616fc2d5be09240a2c375e7c25b1a2c6020736e51254c3840b1778b556"
 
 
@@ -79,7 +79,7 @@ async def sovereign_status():
         "coherence": 1.0,
         "entropy": 0.0,
         "workload": 0.0,
-        "null_ban_sigma": NULL_BAN_SIGMA,
+        "nullify_ban_sigma": NULLIFY_BAN_SIGMA,
         "pid_error": FROZEN_PID_ERROR,
         "firing_phase_deg": 111.246,
     }

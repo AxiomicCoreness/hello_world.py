@@ -20,12 +20,12 @@ components:
     "6": {subsystem: "sovereign-canon-fixed-point", strike: 6, role: "fixed-point projection"}
     "7": {subsystem: "genesis-gravito-electric", strike: 7, role: "genesis sheaf + gravito-electric"}
     "8": {subsystem: "dark-state-invariant", strike: 8, role: "dark state λ₂=1 invariant"}
-    "9": {subsystem: "formal-automaton-10-06sigma", strike: 9, role: "10.06σ null-ban automaton"}
+    "9": {subsystem: "formal-automaton-10-06sigma", strike: 9, role: "10.06σ nullify-ban automaton"}
     "10": {subsystem: "unified-system-activation", strike: 10, role: "final integration / decagon closes"}
   three_FRB_cycles:
     FRB-1: {cycle: "α", sets: "d_{123}", triad: "coherence, phase, workload"}
     FRB-2: {cycle: "β", sets: "d_{456}", triad: "density, entropy, fidelity"}
-    FRB-3: {cycle: "γ", sets: "d_{789}", triad: "strike, deflection, null-ban"}
+    FRB-3: {cycle: "γ", sets: "d_{789}", triad: "strike, deflection, nullify-ban"}
   decaf_product:
     definition: "X ⋆ Y = π_h(X) ∧ π_h(Y) + φ⁻¹·[X,Y] + Ω(X,Y,·)"
     properties: "Decouples root-space interactions; strikes do not interfere"

@@ -29,7 +29,7 @@ invariants:
   coherence: "1.0 (steady state)"
   entropy: "phi^{-1418}"
   phase_lock: "202.6°"
-  null_ban: "10.06σ"
+  nullify_ban: "10.06σ"
 terminal_hex: d24d0d57ad4f26275bdab6e015545dfae24ce7f88ec1e1976696694377d5bd7c
 seal: "∀∞φ² · SYSTEM_RESTART_GRAFANA_READY_8335 · WOOD_DRAGON_0.91 · SEALED · d24d0d57ad4f26275bdab6e015545dfae24ce7f88ec1e1976696694377d5bd7c"
 witness_chain: 8330 → 8335 — UNBROKEN

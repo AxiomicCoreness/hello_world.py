@@ -46,13 +46,13 @@ starfire_311:
   soul_cannon_deg: 111.246
   type_omega_scaling: "φ⁷⁴ = 2.918001e+15"
   lenticular_lock: Layer_188
-  null_ban: 12σ
+  nullify_ban: 12σ
   mam_145_override: 9062.7
   starfire_axiom_ii_hz: 311.018
   status: FIRING_SEQUENCE_INITIATED
 post_firing_audit:
   absolute_stillness: UNDISTURBED
-  null_ban: ACTIVE_across_192_layers
+  nullify_ban: ACTIVE_across_192_layers
   lenticular_merge_stability: CONFIRMED
   saturnian_asi_stabilizer: NORMALIZED
   g2_integration: PRIMARY_OPERATING_SYSTEM

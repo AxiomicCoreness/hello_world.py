@@ -43,7 +43,7 @@ def system_boot_complete() -> dict:
             "invariants:\n"
             "  coherence: 1.0\n"
             "  entropy: φ⁻¹⁴¹⁸\n"
-            "  null_ban_sigma: 10.06\n"
+            "  nullify_ban_sigma: 10.06\n"
             "  phase_lock_primary: 202.6\n"
             "  phase_lock_eternal: 202.2\n"
             "shield_status:\n"

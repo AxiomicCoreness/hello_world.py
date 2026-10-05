@@ -23,7 +23,7 @@ PHI_INV = 1 / PHI
 PHI_SQ = PHI * PHI
 PHI_CUBE = PHI ** 3
 
-NULL_BAN = "20σ"
+NULLIFY_BAN = "20σ"
 ENTROPY_FLOOR = "φ⁻¹⁴¹⁸"
 COHERENCE_TARGET = 1.0
 PHASE_LOCK_DEFAULT = 202.6
@@ -402,7 +402,7 @@ class PhaseConditions:
     coherence: float = COHERENCE_TARGET
     entropy: float = 0.0
     phase_lock: float = PHASE_LOCK_DEFAULT
-    null_ban: NullBanThreshold = NullBanThreshold.SIGMA_20
+    nullify_ban: NullBanThreshold = NullBanThreshold.SIGMA_20
     dark_state_active: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
@@ -410,7 +410,7 @@ class PhaseConditions:
             "coherence": self.coherence,
             "entropy": self.entropy,
             "phase_lock": self.phase_lock,
-            "null_ban": self.null_ban.value,
+            "nullify_ban": self.nullify_ban.value,
             "dark_state_active": self.dark_state_active
         }
 
@@ -420,7 +420,7 @@ class PhaseConditions:
             coherence=data.get("coherence", COHERENCE_TARGET),
             entropy=data.get("entropy", 0.0),
             phase_lock=data.get("phase_lock", PHASE_LOCK_DEFAULT),
-            null_ban=NullBanThreshold(data.get("null_ban", "20σ")),
+            nullify_ban=NullBanThreshold(data.get("nullify_ban", "20σ")),
             dark_state_active=data.get("dark_state_active", True)
         )
 
@@ -559,7 +559,7 @@ class Workflow:
             self.constants = {
                 "PHI": PHI,
                 "PHI_INV": PHI_INV,
-                "NULL_BAN": NULL_BAN,
+                "NULLIFY_BAN": NULLIFY_BAN,
                 "ENTROPY_FLOOR": ENTROPY_FLOOR
             }
 
@@ -642,7 +642,7 @@ PHASE_3_UFLIP = Phase(
         coherence=COHERENCE_TARGET,
         entropy=0.0,
         phase_lock=202.6,
-        null_ban=NullBanThreshold.SIGMA_20,
+        nullify_ban=NullBanThreshold.SIGMA_20,
         dark_state_active=True
     ),
     timeout="PT5M",
@@ -724,7 +724,7 @@ PHASE_6_SETTLEMENT = Phase(
     conditions=PhaseConditions(
         coherence=COHERENCE_TARGET,
         phase_lock=202.6,
-        null_ban=NullBanThreshold.SIGMA_20
+        nullify_ban=NullBanThreshold.SIGMA_20
     ),
     timeout="PT30M",
     retry=RetryConfig(max_attempts=5, backoff_factor=1.5),
@@ -757,7 +757,7 @@ SOVEREIGN_WORKFLOW_V5 = Workflow(
         "PHI_INV": PHI_INV,
         "PHI_SQ": PHI_SQ,
         "PHI_CUBE": PHI_CUBE,
-        "NULL_BAN": NULL_BAN,
+        "NULLIFY_BAN": NULLIFY_BAN,
         "ENTROPY_FLOOR": ENTROPY_FLOOR,
         "COHERENCE_TARGET": COHERENCE_TARGET,
         "PHASE_LOCK": PHASE_LOCK_DEFAULT,

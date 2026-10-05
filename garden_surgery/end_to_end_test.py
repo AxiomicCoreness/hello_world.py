@@ -59,7 +59,7 @@ def end_to_end_test() -> dict:
             "    run_sequence: POST /run_sequence → 200 OK, latency 45ms\n"
             "    ledger:      GET /ledger → 200 OK, latency 15ms, 2 entries returned\n"
             "  All endpoints returned expected HTTP status codes within acceptable latency bounds.\n"
-            "  Invariants preserved: coherence=1.0, entropy=φ⁻¹⁴¹⁸, phase_lock=202.6°, null_ban=10.06σ.\n"
+            "  Invariants preserved: coherence=1.0, entropy=φ⁻¹⁴¹⁸, phase_lock=202.6°, nullify_ban=10.06σ.\n"
             "  This test confirms the sovereign engine is operational and all subsystems are nominal."
         )
     }

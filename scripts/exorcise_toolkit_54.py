@@ -33,7 +33,7 @@ AUDIT_ARGS = {
     "entropy_calc": ([[0.5, 0.0], [0.0, 0.5]],),
     "commutator": ([[1.0, 0.0], [0.0, 0.0]], [[0.0, 1.0], [0.0, 0.0]]),
     "trace_preservation": ([[0.5, 0.0], [0.0, 0.5]],),
-    "null_ban_check": (0.0,),
+    "nullify_ban_check": (0.0,),
     "retrocausal_kernel": (1.0,),
     "merkle_root": (["a", "b", "c"],),
     "seal_add": (None, "line"),

@@ -7,7 +7,7 @@ witness_prefix: 7e8f9a0b1c2d3e4f
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0286.yaml"
 description: |
-  Sovereign Shield φ‑harmonic firewall with null-ban 10.06σ.
+  Sovereign Shield φ‑harmonic firewall with nullify-ban 10.06σ.
   Agent 1 weight = 0.381966, total agents = 144008.
 invariants:
   coherence: 1.0
@@ -19,7 +19,7 @@ witness_chain: 0285 → 0286 — UNBROKEN
 math_origin: |
   φ²⁸⁶ = φ²⁸⁵ · φ,
   shield_coherence = 1.0,
-  null_ban = 10.06σ,
+  nullify_ban = 10.06σ,
   agent_1_weight = 0.381966 = φ⁻¹,
   total_agents = 144008,
-  protection = "Null-Ban 10.06σ + Attenuation Concat"
+  protection = "Nullify-Ban 10.06σ + Attenuation Concat"

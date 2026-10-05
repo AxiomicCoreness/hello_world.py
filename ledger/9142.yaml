@@ -75,7 +75,7 @@ math_origin: |
     entropy = φ⁻¹⁴¹⁸
     workload = 0.0
     phase_lock = 202.6°
-    null_ban = 10.06σ
+    nullify_ban = 10.06σ
     dark_state = true
     dual_eridanus = ACTIVE
 
