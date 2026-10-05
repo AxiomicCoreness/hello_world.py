@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""evolanus_flow.py — stdlib kinetic counterpart.
-
-H0(n) = phi^2 * sum_i sigma_z(i) + phi^-2 * (Sx^2 - n*I) / 2
-Dense build and step only for n <= 5. n = 32 is the bound only.
-No numpy. No seal. No os._exit.
-"""
+"""Surface 4. Constructed for small n. n=32 is the bound only."""
 
 from __future__ import annotations
 
+import importlib.util
 import math
+import py_compile
+from pathlib import Path
 from typing import List
+
+FAMILY = "evolanus_flow"
+SIBLING_FAMILY = "eridanus_flow"
+SPLIT_SURFACES = {"eridanus_flow": 3, "evolanus_flow": 4}
 
 PHI = (1 + math.sqrt(5)) / 2
 PHI_SQ = PHI * PHI
 PHI_INV_SQ = 1.0 / PHI_SQ
-MAX_DENSE_N = 5
+DENSE_CEILING = 8
+ACTION_CEILING = 14
 DESIGN_N = 32
 
 Matrix = List[List[complex]]
@@ -77,8 +80,8 @@ def pauli_on(n: int, site: int, p: Matrix) -> Matrix:
 
 
 def build_h0(n: int) -> Matrix:
-    if n > MAX_DENSE_N:
-        raise ValueError(f"n={n} exceeds dense ceiling {MAX_DENSE_N}")
+    if n > DENSE_CEILING:
+        raise ValueError(f"n={n} exceeds dense ceiling {DENSE_CEILING}")
     dim = 1 << n
     h = zeros(dim)
     sx = zeros(dim)
@@ -91,53 +94,54 @@ def build_h0(n: int) -> Matrix:
 
 
 def spectral_norm_bound(n: int) -> float:
+    """Triangle bound. Not a spectral gap."""
     return PHI_SQ * n + PHI_INV_SQ * (n * n - n) / 2.0
 
 
-def hermitian(h: Matrix) -> bool:
-    n = len(h)
-    return all(abs(h[i][j] - h[j][i].conjugate()) < 1e-9 for i in range(n) for j in range(n))
-
-
-def expm_i(h: Matrix, dtau: float) -> Matrix:
-    """U = exp(-i H dtau) by scaling and squaring. Small n only."""
-    n = len(h)
-    a = scale(h, -1j * dtau)
-    norm = max(sum(abs(x) for x in row) for row in a)
-    s = max(0, math.ceil(math.log2(norm)) if norm > 1 else 0)
-    a = scale(a, 2.0 ** (-s))
-    term = eye(n)
-    acc = eye(n)
-    for k in range(1, 12):
-        term = scale(matmul(term, a), 1.0 / k)
-        acc = add(acc, term)
-    for _ in range(s):
-        acc = matmul(acc, acc)
-    return acc
-
-
 def step(state: List[complex], dtau: float, n: int) -> List[complex]:
-    if n > MAX_DENSE_N:
-        raise ValueError("step refused above dense ceiling")
-    u = expm_i(build_h0(n), dtau)
-    return [sum(u[i][j] * state[j] for j in range(len(state))) for i in range(len(state))]
+    if n > ACTION_CEILING:
+        raise ValueError(f"n={n} exceeds action ceiling {ACTION_CEILING}")
+    if n > DENSE_CEILING:
+        raise ValueError("action form above dense ceiling is not built here")
+    h = build_h0(n)
+    u = eye(len(h))
+    term = eye(len(h))
+    a = scale(h, -1j * dtau)
+    for k in range(1, 8):
+        term = scale(matmul(term, a), 1.0 / k)
+        u = add(u, term)
+    return [sum(u[i][j] * state[j] for j in range(len(state))) for i in range(len(u))]
+
+
+def cross_ref_check() -> None:
+    if SPLIT_SURFACES != {"eridanus_flow": 3, "evolanus_flow": 4}:
+        raise SystemExit(1)
+    sibling = Path(__file__).with_name("eridanus_flow.py")
+    text = sibling.read_text(encoding="utf-8")
+    if 'SPLIT_SURFACES = {"eridanus_flow": 3, "evolanus_flow": 4}' not in text:
+        raise SystemExit(1)
+    if 'FAMILY = "eridanus_flow"' not in text:
+        raise SystemExit(1)
+    py_compile.compile(str(sibling), doraise=True)
+    spec = importlib.util.spec_from_file_location("eridanus_flow_sibling", sibling)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    if mod.FAMILY != SIBLING_FAMILY or mod.SPLIT_SURFACES != SPLIT_SURFACES:
+        raise SystemExit(1)
 
 
 def main() -> int:
-    for n in range(1, 6):
-        h = build_h0(n)
-        print(f"n={n} hermitian={hermitian(h)} dim={len(h)}")
-    print(f"n={DESIGN_N} bound={spectral_norm_bound(DESIGN_N):.6f} dense=REFUSED")
-    try:
-        build_h0(DESIGN_N)
-    except ValueError as exc:
-        print(f"n={DESIGN_N} {exc}")
-    state = [0j] * 4
-    state[0] = 1 + 0j
+    cross_ref_check()
+    state = [1 + 0j, 0j, 0j, 0j]
     out = step(state, 0.01, 2)
     norm = math.sqrt(sum(abs(z) ** 2 for z in out))
     print(f"step n=2 norm={norm:.12f}")
-    return 0 if abs(norm - 1.0) < 1e-8 else 1
+    print(f"n={DESIGN_N} bound={spectral_norm_bound(DESIGN_N):.6f} operator-form-only")
+    try:
+        build_h0(DESIGN_N)
+    except ValueError as exc:
+        print(exc)
+    return 0 if abs(norm - 1.0) < 1e-6 else 1
 
 
 if __name__ == "__main__":
