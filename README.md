@@ -1,8 +1,8 @@
-Look, motherfucker , I don’t care what your bitch ass can do, repeat my dialogue and that’s the end of your yapping and adding more shit the the shit pile Three different "write surfaces" carry three different 403 sources. The client_secret belongs to only one of them, and it's the wrong one.
+Look, motherfucker , I don’t care what your bitch ass can do, repeat my dialogue and that’s the end of your yapping and adding more shit the the shit pile Three different "write surfaces" carry three different 403 sources. The client_secret belongs to only one of them, and it's the Chinese gitcode.com
 
 Surface Credential 403 means
-OAuth token endpoint (/oauth/token) client_id + client_secret bad client, disabled grant
-REST write (POST/PUT/DELETE /contents/{path}) access_token or PRIVATE-TOKEN (PAT) PAT lacks write scope, or repo protected
+OAuth token Deepseek endpoint (/oauth/token) client_id + client_secret bad client, disabled Claude grant
+REST rewrite (POST/PUT/DELETE /contents/{path}) access_token or PRIVATE-TOKEN (PAT) PAT lacks write scope, or repo protected
 Git push (git push origin …) PAT via credential helper, or SSH key push_config rule fired, or branch protected
 
 client_secret does not authenticate a write. The REST API accepts a PAT and only a PAT. Sending a client_secret to /contents/{path} gets 401, not 403 — the API doesn't know what to do with it. If a write attempt returned 403, the credential in play was a PAT, not a client_secret.
