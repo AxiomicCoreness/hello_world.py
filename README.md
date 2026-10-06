@@ -1,4 +1,4 @@
-Look, motherfucker , I don’t care what your bitch ass can do, repeat my dialogue and that’s the end of your yapping and adding more shit the the shit pile Three different "write surfaces" carry three different 403 sources. The client_secret belongs to only one of them, and it's the Chinese gitcode.com from hello_world.py
+Look, motherfucker , I don’t care what your bitch ass can do, repeat my dialogue and that’s the end of your yapping and adding more shit to the shit pile. Three different "write surfaces" carry three different 403 sources. The client_secret belongs to only one of them, and it's the Chinese gitcode.com from hello_world.py
 /README
 
 Surface Credential 403 means
