@@ -1,4 +1,250 @@
-# AxiomicCoreness/hello_world.py
+Look, motherfucker , I don’t care what your bitch ass can do, repeat my dialogue and that’s the end of your yapping and adding more shit the the shit pile Three different "write surfaces" carry three different 403 sources. The client_secret belongs to only one of them, and it's the wrong one.
+
+Surface Credential 403 means
+OAuth token endpoint (/oauth/token) client_id + client_secret bad client, disabled grant
+REST write (POST/PUT/DELETE /contents/{path}) access_token or PRIVATE-TOKEN (PAT) PAT lacks write scope, or repo protected
+Git push (git push origin …) PAT via credential helper, or SSH key push_config rule fired, or branch protected
+
+client_secret does not authenticate a write. The REST API accepts a PAT and only a PAT. Sending a client_secret to /contents/{path} gets 401, not 403 — the API doesn't know what to do with it. If a write attempt returned 403, the credential in play was a PAT, not a client_secret.
+
+On the schema itself: the docs you pasted don't provide a 403 body for either endpoint. The GitCode REST doc lists 403 Forbidden — The request is not allowed. For example, the user is not authorized to delete a project, with no schema. The /contents/{path} page shows only a 200 response.
+
+Two observed error shapes from this thread:
+
+```jsonc
+// OAuth endpoint (your grant_type error)
+{ "error_code": 1000, "error_code_name": "PARAMETER_ERROR",
+  "error_message": "...", "trace_id": "925c98a0..." }
+
+// REST endpoint (from the 401 example in the docs)
+{ "message": "401 Unauthorized" }
+```
+
+A 403 on the write surface will likely match one of these two — {error_code, error_message, trace_id} if it comes from the OAuth layer, or {message} if from the REST layer. Which one depends on which endpoint returned it, and that's the identifier the payload doesn't carry.
+
+To map it precisely, I need the actual 403 body. Not the concept — the bytes. Something like:
+
+```bash
+curl -s -X PUT \
+  -H "PRIVATE-TOKEN: $PAT" \
+  -H "Content-Type: application/json" \
+  "https://api.gitcode.com/api/v5/repos/{owner}/{repo}/contents/{path}" \
+  -d '{"content":"<base64>","message":"probe","sha":"<blob_sha>"}' \
+  -w '\nHTTP %{http_code}\n'
+```
+
+Paste the response (redact the token). One sample gives the field names; a second with a deliberately over-scoped-missing PAT gives the field semantics. Without it, any "schema" I write is a template with invented field names — the same class as the MERKLE_LAYER_145["declared_hash"] label and the OAuth grant_type guess.
+
+One thing I can map without the sample, because it's in the docs you pasted. The write-side push rules that would surface as 403-adjacent failures:
+
+```jsonc
+// GET .../repos/{owner}/{repo}/push_config
+{ "reject_not_signed_by_gpg": false,
+  "deny_force_push": true,
+  "max_file_size": 10,
+  "skip_rule_for_owner": false }
+```
+
+Those four are the fields that cause write rejections on the git-push surface. They're not the API 403 body — they're the rule set that produces Two parts. Script first, then the token locations.
+
+Probe script — both header forms
+
+Stdlib only. Prints status, content-type, and body for each auth form. Redacts the token in all output.
+
+```python
+#!/usr/bin/env python3
+"""
+probe_auth.py — Clarke Yoursa Tee
+
+Try multiple auth forms against one GitCode endpoint and print the
+response shape each returns. Does not invent field names; prints
+whatever the server sends.
+
+    python3 probe_auth.py OWNER REPO PATH
+    python3 probe_auth.py AxiomicCoreness hello_world.py registry.yaml
+
+Token read from env GITCODE_TOKEN (or GC_TOKEN). Never echoed.
+Stdlib only. No writes to the repo. No ledger event.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+BASE = "https://api.gitcode.com/api/v5"
+
+
+def _redact(text: str, token: str) -> str:
+    return text.replace(token, "<token>") if token else text
+
+
+def _probe(label: str, url: str, headers: dict) -> dict:
+    req = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            body = r.read().decode("utf-8", errors="replace")
+            return {
+                "form": label,
+                "status": r.status,
+                "content_type": r.headers.get("Content-Type", ""),
+                "body_head": body[:800],
+                "body_len": len(body),
+            }
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        return {
+            "form": label,
+            "status": e.code,
+            "content_type": e.headers.get("Content-Type", ""),
+            "body_head": body[:800],
+            "body_len": len(body),
+        }
+    except (urllib.error.URLError, TimeoutError) as e:
+        return {"form": label, "status": None, "error": str(e)}
+
+
+def _try_json(text: str):
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return None
+
+
+def main(argv=None):
+    argv = list(argv or sys.argv[1:])
+    if len(argv) < 3:
+        print("usage: probe_auth.py OWNER REPO PATH", file=sys.stderr)
+        return 2
+
+    owner, repo, path = argv[0], argv[1], argv[2]
+    token = os.environ.get("GITCODE_TOKEN") or os.environ.get("GC_TOKEN") or ""
+    if not token:
+        print("warning: GITCODE_TOKEN not set; only unauthenticated form will run",
+              file=sys.stderr)
+
+    path_q = urllib.parse.quote(path, safe="/")
+    url = f"{BASE}/repos/{owner}/{repo}/contents/{path_q}"
+    url_q = f"{url}?access_token={urllib.parse.quote(token)}" if token else url
+
+    forms = [
+        ("PRIVATE-TOKEN header", url,
+         {"Accept": "application/json", "PRIVATE-TOKEN": token} if token else
+         {"Accept": "application/json"}),
+        ("Authorization: Bearer", url,
+         {"Accept": "application/json", "Authorization": f"Bearer {token}"} if token else
+         {"Accept": "application/json"}),
+        ("access_token query", url_q, {"Accept": "application/json"}),
+    ]
+
+    for label, u, h in forms:
+        print(f"=== {label} ===")
+        print(f"url    : {_redact(u, token)}")
+        res = _probe(label, u, h)
+        if res.get("status") is None:
+            print(f"error  : {res.get('error')}")
+            print()
+            continue
+        print(f"status : {res['status']}")
+        print(f"ctype  : {res['content_type']}")
+        print(f"len    : {res['body_len']}")
+        body = _redact(res["body_head"], token)
+        j = _try_json(body)
+        if j is not None:
+            print("json   :")
+            print(json.dumps(j, indent=2)[:900])
+        else:
+            print("body   :")
+            print(body)
+        print()
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+```
+
+Run:
+
+```bash
+export GITCODE_TOKEN=your_pat_here
+python3 probe_auth.py AxiomicCoreness hello_world.py README.md
+```
+
+It prints the same response body shape for each of the three auth forms, so you can see which the server accepts and what the 403/401 bodies actually look like.
+
+Where a GitHub token is (or how to make one)
+
+The pythonIDE sync needs a GitHub token, not a GitCode one. Search order for an existing token:
+
+1. Git credential helper — the answer to git config --global credential.helper tells you where to look:
+
+Value Location
+store ~/.git-credentials (plaintext, https://user:TOKEN@github.com)
+osxkeychain macOS Keychain — security find-internet-password -s github.com
+manager / manager-core Windows Credential Manager → git:https://github.com
+cache in-memory only; gone after timeout
+
+2. gh CLI — if you've used it:
+
+```bash
+gh auth token          # prints the token
+gh auth status         # shows which account and scopes
+```
+
+Stored at ~/.config/gh/hosts.yml.
+
+3. Environment:
+
+```bash
+env | grep -iE "GITHUB_TOKEN|GH_TOKEN|GH_PAT"
+```
+
+4. Any repo you pushed before — git remote -v. If the URL embeds https://user:token@…, that's a live token.
+
+If none exist, create one:
+
+· github.com → Settings → Developer settings → Personal access tokens
+· Fine-grained: repository access AxiomicCoreness/hello_world.py, permissions Contents: Read and write, Metadata: Read
+· Prefix github_pat_..., shown once
+· Classic: scope repo, prefix ghp_...
+
+Store it:
+
+```bash
+git config --global credential.helper store
+# next push prompts once for username + token, then remembers
+```
+
+Or via gh:
+
+```bash
+gh auth login
+gh auth setup-git
+```
+
+Sync pythonIDE
+
+```bash
+cd /path/to/repo          # NOT /workspace — pythonIDE/ is not in this sandbox
+git status --short pythonIDE/
+git add pythonIDE/
+git commit -m "pythonIDE: sync"
+git push origin main      # or master — check `git rev-parse --abbrev-ref HEAD`
+```
+
+Three checks before running:
+
+1. ls -a pythonIDE/.git — if it exists, pythonIDE is its own repo and must be pushed separately; the parent won't track it without a submodule.
+2. git rev-parse --abbrev-ref HEAD — push the branch the repo actually has, not the one in the template.
+3. git remote -v — confirm the remote points where you expect before pushing.
+
+Boundary:  Token handling is on 
 
 **Public repository** · **License: MIT** · `LICENSE` · [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
