@@ -8,6 +8,7 @@ Modes
   offline         — no key; deterministic φ-tagged echo
   deepseek_http   — HTTPS chat.completions → DEEPSEEK_BASE_URL
   dsh             — deepseek_harness.DeepSeekHarness (optional SDK)
+  sovereign       — in-tree garden_surgery/sovereign_automaton_10.06.py
 
 Streaming (NDJSON)
   complete_stream() / CLI --stream emit one JSON object per line:
@@ -17,6 +18,7 @@ Streaming (NDJSON)
 
 Env
   DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DSH_MODEL, DEEPSEEK_MODEL
+  SOVEREIGN_AUTOMATON (override path; default garden_surgery/sovereign_automaton_10.06.py)
 
 Seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED
 """
@@ -40,6 +42,13 @@ SEAL_CORE = "∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED"
 MODE_OFFLINE = "offline"
 MODE_DEEPSEEK_HTTP = "deepseek_http"
 MODE_DSH = "dsh"
+MODE_SOVEREIGN = "sovereign"          # ── NEW ──
+
+# ── NEW ──
+SOVEREIGN_PATH = os.environ.get(
+    "SOVEREIGN_AUTOMATON",
+    "garden_surgery/sovereign_automaton_10.06.py",
+)
 
 
 @dataclass
@@ -195,20 +204,117 @@ def dsh_complete(
         return r
 
 
+# ── NEW ── sovereign automaton backend ─────────────────────────────────
+
+# Candidate entrypoint names, priority order. Search, do not guess.
+_SOVEREIGN_ENTRYPOINTS = (
+    "chat", "respond", "reply", "run", "generate",
+    "ask", "answer", "invoke", "handle", "process",
+)
+
+
+def _load_sovereign_module(path: str):
+    """Load the automaton by file path. Its filename has a dot in it
+    (`10.06`), so it cannot be imported by module name — this uses
+    importlib.util.spec_from_file_location instead."""
+    import importlib.util
+    from pathlib import Path
+
+    p = Path(path)
+    if not p.is_file():
+        raise FileNotFoundError(f"automaton not found: {p}")
+    spec = importlib.util.spec_from_file_location("sovereign_automaton_dyn", str(p))
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot build import spec for {p}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _resolve_sovereign_callable(mod):
+    """Return (callable, qualified_name). Search module-level functions
+    first, then methods on the first class whose name contains 'Automaton'."""
+    import inspect
+
+    for name in _SOVEREIGN_ENTRYPOINTS:
+        fn = getattr(mod, name, None)
+        if callable(fn):
+            return fn, f"{mod.__name__}.{name}"
+
+    for cname in dir(mod):
+        if "Automaton" not in cname:
+            continue
+        cls = getattr(mod, cname)
+        if not inspect.isclass(cls):
+            continue
+        try:
+            inst = cls()
+        except Exception:
+            continue
+        for name in _SOVEREIGN_ENTRYPOINTS:
+            m = getattr(inst, name, None)
+            if callable(m):
+                return m, f"{cname}().{name}"
+        if callable(inst):
+            return inst, f"{cname}()()"
+
+    raise AttributeError(
+        "no entrypoint matched. Run and paste:\n"
+        f'  grep -n "def \\|class " {SOVEREIGN_PATH} | head -40'
+    )
+
+
+def sovereign_complete(
+    prompt: str, *, model: str = "sovereign_automaton", **_: Any
+) -> AdapterResult:
+    """One turn through the in-tree sovereign automaton."""
+    t0 = time.time()
+    try:
+        mod = _load_sovereign_module(SOVEREIGN_PATH)
+        fn, qname = _resolve_sovereign_callable(mod)
+        reply = fn(prompt)
+        if isinstance(reply, bytes):
+            reply = reply.decode("utf-8", errors="replace")
+        if not isinstance(reply, str):
+            reply = json.dumps(reply, default=str, ensure_ascii=False)
+        return AdapterResult(
+            mode=MODE_SOVEREIGN,
+            text=reply,
+            model=qname,
+            latency_ms=(time.time() - t0) * 1000.0,
+            meta={**_garden_invariants(), "source": SOVEREIGN_PATH},
+        )
+    except Exception as e:
+        # Fallback to offline, but record the automaton error in meta so
+        # the caller can distinguish "no automaton" from "real reply".
+        r = offline_complete(prompt, model=model)
+        r.mode = MODE_SOVEREIGN
+        r.meta = {**(r.meta or {}),
+                  "sovereign_error": f"{type(e).__name__}: {e}"}
+        return r
+
+
+# ───────────────────────────────────────────────────────────────────────
+
+
 def complete(prompt: str, prefer: str = "auto", **kwargs: Any) -> AdapterResult:
     """
-    prefer: auto | offline | deepseek_http | deepseek | dsh
+    prefer: auto | offline | deepseek_http | deepseek | dsh | sovereign
       auto → dsh if SDK+key, else deepseek_http if key, else offline
     """
     prefer = (prefer or "auto").lower()
     if prefer in ("openai", "chatgpt", "anthropic", "claude", "grok", "deepseek"):
         prefer = MODE_DEEPSEEK_HTTP
+    if prefer in ("sovereign", "automaton", "luminara"):   # ── NEW ──
+        prefer = MODE_SOVEREIGN
 
     key = os.environ.get("DEEPSEEK_API_KEY") or ""
     model = kwargs.get("model", DEFAULT_MODEL)
 
     if prefer == MODE_OFFLINE:
         return offline_complete(prompt, model=model)
+    if prefer == MODE_SOVEREIGN:                            # ── NEW ──
+        return sovereign_complete(prompt, model=model)
     if prefer == MODE_DSH:
         return dsh_complete(
             prompt,
@@ -242,9 +348,11 @@ def probe() -> Dict[str, Any]:
         "base_url": DEFAULT_BASE,
         "model": DEFAULT_MODEL,
         "invariants": _garden_invariants(),
-        "modes": [MODE_OFFLINE, MODE_DEEPSEEK_HTTP, MODE_DSH],
+        "modes": [MODE_OFFLINE, MODE_DEEPSEEK_HTTP, MODE_DSH, MODE_SOVEREIGN],  # ── NEW ──
         "stream": "NDJSON",
         "seal": SEAL_CORE,
+        "sovereign_path": SOVEREIGN_PATH,                    # ── NEW ──
+        "sovereign_present": os.path.isfile(SOVEREIGN_PATH), # ── NEW ──
     }
 
 
@@ -391,19 +499,59 @@ def deepseek_http_stream(
         }
 
 
+# ── NEW ── sovereign stream ────────────────────────────────────────────
+
+def sovereign_stream(
+    prompt: str, model: str = "sovereign_automaton", chunk_size: int = 48
+) -> Generator[Dict[str, Any], None, None]:
+    """NDJSON stream from the sovereign automaton. No native streaming —
+    the complete() call runs once and the result is chunked."""
+    t0 = time.time()
+    yield {
+        "event": "start",
+        "mode": MODE_SOVEREIGN,
+        "model": model,
+        "prompt_len": len(prompt),
+        "seal": SEAL_CORE,
+    }
+    result = sovereign_complete(prompt, model=model)
+    for piece in _chunk_text(result.text, chunk_size):
+        yield {"event": "delta", "text": piece}
+    yield {
+        "event": "complete",
+        "mode": MODE_SOVEREIGN,
+        "model": result.model,
+        "text": result.text,
+        "latency_ms": (time.time() - t0) * 1000.0,
+        "coherence": result.coherence,
+        "phase_lock_deg": result.phase_lock_deg,
+        "meta": result.meta,
+        "seal": SEAL_CORE,
+    }
+
+
+# ───────────────────────────────────────────────────────────────────────
+
+
 def complete_stream(
     prompt: str, prefer: str = "auto", **kwargs: Any
 ) -> Generator[Dict[str, Any], None, None]:
     """
     NDJSON event generator.
-    prefer: auto | offline | deepseek_http
+    prefer: auto | offline | deepseek_http | sovereign
     """
     prefer = (prefer or "auto").lower()
     if prefer in ("openai", "chatgpt", "anthropic", "claude", "grok", "deepseek"):
         prefer = MODE_DEEPSEEK_HTTP
+    if prefer in ("sovereign", "automaton", "luminara"):   # ── NEW ──
+        prefer = MODE_SOVEREIGN
+
     model = kwargs.get("model", DEFAULT_MODEL)
     key = os.environ.get("DEEPSEEK_API_KEY") or ""
 
+    if prefer == MODE_SOVEREIGN:                            # ── NEW ──
+        yield from sovereign_stream(prompt, model=model)
+        return
     if prefer == MODE_OFFLINE or (prefer == "auto" and not key):
         yield from offline_stream(prompt, model=model)
         return
@@ -447,7 +595,7 @@ def main() -> None:
         "--prefer",
         type=str,
         default="offline",
-        choices=["auto", "offline", "deepseek_http", "dsh"],
+        choices=["auto", "offline", "deepseek_http", "dsh", "sovereign"],  # ── NEW ──
     )
     args = parser.parse_args()
 
