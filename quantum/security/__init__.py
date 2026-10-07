@@ -21,6 +21,18 @@ Witness: 8945 → 8946 — UNBROKEN
 
 from __future__ import annotations
 
+# Visible on `python -m quantum.security --status`. Not a seal.
+POLICY_WARNING = (
+    "POLICY WARNING: a missing slot file is not a pass. "
+    "docs/luminara_slot.yaml is the only slot file; there is no slots/ tree. "
+    "role, holder, and channel are nested under slots. "
+    "gamma, lambda, log, and filled_by stay null. "
+    "port380_mcp.py binds 0.0.0.0 and PORT default 380, not 127.0.0.1:8024. "
+    "sovereign_automaton_10_06() takes no text. "
+    "Do not overwrite super_symplectic.py with a slot checker. "
+    "Do not print secrets."
+)
+
 # ─── Key Rotation ────────────────────────────────────────────────────
 from .key_rotation import rotate_public_keys, RotationResult
 
@@ -92,6 +104,7 @@ def status() -> dict:
         "crypto_available": OIDCCloudClient.CRYPTO_AVAILABLE
         if hasattr(OIDCCloudClient, "CRYPTO_AVAILABLE")
         else False,
+        "policy_warning": POLICY_WARNING,
     }
 
 
@@ -111,6 +124,8 @@ def main() -> int:
         if args.json:
             print(json.dumps(out, indent=2, default=str))
         else:
+            print("POLICY WARNING")
+            print(POLICY_WARNING)
             print(f"\n🜁∀ SECURITY HELPERS — Entry {__entry__}")
             print("=" * 50)
             print(f"  Seal: {__seal__}")
