@@ -45,3 +45,15 @@ jobs:
           echo "runner=ubuntu-latest"
           echo "ledger/8977.yaml frozen; not written"
           exit 0
+
+  rate:
+    name: deepseek rate idle
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: run idle rate test
+        run: python3 tests/test_deepseek_rate.py
