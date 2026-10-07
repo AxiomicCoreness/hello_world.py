@@ -9,5 +9,10 @@
 #   pip install pyyaml setuptools
 #   pip install torch-npu==2.12.0
 #
-# A5 verify uses aclnn. torch.nn.functional on that path is the forbidden fallback.
+# A5 verify path: the check must call the built kernel through an aclnn-direct
+# runner or ctypes shim. torch.nn.functional on that path is forbidden because
+# the PyTorch dispatcher falls back to AICPU, or to stock PyTorch, when the
+# built .so is not loaded. The run then never executes the kernel under test.
+# The same F.* call is allowed only in the A3 reference script, where CANN is
+# already installed. CPU tensor.<op>() is not an A5 reference either.
 pyyaml>=6
