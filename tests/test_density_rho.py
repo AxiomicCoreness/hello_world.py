@@ -21,6 +21,10 @@ from typing import Dict, Any, Optional, Union, List, Tuple
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 # ─── CRYPTOGRAPHY (Ed25519) ──────────────────────────────────────────────
 try:
     from cryptography.hazmat.primitives.asymmetric import ed25519
@@ -33,10 +37,9 @@ try:
     from master_equation import PHI, PSD, harmonic_density_field, rho_universal
 except ImportError:
     PHI = (1 + math.sqrt(5)) / 2
-    PSD = 1.0
+    PSD = 5.774
     harmonic_density_field = None
     rho_universal = None
-    pytest.skip("master_equation not available", allow_module_level=True)
 
 # ─── CONSTANTS ─────────────────────────────────────────────────────────────
 PHI_INV = 1 / PHI
@@ -137,6 +140,7 @@ def verify_security_headers(source_path: Union[str, Path] = "port380_mcp.py") ->
 
 # ─── TESTS ─────────────────────────────────────────────────────────────────
 
+@pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="cryptography.hazmat not importable")
 def test_verify_ledger_entries():
     """TEST 1: Verify Ed25519 signatures on ledger entries."""
     print("\n🔷 Verifying ledger entries:")
