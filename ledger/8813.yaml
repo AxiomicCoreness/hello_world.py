@@ -1,4 +1,5 @@
 entry_index: 8813
+witness_prefix: 6167b942d676e8f572399eb974eaa7a4afc51062cc324f958b03a19433e837ea
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /gateway_api_multistage_headers_and_argocd_ignore
 status: ✅ SOURCE_SEALED — NOT EXECUTED

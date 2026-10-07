@@ -1,4 +1,5 @@
 entry_index: 8859
+witness_prefix: 7f19ef26f270d1dd974cfb2f8ca44ef331a52e9f27eac5b5da6fb814ed41b914
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /aleph2_pauli_string_extract
 status: ✅ SEALED

@@ -1,4 +1,5 @@
 entry_index: 8631
+witness_prefix: 501e7c6f6ff1045a309d2211ae7489574d91f673301869067c840e0d9e30d569
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /fingerprint_monitor_and_precompute_files
 status: ✅ SEALED — FILES_WRITTEN

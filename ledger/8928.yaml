@@ -1,4 +1,5 @@
 entry_index: 8928
+witness_prefix: 640e3bdac1949145f2042ae7d2a5e2050d023b1d563018d64e10568123656286
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /exhaustive_phi_anchored_voids
 status: SEALED_AND_VERIFIED

@@ -1,4 +1,5 @@
 entry_index: 8934
+witness_prefix: c722bfc1e9376ab0f83f6f7d8dd090c7ea4361d1c5042f36d51dc3b65c931a70
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /x3df_x16f_websocket
 status: SEALED_AND_VERIFIED

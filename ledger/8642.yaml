@@ -1,4 +1,5 @@
 entry_index: 8642
+witness_prefix: 703823292da867dd96df62507e101b8831bb5a105b87fa5b7e9ca116e6d91201
 title: EM-005 Sovereign Workload Integration
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /em005_workload_telemetry_anchor

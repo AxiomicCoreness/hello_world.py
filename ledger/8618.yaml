@@ -1,4 +1,5 @@
 entry_index: 8618
+witness_prefix: 13e1f05e00fbbf61205d352cf116bc2d473d5e25b4d8e780620553bc9e7e0728
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /merge_complete_main
 status: ✅ SEALED

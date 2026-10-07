@@ -4,7 +4,7 @@ event: /correction/fusion_canonical_515_void_claim_516
 status: SEALED
 proof_class: correction_pointer
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: 785270110d26f1d0f9c4dea1e175287a1ab2cb8c45aa4444891174a147022acb
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 description: |
   High-index correction pointer. Fusion (MCP connector + Garden Secrets +

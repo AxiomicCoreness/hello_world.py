@@ -1,4 +1,5 @@
 entry_index: 8635
+witness_prefix: 17d37bca1683d6d70b74a4a00106225e84c144679b19e8b4806429033b11f7af
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /sovereign_workload_deployed_em005
 status: ✅ SEALED

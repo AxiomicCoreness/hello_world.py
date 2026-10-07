@@ -1,4 +1,5 @@
 entry_index: 8906
+witness_prefix: 66b9f627fa5a342e4116dea101ff50da757db267ec3acdd4c8de9fb78c521f4f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /swarm_throughput_acknowledged
 status: SEALED_AND_VERIFIED

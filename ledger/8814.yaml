@@ -1,4 +1,5 @@
 entry_index: 8814
+witness_prefix: 458794573b3d772d9d40ba9db362726be16ef9a5007b96833387fe32e80c0633
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /gateway_multistage_weights_refined
 status: ✅ SOURCE_SEALED — NOT EXECUTED

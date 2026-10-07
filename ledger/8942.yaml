@@ -1,4 +1,5 @@
 entry_index: 8942
+witness_prefix: db9cffa566b2be5064c08fc5ee66bfa69423de2cf5a6c839f5d01db77d9582e7
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /key_expiry_monitor_deployed
 status: SEALED_AND_VERIFIED

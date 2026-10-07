@@ -1,4 +1,5 @@
 entry_index: 8972
+witness_prefix: 5b76c1f84a7703443c57e1c55c0cf694cfc5c0e8f1303bf628e85bfc7c8076e1
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
 event: /oidc_swarm_parity_wired
 status: SEALED_EXISTENCE_VERIFIED_CONTENT_PARITY_PENDING_INDEX

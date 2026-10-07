@@ -1,4 +1,5 @@
 entry_index: 8666
+witness_prefix: cb2eacb37afe7222611a2783727e7ce920090e626fd1f756cece990798195563
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /mcp_oidc_pauli_handover
 status: ✅ SEALED

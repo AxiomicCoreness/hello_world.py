@@ -1,4 +1,5 @@
 entry_index: 8638
+witness_prefix: 2032da83a4e3646440618045d360c3b835209186c44cbc719a99c62632763797
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /opaque_merge_upgrade_single_qubit_stub
 status: ✅ SEALED

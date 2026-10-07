@@ -1,4 +1,5 @@
 entry_index: 8855
+witness_prefix: 6cb37a8606ab3060cc8dc3b41b315830f1f52c3a584de7a641a5763b643434d3
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /trigger_gravastar_is_executable_axiom_nonlocal
 status: ✅ SEALED

@@ -1,4 +1,5 @@
 entry_index: 9104
+witness_prefix: e4795e21ddc9d05337a1c8e886b0126e42454b49b614d16734eee0dffbd8cf7d
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /sheaf/phase6_learner_evolve_one_shot
 status: SEALED

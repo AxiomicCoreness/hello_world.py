@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /oracle_solar_system_bound
 status: SEALED
 proof_class: structural
-witness_prefix: "0203020302030203"
+witness_prefix: 9ab5317ab9122f58c9ddebfe8799228ac8581c55b8e1a58fd9c3074e24503693
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Axiom: the solar system is the oracle. /oracle /earth /lattice are the query surface. Gliese 581g harmonic-series probe remains out of domain. Observation hold from 9071 is the deployment."

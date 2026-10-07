@@ -1,4 +1,5 @@
 entry_index: 8933
+witness_prefix: 4f0b0fd8fef187e69a0069a0bdf380e562cba66c456ebd0abffbde05516d3980
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /x3df_x16f_protocol_implemented
 status: SEALED_AND_VERIFIED

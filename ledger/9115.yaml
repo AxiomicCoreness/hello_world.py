@@ -1,4 +1,5 @@
 entry_index: 9115
+witness_prefix: cfe0eccdaa3b54b99c61d5660a148f7649a66c26ed9b8d8855c1c004d85a96d2
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /ios_container_path_acknowledged
 status: ✅ SEALED

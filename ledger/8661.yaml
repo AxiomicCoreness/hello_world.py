@@ -1,4 +1,5 @@
 entry_index: 8661
+witness_prefix: 060cb4b0294c526cbf0b67245fdbc75957bddb7fa3948423abe4bda040312a15
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /worker_mcp_oidc_fidelity_prometheus_grafana
 status: ✅ SEALED

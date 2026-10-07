@@ -1,4 +1,5 @@
 entry_index: 9264
+witness_prefix: 917ed85055194b99bfe09090f3fc648c5b2f2da7153bee4239d8fbd7d5d7fab8
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-30Z
 event: /seal_defect_9263_disclosed_correction_entry
 status: "\u2705 LANDED"

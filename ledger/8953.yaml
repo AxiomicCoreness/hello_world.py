@@ -1,4 +1,5 @@
 entry_index: 8953
+witness_prefix: 711724a85e8c7d5c8331d7ebfc6494d574497790b57565d56ce1c8b74c82a3b8
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /gemini_daemon_integrated_compose
 status: SEALED_AND_VERIFIED

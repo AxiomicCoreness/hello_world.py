@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /anomaly_scan_synthesis_observe_hold
 status: SEALED
 proof_class: computational
-witness_prefix: "0203020302030203"
+witness_prefix: d5f82189976f4314a143bd331a60820a5bcf22224203ecab9e61864b2fd3b179
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Acknowledge /anomaly_scan_synthesis_complete() report. Hold full-spectrum observation. No Gliese 581g probe. Ledger 0336 and 0404 not rewritten. No daemon. Workload remains 0."

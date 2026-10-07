@@ -1,4 +1,5 @@
 entry_index: 8959
+witness_prefix: c0b0c28be76d75b962b29f8c54e16e49fb3432685c129adeea7d0df3dd9f1c5b
 event: "/handoff_entry_sealed"
 status: "SEALED"
 timestamp: "2026-09-24T22:21:41Z"

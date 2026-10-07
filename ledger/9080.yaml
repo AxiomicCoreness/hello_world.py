@@ -1,4 +1,5 @@
 entry_index: 9080
+witness_prefix: 50a4864a142d2b6dd9e59f06e2fd30c94b995340d71057779440a0a5c78e7950
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/dual_asgi_hash_math_append
 status: SEALED

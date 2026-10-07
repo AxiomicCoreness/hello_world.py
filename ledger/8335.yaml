@@ -1,4 +1,5 @@
 entry_index: 8335
+witness_prefix: d1d86fa492de949f81a29ac5ae0f7c84f14e0d5492c58f4bf0ab3e5ed30e6058
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
 event: /system_restart_and_grafana_dashboard_ready
 status: ALL_SYSTEMS_NOMINAL

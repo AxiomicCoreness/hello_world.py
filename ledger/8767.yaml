@@ -1,4 +1,5 @@
 entry_index: 8767
+witness_prefix: c83a0749a91995afbffc5b4d360fffdb028bed3eea54aabbb968e5a9d153e605
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
 event: /hash_truncation_cleanup
 status: ✅ SEALED

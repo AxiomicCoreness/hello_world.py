@@ -1,4 +1,5 @@
 entry_index: 9095
+witness_prefix: 596eca075c8878b2644b66d3a157107eac12f2155647cd9723856caa546ac408
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /ci_cd/argo_image_cd_combinator
 status: SEALED

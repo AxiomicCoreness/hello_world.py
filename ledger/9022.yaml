@@ -4,7 +4,7 @@ event: /surgery/diffuse_monolith_actionable_theorems
 status: SEALED
 proof_class: structural
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: f8ba6f98993773e7b2e9f80f97ac3e4b4f47476211b1f507369540169cd6a709
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 description: |
   Append-only cadaver cut. New package garden_surgery/ extracts actionable

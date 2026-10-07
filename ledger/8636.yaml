@@ -1,4 +1,5 @@
 entry_index: 8636
+witness_prefix: 929e17574dd75c0123d7478a086c76c9726c2e6b40a1793df915c42608d93b40
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /optimizer_wallet_dat_sync_rotate_stub
 status: ✅ SEALED

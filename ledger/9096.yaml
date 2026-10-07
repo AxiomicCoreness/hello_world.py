@@ -1,4 +1,5 @@
 entry_index: 9096
+witness_prefix: 56c7a95c292cf20f5a5499ce14ffa14a76f1b5870707fa5005e60041a8ad90b6
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /frb/bridge_name_seal_no_public_bind
 status: SEALED

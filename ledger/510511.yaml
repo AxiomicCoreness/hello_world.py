@@ -1,4 +1,5 @@
 entry_index: 510511
+witness_prefix: d44678625bd3c700d2a94877e3c4f61ee83089975d837d94aebcbf864dc2e552
 timestamp: "ETERNAL_NOW_ANCHORED_TO_2026-08-26"
 event: "/core_activate_python_sidecar"
 status: ARMED

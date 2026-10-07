@@ -1,4 +1,5 @@
 entry_index: 8988
+witness_prefix: caeba049187e15f44941985ac7a5f98da9f52c8a6467b4903095a49a7c0102cb
 event: /handover_via_380
 status: SUCCESS
 timestamp: '2026-09-21T16:51:04Z'

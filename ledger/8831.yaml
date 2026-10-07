@@ -1,4 +1,5 @@
 entry_index: 8831
+witness_prefix: 11f7c148abc7506c54bbb6bf7dfdb2d5050a8709ca97f1439e66656db86ee4b6
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
 event: /deepseek_api_key_setup_docs
 status: SEALED

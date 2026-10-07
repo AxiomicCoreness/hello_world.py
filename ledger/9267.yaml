@@ -1,4 +1,5 @@
 entry_index: 9267
+witness_prefix: a8b311b6f84e28b1c219d2375bd667dbdacfcc04d91828a413fc76a6c4995452
 timestamp: '2026-10-04T04:07:00Z'
 event: /godel_sentence_hash_recorded
 status: RECORDED

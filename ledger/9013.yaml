@@ -1,4 +1,5 @@
 entry_index: 9013
+witness_prefix: 89c80c2705f67aa7c8e30ebb4445639d4d5ec5750ac921bc724e0bb364fc0dc1
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /simplified_lindblad_closed_on_main
 status: SEALED — CANONICAL INSTANCE ON MAIN — NO EXECUTION CLAIMED

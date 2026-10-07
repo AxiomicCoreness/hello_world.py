@@ -1,4 +1,5 @@
 entry_index: 9254
+witness_prefix: 32532aa4741342d8aa24c33fac7e4ba475e6b07ac039c96f48cd6c7f6325d280
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /agent_class_branch_normalized_glm_agent_cluster_first_seal
 status: ✅ LANDED_BROADCAST

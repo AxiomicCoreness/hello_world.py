@@ -1,4 +1,5 @@
 entry_index: 8945
+witness_prefix: 74c7e1e49b51228d240a79596e2d2357d3886ffd77d6b89d2998b24bb2dcee15
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /oidc_wiring_jwks_cache_complete
 status: SEALED_AND_VERIFIED

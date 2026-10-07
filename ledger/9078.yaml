@@ -1,4 +1,5 @@
 entry_index: 9078
+witness_prefix: c4e7a6458505eb8fc4655793b9bcbd8fdb2674d905c5dfce6362adfc3440dd8b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /fastapi_flywheel_gearbox_merge
 status: SEALED

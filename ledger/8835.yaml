@@ -1,4 +1,5 @@
 entry_index: 8835
+witness_prefix: 077244203be652a323225496a776f682e44d08cf80c65e9087e93f7618513af5
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
 event: /deepseek_mesh_init_exports
 status: SEALED

@@ -1,4 +1,5 @@
 entry_index: 8656
+witness_prefix: cf49a2ea6d0a7a34e540c250e61a524cc7eeff07741a9086ee8f2e117879c14d
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /prometheus_grafana_rank_append
 status: ✅ SEALED

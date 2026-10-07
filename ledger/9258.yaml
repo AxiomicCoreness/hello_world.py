@@ -1,4 +1,5 @@
 entry_index: 9258
+witness_prefix: 25fd396a1bfc3f6296a71b038582196682ed674ac8f7cadea79f8c6a71cbc203
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /branch_lag_check_wired_scheduled
 status: ✅ LANDED

@@ -1,4 +1,5 @@
 entry_index: 8662
+witness_prefix: da1703d2be336d25e526e09511d3e57a772818d73e7e7357a5d0b357bfa05c1d
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /grafana_panels_feasibility_assessed
 status: ✅ SEALED — FEASIBLE — PR_TESTED_PASS

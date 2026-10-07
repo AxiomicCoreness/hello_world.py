@@ -1,4 +1,5 @@
 entry_index: 8850
+witness_prefix: 0277559319f28d4064c794a091127577cf84525062adc17124fbe1af3b0b5309
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /e8_uprho_global_metadata_and_manifesto_anchor
 status: ✅ SEALED

@@ -1,4 +1,5 @@
 entry_index: 8673
+witness_prefix: 4b6a529a4a262fcf134342c3742c903517da588e2a1b838019335c08e2514b09
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /autonomous_activation_run_complete
 status: ✅ FALLBACK_TO_MANUAL_DISPATCH

@@ -1,4 +1,5 @@
 entry_index: 8678
+witness_prefix: 2a721089ca4d06d0b828327d0c5b61b9b2764da6de295441ec716631f5fc7861
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /em006_dispatch_merkle_oidc_feedback
 status: ✅ SEALED

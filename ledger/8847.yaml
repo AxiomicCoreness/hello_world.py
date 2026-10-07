@@ -1,4 +1,5 @@
 entry_index: 8847
+witness_prefix: 7db61c4a0d654b062c44963c4c7f03eed0767ac6fcbaf221c3a8abf05460946a
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /rho_merge_coherent_gate_injected
 status: ✅ GATE_ACTIVE

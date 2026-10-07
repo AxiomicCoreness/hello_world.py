@@ -1,4 +1,5 @@
 entry_index: 8641
+witness_prefix: 27f25c9af96f068e8b504445e42699af985029380ac34ea7d1386ccfb416471a
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /workload_module_em005_accepted
 status: ✅ CONVERGENCE_ACHIEVED

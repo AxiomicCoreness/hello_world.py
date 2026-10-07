@@ -1,4 +1,5 @@
 entry_index: 8834
+witness_prefix: acda02125153aff561aa57e4ac352b1cd46f6190c7f7731fd6db91a75f7d8b41
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
 event: /mode_label_deepseek_http_canonical
 status: SEALED

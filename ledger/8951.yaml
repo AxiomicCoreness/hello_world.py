@@ -1,4 +1,5 @@
 entry_index: 8951
+witness_prefix: df494c9f1783e4e8868cb1d52c63f350bffd5b6564f112ff532a238a10089d6f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /harness_soft_checks_oidc_pid
 status: SEALED_AND_VERIFIED

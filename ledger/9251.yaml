@@ -1,4 +1,5 @@
 entry_index: 9251
+witness_prefix: 6441c7af7b03e10f65f994e984297157ee7a31385e59a12b33d5de0b468b5a51
 event: "/early_ledger_contamination_ruling_recorded"
 status: "SEALED"
 timestamp: "2026-09-26T02:40:00Z"

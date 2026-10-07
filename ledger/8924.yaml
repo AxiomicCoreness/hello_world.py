@@ -1,4 +1,5 @@
 entry_index: 8924
+witness_prefix: 9c101a61dfcd3345bd6585d0a8998d1ee1eedd1c901054ab9e9de9f8cd650640
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /argo_ci_pipeline_added
 status: SEALED

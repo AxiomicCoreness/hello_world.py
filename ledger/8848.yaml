@@ -1,4 +1,5 @@
 entry_index: 8848
+witness_prefix: e83ec1def09e2c7ae4f14406a596f8a5a4821f38da8234763c393d5b34af3541
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
 event: /migration_script_generated
 status: MIGRATION_SCRIPT_ACTIVE

@@ -1,4 +1,5 @@
 entry_index: 8930
+witness_prefix: 2dce645f1b92b69475c6f18de6febcdd769148dac7fc220c8d2a7421ea28461e
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /pulse_overhaul
 status: SEALED_AND_VERIFIED

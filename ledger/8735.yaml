@@ -1,4 +1,5 @@
 entry_index: 8735
+witness_prefix: 0d21d5991125dcd1f7025afc848a508668f480f9daa49f158a5ba771cadbbf51
 event: /deployer_log_path_hardened
 status: ✅ SEALED
 seal: "∀∞φ² · DEPLOYER_LOG_HARDENED_8735 · SEALED"

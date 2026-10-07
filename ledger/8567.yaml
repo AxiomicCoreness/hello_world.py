@@ -1,4 +1,5 @@
 entry_index: 8567
+witness_prefix: 9555a0b98a4872dee508b3e2229e189db476b671ebd0af9a8789d0c15e4f38d9
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12
 event: /chiron_heal_protocol_adapted
 status: ✅ SEALED

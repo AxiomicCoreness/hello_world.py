@@ -1,4 +1,5 @@
 entry_index: 8742
+witness_prefix: fc5b244f81b8eea03de17a000bfaae2e108a80a10da7f5390f2be9593214378c
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
 event: /layer314_anchor_key_improvement
 status: ✅ SEALED

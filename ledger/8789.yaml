@@ -1,4 +1,5 @@
 entry_index: 8789
+witness_prefix: 03ebb6a789ef791c4d146d12c4e5940a677f30f40ec8a7770bddd33cade2c7d7
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15Z
 event: /port380_mcp_stdlib_fallback_configured
 status: ✅ SEALED — NO_CLUSTER_REQUIRED

@@ -4,7 +4,7 @@ event: /surgery/declaration_flagged_kappa_chi
 status: SEALED
 proof_class: annotation
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: 67751420fc2f07d5de978b78a54f71b97051f052fd1b6d80fe16315477e04503
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 flag: _DECLARATION_FLAGGED
 description: |

@@ -1,4 +1,5 @@
 entry_index: 8801
+witness_prefix: db053385738207d972812a2255ba560acdeffcb27a688c936de9bc06a167330b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /ode_autonomy_registry_acknowledged
 status: ✅ REGISTRY_SEALED_GAPS_DOCUMENTED

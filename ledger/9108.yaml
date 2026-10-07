@@ -1,4 +1,5 @@
 entry_index: 9108
+witness_prefix: a2a8bc838ef8374d0a7ec5c964f93a1a56c052acca1a4856ec39aba92c4db3ac
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28Z
 event: /format_chain_integrity_confirmed
 status: ✅ SEALED

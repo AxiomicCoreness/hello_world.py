@@ -1,4 +1,5 @@
 entry_index: 8643
+witness_prefix: 3400749a507c62a0bd733119e442878ec56186d6d0673c59acea7eab2616dae0
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /k8s_workload_configmap_full_script_append
 status: ✅ SEALED

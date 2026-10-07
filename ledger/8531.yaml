@@ -1,4 +1,5 @@
 entry_index: 8531
+witness_prefix: 3194f60843a214b5ded7700a7a6622463e95c227fbb062002e1895634fc53602
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-15Z
 event: /re_seat_seal_reservation_gap_8340_8501
 status: SEALED — RESERVATION_ACKNOWLEDGED

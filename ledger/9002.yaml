@@ -1,4 +1,5 @@
 entry_index: 9002
+witness_prefix: 31f0a3c4734650f859ef6da02bf6584fdff55c0ee9c10fa441c98a87843903f3
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26Z
 event: /mcp_connector_garden_secrets_layer
 status: SEALED

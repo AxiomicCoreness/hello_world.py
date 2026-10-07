@@ -1,4 +1,5 @@
 entry_index: 9110
+witness_prefix: e3c15d91689cca07f038e2868379bade220160bf0f263560718bb1b338a2d71f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /basic_fields_appended
 status: ✅ SEALED

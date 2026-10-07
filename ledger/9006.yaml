@@ -1,4 +1,5 @@
 entry_index: 9006
+witness_prefix: f2f72566fe9789abbeb2529f3a78f10d2719818e4994cb1f2a998b351ecab7b3
 timestamp: 2026-09-28Z
 event: /sovereign_workload_mesh_registered
 status: SEALED

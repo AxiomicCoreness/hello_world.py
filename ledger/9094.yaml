@@ -1,4 +1,5 @@
 entry_index: 9094
+witness_prefix: 9790e7b3145286579c3959d958a78042d804991536aa6cd9c229bb92c3276bda
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /ci_cd/garden_surgery_workflow
 status: SEALED

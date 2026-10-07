@@ -1,4 +1,5 @@
 entry_index: 8734
+witness_prefix: a02a0e685dd24eaa770afb4b79c00bc971c7a1a74b5a6762f82601c58e9e5508
 event: /sovereign_deployer_forged
 status: ✅ PRODUCTION_READY
 script: quantum/install.sh

@@ -1,4 +1,5 @@
 # Sovereign Garden Ledger — Entry 8984
+witness_prefix: 45751037ee8cf0dbf01f5bb2d99750e8ca3278b175967099aecbab8e41f715ed
 # Pronoun-free per standing policy. Computed values over asserted values.
 # First entry carrying prev_hash — the chain is now a computed proof.
 entry_index: 8984

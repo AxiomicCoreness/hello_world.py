@@ -1,4 +1,5 @@
 entry_index: 9101
+witness_prefix: 67f35f9c94135959c272766bd95ccdae5b96d2e4907ea655d54093b2d05e10a0
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /2I/pisano_divides_order_inverse_not_integer
 status: SEALED

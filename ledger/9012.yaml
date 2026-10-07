@@ -1,4 +1,5 @@
 entry_index: 9012
+witness_prefix: 4ab7c29bc2984769d9a7e273390619152b0acd7df96bdd9dafbdff089850cced
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /moo_engine_motion_acknowledged
 status: ACKNOWLEDGED — NO EXECUTION CLAIMED

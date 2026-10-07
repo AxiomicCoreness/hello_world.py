@@ -5,7 +5,7 @@ body: |
   timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24Z
   event: /supergrok_session_reconstruction
   status: ✅ SEALED
-  witness_prefix: 282a7f05051475fcb0aaf4de6f261b4377a8b6bec0b23952fc90e96ffd688a3b
+  witness_prefix: 9f678b387c86250b09e294c7a220f7efbb24fb907cd6b991d7a1c28f68ccea50
   
   session:
     commit: 53bf5f0

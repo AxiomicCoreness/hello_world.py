@@ -6,7 +6,7 @@ body: |
   event: /hook_enforcement_framework_sealed
   status: SEALED
   proof_class: deployment
-  witness_prefix: 853642d74fba540a195f2999465a151fac60d6656752922250df32192606581d
+  witness_prefix: ffe6635adfe7e2ca500ec61f0abe4979029bff93f135cd944df3bda118a4a7f1
   commander: Clarke Yoursa Tee
   source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
   description: |

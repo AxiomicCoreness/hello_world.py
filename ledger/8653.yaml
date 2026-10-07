@@ -1,4 +1,5 @@
 entry_index: 8653
+witness_prefix: e5f26a84c80c4fa5e09543b43b54c9ff58f3ba9f4f195b1b54d1642df4fec439
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /app_main_merkle_symplectic_integrated
 status: ✅ SEALED

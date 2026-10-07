@@ -1,4 +1,5 @@
 entry_index: 9051
+witness_prefix: a622ccb23f7d12fe233248e95c159fb4f7ed4084953ff80580dea66750df82fc
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /learning_rate_correction
 status: SEALED

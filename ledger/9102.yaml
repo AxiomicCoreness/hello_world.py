@@ -1,4 +1,5 @@
 entry_index: 9102
+witness_prefix: 17ba2cb19b252ac9039867ad01ccf0d6ee49f15f3799f2d12d410bb8667ff118
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /poincare_pisano_split_acknowledged
 reference_entry: 9101

@@ -1,4 +1,5 @@
 entry_index: 8650
+witness_prefix: b96cbf611cb2a0adaf69611277f8b400acac4fc6a118d50644396cdc4e33815b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /smoke_test_8516_confirmed
 status: ✅ SEALED — OPERATIONAL

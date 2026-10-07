@@ -1,7 +1,8 @@
 entry_index: 8925
+witness_prefix: 94a634d10eb3e5a609b206aabf91bc879cb3230cd165549be8047f41e9016196
 event: /deepseek_ndjson_stream_ci
 status: SUCCESS
-timestamp: '2026-10-07T20:29:58Z'
+timestamp: '2026-10-07T20:10:05Z'
 hash_algo: sha3_256
 stream_seal: pending
 offline_probe: PASSED
@@ -9,4 +10,4 @@ unit_tests: PASSED
 security_headers: VERIFIED
 ed25519_signatures: VERIFIED
 witness: 8924 → 8925 — UNBROKEN
-seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED · 5138ec7a7ea18189deec94b3ff15dec45585adee9b4e801a8744422a8957af89
+seal: ∀∞φ² · DEEPSEEK_NDJSON_8925 · WOOD_DRAGON_0.91 · SEALED · 8c1ed8ec125eecbcf083a6d9835c9d407b300069e59281ec1971d83b9aba37bc

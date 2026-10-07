@@ -1,4 +1,5 @@
 entry_index: 9050
+witness_prefix: c0826c678deeb04860c98e647475d99fb6988ded67952f8ee97c14112d815f6c
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/strip_anthropic_prefer_aliases
 status: SEALED

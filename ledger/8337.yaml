@@ -1,4 +1,5 @@
 entry_index: 8337
+witness_prefix: 49f4fde040c7adbad38072b9054bce1112750a515f6098c0fccbb2d6a7b386ed
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
 event: /complete_jsonl_swarm_defined
 status: SEALED

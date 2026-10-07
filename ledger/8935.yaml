@@ -1,4 +1,5 @@
 entry_index: 8935
+witness_prefix: 1c9513ee00e9c96b4723942e0bd1d3b46ce3a05024040ade9a0fae665643b6bf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /key_rotation_macro_timed_specificity
 status: SEALED_AND_VERIFIED

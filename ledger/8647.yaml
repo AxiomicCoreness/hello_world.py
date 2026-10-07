@@ -1,4 +1,5 @@
 entry_index: 8647
+witness_prefix: 36440cb088c4f3b75d95942ebdb29f24f369bc467103554ac0873f835f604338
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /grafana_dashboard_panels_merged
 status: ✅ SEALED

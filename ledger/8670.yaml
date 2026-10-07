@@ -1,4 +1,5 @@
 entry_index: 8670
+witness_prefix: 65e62321d34a5bab0342b2947d72a0223531221f6de7c113036d5dbfda611ae2
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /oidc_handover_workflow_reregister
 status: ✅ SEALED

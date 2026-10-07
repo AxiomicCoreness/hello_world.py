@@ -1,4 +1,5 @@
 entry_index: 8973
+witness_prefix: 149911ce6b2b0b0411761bd5478fcdcb975fd863c9a47f772e437471b6ccef17
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-24Z
 event: /beacon_directory_parity_push
 status: PARTIAL_PARITY_SEALED

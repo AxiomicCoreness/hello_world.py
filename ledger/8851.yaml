@@ -1,4 +1,5 @@
 entry_index: 8851
+witness_prefix: 0cfb524ab36d9f1f6243add0104aa0a9a7a6305c0548bdb681c3fd4c4ee8d537
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
 event: /k8s_headers_fixed
 description: |

@@ -1,4 +1,5 @@
 entry_index: 8620
+witness_prefix: 7ffbe68f9161b9ff32569d8e3b843f2d22011ba51ef4f264d156cba1f95d5b9c
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /chiron_heal_materialized
 status: ✅ SEALED

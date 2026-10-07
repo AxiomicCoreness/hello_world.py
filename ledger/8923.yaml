@@ -1,4 +1,5 @@
 entry_index: 8923
+witness_prefix: fd6cb781c661b2a28f8e04069ba53279ab5054c6f15b07db400a31aab18f0084
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /singularity_stream_ci_mapped
 status: SEALED

@@ -1,4 +1,5 @@
 entry_index: 8749
+witness_prefix: f0e20c21356f44d424549867fac59cc7ba7be466093a791df5bbf0cf958646c3
 timestamp: 2026-08-14T00:25:04Z
 event: /collision_defense_robustness_test
 status: ✅ PASSED

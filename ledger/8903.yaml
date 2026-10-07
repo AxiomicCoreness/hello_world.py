@@ -1,4 +1,5 @@
 entry_index: 8903
+witness_prefix: a70b64fa49af8c248125244712cb5d8b2c6b8e0b1fe131355b425ad9f8fb96d4
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /frb_bridge_integrated_port5000
 status: SEALED_AND_VERIFIED

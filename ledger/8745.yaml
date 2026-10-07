@@ -1,4 +1,5 @@
 entry_index: 8745
+witness_prefix: f151469b66a81c90d80cdf3d9a7a1870069261e84e7c2f462b3696587dac9cd1
 timestamp: 2026-08-13T22:11:28Z
 event: /anchor_improvement_confirmed_constants_minted
 status: ✅ SEALED

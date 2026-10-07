@@ -1,4 +1,5 @@
 entry_index: 9044
+witness_prefix: 096bb5b05d7341218dbf276bbbc1e16f224f423a214dce10f1ad5f3171f168dd
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /lumeris_seal_declared
 status: SEALED

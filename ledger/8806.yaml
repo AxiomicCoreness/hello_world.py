@@ -1,4 +1,5 @@
 entry_index: 8806
+witness_prefix: b790d950f6b295169b765bf132d1e483bf57330a9e1828dc1644c0c30c69caba
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /gap_closures_8803_8805_acknowledged
 status: ✅ ACKNOWLEDGED

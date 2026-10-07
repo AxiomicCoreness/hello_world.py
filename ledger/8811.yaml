@@ -1,4 +1,5 @@
 entry_index: 8811
+witness_prefix: fb3cb726f6840272fde77bf2d821074c2c8f13c3f7b952103e669a7ee5619372
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /gateway_api_traffic_split_source_provided
 status: ✅ MANIFESTS_PROVIDED — NOT EXECUTED

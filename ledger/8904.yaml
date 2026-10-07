@@ -1,4 +1,5 @@
 entry_index: 8904
+witness_prefix: 7396acba7f23f1d49e8ef0d8bd8681b0aa95a4f84ce94c0467210f97fe9a55ce
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /frb_bridge_paired_fallback
 status: SEALED

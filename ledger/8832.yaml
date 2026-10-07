@@ -1,4 +1,5 @@
 entry_index: 8832
+witness_prefix: 963f514e917480a04f6fef1012664a59cf9b4afbf6a78ab41c7b357c6f23ea39
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
 event: /github_actions_ci_secrets_implemented
 status: SEALED

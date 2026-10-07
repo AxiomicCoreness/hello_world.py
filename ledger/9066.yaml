@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/append_ordered_list
 status: SEALED
 proof_class: computational
-witness_prefix: "0203020302030203"
+witness_prefix: e9b897386b86952f0fb044a8aea0a02c7fcc3aae0075828b93522acf52df962b
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "POLICY.md appends 530 field order header plus sections 1-12."

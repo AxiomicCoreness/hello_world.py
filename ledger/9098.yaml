@@ -1,4 +1,5 @@
 entry_index: 9098
+witness_prefix: 134c1f34608c98c753e78917a221766127ebe3dc2f2612e53088d1eea547034d
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /septad/audit_correction_layer_pair
 status: SEALED

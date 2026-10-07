@@ -1,4 +1,5 @@
 entry_index: 8773
+witness_prefix: 37af4b9a9183250dd2a5db0dfb77cd4154e03b9afdbf1c5a7c65599f07db9d94
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /cdp_distill_tree_integrated
 status: SEALED

@@ -1,4 +1,5 @@
 entry_index: 8664
+witness_prefix: 49114776b30cc2e5ccc9c5d2550f9277e4bc25a61624b7d48d34aaeae84bb2d2
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /pauli_phi_hamiltonian_wired_systems_go
 status: ✅ SEALED

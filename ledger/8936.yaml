@@ -1,4 +1,5 @@
 entry_index: 8936
+witness_prefix: 8a876572de76694013bea8cd8e075e6483a47c1ff66ddf4836af1eae5f5c0ecf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /verification_affirmed
 status: SEALED_AND_VERIFIED

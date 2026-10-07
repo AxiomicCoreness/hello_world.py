@@ -1,4 +1,5 @@
 entry_index: 8747
+witness_prefix: 13c9811611ec1c2c96e13ed736c4ce377d1f789c79e8fc4eef707b6dfa6cdf82
 timestamp: 2026-08-14T00:25:04Z
 event: /layer327_extension_after_mint_ack
 status: ✅ SEALED
