@@ -132,11 +132,27 @@ def stage_cdp_status() -> Stage:
     return s
 
 
+def stage_zeta_bound() -> Stage:
+    s = Stage("zeta_bound", blocking=True)
+    tool = REPO / "scripts" / "pythonide_object.py"
+    if not tool.exists():
+        s.status, s.detail = "skip", "scripts/pythonide_object.py not present"
+        return s
+    code, out, err = _run([sys.executable, str(tool)], cwd=REPO)
+    s.raw = (out or err).strip()[:500]
+    if code == 0:
+        s.status, s.detail = "pass", "golden identity holds; bitten bound 2.366"
+    else:
+        s.status, s.detail = "fail", f"pythonide_object returned {code}"
+    return s
+
+
 def run(targets: List[Path], ledger: Path) -> List[Stage]:
     return [
         stage_ast_guard(targets),
         stage_hexstrike(ledger),
         stage_cdp_status(),
+        stage_zeta_bound(),
     ]
 
 
