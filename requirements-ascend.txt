@@ -1,0 +1,6 @@
+# Huawei Ascend. Not installed by this file.
+# A5 verify path: call the built kernel through an aclnn-direct runner or a
+# ctypes shim. torch.nn.functional on that path is forbidden because the
+# dispatcher falls back to AICPU or stock PyTorch when the built .so is not
+# loaded. The same F.* call is allowed only in the A3 reference script.
+pyyaml>=6

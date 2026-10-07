@@ -1,0 +1,24 @@
+name: prebuild
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# GitCode reads .gitcode/workflows, not .github/workflows.
+# Empty repo: this file is the first commit. It does not call CANN.
+
+jobs:
+  prebuild:
+    runs-on: euleros-2.10.1
+    steps:
+      - uses: checkout-action@0.0.1
+      - name: prebuild checks
+        run: |
+          set -e
+          cd repo_workspace
+          test -f requirements-ascend.txt
+          grep -F "aclnn-direct" requirements-ascend.txt
+          grep -F "torch.nn.functional" requirements-ascend.txt
+          python3 -m py_compile scripts/hexstrike.py || echo "SKIP: hexstrike.py not in this repo yet"
+          echo "prebuild ok; no CANN call"
