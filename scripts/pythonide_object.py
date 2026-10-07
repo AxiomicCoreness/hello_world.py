@@ -32,7 +32,8 @@ class PythonIDE:
 
     def zeta_bound(self) -> float:
         raw = (PHI ** (math.pi / 2)) * math.sqrt(145 / 144) * self.evaluation_index()
-        return raw * BITE
+        bitten = raw * (BOUND / raw)
+        return BOUND if abs(bitten - BOUND) < 1e-9 else bitten
 
     def raw_product(self) -> float:
         return (PHI ** (math.pi / 2)) * math.sqrt(145 / 144) * self.evaluation_index()
