@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClarkeYoursaTee Seal Payload",
+  "description": "Reader-side translation. Ledger YAML is not rewritten.",
+  "type": "object",
+  "properties": {
+    "seal_id": {"type": "string"},
+    "event": {"type": "string"},
+    "witness": {"type": "string"},
+    "repo": {"type": "string", "const": "ClarkeYoursaTee"},
+    "payload": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"type": "string"},
+        "data": {"type": "object"}
+      }
+    },
+    "schema_version": {"type": "string", "const": "1.0.0"}
+  },
+  "required": ["seal_id", "event", "witness", "repo", "payload"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "clarkeyoursatee-nameplate",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "forwardPorts": [8024],
+  "remoteEnv": {
+    "BIND_HOST": "127.0.0.1",
+    "BIND_PORT": "8024"
+  }
+}
