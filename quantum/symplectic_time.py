@@ -56,9 +56,23 @@ def rotational() -> dict:
     }
 
 
+def verify_clock() -> dict:
+    """Parallel to the 0.85 coherence gate. Same number, separate check."""
+    row = rotational()
+    checks = {
+        "clock": row["clock"] == "QCIE/PEQ",
+        "frequency": row["omega_n_per_day"] == 1.26,
+        "albedo_gate": row["albedo"] == 0.85,
+        "phi_on_second_term": row["phi_on"] == "second term",
+        "spin_positive": row["spin_rad_s"] > 0.0,
+    }
+    return {"gate": "coherence_fallback_0.85", "clock_check": checks, "ok": all(checks.values())}
+
+
 def main() -> int:
-    print(json.dumps({"golden": golden_relation(), "forms": form_pair(), "rotation": rotational()}, sort_keys=True))
-    return 0
+    report = {"golden": golden_relation(), "forms": form_pair(), "rotation": rotational(), "verify": verify_clock()}
+    print(json.dumps(report, sort_keys=True))
+    return 0 if report["verify"]["ok"] else 1
 
 
 if __name__ == "__main__":
