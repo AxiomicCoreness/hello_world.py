@@ -49,8 +49,9 @@ def rotational() -> dict:
         "albedo_over_phi2": ALBEDO / PHI2,
         "spin_rad_s": omega,
         "base_energy_J": BASE_ENERGY_J,
-        "two_form": "Sum(dq[i]·dp[i], (i, 1, 427)) + (1/φ)·(dξ·dξ̄)",
+        "two_form": "[Sum(dq[i]·dp[i], (i, 1, 427)), (1/φ)·(dξ·dξ̄)]",
         "phi_on": "second term",
+        "resolved_pin": "QCIE/PEQ",
         "clock": "QCIE/PEQ",
         "E_rot": "0.5 * I * spin_rad_s^2",
     }
