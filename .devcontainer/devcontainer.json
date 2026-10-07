@@ -1,0 +1,13 @@
+{
+  "name": "sovereign-garden",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "python3 scripts/pythonide_object.py",
+  "forwardPorts": [5000, 9091, 3000],
+  "remoteEnv": {
+    "GRAFANA_USER": "admin",
+    "GRAFANA_PASSWORD": "${localEnv:GRAFANA_PASSWORD}",
+    "FRB_BRIDGE_URL": "http://localhost:5000",
+    "PROMETHEUS_URL": "http://localhost:9091",
+    "GRAFANA_URL": "http://localhost:3000/d/your-dashboard"
+  }
+}
