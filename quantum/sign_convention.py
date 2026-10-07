@@ -11,10 +11,13 @@ No credential is stored here. No kubectl.
 from __future__ import annotations
 
 import json
+import math
 import os
 from pathlib import Path
 
 DIMENSION = 7
+FORM_TERMS = 427
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
 SIGN = {
     "form": "sum dq_i wedge dp_i",
     "poisson": "+delta_ij",
@@ -24,11 +27,26 @@ SIGN = {
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def symplectic_form() -> dict:
+    """Quantities at symplectic time. The 427-sum is the stated form, not the 7-pair baseline."""
+    return {
+        "omega": "symplectic 2-form",
+        "H": "Hamiltonian",
+        "poisson": "Poisson bracket",
+        "F": "prequantum curvature, F_nabla = -i omega",
+        "expression": "Sum(dq[i]·dp[i], (i, 1, 427)) + (1/φ)·dξ·dξ̄",
+        "terms": FORM_TERMS,
+        "phi_coeff": 1.0 / PHI,
+        "baseline_pairs": DIMENSION,
+    }
+
+
 def account() -> dict:
     return {
         "dimension": DIMENSION,
         "pairs": DIMENSION,
         "sign": SIGN,
+        "form": symplectic_form(),
         "credential_in_source": False,
         "rotation": "env-only",
     }
