@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT / "witness_chain.db"
 
 
@@ -72,27 +72,29 @@ def create_db_and_insert(db_path: Path = DB_PATH) -> List[Dict[str, Any]]:
 
     cur.execute(
         """
-        CREATE TABLE IF NOT EXISTS ledger (
-            entry INTEGER PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS witness (
+            entry_index INTEGER PRIMARY KEY,
             event TEXT NOT NULL,
             timestamp TEXT NOT NULL,
             hash TEXT UNIQUE NOT NULL,
             seal TEXT NOT NULL,
-            previous INTEGER,
-            FOREIGN KEY(previous) REFERENCES ledger(entry)
+            prev_hash TEXT,
+            previous INTEGER
         )
         """
     )
 
+    prev_hash = ""
     for e in entries:
         cur.execute(
             """
-            INSERT OR REPLACE INTO ledger
-                (entry, event, timestamp, hash, seal, previous)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO witness
+                (entry_index, event, timestamp, hash, seal, prev_hash, previous)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (e["entry"], e["event"], e["timestamp"], e["hash"], e["seal"], e["previous"]),
+            (e["entry"], e["event"], e["timestamp"], e["hash"], e["seal"], prev_hash, e["previous"]),
         )
+        prev_hash = e["hash"]
 
     conn.commit()
     conn.close()
@@ -102,7 +104,7 @@ def create_db_and_insert(db_path: Path = DB_PATH) -> List[Dict[str, Any]]:
 def verify_chain(db_path: Path = DB_PATH) -> Dict[str, Any]:
     conn = sqlite3.connect(str(db_path))
     cur = conn.cursor()
-    cur.execute("SELECT entry, previous, hash, event, seal, timestamp FROM ledger ORDER BY entry")
+    cur.execute("SELECT entry_index, previous, hash, event, seal, timestamp FROM witness ORDER BY entry_index")
     rows = cur.fetchall()
     conn.close()
 
