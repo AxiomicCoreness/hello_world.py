@@ -15,8 +15,14 @@ PHI = (1.0 + math.sqrt(5.0)) / 2.0
 I_KG_M2 = None
 
 
-def phi_entanglement_fidelity() -> float:
-    return 1.0 - PHI ** (-1000)
+def phi_entanglement_fidelity() -> dict:
+    correction = PHI ** (-1000)
+    return {
+        "analytic": "1 - φ^(-1000)",
+        "correction": correction,
+        "float": 1.0 - correction,
+        "float_collapses": (1.0 - correction) == 1.0,
+    }
 
 
 def position_account(index: int) -> dict:
@@ -35,7 +41,8 @@ def main() -> int:
         "position": position_account(0),
     }
     print(json.dumps(report, sort_keys=True))
-    return 0 if report["fidelity"] > 0.999 and report["position"]["shift"] == 0.0 else 1
+    fidelity = report["fidelity"]
+    return 0 if fidelity["float_collapses"] and report["position"]["shift"] == 0.0 else 1
 
 
 if __name__ == "__main__":
