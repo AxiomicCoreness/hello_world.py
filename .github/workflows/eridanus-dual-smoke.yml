@@ -91,6 +91,8 @@ jobs:
           echo "✅ demo ran"
           python scripts/pythonide_object.py
           echo "✅ zeta prebuild gate"
+          python scripts/preflight_checklist.py
+          echo "✅ preflight named"
 
       # ────────────────────────────────────────────────────────────
       # 4. Summary
