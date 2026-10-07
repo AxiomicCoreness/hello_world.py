@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /sovereign_ledger_final
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 4b5c6d7e8f9a0b1c   # placeholder
+witness_prefix: 5a10e0f2f8efe1bf4e59778fe83505f37adcf7ba5ceaa9a57da7dc3bae9d25f2
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

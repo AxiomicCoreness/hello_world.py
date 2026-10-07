@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /latency_tree_branching
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 3e4f5a6b7c8d9e0f
+witness_prefix: dcf70ffe382f6f7f46c117a3f954081be454d62e749e5c7f036c4986745692d7
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Latency Tree Branching for k=86."

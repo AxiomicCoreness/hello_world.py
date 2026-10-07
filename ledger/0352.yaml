@@ -1,4 +1,5 @@
 entry_index: 0352
+witness_prefix: d6b81c88ad7803dcb1c262162ae6926bae15962a30f78a0bb27aaf4fd6dce79f
 entry_type: COHERENCE_CHECK
 description: "Hepta prime coherence verification"
 event_trigger: |

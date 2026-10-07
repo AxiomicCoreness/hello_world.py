@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /phi_predictor_ngram
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 1ef5d501949afb3c6b4a21e46460c8c929c4f1ac997a173ff1526e4e2611d317
+witness_prefix: b84ab05aeda4e3995fa2830f5a602c8c767d543305a8da1b322ece8881cfc910
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Phi Predictor Ngram for k=20."

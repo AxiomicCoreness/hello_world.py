@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /fallback_training_code
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 8b9c0d1e2f3a4b5c   # placeholder
+witness_prefix: d09072733e7a97fc3344025814427ceca21dd2d37cb7af4bf1041850308814ab
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

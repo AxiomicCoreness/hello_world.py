@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /shield_null_ban
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 00d51883f9a6ce1ace243b03c582b6ac39aab18d4e28d03defac99d70481e5f1
+witness_prefix: 12004c80c5872a221254b6c6306268a0c6a2ffadfa01bc0d452f0f91bb9f518a
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Shield Null Ban for k=25."

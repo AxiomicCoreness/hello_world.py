@@ -1,4 +1,5 @@
 entry_index: 0362
+witness_prefix: 9a6bbd687fb640791035bd80a61b48f168b85233bba21faadb185c006ce10791
 entry_type: QUANTUM_VISIBILITY
 description: "Quantum visibility universal proof"
 event_trigger: |

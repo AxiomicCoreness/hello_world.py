@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /clpi_growth
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 4f5a6b7c8d9e0f1a
+witness_prefix: df9ba1cabf34ec8df8e1881ea4c07eec125fa1a4c23c9669e608cc6d4ae28b32
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Clpi Growth for k=87."

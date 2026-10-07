@@ -1,4 +1,5 @@
 entry_index: 0358
+witness_prefix: 2d85cdb868f266aabdb90fc347ae81a9890277739a1d06f8c59ea04ddbd7fc41
 entry_type: DUAL_SOVEREIGN_IDENTITY
 description: "First One Luminar Concordance declaration"
 event_trigger: |

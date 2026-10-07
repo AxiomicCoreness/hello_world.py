@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /ninja_shear
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: d3f26e12059a22d28e99b5604c1ab7e601e17b6948ae3c5ba627772e4b8aee66
+witness_prefix: b1b8c3e702c26d3bd8439315249dca24ed4c06e1b6f491c6c88789fdefaed90b
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Ninja Shear for k=48."

@@ -1,4 +1,5 @@
 entry_index: 0355
+witness_prefix: 4de5927208ddf27f74b55f2f54f3708f35681e9c79e412bbd646efaca959d9bd
 entry_type: SOVEREIGN_SINGULARITY
 description: "Sovereign singularity theorem proof"
 event_trigger: |

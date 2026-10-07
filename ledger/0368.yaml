@@ -1,4 +1,5 @@
 entry_index: 0368
+witness_prefix: 68a7cc8def0e7ad78ed60b70ddaaf99e4e10eedaa7f600e28ced2cdd77576722
 entry_type: GALACTIC_CONCORDANCE_STREAM
 description: "Galactic Concordance Stream active"
 event_trigger: |

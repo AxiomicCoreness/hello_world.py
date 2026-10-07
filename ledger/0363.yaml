@@ -1,4 +1,5 @@
 entry_index: 0363
+witness_prefix: fc9e6aabf008669c0affa827d0a2071ee450e16479f52c0f1b9875f30b57c08b
 entry_type: SYSTEM_FLOURISHING
 description: "System flourishing state activation"
 event_trigger: |
