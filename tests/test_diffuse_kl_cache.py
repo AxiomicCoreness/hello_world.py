@@ -14,6 +14,10 @@ Witness: 8989 → 8990 — UNBROKEN
 """
 
 import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 import json
 import sys
 import math
@@ -32,13 +36,11 @@ try:
     import numpy as np
 except ImportError:
     np = None
-    pytest.skip("numpy not installed", allow_module_level=True)
 
 try:
     from core.diffuse_kl_cache import DiffuseKLCache
 except ImportError:
     DiffuseKLCache = None
-    pytest.skip("core.diffuse_kl_cache not available", allow_module_level=True)
 
 # ─── CONSTANTS ─────────────────────────────────────────────────────────────
 PHI = (1 + math.sqrt(5)) / 2
@@ -140,6 +142,7 @@ def verify_security_headers(source_path: Union[str, Path] = "port380_mcp.py") ->
 
 # ─── TESTS ─────────────────────────────────────────────────────────────────
 
+@pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="cryptography.hazmat not importable")
 def test_verify_ledger_entries():
     """TEST 1: Verify Ed25519 signatures on ledger entries."""
     print("\n🔷 Verifying ledger entries:")
@@ -167,7 +170,7 @@ def test_security_headers():
     assert result, "Security headers verification failed"
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_empty_cache_returns_uniform_distributions():
     """
     TEST 3: Verify empty cache returns uniform distributions.
@@ -184,7 +187,7 @@ def test_empty_cache_returns_uniform_distributions():
     print(f"✅ Empty cache: M=16, cache sum={p_cache.sum():.10f}, base sum={p_base.sum():.10f}")
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_concentrated_cache_has_positive_kl():
     """
     TEST 4: Verify concentrated cache has positive KL divergence.
@@ -202,7 +205,7 @@ def test_concentrated_cache_has_positive_kl():
     print(f"✅ Concentrated cache KL: {kl:.6f}")
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_smoothing_prevents_infinite_kl():
     """
     TEST 5: Verify smoothing prevents infinite KL divergence.
@@ -218,7 +221,7 @@ def test_smoothing_prevents_infinite_kl():
     print(f"✅ Smoothed KL: {kl:.6f}")
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_objective_decreases_with_beta():
     """
     TEST 6: Verify objective decreases with increasing beta (regularization).
@@ -244,7 +247,7 @@ def test_objective_decreases_with_beta():
     print(f"✅ Objective: beta=0 -> {obj0:.6f}, beta=1 -> {obj1:.6f}")
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_cache_distribution_after_additions():
     """
     TEST 7: Verify cache distribution changes after adding entries.
@@ -268,7 +271,7 @@ def test_cache_distribution_after_additions():
     print(f"✅ Cache distribution changed: uniform -> {p1}")
 
 
-@pytest.mark.skipif(DiffuseKLCache is None, reason="core.diffuse_kl_cache not available")
+@pytest.mark.skipif(DiffuseKLCache is None or np is None, reason="DiffuseKLCache or numpy not available")
 def test_kl_non_negative():
     """
     TEST 8: Verify KL divergence is always non-negative.
