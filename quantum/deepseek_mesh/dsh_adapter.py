@@ -208,6 +208,7 @@ def dsh_complete(
 
 # Candidate entrypoint names, priority order. Search, do not guess.
 _SOVEREIGN_ENTRYPOINTS = (
+    "sovereign_automaton_10_06",
     "chat", "respond", "reply", "run", "generate",
     "ask", "answer", "invoke", "handle", "process",
 )
@@ -272,7 +273,13 @@ def sovereign_complete(
     try:
         mod = _load_sovereign_module(SOVEREIGN_PATH)
         fn, qname = _resolve_sovereign_callable(mod)
-        reply = fn(prompt)
+        import inspect
+        try:
+            nparams = len(inspect.signature(fn).parameters)
+        except (TypeError, ValueError):
+            nparams = 1
+        reply = fn() if nparams == 0 else fn(prompt)
+        text_consumed = nparams != 0
         if isinstance(reply, bytes):
             reply = reply.decode("utf-8", errors="replace")
         if not isinstance(reply, str):
@@ -282,7 +289,7 @@ def sovereign_complete(
             text=reply,
             model=qname,
             latency_ms=(time.time() - t0) * 1000.0,
-            meta={**_garden_invariants(), "source": SOVEREIGN_PATH},
+            meta={**_garden_invariants(), "source": SOVEREIGN_PATH, "text_consumed": text_consumed},
         )
     except Exception as e:
         # Fallback to offline, but record the automaton error in meta so
