@@ -40,7 +40,7 @@ def root():
           <p>Ledger Head: {settings.LEDGER_HEAD}</p>
           <p>Phase Lock:  {settings.PHASE_LOCK}°</p>
           <p>MCP Filled:  {settings.MCP_FILLED}</p>
-          <p>Bind:        0.0.0.0:{settings.BIND_PORT} (pod-internal)</p>
+          <p>Bind:        0.0.0.0:{settings.BIND_PORT_START}-{settings.BIND_PORT_END}</p>
           <p>Version:     5.2.0 — vision + TTS stubs + systems soft-gate</p>
         </div>
         <div class="panel">
