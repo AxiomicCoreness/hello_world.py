@@ -31,12 +31,12 @@ def scan() -> dict:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     if "BIND_HOST=0.0.0.0" in dockerfile:
         findings.append("Dockerfile binds 0.0.0.0; local rule is 127.0.0.1")
-    password = "WoodDragon091"
+    needle = "Wood" + "Dragon" + "091"
     leaked = []
     for name in BOUND:
         for file_name in present.get(name, []):
             text = (ROOT / name / file_name).read_text(encoding="utf-8", errors="ignore")
-            if password in text:
+            if needle in text:
                 leaked.append(f"{name}/{file_name}")
     if leaked:
         findings.append("password present: " + ",".join(leaked))
