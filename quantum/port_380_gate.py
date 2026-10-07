@@ -28,6 +28,7 @@ from typing import Any, Dict, Optional
 ENTRY = 8845
 SEAL = "∀∞φ² · PORT_380_GATE_8845 · WOOD_DRAGON_0.91 · SEALED"
 WITNESS = "8844 → 8845 — UNBROKEN"
+ZETA_BOUND = 2.366
 NEW_LOCATION = "quantum/radar_lindblad/port_380_gate.py"
 
 # ─── Deprecation Warning ─────────────────────────────────────────────
