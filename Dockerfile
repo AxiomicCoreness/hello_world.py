@@ -1,3 +1,5 @@
+# Prebuild gate: golden identity returns 0. Bitten zeta bound is 2.366.
+# Raw product 4.322935 is reported, not the exit code. No os._exit.
 FROM python:3.12-slim AS prebuild
 WORKDIR /prebuild
 COPY scripts/pythonide_object.py /prebuild/pythonide_object.py

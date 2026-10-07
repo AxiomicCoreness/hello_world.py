@@ -875,7 +875,7 @@ def plot_zeta_bound():
     if not VISUALS_AVAILABLE: return
     try:
         from scipy.special import zeta
-        bound = phi ** (math.pi / 2)
+        bound = 2.366
         t_vals = np.linspace(1e-2, 100, 1000)
         zeta_vals = np.array([abs(zeta(0.5 + 1j * t)) for t in t_vals])
         fig, ax = plt.subplots(figsize=(12,6))

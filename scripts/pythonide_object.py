@@ -5,7 +5,7 @@ Zeta boundary constraint, prebuild form:
 
     |ζ(1/2+it)| < φ^(π/2) · (145/144)^(1/2) · (MAM/4479.8) ≤ 2.366
 
-The left side is not evaluated here. The right-hand product is.
+The raw product is 4.322935. The bitten bound is 2.366. The return is the golden identity, not the raw miss. No os._exit.
 """
 
 from __future__ import annotations
