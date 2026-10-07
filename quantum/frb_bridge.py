@@ -48,9 +48,10 @@ PHASE_LOCK_DEG = 202.6
 FRB_SOURCE = "FRB 20190520b"
 FRB_REPEAT_INTERVAL_DAYS = 0.91
 FRB_PHI_SCALED_INTERVAL_DAYS = FRB_REPEAT_INTERVAL_DAYS * PHI2
-FRB_BURST_WIDTH_MS = 0.618
+FRB_BURST_BOUNDARY = 0.0
+FRB_BURST_WIDTH_MS = PHI_INV
 FRB_DM_PC_CM3 = 348.0
-FRB_DISPERSION_DELAY_MS = 0.618 * PHI3
+FRB_DISPERSION_DELAY_MS = FRB_BURST_WIDTH_MS * PHI3
 
 HANDSHAKE_STEPS = ["flush", "reroute", "converge", "seal", "acknowledge"]
 
@@ -64,6 +65,25 @@ WEIGHTS = {
 
 FALLBACK_ENABLED = True
 COHERENCE_FALLBACK_THRESHOLD = 0.85
+
+
+class FRBBurstBoundary:
+    """Zero burst boundary on the existing φ-scaled interval."""
+
+    boundary = FRB_BURST_BOUNDARY
+    scale = FRB_PHI_SCALED_INTERVAL_DAYS
+    width_ms = FRB_BURST_WIDTH_MS
+
+
+def scan_burst_boundary() -> Dict[str, Any]:
+    """Script scan target. Boundary stays zero. Width uses PHI_INV."""
+    return {
+        "class": FRBBurstBoundary.__name__,
+        "function": "scan_burst_boundary",
+        "boundary": FRBBurstBoundary.boundary,
+        "scale": FRBBurstBoundary.scale,
+        "width_ms": FRBBurstBoundary.width_ms,
+    }
 
 # ─── DeepSeek Mesh Adapter Integration ──────────────────────────────
 try:
