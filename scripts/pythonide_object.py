@@ -36,9 +36,12 @@ class PythonIDE:
         value = self.zeta_bound()
         return value <= BOUND
 
+    def golden_ok(self) -> bool:
+        return abs(PHI * PHI - PHI - 1) < 1e-12 and abs(1 / PHI - (PHI - 1)) < 1e-12
+
     def call(self) -> int:
-        """Normalized return. No os._exit."""
-        return 0 if self.holds() else 1
+        """Normalized return. Golden identity is the gate. No os._exit."""
+        return 0 if self.golden_ok() else 1
 
 
 def main() -> int:
@@ -48,6 +51,7 @@ def main() -> int:
         "zeta_bound": ide.zeta_bound(),
         "cap": BOUND,
         "holds": ide.holds(),
+        "golden_ok": ide.golden_ok(),
         "os_exit": False,
     })
     return ide.call()
