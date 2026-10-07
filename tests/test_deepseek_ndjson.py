@@ -43,7 +43,6 @@ except ImportError:
     complete_stream = None
     offline_stream = None
     probe = None
-    pytest.skip("quantum.deepseek_mesh.dsh_adapter not available", allow_module_level=True)
 
 # ─── CONSTANTS ─────────────────────────────────────────────────────────────
 PHI = (1 + math.sqrt(5)) / 2
@@ -145,6 +144,7 @@ def verify_security_headers(source_path: Union[str, Path] = "port380_mcp.py") ->
 
 # ─── TESTS ─────────────────────────────────────────────────────────────────
 
+@pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="cryptography.hazmat not importable")
 def test_verify_ledger_entries():
     """TEST 1: Verify Ed25519 signatures on ledger entries."""
     print("\n🔷 Verifying ledger entries:")
