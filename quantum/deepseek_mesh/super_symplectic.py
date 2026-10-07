@@ -22,7 +22,7 @@ class SuperSymplecticManifold:
     def __init__(self, n_bosonic: int = 427, n_fermionic: int = 1):
         self.n_bosonic = n_bosonic
         self.n_fermionic = n_fermionic
-        self.n = (2 * n_bosonic + n_fermionic) / 2.0
+        self.n = 2 * n_bosonic + 0.5 * n_fermionic
 
     def define_symplectic_form(self) -> dict:
         return {
