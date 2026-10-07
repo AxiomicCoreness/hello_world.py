@@ -35,9 +35,7 @@ CHECKS = (
 
 def probe(check: dict) -> dict:
     if check["method"] == "OPEN":
-        if not os.environ.get("GRAFANA_PASSWORD"):
-            return {"name": check["name"], "status": "skip", "detail": "GRAFANA_PASSWORD unset"}
-        return {"name": check["name"], "status": "named", "url": check["url"]}
+        return {"name": check["name"], "status": "named", "url": check["url"], "auth": "anonymous"}
     req = urllib.request.Request(check["url"], method=check["method"])
     if check["method"] == "POST":
         data = json.dumps(check["body"]).encode()
