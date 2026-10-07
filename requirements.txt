@@ -5,3 +5,5 @@ matplotlib>=3.10.9
 
 # stdlib imports — do not pip-install
 # hmac
+
+# Ascend stack: requirements-ascend.txt (commented; not the 1.8.1 CPU wheel)
