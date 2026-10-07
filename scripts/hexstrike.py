@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""
-hexstrike.py — ghost-seal scanner for append-only ledger entries.
+"""hexstrike.py — ghost-seal scanner for append-only ledger entries.
 
 Defect class: ghost_seal
-
 Subtypes (byte-level):
   forged_seal              declared seal != recomputed seal over payload
   empty_payload            seal asserted, payload absent
   no_evidence              seal present, evidence_at_seal_time empty list
   unsealed_with_evidence   evidence present, seal is null/absent
+
+Extra metrics are counted in the same walk. No second pass.
 
 Pure stdlib. Optional PyYAML if installed; otherwise JSON-only parse.
 Exit: 0 clean, 1 findings, 2 usage/IO.
@@ -20,7 +20,7 @@ import argparse
 import hashlib
 import json
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, List, Optional
 
@@ -49,6 +49,28 @@ class Finding:
     declared: Optional[str]
     computed: Optional[str]
     detail: str
+
+
+@dataclass
+class Metrics:
+    files_seen: int = 0
+    parsed: int = 0
+    unparsed: int = 0
+    drafts_skipped: int = 0
+    sealed: int = 0
+    findings: int = 0
+    by_kind: dict = field(default_factory=dict)
+
+    def as_dict(self) -> dict:
+        return {
+            "files_seen": self.files_seen,
+            "parsed": self.parsed,
+            "unparsed": self.unparsed,
+            "drafts_skipped": self.drafts_skipped,
+            "sealed": self.sealed,
+            "findings": self.findings,
+            "by_kind": self.by_kind,
+        }
 
 
 def hexdump(data: bytes, offset: int = 0, width: int = 16) -> str:
@@ -129,18 +151,21 @@ def _evidence_of(entry: dict) -> Optional[list]:
 
 
 def iter_entries(root: Path) -> Iterator[Path]:
-    # Must use *.yaml — rglob(".yaml") matches only a file literally named .yaml
     for pat in ("*.yaml", "*.yml"):
         yield from sorted(root.rglob(pat))
 
 
-def scan(root: Path, include_drafts: bool = False) -> List[Finding]:
+def scan(root: Path, include_drafts: bool = False) -> tuple[List[Finding], Metrics]:
     findings: List[Finding] = []
+    metrics = Metrics()
 
     for path in iter_entries(root):
+        metrics.files_seen += 1
         entry = load_entry(path)
         if entry is None:
+            metrics.unparsed += 1
             continue
+        metrics.parsed += 1
 
         status = entry.get("status", "")
         declared = entry.get("seal")
@@ -149,7 +174,11 @@ def scan(root: Path, include_drafts: bool = False) -> List[Finding]:
         idx = entry.get("entry_index", entry.get("entry"))
 
         if not include_drafts and status == "DRAFT":
+            metrics.drafts_skipped += 1
             continue
+
+        if declared:
+            metrics.sealed += 1
 
         if declared and not payload:
             findings.append(
@@ -202,14 +231,23 @@ def scan(root: Path, include_drafts: bool = False) -> List[Finding]:
                 )
             )
 
-    return findings
+    metrics.findings = len(findings)
+    for item in findings:
+        metrics.by_kind[item.kind] = metrics.by_kind.get(item.kind, 0) + 1
+    return findings, metrics
 
 
-def render(findings: List[Finding], with_hex: bool) -> str:
+def render(findings: List[Finding], metrics: Metrics, with_hex: bool) -> str:
     lines = [
         f"hexstrike -- {CATALOGUED_CLASS} scan",
         f"algorithm: {SEAL_ALGORITHM}",
-        f"findings : {len(findings)}",
+        f"files_seen: {metrics.files_seen}",
+        f"parsed    : {metrics.parsed}",
+        f"unparsed  : {metrics.unparsed}",
+        f"drafts    : {metrics.drafts_skipped}",
+        f"sealed    : {metrics.sealed}",
+        f"findings  : {metrics.findings}",
+        f"by_kind   : {json.dumps(metrics.by_kind, sort_keys=True)}",
         "=" * 64,
     ]
     if not findings:
@@ -250,7 +288,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"not found: {args.root}", file=sys.stderr)
         return 2
 
-    findings = scan(args.root, include_drafts=args.include_drafts)
+    findings, metrics = scan(args.root, include_drafts=args.include_drafts)
 
     if args.json:
         print(
@@ -258,6 +296,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 {
                     "class": CATALOGUED_CLASS,
                     "algorithm": SEAL_ALGORITHM,
+                    "metrics": metrics.as_dict(),
                     "findings": [
                         {
                             "path": str(f.path),
@@ -274,7 +313,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             )
         )
     else:
-        print(render(findings, args.hex))
+        print(render(findings, metrics, args.hex))
 
     return 0 if not findings else 1
 
