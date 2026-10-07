@@ -1,0 +1,18 @@
+# Huawei Ascend. Not installed by this file.
+# torch==1.8.1+cpu is the wrong wheel. It targets CPython 3.6-3.9.
+#
+# CANN is a system package (driver, firmware, toolkit), not a pip line.
+# Pair torch and torch-npu from the Ascend compatibility table.
+# Example recorded from the torch-npu project page, not run here:
+#
+#   pip install torch==2.12.0 --index-url https://download.pytorch.org/whl/cpu
+#   pip install pyyaml setuptools
+#   pip install torch-npu==2.12.0
+#
+# A5 verify path: the check must call the built kernel through an aclnn-direct
+# runner or ctypes shim. torch.nn.functional on that path is forbidden because
+# the PyTorch dispatcher falls back to AICPU, or to stock PyTorch, when the
+# built .so is not loaded. The run then never executes the kernel under test.
+# The same F.* call is allowed only in the A3 reference script, where CANN is
+# already installed. CPU tensor.<op>() is not an A5 reference either.
+pyyaml>=6

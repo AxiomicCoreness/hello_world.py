@@ -1,0 +1,93 @@
+name: ci-cd-stack
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/hexstrike.py
+      - scripts/render_six_hour.py
+      - scripts/canary_iphone12.py
+      - scripts/wire_local.py
+      - garden_surgery/sovereign_automaton_10_06.py
+      - requirements-ascend.txt
+      - .github/workflows/ci-cd-stack.yml
+
+# Chain of files that exist on this repo. A missing file is SKIP, not a fake pass.
+# This does not run an Ascend kernel. A5 still needs aclnn-direct or ctypes.
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: compile present scripts
+        run: |
+          set -e
+          for f in scripts/hexstrike.py scripts/render_six_hour.py scripts/canary_iphone12.py scripts/wire_local.py garden_surgery/sovereign_automaton_10_06.py; do
+            test -f "$f"
+            python3 -m py_compile "$f"
+          done
+
+  render:
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: render or skip
+        run: |
+          if [ ! -f scripts/render_six_hour.py ]; then
+            echo "SKIP: scripts/render_six_hour.py missing"
+            exit 0
+          fi
+          python3 scripts/render_six_hour.py --check || python3 scripts/render_six_hour.py
+
+  canary:
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: canary or skip
+        run: |
+          if [ ! -f artifacts/iphone12_quantum_terminal.py ]; then
+            echo "SKIP: artifacts/iphone12_quantum_terminal.py not on this tree"
+            exit 0
+          fi
+          python3 scripts/canary_iphone12.py
+
+  ledger-scan:
+    needs: render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: hexstrike or skip
+        run: |
+          if [ ! -d ledger ]; then
+            echo "SKIP: ledger/ not present"
+            exit 0
+          fi
+          python3 scripts/hexstrike.py ledger --json
+
+  summary:
+    needs: [render, canary, ledger-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: rollup
+        run: |
+          echo "render=${{ needs.render.result }}"
+          echo "canary=${{ needs.canary.result }}"
+          echo "ledger-scan=${{ needs.ledger-scan.result }}"
+          echo "A5 kernel not executed; CPU runner"

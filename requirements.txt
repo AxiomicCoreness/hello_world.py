@@ -1,6 +1,9 @@
 # pinned to what the scripts import
 pyyaml>=6.0.1
 numpy>=1.24.0
+matplotlib>=3.10.9
 
 # stdlib imports — do not pip-install
 # hmac
+
+# Ascend stack: requirements-ascend.txt (commented; not the 1.8.1 CPU wheel)

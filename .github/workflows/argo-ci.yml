@@ -11,26 +11,31 @@ on:
     branches: [main, master, deepseek, grok, mistral]
     paths:
       - "argocd/**"
-      - "tests/test_argo.py"
-      - "tests/test_argo_manifests.py"
+      - "tests/test_argo*.py"
       - "tests/test_rollout.py"
-      - ".github/workflows/argo_ci.yml"
+      - ".github/workflows/argo-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "argocd/**"
       - "tests/test_argo*.py"
       - "tests/test_rollout.py"
-      - ".github/workflows/argo_ci.yml"
+      - ".github/workflows/argo-ci.yml"
   workflow_dispatch:
     inputs:
       steps_note:
         description: "Optional note"
         required: false
         default: "manual-argo-ci"
+      allow_seal:
+        description: "Run the seal job on this manual dispatch"
+        type: boolean
+        required: false
+        default: true
 
+# Workflow-level: least privilege. The `seal` job widens this locally.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: argo-ci-${{ github.ref }}
@@ -91,33 +96,53 @@ jobs:
           if command -v kubectl >/dev/null 2>&1; then kubectl version --client; else echo "kubectl not on PATH"; fi
           echo "::endgroup::"
 
-      - name: Install deps
+      # ────────────────────────────────────────────────────────────────
+      # Install + import-check: converts the install CLAIM into EVIDENCE.
+      # If cryptography fails to install, this step fails HERE, with a
+      # clear message, before any consumer step runs.
+      # ────────────────────────────────────────────────────────────────
+      - name: Install deps (with import check)
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet cryptography pyyaml
+          python -m pip install "cryptography>=42,<45" "pyyaml>=6,<7"
+          python - <<'PY'
+          import cryptography, yaml
+          print(f"✅ cryptography {cryptography.__version__}")
+          print(f"✅ pyyaml {yaml.__version__}")
+          PY
 
+      # ────────────────────────────────────────────────────────────────
+      # Ed25519 verify. Guarded import: if cryptography is missing, this
+      # step fails with a single clear line — not a raw traceback.
+      # ────────────────────────────────────────────────────────────────
       - name: Verify Ed25519 signatures on ledger entries
         run: |
+          set -euo pipefail
           python - <<'PY'
           import base64, sys, yaml
           from pathlib import Path
-          from cryptography.hazmat.primitives.asymmetric import ed25519
-          from cryptography.exceptions import InvalidSignature
+
+          try:
+              from cryptography.hazmat.primitives.asymmetric import ed25519
+              from cryptography.exceptions import InvalidSignature
+          except ModuleNotFoundError as e:
+              print(f"::error::cryptography missing in this job: {e}", file=sys.stderr)
+              sys.exit(1)
 
           targets = ["ledger/8923.yaml"]
           checked = 0
           for t in targets:
               p = Path(t)
               if not p.exists():
-                  print(f"⚠️ {t} not found — soft skip")
+                  print(f"::warning::{t} not found — soft skip")
                   continue
               data = yaml.safe_load(p.read_text()) or {}
               sig_b64 = data.get("signature")
               msg     = data.get("signed_payload")
               pub_b64 = data.get("public_key")
               if not (sig_b64 and msg and pub_b64):
-                  print(f"⚠️ {p.stem}: no signature fields — NOT_CHECKED")
+                  print(f"::warning::{p.stem}: no signature fields — NOT_CHECKED")
                   continue
               try:
                   pub = ed25519.Ed25519PublicKey.from_public_bytes(
@@ -138,7 +163,7 @@ jobs:
 
           entries=(ledger/*.yaml)
           if [ ${#entries[@]} -eq 0 ]; then
-            echo "⚠️ no ledger entries present — soft skip"
+            echo "::warning::no ledger entries present — soft skip"
             exit 0
           fi
 
@@ -188,7 +213,7 @@ jobs:
 
           p = Path('port380_mcp.py')
           if not p.exists():
-              print('⚠️ port380_mcp.py missing — skip')
+              print('::warning::port380_mcp.py missing — skip')
               sys.exit(0)
 
           content = p.read_text()
@@ -228,7 +253,8 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml
+          python -m pip install "pyyaml>=6,<7"
+          python -c "import yaml; print('✅ pyyaml', yaml.__version__)"
 
       - name: Install yq
         run: |
@@ -347,7 +373,15 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pytest pyyaml
+          # Include cryptography so a shared verify helper imported from
+          # tests/ does not blow up at collection time.
+          python -m pip install "pytest>=8,<9" "pyyaml>=6,<7" "cryptography>=42,<45"
+          python - <<'PY'
+          import pytest, yaml, cryptography
+          print(f"✅ pytest {pytest.__version__}")
+          print(f"✅ pyyaml {yaml.__version__}")
+          print(f"✅ cryptography {cryptography.__version__}")
+          PY
 
       - name: Run pure Argo manifest tests
         env:
@@ -381,7 +415,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [validate-manifests, pure-tests]
-    if: success()
+    # Manual dispatch can opt out of the seal job; push/PR always runs it.
+    if: |
+      success()
+      && (
+        github.event_name != 'workflow_dispatch'
+        || inputs.allow_seal == true
+        || inputs.allow_seal == 'true'
+      )
+    permissions:
+      contents: write   # only this job writes; the rest of the workflow is read-only
     steps:
       - uses: actions/checkout@v4
         with:
@@ -396,7 +439,8 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml
+          python -m pip install "pyyaml>=6,<7"
+          python -c "import yaml; print('✅ pyyaml', yaml.__version__)"
 
       - name: Verify predecessor ledger entry 8923
         run: |
@@ -418,7 +462,11 @@ jobs:
           print(f"✅ predecessor 8923 present (event={d.get('event')!r})")
           PY
 
-      - name: Seal ledger entry 8924 (SHA3-256)
+      # ────────────────────────────────────────────────────────────────
+      # Seal entry 8924. This time prev_hash is INSIDE the digested
+      # input, so the chain is real: modifying 8923 changes 8924's hash.
+      # ────────────────────────────────────────────────────────────────
+      - name: Seal ledger entry 8924 (SHA3-256, chained)
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -431,17 +479,24 @@ jobs:
           path = Path("ledger/8924.yaml")
           prev_path = Path("ledger/8923.yaml")
 
+          # Extract predecessor's content hash from its seal tail.
           prev_hash = ""
           if prev_path.exists():
-              try:
-                  prev = yaml.safe_load(prev_path.read_text()) or {}
-                  seal = prev.get("seal", "") or ""
-                  if "·" in seal:
-                      prev_hash = seal.rsplit("·", 1)[-1].strip()
-              except Exception as e:
-                  print(f"⚠️ predecessor read error: {e}")
+              prev = yaml.safe_load(prev_path.read_text()) or {}
+              seal = prev.get("seal", "") or ""
+              if "·" in seal:
+                  prev_hash = seal.rsplit("·", 1)[-1].strip()
+              if not prev_hash:
+                  print("::error::8923 seal has no hash tail — chain cannot form",
+                        file=sys.stderr)
+                  raise SystemExit(1)
+          else:
+              print("::error::8923.yaml absent — refusing to seal 8924",
+                    file=sys.stderr)
+              raise SystemExit(1)
 
-          entry = {
+          # Body of 8924. prev_hash is included; it is digested below.
+          body = {
               "entry_index": 8924,
               "event": "/argo_ci",
               "status": "SUCCESS",
@@ -452,22 +507,24 @@ jobs:
               "phase_lock": os.environ.get("PHASE_LOCK", "202.6"),
               "prev_hash": prev_hash,
               "witness": "8923 → 8924 — UNBROKEN",
-              "seal": "∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED",
           }
-          body = {k: v for k, v in entry.items() if k != "seal"}
+          # Chained digest: prev_hash IS in the input.
           canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
+
+          entry = dict(body)
+          entry["seal"] = "∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED · " + h
 
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))
-          print("📋 Ledger entry 8924 written.")
+          print("📋 Ledger entry 8924 written (chained).")
           print(f"✅ Sealed 8924 · {HASH_ALGO}:{h[:16]}...")
-          print(f"   prev_hash = {prev_hash[:16] or '(none)'}")
+          print(f"   prev_hash  = {prev_hash[:16]}...")
+          print(f"   chain: 8923 → 8924 verified at write time")
           PY
 
-      - name: Verify ledger entry 8924 (SHA3-256)
+      - name: Verify ledger entry 8924 (SHA3-256, chained)
         run: |
           set -euo pipefail
           if [ -f .github/scripts/verify_ledger.py ]; then
@@ -476,21 +533,47 @@ jobs:
             echo "::error::.github/scripts/verify_ledger.py not found"
             exit 1
           fi
+          # Independent re-check: recompute the digest from the file
+          # exactly as the writer did, with prev_hash inside the input.
+          python - <<'PY'
+          import hashlib, json, sys, yaml
+          from pathlib import Path
+
+          p = Path("ledger/8924.yaml")
+          d = yaml.safe_load(p.read_text()) or {}
+          h_algo = d.get("hash_algo", "sha3_256")
+          seal = d.get("seal", "")
+          if "·" not in seal:
+              print("::error::seal has no hash tail", file=sys.stderr)
+              sys.exit(1)
+          recorded = seal.rsplit("·", 1)[-1].strip()
+
+          body = {k: v for k, v in d.items() if k != "seal"}
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          recomputed = hashlib.new(h_algo, canon.encode("utf-8")).hexdigest()
+
+          if recorded != recomputed:
+              print(f"::error::8924 self-hash mismatch\n  recorded   {recorded}\n  recomputed {recomputed}",
+                    file=sys.stderr)
+              sys.exit(1)
+          print(f"✅ 8924 self-hash OK ({h_algo}:{recorded[:16]}...)")
+          print(f"✅ 8924 chains to prev_hash {d.get('prev_hash','')[:16]}...")
+          PY
 
       - name: Upload ledger entry
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ledger-8924
           path: ledger/8924.yaml
           retention-days: 90
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Commit ledger entry 8924
         if: success() && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal argo-ci entry 8924 (sha3_256)"
+          commit_message: "chore: seal argo-ci entry 8924 (sha3_256, chained)"
           file_pattern: ledger/8924.yaml
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
@@ -502,7 +585,7 @@ jobs:
           {
             echo "✅ Argo CI pipeline hard-green."
             echo "🜁∀ — Seal: ∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED"
-            echo "🔗 Witness: 8923 → 8924 — UNBROKEN"
+            echo "🔗 Witness: 8923 → 8924 — UNBROKEN (prev_hash inside digest)"
             echo "🔐 hash_algo: sha3_256 (FIPS 202)"
             echo "📦 Artifact retention: 90 days (GitHub cap)"
           } >> "$GITHUB_STEP_SUMMARY"

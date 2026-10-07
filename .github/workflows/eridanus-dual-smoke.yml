@@ -1,13 +1,16 @@
-name: Eridanus Dual smoke (8226)
-
+# .github/workflows/eridanus-dual-smoke.yml
+#
 # Read-only smoke test for the Eridanus Dual engine.
 # Compiles, unit-tests, and runs the demo — no ledger entry is written.
 # hash_algo: sha3_256 (FIPS 202) — declared for header consistency
 # ledger_policy: NO_GROWTH — smoke lane only, no commit
 # canvas: agentic-tilelang-eridanus-dual
-# note: the ledger-sealing variant (entry 8226) lives in
-#       .github/workflows/eridanus-dual-smoke-seal.yml — this file is the
-#       read-only variant used for PR validation.
+# note: the ledger seal for this smoke lane (entry 8226) was landed by
+#       direct commit 27db97d4 ("chore: seal Eridanus Dual smoke entry
+#       8226 (sha3_256)") — there is no sealing-variant workflow file;
+#       this file is the read-only variant used for PR validation.
+
+name: Eridanus Dual smoke
 
 on:
   push:
@@ -50,6 +53,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+          cache-dependency-path: requirements.txt
 
       # ────────────────────────────────────────────────────────────
       # 1. Compile engine (soft-skip if canvas absent)

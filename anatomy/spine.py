@@ -30,6 +30,8 @@ def as_working_default(text: str) -> str:
         previous = text
         text = ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
     return text
+    """Switch an ASCII witness arrow to the Unicode default the checker uses."""
+    return ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
 
 
 def load_index(path: Path) -> int:
@@ -70,6 +72,7 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
             if line.lower().lstrip().startswith(("witness_chain:", "witness:"))
         )
         pairs = witness_pairs(witness_lines)
+        pairs = witness_pairs(text)
         ends = [(x, y) for x, y in pairs if y == b]
         if (a, b) in ends:
             forms["immediate"] += 1

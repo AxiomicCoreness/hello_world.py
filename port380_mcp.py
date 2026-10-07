@@ -28,6 +28,7 @@ import hashlib
 import json
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 from fastapi import FastAPI, Request, HTTPException, Header
@@ -160,6 +161,15 @@ app.add_middleware(SecurityHeadersMiddleware)
 # ============================================================================
 START_TIME = time.time()
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
+
+# Appended channel constants. Do not replace the service block above.
+AUTOMATON_REL = "garden_surgery/sovereign_automaton_10.06.py"
+AUTOMATON_CALLABLE = "sovereign_automaton_10_06"
+MCP_TOOL_PATH = "/mcp/tool"
+CHAT_TOOL = "chat"
+# Live entrypoint uses PORT (default 380) and host 0.0.0.0.
+# The slot's 127.0.0.1:8024 is a proposed bind, not this file's bind.
+SLOT_BIND_PROPOSED = "127.0.0.1:8024"
 
 
 def verify_secret(x_garden_secret: Optional[str]) -> bool:
@@ -295,6 +305,25 @@ async def pulse(
     )
 
 
+
+def run_automaton(text: str) -> str:
+    """Call the named surface. It takes no text. Input is not consumed."""
+    import importlib.util
+    path = Path(AUTOMATON_REL)
+    if not path.is_file():
+        raise FileNotFoundError(AUTOMATON_REL)
+    spec = importlib.util.spec_from_file_location("sovereign_automaton_10_06", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(AUTOMATON_REL)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    fn = getattr(mod, AUTOMATON_CALLABLE)
+    payload = fn()
+    if isinstance(payload, dict):
+        return str(payload.get("message") or payload.get("status") or payload)
+    return str(payload)
+
+
 @app.post("/mcp/tool")
 async def mcp_tool(
     request: Request,
@@ -304,17 +333,35 @@ async def mcp_tool(
     body = await request.json()
     tool_name = body.get("tool", "unknown")
     arguments = body.get("arguments", {})
+    reply = None
+    dispatch_error = None
+    if tool_name == CHAT_TOOL:
+        raw_text = body.get("text", "")
+        if not isinstance(raw_text, str) or not raw_text:
+            dispatch_error = "missing text"
+        else:
+            try:
+                reply = run_automaton(raw_text)
+            except Exception as exc:
+                dispatch_error = f"{type(exc).__name__}: {exc}"
     result = {
         "tool": tool_name,
         "arguments": arguments,
-        "executed": True,
+        "executed": dispatch_error is None,
         "timestamp": _now(),
         "layer": LAYER,
         "gate_identity": GATE_IDENTITY,
+        "text": reply,
+        "ok": dispatch_error is None,
+        "error": dispatch_error,
+        "callable": AUTOMATON_CALLABLE,
+        "text_consumed": False,
     }
     result_hash = _full_sha3(result)
     return JSONResponse(
         content={
+            "ok": dispatch_error is None,
+            "text": reply,
             "result": result,
             "hash": result_hash,
             "hash_algo": HASH_ALGO,
