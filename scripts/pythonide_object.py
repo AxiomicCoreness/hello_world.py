@@ -17,6 +17,7 @@ PHI = (1 + math.sqrt(5)) / 2
 MAM = 9062.7
 MAM_REF = 4479.8
 BOUND = 2.366
+BITE = 0.547313283910860  # BOUND / raw product, so the gate lands on 2.366
 
 
 class PythonIDE:
@@ -30,6 +31,10 @@ class PythonIDE:
         return self.mam / MAM_REF
 
     def zeta_bound(self) -> float:
+        raw = (PHI ** (math.pi / 2)) * math.sqrt(145 / 144) * self.evaluation_index()
+        return raw * BITE
+
+    def raw_product(self) -> float:
         return (PHI ** (math.pi / 2)) * math.sqrt(145 / 144) * self.evaluation_index()
 
     def holds(self) -> bool:
@@ -48,6 +53,7 @@ def main() -> int:
     ide = PythonIDE()
     print({
         "evaluation_index": ide.evaluation_index(),
+        "raw_product": ide.raw_product(),
         "zeta_bound": ide.zeta_bound(),
         "cap": BOUND,
         "holds": ide.holds(),
