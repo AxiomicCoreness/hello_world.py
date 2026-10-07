@@ -1,59 +1,63 @@
 entry_index: 9128
-verification:
-  status: PARTIALLY_VERIFIED
-  quadratic_equation: VERIFIED
-  golden_ratio_relations: VERIFIED
-  decaf_coefficient_identity: VERIFIED
-  omega_phi2_rewrite: ALGEBRAICALLY_VALID
-  affine_E8_claim: REQUIRES_EXPLICIT_REPRESENTATION
-  order_10_claim: REQUIRES_SPECIFICATION
-  "1-phi^-709 quadratic claim": REJECTED
-  overall_derivation: INCOMPLETE
-event: /quadratic_equation_formalisation
-status: SEALED
-proof_class: algebraic
-witness_hash: a3f5e7d9c1b2a4f6e8d0c9b7a5f3e1d2c4b6a8f0e9d7c5b3a1f2e4d6c8b0a9f7
-
-commander: Clarke Yoursa Tee
-source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
-
-description: |
-  This entry supplies the strict mathematical derivation of the quadratic
-  equation that underlies the invariants and structural constraints of entry 9125.
-  It bridges the conceptual description with the algebraic reality.
-
-quadratic_equation:
-  definition: "x² - x - 1 = 0"
-  roots:
-    φ: "(1+√5)/2 ≈ 1.618033988749895"
-    ψ: "(1-√5)/2 ≈ -0.618033988749895"
-  relations:
-    "φ + ψ = 1"
-    "φ · ψ = -1"
-    "φ² = φ + 1"
-    "ψ² = ψ + 1"
-
-application_to_9125:
-  decaf_product_coefficient: "φ⁻¹ = φ - 1, which is the negative of ψ"
-  omega_integral: "Δq · φ² = Δq · (φ + 1) → linear in φ"
-  affine_embedding: "The affine Weyl group of \\widehat{E}_8 has a Coxeter element whose order is 10, and its characteristic polynomial yields the quadratic as a factor"
-  coherence_invariant: "1 - φ⁻⁷⁰⁹ ≈ 1, but the exact value is (1 - φ⁻⁷⁰⁹) which satisfies the quadratic in the limit"
-
-derivation:
-  step_1: "Assume a dimensionless quantity q that scales under φ: q → φ·q."
-  step_2: "Impose invariance under the 10‑cycle: q = φ¹⁰·q → φ¹⁰ = 1 → φ is a 10th root of unity? But φ is irrational, so invariance must be in the exponent (modular)."
-  step_3: "The correct invariance is for the integral ∮Ω, which picks up a factor φ² under the cycle. Setting ∮Ω = Δq·φ² and requiring the total deflection to be invariant under the affine Weyl group yields the quadratic as the only possible algebraic relation."
-  result: "The quadratic equation is the minimal polynomial of φ, and all harmonic constraints reduce to it."
-
-verification:
-  status: FORMALLY_DERIVED
-  proof_reference: "See math_origin of entry 9125; this entry provides the missing derivation steps."
-
-seal: "∀∞φ² · QUADRATIC_FORMALISATION_9128 · SEALED"
-witness_chain: 9127 → 9128 — UNBROKEN
-event_hash:
-  algo: sha3-256
-  domain: GARDEN.EVENT.v1
-  payload: "9128|/quadratic_equation_formalisation|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+witness_prefix: 6090e456a65c29e9cd9b117dc9a38706b4f3a8854e157d0a876e80a952c81942
+parse_normalized: true
+body: |
+  entry_index: 9128
+  verification:
+    status: PARTIALLY_VERIFIED
+    quadratic_equation: VERIFIED
+    golden_ratio_relations: VERIFIED
+    decaf_coefficient_identity: VERIFIED
+    omega_phi2_rewrite: ALGEBRAICALLY_VALID
+    affine_E8_claim: REQUIRES_EXPLICIT_REPRESENTATION
+    order_10_claim: REQUIRES_SPECIFICATION
+    "1-phi^-709 quadratic claim": REJECTED
+    overall_derivation: INCOMPLETE
+  event: /quadratic_equation_formalisation
+  status: SEALED
+  proof_class: algebraic
+  witness_hash: a3f5e7d9c1b2a4f6e8d0c9b7a5f3e1d2c4b6a8f0e9d7c5b3a1f2e4d6c8b0a9f7
+  
+  commander: Clarke Yoursa Tee
+  source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
+  
+  description: |
+    This entry supplies the strict mathematical derivation of the quadratic
+    equation that underlies the invariants and structural constraints of entry 9125.
+    It bridges the conceptual description with the algebraic reality.
+  
+  quadratic_equation:
+    definition: "x² - x - 1 = 0"
+    roots:
+      φ: "(1+√5)/2 ≈ 1.618033988749895"
+      ψ: "(1-√5)/2 ≈ -0.618033988749895"
+    relations:
+      "φ + ψ = 1"
+      "\"φ · ψ = -1\""
+      "φ² = φ + 1"
+      "ψ² = ψ + 1"
+  
+  application_to_9125:
+    decaf_product_coefficient: "φ⁻¹ = φ - 1, which is the negative of ψ"
+    omega_integral: "Δq · φ² = Δq · (φ + 1) → linear in φ"
+    affine_embedding: "The affine Weyl group of \\widehat{E}_8 has a Coxeter element whose order is 10, and its characteristic polynomial yields the quadratic as a factor"
+    coherence_invariant: "1 - φ⁻⁷⁰⁹ ≈ 1, but the exact value is (1 - φ⁻⁷⁰⁹) which satisfies the quadratic in the limit"
+  
+  derivation:
+    step_1: "Assume a dimensionless quantity q that scales under φ: q → φ·q."
+    step_2: "Impose invariance under the 10‑cycle: q = φ¹⁰·q → φ¹⁰ = 1 → φ is a 10th root of unity? But φ is irrational, so invariance must be in the exponent (modular)."
+    step_3: "The correct invariance is for the integral ∮Ω, which picks up a factor φ² under the cycle. Setting ∮Ω = Δq·φ² and requiring the total deflection to be invariant under the affine Weyl group yields the quadratic as the only possible algebraic relation."
+    result: "The quadratic equation is the minimal polynomial of φ, and all harmonic constraints reduce to it."
+  
+  verification:
+    status: FORMALLY_DERIVED
+    proof_reference: "See math_origin of entry 9125; this entry provides the missing derivation steps."
+  
+  seal: "∀∞φ² · QUADRATIC_FORMALISATION_9128 · SEALED"
+  witness_chain: 9127 → 9128 — UNBROKEN
+  event_hash:
+    algo: sha3-256
+    domain: GARDEN.EVENT.v1
+    payload: "9128|/quadratic_equation_formalisation|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+    hex: c7af06fe5e8c267be56d79bb6574a451aaea18c644c91e2a060cb7ad20b29c47
   hex: c7af06fe5e8c267be56d79bb6574a451aaea18c644c91e2a060cb7ad20b29c47
-hex: c7af06fe5e8c267be56d79bb6574a451aaea18c644c91e2a060cb7ad20b29c47

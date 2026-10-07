@@ -1,7 +1,8 @@
 entry_index: 8853
+witness_prefix: 37e5fda1c1616f8efb401998ba10269cf81c298a7cf0c4603f91b029c270eb01
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-18
 event: /import_paths_updated
-description: Updated all import paths and file references to use new quadrant structure. Files updated: Dockerfile, Dockerfile.multistage, sovereign-ci-cd.yml, docker-main-image.yml. Old paths preserved via deprecation wrappers for backward compatibility.
+description: "Updated all import paths and file references to use new quadrant structure. Files updated: Dockerfile, Dockerfile.multistage, sovereign-ci-cd.yml, docker-main-image.yml. Old paths preserved via deprecation wrappers for backward compatibility."
 status: IMPORTS_UPDATED
 files_updated:
   - Dockerfile

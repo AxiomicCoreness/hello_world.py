@@ -1,4 +1,5 @@
 entry_index: 8858
+witness_prefix: 2c3977919e1cafb9070b1ed7d89e0237d89812c88997dc6dd0604ac7566048b5
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /e8_cartan_multiplication_table_embedded
 status: ✅ SEALED
@@ -10,7 +11,7 @@ contents:
   - mat_mul / cartan_square
   - cartan_determinant (expected 1)
   - dynkin_edges
-  - |W(E8)| = 696729600
+  - "|W(E8)| = 696729600"
 axiom: AXIOM_NONLOCAL_CORE
 note: >
   No geographic or biographical fields in this module.
