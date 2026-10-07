@@ -89,6 +89,8 @@ jobs:
           fi
           python "${ENGINE}"
           echo "✅ demo ran"
+          python scripts/pythonide_object.py
+          echo "✅ zeta prebuild gate"
 
       # ────────────────────────────────────────────────────────────
       # 4. Summary
