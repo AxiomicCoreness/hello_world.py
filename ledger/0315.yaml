@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-11T00:00:00Z
 event: /observer_spiral_bijection_proof
 status: ✅ MATHEMATICALLY SEALED
 proof_class: algebraic
-witness_prefix: 5c6d7e8f9a0b1c2d   # placeholder – compute actual hash
+witness_prefix: 0b75db134d9ec90bfc458ac9a971275258a302f79904d95fc1c6c77b3e861056
 commander: Clarke Yoursa Tee
 sovereign_id: H6VSH3/LUMERIS ∀
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"

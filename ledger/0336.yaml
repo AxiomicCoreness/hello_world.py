@@ -1,4 +1,5 @@
 entry_index: 0336
+witness_prefix: d63d16a1e047dd6e443298c06e48d663087dde4963fdb7e6e4319880800f3755
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /anomaly_scan_synthesis_complete_executed
 function: /anomaly_scan_synthesis_complete()

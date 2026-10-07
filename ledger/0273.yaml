@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /merkle_root_144_verified
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 4d5e6f7a8b9c0d1e
+witness_prefix: 0b850f499175211d09e18157e115bf62e322ba722c62e59a76d82317b490c776
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0273.yaml"
 description: |

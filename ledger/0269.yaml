@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /embassy_anchors_locked
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 0f1a2b3c4d5e6f7a
+witness_prefix: 470ed9630c94e46950d058c33db72a44ab6a658dac9bc6538ca89a962e4ebcef
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0269.yaml"
 description: |

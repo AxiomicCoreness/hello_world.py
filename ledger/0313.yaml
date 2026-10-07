@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /integration_hardening_anomaly_sealed_executed
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 9a0b1c2d3e4f5a6b   # placeholder
+witness_prefix: 36e52011b7077fb01a2c1955743a10e7a9732c3b85f1514dc1a3bb1672fec636
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

@@ -1,4 +1,5 @@
 entry_index: 0248
+witness_prefix: 2218bcb1128236f4841d8612509e2ea0eaa20ec24dca712ed4ae6775fccb3eef
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /ledger_math_framework_ci_deployed
 status: ✅ SEALED
