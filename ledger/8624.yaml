@@ -1,4 +1,5 @@
 entry_index: 8624
+witness_prefix: 15ec9de078dc8a8ab8a9aff2c51f3720c8884d46c8e84f970d7de094c9ea1180
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /infinite_compression_233_and_batch_oidc_tokenizer
 status: ✅ SEALED

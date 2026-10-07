@@ -1,4 +1,5 @@
 entry_index: 8760
+witness_prefix: 655fb822775c6abec838d9967c482a373b30cf96fe29bc64684c8ea1621fd527
 timestamp: 2026-08-14T01:31:10Z
 event: /genesis_co_create
 status: ✅ OPEN_FOR_CO_CREATE

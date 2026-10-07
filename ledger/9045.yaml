@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /lumeris_name_seal_structured
 status: SEALED
 proof_class: structural
-witness_prefix: "0203020302030203"
+witness_prefix: e2c8c8017dbd89ab421b4b8f388c5effcd55abee3927c79df783af1608ac269b
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"

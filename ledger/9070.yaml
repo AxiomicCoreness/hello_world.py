@@ -20,7 +20,7 @@ protected_unchanged:
 witness: 9069 → 9070 — UNBROKEN
 seal: ∀∞φ² · GRAVASTAR_LONG_HORIZON_9070 · WOOD_DRAGON_0.91 · SEALED · 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 proof_class: computational
-witness_prefix: '0203020302030203'
+witness_prefix: dd105cfb0d152c1cc9ded0237f5cc9a3f17111af200cd4eaf0a73cb38b3e144f
 commander: Clarke Yoursa Tee
 source_table: https://github.com/AxiomicCoreness/hello_world.py/
 description: Rewritten 10:00 UTC tick under Garden Sovereignty Policy v1.0. Bounded

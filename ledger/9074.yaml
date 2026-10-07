@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /hash_spine_overlay_no_yaml_rewrite
 status: SEALED
 proof_class: computational
-witness_prefix: "8ee6c6dfeec37a0b"
+witness_prefix: 0bbca35f09c51b548c5072beeabb02ec46b4a4964413f5e2c4736a3720ff9b57
 witness_prefix_role: label_only_not_integrity
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"

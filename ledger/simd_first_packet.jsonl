@@ -1,0 +1,1 @@
+{"packet": 1, "layout": "simd-batch-step", "manifest": "kubernetes/cronjob-simd-step.yaml", "deploy": "kubectl apply -f kubernetes/cronjob-simd-step.yaml -n sovereign-garden", "argo_path": "argocd", "argo_syncs_cronjob": false, "schedule": "0 */6 * * *", "concurrencyPolicy": "Forbid", "phase_deg": 202.6, "zeta_bound": 2.366, "sent": true}

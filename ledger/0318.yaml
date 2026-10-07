@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /sovereign_markov_chain_fit
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 2f3a4b5c6d7e8f9a   # placeholder
+witness_prefix: 2c318c765cf61f86892e75f2fc301e436f3b9b0ea34eeab3df8bc4c60a8cd3c2
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

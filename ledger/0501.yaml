@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-27
 event: /dependency_fastapi_resolved
 status: RESOLVED
 proof_class: bugfix
-witness_prefix: 8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a
+witness_prefix: d49fc9229d6417c71b66dd22e01636086cd7137cb7bde24cb572a61efb23eb41
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "FastAPI dependency resolved."

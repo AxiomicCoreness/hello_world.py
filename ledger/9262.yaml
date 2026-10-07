@@ -1,4 +1,5 @@
 entry_index: 9262
+witness_prefix: 4ee490a415396256aeda18fba89207cb22143cf1a3fe1b614b90bcf1838e4b60
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-29Z
 event: /branch_policy_sync_procedure_crystallized_recon_verified
 status: ✅ LANDED

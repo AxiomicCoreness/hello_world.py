@@ -1,4 +1,5 @@
 entry_index: 8817
+witness_prefix: d54e52111cfbcc2563ecdb64825c7f15e917a0c169d8812602671a3295afd594
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
 event: /argo_ci_cd_combinator_updated
 status: ✅ SOURCE_SEALED

@@ -1,4 +1,5 @@
 entry_index: 9260
+witness_prefix: b8491d2805dec1ba8a584176d121f1753f0f529cf092b0aff71c554d0cce9d3f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /verify_run_corrected_seal_field_name_restatement
 status: ✅ LANDED

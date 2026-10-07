@@ -1,4 +1,5 @@
 entry_index: 9097
+witness_prefix: 9d390198bf2f723fb0a019b9f3ab9859d5c152c4d59f6571fcb909ce95cdf23b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /success_state/ket_refactored
 status: SEALED

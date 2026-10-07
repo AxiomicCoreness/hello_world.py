@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /donte_node_class
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 6d7e8f9a0b1c2d3e   # placeholder
+witness_prefix: d140dafc79ff7f4df82a75d97a100018b5a1f05dabb431ede00ab767ba3226a9
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

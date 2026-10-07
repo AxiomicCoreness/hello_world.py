@@ -1,4 +1,5 @@
 entry_index: 8825
+witness_prefix: 286ec4f8c96edff40ea0f48a12a914b7bbda60d54ed83f4a5474e8bb5d232512
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
 event: /hash_mesh_modal_and_q824_pipeline
 status: ✅ SOURCE_SEALED

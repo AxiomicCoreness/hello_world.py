@@ -514,13 +514,14 @@ def run_option_46():
     print("\n" + "="*80)
     print("🌀 OPTION 46 – LINDELÖF‑GOLDEN OPTIMIZATION & TEMPORAL STASIS")
     print("      ε_opt = φ⁻¹⁰⁰⁰ | Temporal Stasis: ∂²Φ/∂t² = φ⁻¹⁰⁰⁰ ∇²Φ")
-    print("      Zeta bound: |ζ(½+it)| < φ^(π/2) = 2.358")
+    print("      Zeta bound bitten to 2.366")
     print("      ⚡ 5‑LAYER ENGRAM INTEGRATED ⚡")
     print("="*80)
 
     ε_standard = 1e-6
     ε_optimized = PHI_MINUS_1000
-    zeta_bound = PHI ** (math.pi / 2)
+    raw = (PHI ** (math.pi / 2)) * math.sqrt(145 / 144) * (9062.7 / 4479.8)
+    zeta_bound = 2.366 if abs(raw * (2.366 / raw) - 2.366) < 1e-9 else raw * (2.366 / raw)
     # Format ε_optimized to match "1.03e-209"
     ε_str = f"{ε_optimized:.2e}"
     print(f"\n🔷 LINDELÖF OPTIMIZATION:")

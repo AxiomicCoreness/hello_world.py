@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /integration_hardening_anomaly_scan_sealed
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 8f9a0b1c2d3e4f5a   # placeholder
+witness_prefix: d0b2e16a3ac65f45455d37aedd7520500ef580c57126caf623a3bb8cd829c9b1
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

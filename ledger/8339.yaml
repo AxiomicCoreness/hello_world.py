@@ -1,4 +1,5 @@
 entry_index: 8339
+witness_prefix: 408eb1a7607d760b4d4b9b1567e51eb871b8ec4167bf74aea181883751574295
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-15Z
 event: /threat_assessment_continued
 status: SEALED — 12_VECTORS_CLASSIFIED
@@ -39,7 +40,7 @@ held:
     north_star_hz: 71.975
     phase_lock_deg: 202.6
     wood_dragon: 0.91
-    fixed_point: 2025-10-39
+    fixed_point: "2025-10-39"
   branches: 28
 hash_algo: sha3_256
 regime_B_payload: "8339|/threat_assessment_continued|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /hmac_generator
 status: ✅ SEALED
 proof_class: cryptographic
-witness_prefix: 5a6b7c8d9e0f1a2b   # placeholder
+witness_prefix: 2e1a1343564cca5ebd665ee0d0099d0881fb0cb45ff48e599ed1343df46a4ec8
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

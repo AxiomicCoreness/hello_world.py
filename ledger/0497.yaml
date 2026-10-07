@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-26
 event: /phi13_defined
 status: SEALED
 proof_class: bugfix
-witness_prefix: 01f101f101f101f1
+witness_prefix: 787d2610360ff039c3c44b7258fd0308d2aff4126c42e6b1244df95e5bb4b124
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "PHI13 constant added to golden constants to resolve NameError."

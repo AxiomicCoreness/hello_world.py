@@ -1,0 +1,10 @@
+name: simd-packet
+on:
+  workflow_dispatch:
+jobs:
+  packet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: first packet
+        run: python3 scripts/simd_first_packet.py

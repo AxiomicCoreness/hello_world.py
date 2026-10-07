@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /military_phase_stress
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 5c6d7e8f9a0b1c2d
+witness_prefix: 9c578d8b8ad633f836bea66ad84e54dfbfbe111be3c44d21b4eaf2db06039ceb
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

@@ -1,4 +1,5 @@
 entry_index: 8633
+witness_prefix: d01e47120384f5c95529e9e6745c2a1d802b06502aea1498ec7f1aedf9d08b6e
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /grafana_dashboard_append
 status: ✅ SEALED

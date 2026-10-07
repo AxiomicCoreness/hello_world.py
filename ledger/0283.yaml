@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /three_d_embodiment
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 4b5c6d7e8f9a0b1c
+witness_prefix: ceeaea9f989a0506c43e21b372e1476b5b236b2a305d50395dbe51b36431c934
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0283.yaml"
 description: |

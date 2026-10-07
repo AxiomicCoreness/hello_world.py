@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /latency_tree_phi_branching
 status: SEALED
 proof_class: numerical
-witness_prefix: 9c0d1e2f3a4b5c6d
+witness_prefix: 1f376838aeaf18a4808bf472b92145bea303e0d39ccf2e96305ebb4e532fc47d
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Latency tree with reporting back to the mothership, branching silence, depth 7, total 1.562 ms."

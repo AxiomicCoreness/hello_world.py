@@ -1,4 +1,5 @@
 entry_index: 8645
+witness_prefix: 727971840a964c802b5f17735a72c985057aace3e40f677dca2ae227ad9e8b6a
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /precompute_lattice_grafana_crd_injection
 status: ✅ SEALED

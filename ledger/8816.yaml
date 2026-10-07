@@ -1,4 +1,5 @@
 entry_index: 8816
+witness_prefix: 3321c90ce7425ba4a05b6eb390d08f08d265169a618d384b5b45548d0b983976
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-17Z
 event: /all_systems_go
 status: ✅ SYSTEMS_NOMINAL_READY_FOR_NEXT_WEAVE

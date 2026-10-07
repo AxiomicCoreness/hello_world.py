@@ -1,4 +1,5 @@
 entry_index: 8622
+witness_prefix: c7797d97705f79051add2efa591b8baf43870106a9962cae3fd8735a047734ef
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /batch_simd_implementation
 status: ✅ SEALED

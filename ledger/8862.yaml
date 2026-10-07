@@ -1,4 +1,5 @@
 entry_index: 8862
+witness_prefix: 5c4c2a02b7d289178b24a66c1b197cd16705eea07ebaf5ed81a4d2176d3498f0
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /cert_manager_mtls_automation
 status: ✅ SEALED — CERT-MANAGER ROTATION PIPELINE

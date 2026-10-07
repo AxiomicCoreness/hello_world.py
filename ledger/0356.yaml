@@ -1,4 +1,5 @@
 entry_index: 0356
+witness_prefix: 4590070c25eb1268fef38e2a9ae4adb6513bb1dceac3bc23a0f7bdf9a9fe48bc
 entry_type: HEPTA_PRIME_COHERENCE
 description: "Hepta prime coherence construction"
 event_trigger: |

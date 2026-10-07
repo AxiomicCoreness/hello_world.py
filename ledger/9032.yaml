@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /system_verification_report
 status: SEALED
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: 4b4697c9126925f88a5905cd56bde681e905c490c79d35863311ef9df2bf1d8e
 description: |
   System verification pointer. Written product φ·φ⁻¹·½ = ½, not declared Q=0.202254.
   α_total and coherence=1 are not axioms.

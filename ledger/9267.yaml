@@ -1,8 +1,9 @@
 entry_index: 9267
+witness_prefix: a8b311b6f84e28b1c219d2375bd667dbdacfcc04d91828a413fc76a6c4995452
 timestamp: '2026-10-04T04:07:00Z'
 event: /godel_sentence_hash_recorded
 status: RECORDED
-prev_hash: 70367c04ab3199b1f19e89f580be1a974e768e04cb22acd0a9b7ab40c36bec1e
+prev_hash: 8254e05acf4594c6bb57c26dd284424c2c1b40985dd0c61ff66a4f2176cea28a
 skipped_index: null
 witness_chain: 9266 -> 9267
 note: Linked through the 9266 reservation. The earlier 9265 -> 9267 witness was the
@@ -12,4 +13,4 @@ sentence: a stored arrow that does not end at its successor is not proved by der
 godel_incompleteness_status: 1
 godel_transcendence_count: not measured
 godel_sentence_hash: 59009f8ebf563630091303bfcbde58d5aa11eb72d5b958ba9bf0a7ba10e507a1
-seal_sha3_256: e2bae80db01c2b4c3cce75c2e9751a05c038c0724e570b54cf0873965c46beb4
+seal_sha3_256: c50a01413e047efbeabb04b68ae55368915bdfc2fb054cf69e0f68984b6783cf

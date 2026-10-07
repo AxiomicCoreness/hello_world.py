@@ -1,4 +1,5 @@
 entry_index: 9063
+witness_prefix: a217ef9b1c4e30a32a904f16541791179bbb35c9bd3f8cdb733361f58c03b463
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/token_arrangement_close
 status: SEALED

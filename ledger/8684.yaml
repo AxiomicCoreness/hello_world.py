@@ -1,4 +1,5 @@
 entry_index: 8684
+witness_prefix: 4e2ca8ae6ab9f92258e9375027cd0feb3867ccccc7f6382d1a3b814d4a712a19
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
 event: /reconstruction_operator_materialised
 status: SEALED

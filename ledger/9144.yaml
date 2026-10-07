@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31T00:00:00Z
 event: /canary_system_deployed
 status: SEALED
 proof_class: canary
-witness_prefix: 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379
+witness_prefix: e34adb1de1efa2b9d3dadc0389ea6d14e8a83352d09ff9a39fbe52b64f54489f
 terminal_hex: 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"

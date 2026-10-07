@@ -1,4 +1,5 @@
 entry_index: 8634
+witness_prefix: b273e295df0b93496cbc9dcc736e28250cf8d6e45fa105dd66a1d6e05ee54f20
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /immutable_without_exposing_secrets
 status: ✅ SEALED

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /settling_daemon_monitor
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 9c0d1e2f3a4b5c6d
+witness_prefix: ff94508c538abe6f1e1d54db12e88762965e799ddc86c45c3de8b8963fb4d658
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Settling Daemon Monitor for k=102."

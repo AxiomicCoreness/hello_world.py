@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /helium_plume
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 2b3c4d5e6f7a8b9c
+witness_prefix: b0a0ea4bdad1ca50eeaf33773a85c27dcd2dfb27181dab5f8b2fd3fd16dbcf8d
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Helium Plume for k=95."

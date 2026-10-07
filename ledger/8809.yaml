@@ -1,4 +1,5 @@
 entry_index: 8809
+witness_prefix: 96952f23fa0a87640d65751c13f7dab52ee4203a6a7c7f559a474a991d8699bf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /argo_rollout_integrated
 status: ✅ PROGRESSIVE_DELIVERY_ACTIVE

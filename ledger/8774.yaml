@@ -1,4 +1,5 @@
 entry_index: 8774
+witness_prefix: 0e6a475ba92d47f8ce7abb013f72ee066a5cadecdd85285ab86fb20bc8977f13
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /oauth2_cdp_websocket_ready_gated
 status: SEALED

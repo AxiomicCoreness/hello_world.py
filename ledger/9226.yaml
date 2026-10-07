@@ -5,7 +5,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-13Z
 event: /frontier_golden_vacuum_ode_map_region_v
 status: SEALED
 proof_class: topological
-witness_prefix: PLACEHOLDER_24HEX_REPLACE_ME
+witness_prefix: 1b3ed6c62d323b51510a77f1c1460b8a93bb2db72e1dedd583b3104a0cdb5fb2
 commander: Cartographer of the Unwritten
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

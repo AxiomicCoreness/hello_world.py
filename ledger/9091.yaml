@@ -1,4 +1,5 @@
 entry_index: 9091
+witness_prefix: 92a35a39aa538ac3c4afdccc0de6babfb21b835ff539effde8f57376deeb316a
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /stub/cambrian_allocation_unfilled
 status: SEALED

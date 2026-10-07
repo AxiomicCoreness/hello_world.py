@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /latency_tree
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 6d7e8f9a0b1c2d3e
+witness_prefix: 09948a06fa2d2d4a486ae4483c08f4f8c033c7c1042249ebf7e5c368fa4a3a47
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0285.yaml"
 description: |

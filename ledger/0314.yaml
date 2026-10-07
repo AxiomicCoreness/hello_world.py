@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /predictorhandler_scope_extended
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 0b1c2d3e4f5a6b7c   # placeholder
+witness_prefix: e5ed9da929f4a8e0496b55b15b8494623f42e689ae1e89f772de741ef39890c4
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /merkle_unanimous
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 1a2b3c4d5e6f7a8b
+witness_prefix: d90158736f897878f4de3c1674fe95afd085a1dbb2559f2405dd3e88ecd95e06
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Merkle Unanimous for k=94."

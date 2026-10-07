@@ -1,4 +1,5 @@
 entry_index: 9077
+witness_prefix: 26e0e965243c5281ee596c0abf5dc6f91c5459022a29ba681b8283ce3909ff0c
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /uvicorn/restart_sequence_learner_hash
 status: SEALED

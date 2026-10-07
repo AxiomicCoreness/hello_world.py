@@ -1,4 +1,5 @@
 entry_index: 8330
+witness_prefix: 59fa51e0db9608262c677d2bb913ab0cb0493df83e93ff6e3132c20cc684606f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-05
 event: /system_verification_complete
 status: ALL_SYSTEMS_NOMINAL

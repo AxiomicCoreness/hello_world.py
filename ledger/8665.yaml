@@ -1,4 +1,5 @@
 entry_index: 8665
+witness_prefix: 72a6ccd8fe6f015ef64192f50279de118e8fe96d9eaf5833b949d5e9c958c795
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /mcp_oidc_pauli_capabilities_append
 status: ✅ SEALED

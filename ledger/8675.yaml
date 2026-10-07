@@ -1,4 +1,5 @@
 entry_index: 8675
+witness_prefix: f3a5b0000684e63652acf33495be55e57af02c6a14a143865e9d918c6a9090aa
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /batch_simd_tuning_triggered
 status: ✅ SEALED — TUNING_EXECUTED

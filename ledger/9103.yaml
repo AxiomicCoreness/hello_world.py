@@ -1,4 +1,5 @@
 entry_index: 9103
+witness_prefix: 8978137eb11534af6ef7aa7d00488e9d91cc93115e73f1ebc6c19f9cfac973a7
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /policy/pisano_split_ack_append
 status: SEALED

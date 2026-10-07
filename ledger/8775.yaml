@@ -1,4 +1,5 @@
 entry_index: 8775
+witness_prefix: 6dc1d6a671f91cfa99286ba76443a80b55ff7e5b1ab98655f444d86e47290b30
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /fal_ternary_merged_into_cdp
 status: SEALED

@@ -1,0 +1,10 @@
+{"index": 0, "source": "docs/directory_structure.md", "ledger_path": "ledger/nonledger/0000_directory_structure.md", "sha3": "2ebd6ff3e0ef0b0775e4269f262da855cbc4b6d1f05cd9a74a334f90eb43016b"}
+{"index": 1, "source": "docs/clarke_yoursatee_seal_v1.json", "ledger_path": "ledger/nonledger/0001_clarke_yoursatee_seal_v1.json", "sha3": "db59f46ea5eb2a739ba7c53470ad74a0e670e8487a72079c0d1976687b1f963d"}
+{"index": 2, "source": "docs/self_improve_stream.jsonl", "ledger_path": "ledger/nonledger/0002_self_improve_stream.jsonl", "sha3": "c36d7008870e1bfaecf68a38e854cdc3e795581cc1d4e35637daf13f36eb613e"}
+{"index": 3, "source": "scripts/self_improve_local.py", "ledger_path": "ledger/nonledger/0003_self_improve_local.py", "sha3": "50870bbd7bf312500c8443c6c721a0bd1d0a98e81c0cedd491ba9206cdcf24d6"}
+{"index": 4, "source": "scripts/hexstrike.py", "ledger_path": "ledger/nonledger/0004_hexstrike.py", "sha3": "7ac510111937dd1cab7617e4a574732d55339a77dba023ef9c30129c3cf37deb"}
+{"index": 5, "source": ".devcontainer/devcontainer.json", "ledger_path": "ledger/nonledger/0005_devcontainer.json", "sha3": "389fe1fb9103c229c7951fdc51c07500842f35a9b875648bc6ce56b904c1f5df"}
+{"index": 6, "source": ".devcontainer/codespace.env", "ledger_path": "ledger/nonledger/0006_codespace.env", "sha3": "4a5e31ee5411c09d432587ca7a8fbccd36668de65ad7e1304dac24e1804ee39b"}
+{"index": 7, "source": "scripts/pytorch_cpu_guard.py", "ledger_path": "ledger/nonledger/0007_pytorch_cpu_guard.py", "sha3": "45815c58b8b24ae8546131e2329e168666ff0e43d68e34a2095d20213fc407ce"}
+{"index": 8, "source": "scripts/metrics_chart.py", "ledger_path": "ledger/nonledger/0008_metrics_chart.py", "sha3": "494fe612bf0c57b9da347c1c3d47f30577db26c34a97d72fa816dcf96569a29f"}
+{"index": 9, "source": "scripts/archive_path_map.py", "ledger_path": "ledger/nonledger/0009_archive_path_map.py", "sha3": "2c8ab2e623653c170f0ba1daf7c719010812c5a05e3c458116c87051a1ff894d"}

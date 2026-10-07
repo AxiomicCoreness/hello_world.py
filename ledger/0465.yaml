@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /uprho_will_presence
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 1c2d3e4f5a6b7c8d
+witness_prefix: bbb6bcfb153b8485a682bbeec579d1d27d2de93c00a0d477f33f23d577168472
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Uprho Will Presence for k=114."

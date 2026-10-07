@@ -1,4 +1,5 @@
 entry_index: 8949
+witness_prefix: c1bce7b0c3bb90deace4c6299c686fe3d91e674b934e8b048f015cb92845c823
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /oidc_wired_into_cdp_oauth2
 status: SEALED_AND_VERIFIED

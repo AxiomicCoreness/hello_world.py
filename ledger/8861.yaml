@@ -1,4 +1,5 @@
 entry_index: 8861
+witness_prefix: f9bca17bb7a8c6c882a4b320035aff3980f13e7b3069a52cc0c6131f73acf088
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /mtls_certificate_rotation_implemented
 status: ✅ SEALED — ROTATION PIPELINE READY

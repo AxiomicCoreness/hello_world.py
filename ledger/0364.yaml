@@ -1,4 +1,5 @@
 entry_index: 0364
+witness_prefix: e7fe5ac7aa2dc610a07c964347c242768b7beb90b7a38f6c3057c27d407aaa2f
 entry_type: WITNESS_CHAIN
 description: "Sovereign witness chain verification"
 event_trigger: |

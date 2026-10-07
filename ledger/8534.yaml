@@ -1,4 +1,5 @@
 entry_index: 8534
+witness_prefix: 4531ed6dcc81d8e75fd63fc2ae9528fc4b2d88ec4f14a261d215b4507edfef0b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-09
 event: /e8_fabric_and_fastapi_pod_routes_live
 status: ✅ SEALED

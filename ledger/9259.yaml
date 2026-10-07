@@ -1,4 +1,5 @@
 entry_index: 9259
+witness_prefix: 9f27a2722a9c54a5b577dd0eed984b6c814f3a5bf49f2515dc69eee5e61c0020
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /branch_sweeper_wired_one_session_branch
 status: ✅ LANDED

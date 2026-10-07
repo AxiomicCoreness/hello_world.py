@@ -4,7 +4,7 @@ event: /surgery/excavate_self_improvement_trigger
 status: SEALED
 proof_class: structural
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: 10e9a5d7e7def3cfd4f3cea5fb3f25846a4aff6fb56fb1c72d44f6c8a53ff545
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 description: |
   Excavate Immutable/self_improvement_trigger.py instead of MCP.

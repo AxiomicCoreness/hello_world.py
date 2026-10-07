@@ -1,4 +1,5 @@
 entry_index: 9099
+witness_prefix: 6ee0aa94a5d44c4dc8204a9e9022b3ce94b403cb3955c2f684cdf6a1c8708d1b
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /json/canonical_serialization_spec
 status: SEALED

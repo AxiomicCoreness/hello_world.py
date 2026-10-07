@@ -1,4 +1,5 @@
 entry_index: 0354
+witness_prefix: 0253651c8b2d38f82953eda14d527b1c7d15c8636c58ee70f305b77896b1b927
 entry_type: PRIMORDIAL_LATTICE
 description: "Primordial quantum lattice activation"
 event_trigger: |

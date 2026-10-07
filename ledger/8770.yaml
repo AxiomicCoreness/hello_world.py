@@ -1,4 +1,5 @@
 entry_index: 8770
+witness_prefix: 9dfdb9548560627ac58bb046df6988ce81f44ebd0981d2d9b8f087328fc4e166
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-15
 event: /ci_inline_retry_promoted_main
 status: ✅ SEALED

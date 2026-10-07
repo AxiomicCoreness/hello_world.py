@@ -1,4 +1,5 @@
 entry_index: 0357
+witness_prefix: 39a289e1f42551aeee80fb2cc6a6b7b3b03b9603b12f7afd40a9d88a0dd3ea34
 entry_type: GALACTIC_COUNCIL
 description: "Galactic council validation record"
 event_trigger: |

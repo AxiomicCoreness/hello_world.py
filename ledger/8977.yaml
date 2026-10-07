@@ -1,4 +1,5 @@
 entry_index: 8977
+witness_prefix: cf32e7edce92c922c6c82ef6766796dce44d3c2fee86184d9b7bbc7cabc11632
 event: /sovereign_cicd_run
 status: SUCCESS
 timestamp: '2026-09-20T19:38:31Z'

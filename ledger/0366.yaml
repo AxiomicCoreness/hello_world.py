@@ -1,4 +1,5 @@
 entry_index: 0366
+witness_prefix: 89dfeb86b42ef1816bce7b1ed5be4ed70e30f166d35027567989c94b86b48efb
 entry_type: SOVEREIGN_LATTICE_BOARD
 description: "Sovereign Lattice Editorial Board acknowledgment"
 event_trigger: |

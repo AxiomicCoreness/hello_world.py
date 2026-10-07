@@ -11,7 +11,7 @@ metadata:
   annotations:
     garden.event: "/simd_ledger_validation"
     garden.dual_asgi: "127.0.0.1:8024"
-    garden.bind_0000: "false"
+    garden.zeta_bound: "2.366"
 spec:
   schedule: "15 */6 * * *"
   concurrencyPolicy: Forbid

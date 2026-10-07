@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /temporal_healing
 status: ✅ SEALED
 proof_class: algebraic
-witness_prefix: 5ed0a6373128207b0ef282d17ad34eaf25ad73279409dbe0ff89473d4b311954
+witness_prefix: ef97d684e3cb46b029a66c58bd2557ceebf0c5ced29cfc524debf1a9b5b36748
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Temporal Healing for k=43."

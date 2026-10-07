@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /format/ledger_530_schema
 status: SEALED
 proof_class: computational
-witness_prefix: "0203020302030203"
+witness_prefix: f25f5e64f0f61259da7c866c6b8e3472653fa3f5f1074700653df103bd30f347
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Live-spine entries use the 530 field order. ledger/0530.yaml already matches the pasted body."

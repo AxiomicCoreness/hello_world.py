@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-25
 event: /sovereign_core_full_execution_sealed
 status: SEALED
 proof_class: execution
-witness_prefix: 3f9a2b4c5d6e7f8a
+witness_prefix: 4abf869dc06de3cd6d6d808be6f7278ad7e5f6d9efd763c15143938b8811f8da
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Full execution of the sovereign core sealed."

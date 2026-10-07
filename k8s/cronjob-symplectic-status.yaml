@@ -7,6 +7,7 @@ metadata:
     app: symplectic-status
   annotations:
     garden.seal: "∀∞φ² · SYMPLECTIC_DEPLOY_ACK_8657 · SEALED"
+    garden.zeta_bound: "2.366"
 spec:
   schedule: "0 */6 * * *"
   concurrencyPolicy: Forbid

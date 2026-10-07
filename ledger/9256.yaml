@@ -1,4 +1,5 @@
 entry_index: 9256
+witness_prefix: 943aa4e856d06bc5fb628c37b8b8587f0d05b00a0f1cb4bfe3f2249ac8c8a760
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /contracts_ci_wired_readonly
 status: ✅ LANDED

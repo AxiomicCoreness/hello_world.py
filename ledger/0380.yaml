@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /military_phase_inviolability
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: e5e1be820bcdca534240a5119f031deb0f4a0e48fadd2af7ff672010e75add24
+witness_prefix: 21bc3a7bc316f10e4f40c70daa61db50862a48fc3009511adceabf57d9f410df
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Military Phase Inviolability for k=29."

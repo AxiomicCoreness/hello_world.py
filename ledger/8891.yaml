@@ -1,4 +1,5 @@
 entry_index: 8891
+witness_prefix: 89701ae229d7acf6811d37b16e1ebb0482b15fc5d23ab15c914d67b5aabcea20
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /production_src_layout_shim_executed
 status: ✅ SEALED

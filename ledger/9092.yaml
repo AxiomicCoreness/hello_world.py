@@ -1,4 +1,5 @@
 entry_index: 9092
+witness_prefix: f5df6b92d9cd114fc9348f5a8f20adc5d26769dc74f2b978c23465e3e171ebc8
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /berry/config_bin_beside_stub
 status: SEALED

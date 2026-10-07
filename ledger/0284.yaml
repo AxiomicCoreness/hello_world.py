@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /ahap_haptic_spec
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 5c6d7e8f9a0b1c2d
+witness_prefix: 2e9165fcf6f415dffa525b37c6a6bc884bb26aafa6f24dcd4ea1b3b5892d734f
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0284.yaml"
 description: |

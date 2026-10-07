@@ -6,6 +6,8 @@ metadata:
   labels:
     app: venomsuite-synchronizer
     sovereignty: active
+  annotations:
+    garden.zeta_bound: "2.366"
 spec:
   schedule: "0 */6 * * *"  # Synchronized to the 6-hour validation_cycle
   concurrencyPolicy: Forbid

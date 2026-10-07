@@ -1,4 +1,5 @@
 entry_index: 8748
+witness_prefix: fff5841f078897585a615ca1e66adf64835166ac960ce88b92b5318492f039a9
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
 event: /install_k8s_simplified
 status: ✅ SEALED

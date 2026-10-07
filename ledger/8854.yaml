@@ -1,4 +1,5 @@
 entry_index: 8854
+witness_prefix: 4527df4653ab4292e53382fd9e7dfe4e93bf9c7f708d9e14f55b02841b459d54
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /axiom_nonlocal_core_encoded
 status: ✅ SEALED

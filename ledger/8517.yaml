@@ -1,4 +1,5 @@
 entry_index: 8517
+witness_prefix: 52a39410f39cdfdfa5f979348ce0350f21ecd6290b74ed03a62a3f7ebc6af4cf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13
 event: /smoke_test_8516_operational
 status: OPERATIONAL

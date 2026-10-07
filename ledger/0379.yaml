@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /military_phase_stress
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 2770ef4180536befc15d324e7e008e119e22faa0cda4d0f4b8803ef35c0f2dfd
+witness_prefix: 5f0cad79459bc7f9f8e9e3d5f1468097f47ff009323299b1b2fa7d1f38f56cfd
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Military Phase Stress for k=28."

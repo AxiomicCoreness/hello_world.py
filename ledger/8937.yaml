@@ -1,4 +1,5 @@
 entry_index: 8937
+witness_prefix: e3d9610cb62bf52e8d3f3360c69db56f6feb9f4ed09dc2c6c2e2b34f44fd24bb
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /codewhale_ops_sec_confirmed
 status: SEALED_AND_VERIFIED

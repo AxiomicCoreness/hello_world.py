@@ -1,4 +1,5 @@
 entry_index: 8957
+witness_prefix: d7fc14e7e7cc85094adf32b614be62e6c47178e1161de5c05503d7140b9d44c6
 event: /argo_cd_canary_path_fix
 status: SEALED_AND_VERIFIED
 root_cause: "Application path was kubernetes/ instead of argocd/"

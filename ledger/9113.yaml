@@ -1,4 +1,5 @@
 entry_index: 9113
+witness_prefix: 66b255fa760e79922d1915609500a72eccd8fe9e3b8649bc423e0db303007129
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28Z
 event: /no_key_needed_acknowledged
 status: ✅ SEALED

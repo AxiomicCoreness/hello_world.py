@@ -1,4 +1,5 @@
 entry_index: 8927
+witness_prefix: 58d9710c5c326692e631cf55dc2e02a664b28b63374e7717d8a0fa30dbb88be2
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /dual_delta_eridanus_defined
 status: SEALED_AND_VERIFIED

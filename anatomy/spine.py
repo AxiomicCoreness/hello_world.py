@@ -24,6 +24,12 @@ def witness_pairs(text: str) -> list[tuple[int, int]]:
 
 
 def as_working_default(text: str) -> str:
+    """Normalize every ASCII hop. One pass hides the second arrow in a chain."""
+    previous = None
+    while previous != text:
+        previous = text
+        text = ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
+    return text
     """Switch an ASCII witness arrow to the Unicode default the checker uses."""
     return ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
 
@@ -61,6 +67,11 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
         if b != a + 1:
             continue
         text = as_working_default(entries[b].read_text(encoding="utf-8"))
+        witness_lines = "\n".join(
+            line for line in text.splitlines()
+            if line.lower().lstrip().startswith(("witness_chain:", "witness:"))
+        )
+        pairs = witness_pairs(witness_lines)
         pairs = witness_pairs(text)
         ends = [(x, y) for x, y in pairs if y == b]
         if (a, b) in ends:

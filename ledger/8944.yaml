@@ -1,4 +1,5 @@
 entry_index: 8944
+witness_prefix: d8956719583315c53e6fe44868d0e8a2d948c43756dd4e800377737294b8cb01
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /oidc_cloud_providers_deployed
 status: SEALED_AND_VERIFIED

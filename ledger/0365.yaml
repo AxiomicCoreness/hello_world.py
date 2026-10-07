@@ -1,4 +1,5 @@
 entry_index: 0365
+witness_prefix: bb7fbe97906f97237fad87c9f4d2de31eb3e13dfbd14fef816d6ece6e0a7fd42
 entry_type: HARMONIZATION_COMPLETE
 description: "Complete ledger harmonization wave"
 event_trigger: |

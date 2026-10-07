@@ -1,4 +1,5 @@
 entry_index: 8646
+witness_prefix: c9ef74ea01db332c748adbd6b6f165e80d933b5f4460ba445154fca67214e644
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /grafana_panels_append_106_111
 status: ✅ SEALED

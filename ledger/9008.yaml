@@ -1,4 +1,5 @@
 entry_index: 9008
+witness_prefix: f548ad953a70a521d64f28b96f93a1b439c1e3bc1b54c9cf24c20b5d4c132d77
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /workflow_dispatch_gravastar_long_horizon
 status: RECORDED

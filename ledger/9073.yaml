@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /witness_untruncated_hash_chain
 status: SEALED
 proof_class: computational
-witness_prefix: "11078f2801e75a3e"
+witness_prefix: 25ae5038047be2df8c93617ae632b3ee6a72f182be3c0f19f75955b08587e64f
 witness_prefix_role: label_only_not_integrity
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"

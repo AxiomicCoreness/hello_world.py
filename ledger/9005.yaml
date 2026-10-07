@@ -1,4 +1,5 @@
 entry_index: 9005
+witness_prefix: 3c084fb83ca56db48525014b6a6727b08974d18b772401fac080a11dba2287e8
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /deepseek_mesh_terminal_env
 status: CONFIGURED

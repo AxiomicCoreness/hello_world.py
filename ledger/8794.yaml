@@ -1,4 +1,5 @@
 entry_index: 8794
+witness_prefix: d7f4f6702c58e7d6f108ac193e8feecde708146f189320eebb2b4a2fe1603318
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /simd_cronjob_configured_cluster_reset
 status: ✅ SEALED

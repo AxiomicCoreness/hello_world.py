@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/ledger_consistency_regime
 status: ✅ SEALED
 proof_class: computational
-witness_prefix: sha3-256
+witness_prefix: dd51b1012326c09e1e30f19e610e3d8fa1e08a13e938c7e7f84f1f131d300543
 hash_truncation: false
 policywriting: all_ledger_consistency_regime
 commander: Clarke Yoursa Tee

@@ -4,7 +4,7 @@ event: /withstand_protocol_activated
 directive: WITHSTAND
 status: FORTIFIED
 proof_class: resilience
-witness_prefix: 1e3f4a5b6c7d8e9f
+witness_prefix: c0484fdb17c194aa9343cf4b808571b1f73805681e1b881c7ade9ec9a51c595c
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Withstand protocol activated across all layers."

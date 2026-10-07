@@ -1,4 +1,5 @@
 entry_index: 8958
+witness_prefix: fba9a1d7a8e074f67133f537d8a174e0bc9fe6b9bc78094cd47543e29643f168
 event: "/smoke_catalogue_entry_sealed"
 status: "SEALED"
 timestamp: "2026-09-24T22:21:41Z"

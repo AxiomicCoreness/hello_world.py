@@ -1,4 +1,5 @@
 entry_index: 8812
+witness_prefix: 6c303ee8438491eb6f1460d042e02f75415b66a44d6c5d0c48488ba56042a548
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /gateway_api_header_routing_rollout_fragment
 status: ✅ SOURCE_SEALED — NOT EXECUTED

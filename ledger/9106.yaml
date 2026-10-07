@@ -1,4 +1,5 @@
 entry_index: 9106
+witness_prefix: 2ef684301d707592f858ad77a6f3e10e4fcee9830a60e8fc5ceae7e7f194f1b6
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28Z
 event: /glue_config_binary_time_invariance
 status: ✅ SEALED

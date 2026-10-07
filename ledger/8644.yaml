@@ -1,4 +1,5 @@
 entry_index: 8644
+witness_prefix: 20657d31c2eecf1c9eca49706a0ead0909a48bb2d22a05e949185b7d4919dbbf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /prometheus_servicemonitor_sovereign_workload
 status: ✅ SEALED

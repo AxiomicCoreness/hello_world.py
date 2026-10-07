@@ -1,4 +1,5 @@
 entry_index: 8677
+witness_prefix: 6632db0df8daf231053901653f67250005cae8d3efe77bf0c1ae60cdc3fc6bb5
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /em006_simd_soak_salvage_port_dispatch
 status: ✅ SEALED

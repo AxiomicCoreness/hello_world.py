@@ -1,4 +1,5 @@
 entry_index: 9257
+witness_prefix: 4555ef59013f6d962f5a3d7338c01d1095fc14f4c3f3e8221c848eec2b1c1b74
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-27Z
 event: /forge_and_land_protocol_four_error_circuit_breaker
 status: ✅ LANDED

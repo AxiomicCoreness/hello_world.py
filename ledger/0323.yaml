@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-24
 event: /donte_lattice_layer1
 status: ✅ SEALED
 proof_class: numerical
-witness_prefix: 7e8f9a0b1c2d3e4f   # placeholder
+witness_prefix: c1bda238f9731fc046c3e54e93274d9b2d2592e6987a74af26f4dc71ef104671
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: |

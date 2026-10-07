@@ -1,4 +1,5 @@
 entry_index: 9100
+witness_prefix: ad5e1601036696116922b7732cbb070fe83c7c2022f70f6bf001862cf299b30f
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /pisano/dodecahedral_flux_cutoff_phase
 status: SEALED

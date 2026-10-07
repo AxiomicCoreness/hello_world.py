@@ -1,4 +1,5 @@
 entry_index: 9030
+witness_prefix: fceae745d079a0c5d6848b94d6024aaf9465b0da7f71ddb5f4dbe8e73dbb54ec
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /math_form_appended_to_override
 status: APPENDED_AND_SEALED

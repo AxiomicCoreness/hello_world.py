@@ -1,4 +1,5 @@
 entry_index: 9089
+witness_prefix: 92da4b56514d451df686b5a37385a31dd47fa42a101d93046a02ad3fb3f959bd
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /deepseek/2_2_2_4_proposal_override_pointer
 status: SEALED

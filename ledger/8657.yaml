@@ -1,4 +1,5 @@
 entry_index: 8657
+witness_prefix: 52830e2badb8c93b6c57de48b58b2ead22b5cf8d20412f7adc51908292f292cf
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-12Z
 event: /symplectic_status_deploy_merge_ack_steps
 status: ✅ SEALED

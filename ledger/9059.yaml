@@ -1,4 +1,5 @@
 entry_index: 9059
+witness_prefix: cf9cc00a293e3f979fe331844e1fbd7c8dcee538a86e1ce4e96e2cd0a1a3bebb
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /policy/restore_code_dialogue
 status: SEALED

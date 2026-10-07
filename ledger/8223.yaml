@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-31Z
 event: /eigenoperator_correction_final
 status: ✅ SEALED
 proof_class: specification
-witness_prefix: 6f4a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f
+witness_prefix: 2aa409dff65ad6a715c50927d5cad87552bb57209b896ec2b055a747c5c9b7eb
 terminal_hex: 6f4a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"

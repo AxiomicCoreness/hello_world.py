@@ -1,4 +1,5 @@
 entry_index: 8755
+witness_prefix: bd154604ffac3a93d358c68f97d71090e11cc227c95fff583a2100aa59371168
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-13Z
 event: /mcp_batch_forged
 status: SEALED — READY FOR DEPLOYMENT

@@ -1,4 +1,5 @@
 entry_index: 9253
+witness_prefix: 9ec2cf6029f12676990c930ec4b8a06ad9aa5ce45c6a3f2cb39924379f205119
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
 event: /two_claim_verification_record_sleep_absent_q8_24_present
 status: ✅ LANDED_DETERMINISTIC

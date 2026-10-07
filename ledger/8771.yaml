@@ -1,4 +1,5 @@
 entry_index: 8771
+witness_prefix: 098a50e4976e5a90465cdda305751623496e92c5dc913953f3f02f0a6cc19bfd
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19Z
 event: /dsh_lattice_integrated
 status: SEALED

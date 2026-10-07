@@ -1,4 +1,5 @@
 entry_index: 8830
+witness_prefix: 5bcfbe5b37200fc5ecb96b819dcbcbff11350f81b199c363a560445af104a070
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-19
 event: /deepseek_mcp_only_adapter_rebuild
 status: SEALED

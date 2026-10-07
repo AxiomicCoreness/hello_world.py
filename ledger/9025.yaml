@@ -4,7 +4,7 @@ event: /surgery/worker_subagent_tree_parent_sibling
 status: SEALED
 proof_class: structural
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: 3351987cfc034aa8a3eca33f9b46d3085d6916ca2661ff7fe4c34f14d5a4dfc4
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 description: |
   Extend configuration with a worker sub-agent tree (parent/sibling).

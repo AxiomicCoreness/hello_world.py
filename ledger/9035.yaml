@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /surgery/three_file_contract_worker_score
 status: SEALED
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: a3bea3c294c5e1d3f1a94a89773b43dea454a1678c502efe9a8cecd339e4ead0
 description: |
   Three-file contract + narrow φ-score. GitHub OIDC is not client_credentials.
   Secrets presence-only. Seal hex length 64. sovereign_engine.py not rewritten.

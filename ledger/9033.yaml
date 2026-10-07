@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /pisano_dodecahedron_transition
 status: SEALED
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: d211a6dc31a4181bd719940ff083470df04351a311557dbf09bebd1883dd1e51
 description: |
   Fibonacci Pisano period π(10)=60. Dodecahedron V=20 E=30 F=12, Euler 2.
   Placeholder hash a1b2c3d4… rejected. Curvature −0.187 is not an axiom.

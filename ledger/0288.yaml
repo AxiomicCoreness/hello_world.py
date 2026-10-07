@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /military_demonstration
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 9a0b1c2d3e4f5a6b
+witness_prefix: 148e6a85a12680ede0c3b0d68d92c521365cfe21257cf7654d50b8b663b875d2
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger/0288.yaml"
 description: |

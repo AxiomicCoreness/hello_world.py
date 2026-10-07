@@ -1,4 +1,5 @@
 entry_index: 9126
+witness_prefix: 19a8923b8f309e057fedf3c9edebe325c6b9a374c89e73d2b0f32b11901e60cb
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /audit_9125_verification
 status: SEALED

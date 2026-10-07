@@ -18,7 +18,7 @@ invariants:
   fusion_canonical: 515
   hyperion_preserved: 516
   alpha_eff: 0.0
-witness_prefix: "0203020302030203"
+witness_prefix: a96058152288c133129e806cbea57d42de4ae393c3cbec419718b96349302e91
 hash:
   algo: sha3-256
   domain: GARDEN.POLICY.v1

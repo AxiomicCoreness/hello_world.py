@@ -1,4 +1,5 @@
 entry_index: 8948
+witness_prefix: a06beea6b624ae73f76e8137cf8d02a1a00217e5414531fcc401ff20950277b8
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-21Z
 event: /sovereign_autonomic_control_loop_parent
 status: SEALED

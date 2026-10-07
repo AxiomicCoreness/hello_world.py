@@ -6,7 +6,7 @@ proof_class: architectural_mapping
 branch: main
 commander: Clarke Yoursa Tee
 language: sovereign_standard_english
-witness_prefix: b17d1e225bcf8534923299e0bf824fb4f8b06736cd6b3a152d6ce234eea27f19
+witness_prefix: 9b3e781a0dd41dcd475311b0e0378c6d1ee9e60ab9558a973006e6674a563715
 terminal_hex: b17d1e225bcf8534923299e0bf824fb4f8b06736cd6b3a152d6ce234eea27f19
 description: |
   Unpadded CI path for OIDC-handover-380 verify-integrity.

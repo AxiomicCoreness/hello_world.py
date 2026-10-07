@@ -1,4 +1,5 @@
 entry_index: 9249
+witness_prefix: 8061bb2da7b53f24ba7b0e0b6ad083c4636420bb8942ac3d91dcd035810d304f
 event: "/l1_verifier_restored_frankenverifier_extirpated"
 status: "SEALED"
 timestamp: "2026-09-26T01:05:00Z"

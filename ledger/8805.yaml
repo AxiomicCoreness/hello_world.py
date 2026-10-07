@@ -1,4 +1,5 @@
 entry_index: 8805
+witness_prefix: 3f72ba01f62089f09edb877d68a2543e3d56985b2837909fddbb19808432e429
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /leaky_i_persistence_closed
 status: ✅ PVC_PERSISTENCE_ADDED

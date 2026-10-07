@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-26
 event: /m87_m92_wisdom_payload
 status: SEALED
 commander: Clarke Yoursa Tee
-witness_prefix: "0203020302030203"
+witness_prefix: e47337212063fa8d5619f91d05031dc2939ad86393b8e041b56b310b88d79483
 description: |
   Couplings that are φ-powers are identities. Wisdom scalars and 1.504e15
   acceleration are not treated as measured facts. No live matplotlib run claimed.

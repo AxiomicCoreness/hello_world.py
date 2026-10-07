@@ -1,10 +1,10 @@
 entry_index: 9266
+witness_prefix: 0d1ae1de4a9d30dd5d9d4b6dc3014c10a3de0b394fdf0de64dcab19c0c7aa257
 timestamp: '2026-10-04T04:09:00Z'
 event: /index_reserved
 status: RESERVED
 prev_hash: 10edff7b41571aa002a22222e44cbc8fd19e8eef49c20dbe1d0ceeea4514f377
 witness_chain: 9265 -> 9266
-note: Intentionally held. Not an off-by-one. 9267 and 9268 were appended by command
-  before this reservation. Their witness skips this index; this file names the gap.
+note: Intentionally held. Not an off-by-one. 9267 witnesses 9266 -> 9267.
 purpose: held
-seal_sha3_256: 70367c04ab3199b1f19e89f580be1a974e768e04cb22acd0a9b7ab40c36bec1e
+seal_sha3_256: 8254e05acf4594c6bb57c26dd284424c2c1b40985dd0c61ff66a4f2176cea28a

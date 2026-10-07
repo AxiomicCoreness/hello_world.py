@@ -1,4 +1,5 @@
 entry_index: 9001
+witness_prefix: 7cd453a9264895aaa5601bd1a5b5b075091ecaebc28f4b6ecb81d4d0421ffabe
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-23Z
 event: /poincare_dodecahedral_future_proof
 status: SEALED

@@ -1,4 +1,5 @@
 entry_index: 8890
+witness_prefix: cf1a2e9c1cc1aea7a92ba6594657162e8b6be99794cd5a2e35ca75d61a1f2f71
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-20Z
 event: /directory_structure_audit
 status: AUDIT_SEALED — MIGRATION_DEFERRED

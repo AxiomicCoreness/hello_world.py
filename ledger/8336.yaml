@@ -1,4 +1,5 @@
 entry_index: 8336
+witness_prefix: 6249a416e2ac9c6d3cf32e82a0cb2673a432a6da3f26001460c3f1508a2fb56d
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-06
 event: /system_restart_smoke_test_passed
 status: ALL_11_TESTS_PASSED

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /root_expand_and_settling_daemon_merged
 status: ✅ SEALED — MERGED
 proof_class: structural
-witness_prefix: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
+witness_prefix: 3ca866715823d04dd87facbf5f797a45a01a7f2ab2b2405ca7631057683f12f1
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 root_expand:

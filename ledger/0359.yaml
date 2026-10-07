@@ -1,4 +1,5 @@
 entry_index: 0359
+witness_prefix: 3df1b5f681cd37c6f6838e03b6e1e4785521399581f67c495d3b0dde77baeef4
 entry_type: RAINBOW_BRIDGE_SPECTRUM
 description: "7-layer rainbow bridge spectral optimization"
 event_trigger: |

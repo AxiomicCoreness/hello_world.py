@@ -1,4 +1,5 @@
 entry_index: 9114
+witness_prefix: 690acd8508c6e7a337a74e107a90a38c01372097be406a205008b6e98a358121
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-28
 event: /grid_mesh_declared
 status: ✅ SEALED

@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-27
 event: /ledger/anomaly_alias_fastapi_uvicorn
 status: SEALED
 proof_class: computational
-witness_prefix: "0203020302030203"
+witness_prefix: 219ea820b7a3609d01416e3a4e8ea56042c0f8a2923b519a94f05a361177bfaf
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "anomoly/anomaly events alias to FastAPI/Uvicorn when a dependency probe fails. Sealed files 0312 and 0336 are not renamed."

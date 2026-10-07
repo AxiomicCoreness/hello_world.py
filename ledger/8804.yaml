@@ -1,4 +1,5 @@
 entry_index: 8804
+witness_prefix: 532617b4b290a4221817d3cbc8b6f7665c1d6e619c0c42c5844a46cab8222d83
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-16Z
 event: /simd_step_rho_phase_added
 status: ✅ OPTIONAL_PHASE_RHO_AVAILABLE

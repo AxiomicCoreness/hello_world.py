@@ -1,4 +1,5 @@
 entry_index: 0351
+witness_prefix: 7df1426703e17f43370844b357aaee2401bd12501b75689a6feee8a7897c5bed
 entry_type: STATE_TRANSITION
 description: "Sovereign state transition record"
 event_trigger: |

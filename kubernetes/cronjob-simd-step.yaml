@@ -12,6 +12,7 @@ metadata:
     garden.axiomic/image: "axiomic/sovereign-engine:latest"
     garden.axiomic/seal: "LEAKY_I_CLOSED_8805"
     garden.axiomic/phase_deg: "202.6"
+    garden.zeta_bound: "2.366"
 spec:
   schedule: "0 */6 * * *"
   concurrencyPolicy: Forbid
