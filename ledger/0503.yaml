@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-06-27
 event: /sovereign_api_full_deployment_sealed
 status: SUCCESS
 proof_class: deployment
-witness_prefix: a0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c
+witness_prefix: 19864cfd9ec536f3f11c40e6a3db96664a41d6ea6e65c9ecc1f97d3d976e9631
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Full sovereign API deployment sealed."

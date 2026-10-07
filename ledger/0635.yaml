@@ -1,4 +1,5 @@
 entry_index: 635
+witness_prefix: 8c2968b7a4500ad8ba420e728d237be5e4e9f2bda5fd3bda9464d0a698c6d7ec
 timestamp: 2026-07-06T00:00:00Z
 event: /sovereign_hamiltonian_complete_executed
 status: SEALED

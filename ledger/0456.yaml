@@ -3,7 +3,7 @@ timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /future_state_targets
 status: ✅ SEALED
 proof_class: structural
-witness_prefix: 2f3a4b5c6d7e8f9a
+witness_prefix: de5ce4f73531338988d27d97955ddf92454f3b0b9b7327dc12728b84c7c13c68
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 description: "Future State Targets for k=105."
