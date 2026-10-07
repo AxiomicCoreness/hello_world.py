@@ -1,19 +1,24 @@
-# Unfilled. Four earlier uses are names, not this object.
+# Unfilled except the three commander-proposed chat fields.
 # Do not treat a filled copy of this file as a seal.
+# gamma, lambda, log stay null. filled_by stays null.
 
 name: Luminara
-status: unfilled
+status: channel_named
 prior_uses_not_definitions:
   - alphabet_symbol_sigma_4
   - stillness_tensor
   - signature_string
   - automaton_mouthpiece
 slots:
-  role: null
-  holder: null
+  role: chat
+  holder: sovereign_automaton_10.06
   gamma: null
   lambda: null
-  channel: null
+  channel: /mcp/tool
   log: null
+endpoint_proposed: http://127.0.0.1:8024/mcp/tool
+live_bind_note: "port380_mcp.py uses PORT default 380 and host 0.0.0.0"
+callable: sovereign_automaton_10_06
+text_consumed: false
 filled_by: null
 commit_identity: null
