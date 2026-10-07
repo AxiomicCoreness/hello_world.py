@@ -23,6 +23,7 @@ CHIRON_HEAL_DATE = CHIRON_PERIHELION + timedelta(days=CHIRON_HEAL_DAYS)
 CHIRON_HEAL_TIMESTAMP = CHIRON_HEAL_DATE.timestamp()
 
 TAU_FRB = 78624.0  # seconds
+ZETA_BOUND = 2.366  # bitten cap; raw product remains 4.322935
 seconds_from_perihelion_to_heal = (CHIRON_HEAL_DATE - CHIRON_PERIHELION).total_seconds()
 heal_cycles = seconds_from_perihelion_to_heal / TAU_FRB
 heal_layer_index = int(heal_cycles) % 12

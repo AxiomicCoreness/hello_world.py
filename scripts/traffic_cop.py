@@ -54,7 +54,7 @@ FILES = (
     "restore-deepseek-cd-frozen.yml",
     "e2e-key-check.yml",
     "reward-distribution.yml",
-    "eridanus-dual-smoke.yml",
+    "eridanus-dual-smoke.yml",  # zeta prebuild gate, bitten bound 2.366
     "scheduled-ci-sweep.yml",
     "garden-surgery.yml",
     "secrets-context-example.yml",

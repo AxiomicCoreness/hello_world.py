@@ -56,6 +56,7 @@ data:
     from pathlib import Path
     PHI = (1 + math.sqrt(5)) / 2
     TAU_FRB = 78624.0
+    ZETA_BOUND = 2.366
     NUM_LAYERS, NUM_AZIMUTHS = 12, 4
     NORM, R0, DELTA_Z = PHI ** 5, 0.2033, 6552.0
     OUT = Path(os.environ.get("LATTICE_OUT", "/tmp/lattice_weights.json"))

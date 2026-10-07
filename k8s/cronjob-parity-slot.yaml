@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: parity-slot
+  annotations:
+    garden.zeta_bound: "2.366"
 spec:
   schedule: "*/15 * * * *"
   concurrencyPolicy: Forbid
