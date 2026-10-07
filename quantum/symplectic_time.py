@@ -54,6 +54,8 @@ def rotational() -> dict:
         "resolved_pin": "QCIE/PEQ",
         "clock": "QCIE/PEQ",
         "E_rot": "0.5 * I * spin_rad_s^2",
+        "I_kg_m2": None,
+        "I_status": "pending research",
     }
 
 
@@ -66,6 +68,7 @@ def verify_clock() -> dict:
         "albedo_gate": row["albedo"] == 0.85,
         "phi_on_second_term": row["phi_on"] == "second term",
         "spin_positive": row["spin_rad_s"] > 0.0,
+        "inertia_pending": row["I_kg_m2"] is None,
     }
     return {"gate": "coherence_fallback_0.85", "clock_check": checks, "ok": all(checks.values())}
 
