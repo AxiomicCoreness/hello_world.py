@@ -9,6 +9,12 @@ Honest state, no fabrication:
     symplectic_status.agent.jsonl by default.
   - record=1 may append a read line; write failures are returned, not swallowed.
 
+Hash pin: the receipt hashes the raw file bytes. It does not normalize
+line endings. Docstring text is a local pin, not ast.get_docstring().
+The receipt names this file by git blob SHA. That identity is not a seal.
+
+Base64 carrier: not a float64 transformer of I. I stays null.
+
 Wire into port380_mcp.py:
 
     from scripts.cdp_status import register_cdp_status
@@ -24,6 +30,7 @@ Standalone:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -313,6 +320,22 @@ def _serve_standalone(port: int) -> None:
         srv.server_close()
 
 
+def receipt() -> dict[str, Any]:
+    """Raw-byte identity. Local docstring pin. Not ast.get_docstring()."""
+    raw = Path(__file__).read_bytes()
+    blob = hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
+    return {
+        "hash": "raw file bytes",
+        "line_ending_normalization": False,
+        "docstring": "local pin",
+        "ast_get_docstring": False,
+        "blob_sha": blob,
+        "content_sha256": hashlib.sha256(raw).hexdigest(),
+        "I": None,
+        "base64_is_float64_transformer": False,
+    }
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     ap = argparse.ArgumentParser(prog="cdp_status.py")
     ap.add_argument(
@@ -329,8 +352,12 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="include reachability probe (needs CDP_ENDPOINT)",
     )
     ap.add_argument("--port", type=int, default=STANDALONE_PORT)
+    ap.add_argument("--receipt", action="store_true", help="print the raw-byte identity")
     args = ap.parse_args(argv)
 
+    if args.receipt:
+        print(json.dumps(receipt(), sort_keys=True))
+        return 0
     if args.once:
         print(json.dumps(cdp_status(probe=args.probe), indent=2))
         return 0
