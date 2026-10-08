@@ -1,0 +1,10 @@
+entry_index: 9271
+witness_prefix: flourish_relay
+timestamp: '2026-10-08T01:31:00Z'
+event: /flourish_relay
+status: RECORDED
+prev_hash: 71283a331055cffe765d9b4b63cbbae040a7123cb1e51db1cde0c990adf28e21
+witness_chain: 9270 -> 9271
+note: Idempotent relay. P(t)=172.58800723037194*(exp(phi*t)-1). Progress 0.7193, not 0.618. 9270 not rewritten. I null.
+I: null
+seal_sha3_256: ba4a305a3aed2f7c0ea72d2339f749670997f377b834ca1668fce629a4d987a3
