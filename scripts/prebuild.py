@@ -147,12 +147,26 @@ def stage_zeta_bound() -> Stage:
     return s
 
 
+def stage_causal_plane() -> Stage:
+    s = Stage("causal_plane", blocking=False)
+    tool = REPO / "scripts" / "causal_plane.py"
+    if not tool.exists():
+        s.status, s.detail = "skip", "scripts/causal_plane.py not present"
+        return s
+    code, out, err = _run([sys.executable, str(tool)], cwd=REPO)
+    s.raw = (out or err).strip()[:500]
+    s.status = "pass" if code == 0 else "fail"
+    s.detail = "stated plane recorded; zeta raw product still fails 2.366"
+    return s
+
+
 def run(targets: List[Path], ledger: Path) -> List[Stage]:
     return [
         stage_ast_guard(targets),
         stage_hexstrike(ledger),
         stage_cdp_status(),
         stage_zeta_bound(),
+        stage_causal_plane(),
     ]
 
 

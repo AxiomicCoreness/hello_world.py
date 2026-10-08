@@ -1,0 +1,1 @@
+{"I": null, "advances_head": false, "embedding": "phi^n mod 2", "embedding_derived": false, "equation": "laplacian(psi) - i*hbar*dpsi/dt = V*psi", "zeta_bound": 2.366, "zeta_passes": false, "zeta_raw_product": 4.322935}
