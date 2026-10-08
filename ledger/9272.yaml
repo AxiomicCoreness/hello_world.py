@@ -1,0 +1,11 @@
+entry_index: 9272
+witness_prefix: latex_phase_pointer
+timestamp: '2026-10-08T01:38:00Z'
+event: /phase_sync_latex_pointer
+status: RECORDED
+prev_hash: ba4a305a3aed2f7c0ea72d2339f749670997f377b834ca1668fce629a4d987a3
+witness_chain: 9271 -> 9272
+note: LaTeX pointer for stated phase formulas. Intellect operator is not inertia. Inner product as written is not normalized. I_inertia null.
+I: null
+latex: ledger/cdp_status_fallback.tex
+seal_sha3_256: dddcfc2ab2cbe199d1e026b60fade97d70ae298bdbfe4b4ff3513e294128796b
