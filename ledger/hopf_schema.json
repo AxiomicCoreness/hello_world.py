@@ -1,0 +1,15 @@
+{
+  "schema": "hopf_field_prebuild",
+  "certified": false,
+  "d_hat_stated": [0.857, 0.367, 0.245, 0.122],
+  "d_hat_computed": [0.8819171036881968, 0.3779644730092272, 0.25197631533948484, 0.12598815766974242],
+  "F_sov_stated": 0.998,
+  "F_sov_from_stated_product": 1.398971603081024,
+  "phi3_omega_stated": 2.3593040860,
+  "phi3_omega_computed": 2.402457531158749,
+  "pi_e_omega_stated": 4.8481368111,
+  "pi_e_omega_computed": 4.843252966272124,
+  "hashes": "truncated placeholders, not seals",
+  "zeta_raw_passes": false,
+  "advances_head": false
+}
