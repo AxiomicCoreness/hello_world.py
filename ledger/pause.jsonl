@@ -1,0 +1,1 @@
+{"I": null, "advances_head": false, "event": "/ledger_paused", "head": 9273, "next_free": 9274, "reason": "pause declared so a silent stop is not a lost push", "status": "declared"}
