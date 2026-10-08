@@ -1,0 +1,13 @@
+name: slot-intellect-relay
+on:
+  workflow_dispatch:
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: relay slot to intellect operator
+        run: python3 scripts/slot_intellect_relay.py
