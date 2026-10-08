@@ -1,0 +1,12 @@
+entry_index: 9269
+witness_prefix: cdp_status_latex_fallback
+timestamp: '2026-10-08T01:13:00Z'
+event: /cdp_status_latex_fallback
+status: RECORDED
+prev_hash: 2bec00e1540535e8a92495ef8ffede5c93ba17e5876de5b8a2f3fbe954004fdf
+witness_chain: 9268 -> 9269
+note: Stdlib LaTeX fallback of cdp_status. No session. I is null. Hash is raw bytes.
+session_id: null
+I: null
+latex: ledger/cdp_status_fallback.tex
+seal_sha3_256: ebeb2b1984732c9162ef602910b62cd71553e4f65c2d5befea69c0a6499bdceb
