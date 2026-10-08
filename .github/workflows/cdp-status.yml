@@ -1,0 +1,15 @@
+name: cdp-status
+on:
+  workflow_dispatch:
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: one status read
+        run: python3 scripts/cdp_status.py --once
+      - name: receipt
+        run: python3 scripts/cdp_status.py --receipt
