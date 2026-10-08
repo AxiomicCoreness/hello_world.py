@@ -1,0 +1,11 @@
+entry_index: 9273
+witness_prefix: static_xml_pointer
+timestamp: '2026-10-08T01:43:00Z'
+event: /static_xml_zeta_pointer
+status: RECORDED
+prev_hash: dddcfc2ab2cbe199d1e026b60fade97d70ae298bdbfe4b4ff3513e294128796b
+witness_chain: 9272 -> 9273
+note: Static XML. Intellect action is not inertia. phi*pi*delta_nm is not normalized. Zeta raw product fails 2.366. Label 2026.058.1610.
+I: null
+xml: ledger/phase_pointer.xml
+seal_sha3_256: 871677d7c18e5d5a843eb2abfa0de2a9fd15186fbdc9a182baad1e915af56928

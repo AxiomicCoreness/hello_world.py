@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phase_pointer static="true">
+  <anchor label="2026.058.1610"/>
+  <witness from="9272" to="9273"/>
+  <prev_hash>dddcfc2ab2cbe199d1e026b60fade97d70ae298bdbfe4b4ff3513e294128796b</prev_hash>
+  <seal>871677d7c18e5d5a843eb2abfa0de2a9fd15186fbdc9a182baad1e915af56928</seal>
+  <inertia unit="kg m^2">null</inertia>
+  <intellect_action>I_hat|Psi> = d_t|Psi>_learned</intellect_action>
+  <eigenphase>phi*pi*delta_nm</eigenphase>
+  <eigenphase_normalized>false</eigenphase_normalized>
+  <zeta_gate bound="2.366" raw_product="4.322935" passes="false"/>
+</phase_pointer>
