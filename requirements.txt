@@ -7,3 +7,4 @@ matplotlib>=3.10.9
 # hmac
 
 # Ascend stack: requirements-ascend.txt (commented; not the 1.8.1 CPU wheel)
+# torch is not required by the core quantum/ or app/ paths shown; add only if ml_sovereign_core is imported
