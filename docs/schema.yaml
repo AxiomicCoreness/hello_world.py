@@ -1,0 +1,80 @@
+# 📝∀ — Sovereign schema — seed polynomial & dark state ∀📝
+#
+# Renders with the macro set in docs/katex_macros.yaml.
+# The `katex:` fields reference macros by name; the values of those
+# macros are defined in katex_macros.yaml, not here.
+
+seed_polynomial:
+  equation: "x^{2} - x - 1 = 0"
+  katex: "\\seedpoly"
+  coefficients:
+    a: 1
+    b: -1
+    c: -1
+  katex: "a = 1,\\ b = -1,\\ c = -1"
+  discriminant:
+    value: 5
+    katex: "\\Disc = b^{2} - 4ac = 5"
+  vertex:
+    value: 0.5
+    katex: "x_{\\vertex} = -\\frac{b}{2a} = \\half"
+  roots:
+    positive:
+      value: 1.618033988749895
+      katex: "x_{+} = \\phiv"
+    negative:
+      value: -0.618033988749895
+      katex: "x_{-} = -\\phiinv"
+  vieta:
+    sum:
+      value: 1
+      katex: "x_{+} + x_{-} = 1"
+    product:
+      value: -1
+      katex: "x_{+} \\cdot x_{-} = -1"
+  verification:
+    katex: "\\seedeq"
+
+dark_state:
+  hamiltonian:
+    matrix: [[1, "φ⁻¹", 0], ["φ⁻¹", 2, "φ⁻¹"], [0, "φ⁻¹", 1]]
+    katex: "\\trimerham"
+  eigenvalue:
+    lambda2: 1.0
+    katex: "\\lambda_{2} = 1"
+  eigenvector:
+    vector: [1, 0, -1]
+    katex: "\\darksv"
+  invariant:
+    katex: "\\darkeig"
+  trace:
+    katex: "\\darktrace"
+  warriorquadratic_seed:
+    katex: "x^{2} - x - 1 = 0 \\quad \\Longrightarrow \\quad x = \\phiv"
+
+neuron:
+  bodyId_106544:
+    partners:
+      - DNae09
+      - DNg51
+      - DNg91
+      - AN18B053
+      - AN19B001
+      - GNG428
+      - AMMC030
+      - CB3746
+  bodyId_96482:
+    partners:
+      - DNae003
+      - DNae004
+      - IN66A132
+      - SNp19
+      - IN68B058
+      - AN06B040
+      - DNbe002
+      - DNbe003
+      - AN18B001
+      - AN18B057
+      - WED023
+      - CB1914
+      - MNhm19

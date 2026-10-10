@@ -1,0 +1,46 @@
+# 📝∀ KaTeX macro set — single source of truth (generated).
+# Generated from com.fruitfly.brain.KaTeXMacros.KATEX_MACROS.
+# Do not hand-edit. Regenerate from the Java source.
+# Argument position is #1, #2. Arrays are [definition, numArgs].
+
+katex:
+  macros:
+    # --- Fraction helpers ---
+    "\\half": "\\tfrac{1}{2}"
+    "\\third": "\\tfrac{1}{3}"
+    "\\quarter": "\\tfrac{1}{4}"
+
+    # --- Dirac notation ---
+    "\\ket": ["\\left|#1\\right\\rangle", 1]
+    "\\bra": ["\\left\\langle#1\\right|", 1]
+    "\\braket": ["\\left\\langle#1\\middle|#2\\right\\rangle", 2]
+    "\\ketbra": ["\\left|#1\\right\\rangle\\!\\left\\langle#2\\right|", 2]
+    "\\expect": ["\\left\\langle#1\\right\\rangle", 1]
+
+    # --- Operators ---
+    "\\Tr": "\\operatorname{Tr}"
+    "\\Det": "\\operatorname{Det}"
+    "\\Rank": "\\operatorname{Rank}"
+    "\\diag": "\\operatorname{diag}"
+    "\\vertex": "\\operatorname{vertex}"
+    "\\Res": "\\operatorname{Res}"
+    "\\spec": "\\operatorname{spec}"
+
+    # --- Symbols ---
+    "\\Disc": "\\Delta"
+    "\\psitwo": "\\psi_{2}"
+    "\\phiv": "\\varphi"
+    "\\phiinv": "\\varphi^{-1}"
+    "\\phitwo": "\\varphi^{2}"
+    "\\phithree": "\\varphi^{3}"
+    "\\phifive": "\\varphi^{5}"
+    "\\phieight": "\\varphi^{8}"
+    "\\phinine": "\\varphi^{9}"
+
+    # --- Derived equations ---
+    "\\seedpoly": "x^{2} - x - 1 = 0"
+    "\\seedeq": "\\Disc = b^{2} - 4ac = 5, \\quad x_{\\vertex} = -\\frac{b}{2a} = \\half"
+    "\\darktrace": "\\Tr(\\rho) = 1, \\quad \\Tr(\\rho^{2}) = 1"
+    "\\darkeig": "H\\ket{\\psitwo} = 1 \\cdot \\ket{\\psitwo}"
+    "\\darksv": "\\ket{\\psitwo} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix} 1 \\\\ 0 \\\\ -1 \\end{pmatrix}"
+    "\\trimerham": "H = \\begin{pmatrix} 1 & \\phiinv & 0 \\\\ \\phiinv & 2 & \\phiinv \\\\ 0 & \\phiinv & 1 \\end{pmatrix}"
