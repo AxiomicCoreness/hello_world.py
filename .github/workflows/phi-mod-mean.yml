@@ -1,15 +1,59 @@
+# ──────────────────────────────────────────────────────────────────────
+# LABEL BLOCK
+# ──────────────────────────────────────────────────────────────────────
+# label:     garden.spec
+# path:      .github/workflows/phi-mod-mean.yml
+# companion: scripts/phi_mod_mean.py
+# TYPE:      workflow
+# STATUS:    open
+# BLOCKER:   none
+# QUEUE:     new — not in carried 17
+# ORIGIN:    superseding write of given stub
+# AUTHOR:    operator
+# ──────────────────────────────────────────────────────────────────────
+
 name: phi-mod-mean
+
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "scripts/phi_mod_mean.py"
+      - ".github/workflows/phi-mod-mean.yml"
+  pull_request:
+    paths:
+      - "scripts/phi_mod_mean.py"
+      - ".github/workflows/phi-mod-mean.yml"
+
 permissions:
   contents: read
+
+concurrency:
+  group: phi-mod-mean-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   assert-mean:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with:
-          python-version: "3.12"
-      - name: hard assert
+          python-version: ${{ matrix.python-version }}
+      - name: hard assert (py${{ matrix.python-version }})
         run: python3 scripts/phi_mod_mean.py
+      - name: summary
+        if: always()
+        run: |
+          {
+            echo "## phi-mod-mean — py${{ matrix.python-version }}"
+            echo ""
+            echo "status: ${{ job.status }}"
+            echo "commit: ${{ github.sha }}"
+            echo "ref:    ${{ github.ref }}"
+          } >> "$GITHUB_STEP_SUMMARY"
