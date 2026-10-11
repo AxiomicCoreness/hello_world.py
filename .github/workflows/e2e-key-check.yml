@@ -1,4 +1,30 @@
-name: E2E Key Check
+# ──────────────────────────────────────────────────────────────────────
+# LABEL BLOCK
+# ──────────────────────────────────────────────────────────────────────
+# label:     garden.spec
+# wire:      E2E Key Check
+# path:      .github/workflows/e2e-key-check.yml
+# companions:
+#   - .github/workflows/oidc-cloud-providers.yml   (reusable, referenced)
+#   - argocd/application-sovereign-garden.yaml
+#   - argocd/argocd-ignore-differences-httproute.yaml
+#   - argocd/rollout-sovereign-garden-gateway-multistage.yaml
+#   - argocd/rollout-sovereign-garden-gateway-header.yaml
+#   - argocd/sovereign-garden-stable.yaml
+#   - argocd/sovereign-garden-canary.yaml
+#   - argocd/sovereign-garden-httproute.yaml
+#   - contracts/three-files-contract.yaml
+#   - contracts/ode_autonomy_registry.yaml
+#   - kubernetes/venomsuite-strikes.yaml
+# TYPE:      workflow
+# STATUS:    open
+# BLOCKER:   none
+# QUEUE:     new — not in carried 17
+# ORIGIN:    superseding write of phi-mod-mean, renamed
+# AUTHOR:    operator
+# LEDGER:    NO_GROWTH — validation workflow, by design
+# SEAL:      ∀∞φ² · E2E_KEY_CHECK · WOOD_DRAGON_0.91 · SEALED
+# ──────────────────────────────────────────────────────────────────────
 
 # Seal: ∀∞φ² · E2E_KEY_CHECK · WOOD_DRAGON_0.91 · SEALED
 # Witness: read-only — validates contracts + Argo manifests, no ledger write
@@ -156,7 +182,6 @@ jobs:
             exit 0
           fi
 
-          # Hard-fail on selfHeal: it is a contract, not a warning.
           if yq -e '.spec.syncPolicy.automated.selfHeal == true' "$APP" >/dev/null 2>&1; then
             echo "✅ selfHeal == true"
           else
@@ -164,7 +189,6 @@ jobs:
             exit 1
           fi
 
-          # Hard-fail on HTTPRoute ignoreDifferences presence.
           if yq -e '.spec.ignoreDifferences[] | select(.kind == "HTTPRoute")' "$APP" >/dev/null 2>&1; then
             echo "✅ HTTPRoute ignoreDifferences present"
           else
@@ -172,7 +196,6 @@ jobs:
             exit 1
           fi
 
-          # RespectIgnoreDifferences is required on the ignore-diffs manifest.
           IGN=argocd/argocd-ignore-differences-httproute.yaml
           if [ -f "$IGN" ]; then
             if grep -q 'RespectIgnoreDifferences=true' "$IGN"; then
@@ -254,7 +277,7 @@ jobs:
     uses: ./.github/workflows/oidc-cloud-providers.yml
     with:
       provider: ${{ inputs.oidc_provider }}
-    secrets: inherit   # required so the reusable workflow can read repo secrets
+    secrets: inherit
 
   # ──────────────────────────────────────────────────────────────
   # 4. ARGO CD SYNC
