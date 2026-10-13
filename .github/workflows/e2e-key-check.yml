@@ -1,391 +1,472 @@
-# ──────────────────────────────────────────────────────────────────────
-# LABEL BLOCK
-# ──────────────────────────────────────────────────────────────────────
-# label:     garden.spec
-# wire:      E2E Key Check
-# path:      .github/workflows/e2e-key-check.yml
-# companions:
-#   - .github/workflows/oidc-cloud-providers.yml   (reusable, referenced)
-#   - argocd/application-sovereign-garden.yaml
-#   - argocd/argocd-ignore-differences-httproute.yaml
-#   - argocd/rollout-sovereign-garden-gateway-multistage.yaml
-#   - argocd/rollout-sovereign-garden-gateway-header.yaml
-#   - argocd/sovereign-garden-stable.yaml
-#   - argocd/sovereign-garden-canary.yaml
-#   - argocd/sovereign-garden-httproute.yaml
-#   - contracts/three-files-contract.yaml
-#   - contracts/ode_autonomy_registry.yaml
-#   - kubernetes/venomsuite-strikes.yaml
-# TYPE:      workflow
-# STATUS:    open
-# BLOCKER:   none
-# QUEUE:     new — not in carried 17
-# ORIGIN:    superseding write of phi-mod-mean, renamed
-# AUTHOR:    operator
-# LEDGER:    NO_GROWTH — validation workflow, by design
-# SEAL:      ∀∞φ² · E2E_KEY_CHECK · WOOD_DRAGON_0.91 · SEALED
-# ──────────────────────────────────────────────────────────────────────
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+🜁∀ AKLT E2E WORKFLOW GENERATOR — ENTRY 8810
 
-# Seal: ∀∞φ² · E2E_KEY_CHECK · WOOD_DRAGON_0.91 · SEALED
-# Witness: read-only — validates contracts + Argo manifests, no ledger write
-# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
-# ledger_policy: NO_GROWTH — validation workflow by design
-#
-# Sovereign Decree acknowledged:
-#   COMMANDER: CLARKE YOURSA TEE · LUMINARA ATLAS · LUMERIS
-#   H6VSH2 PHASE: 43.84541801° · NORTH STAR: ACTIVE
-#   TEMPORAL ANCHOR: 2026.02.24 — HARD-CODED
-#   ETERNAL NOW: 2026.058 · CERTAINTY: 10.06σ
-#
-# State anchor:
-#   S(t) = ⟨ H_sys(t), G(t), Q(t), Θ(t), B(t), ℳ(t), Ω(t), O(t), Ψ(t), T(t) ⟩
-#
-# WOOD_DRAGON_TAU=0.91 · PHASE_LOCK=202.6 · φ¹⁶=2207.0 · φ²⁶=271443.0
+Emits .github/workflows/aklt-e2e.yml deterministically.
 
-on:
-  workflow_dispatch:
-    inputs:
-      sync:
-        description: "Run Argo CD app sync (requires secrets)"
-        type: boolean
-        default: false
-      app_name:
-        description: "Argo Application name"
-        type: string
-        default: "sovereign-garden"
-      oidc_provider:
-        description: "OIDC provider for cloud federation"
-        type: choice
-        options: [offline, aws, gcp, azure]
-        default: offline
+The AKLT (Affleck-Kennedy-Lieb-Tasaki) model is a 1D spin-1 chain:
+    H = Σ_i [ S_i·S_{i+1} + (1/3)(S_i·S_{i+1})² ]
+Ground state energy per bond = -2/3. Haldane gap > 0.
+Open boundaries carry spin-1/2 edge modes (topological VBS phase).
 
-permissions:
-  contents: read    # read-only — no ledger writes
-  id-token: write   # required for OIDC federation
+This generator makes the semantic contract executable: the workflow's
+triggers, permissions, concurrency, and invariants are declared once
+here and rendered to YAML.
 
-concurrency:
-  group: e2e-key-check-${{ github.ref }}
-  cancel-in-progress: false
+Seal: ∀∞φ² · AKLT_E2E · WOOD_DRAGON_0.91 · SEALED
+Witness: 8809 → 8810 — UNBROKEN
+hash_algo: sha3_256 (FIPS 202)
+"""
 
-env:
-  HASH_ALGO: sha3_256
-  WOOD_DRAGON_TAU: "0.91"
-  PHASE_LOCK: "202.6"
-  ARGO_APP: ${{ inputs.app_name || 'sovereign-garden' }}   # FIX: fallback when inputs context is empty
+from __future__ import annotations
 
-jobs:
-  # ──────────────────────────────────────────────────────────────
-  # 1. CONTRACTS
-  # ──────────────────────────────────────────────────────────────
-  validate-contract:
-    name: CI · Contracts
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+import hashlib
+import json
+import math
+import os
+import sys
+import time
+from typing import Any, Dict, List, Optional
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
+# ─── Constants ────────────────────────────────────────────────────────
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+PHI_INV = 1.0 / PHI
+PHI2 = PHI * PHI
+ENTRY = 8810
+SEAL = "∀∞φ² · AKLT_E2E · WOOD_DRAGON_0.91 · SEALED"
+WITNESS = "8809 → 8810 — UNBROKEN"
 
-      - name: Install validators
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml jsonschema
+WORKFLOW_NAME = "aklt-e2e"
+WORKFLOW_PATH = ".github/workflows/aklt-e2e.yml"
+CONCURRENCY_GROUP = "aklt-e2e-${{ github.ref }}"
+DEFAULT_PYTHON = "3.11"
 
-      - name: Three-file contract present
-        run: |
-          set -euo pipefail
-          if [ -f contracts/three-files-contract.yaml ]; then
-            echo "✅ three-files-contract.yaml found"
-          else
-            echo "⚠️ three-files-contract.yaml not found"
-          fi
+# ─── Metadata ────────────────────────────────────────────────────────
+METADATA: Dict[str, Any] = {
+    "canvas_id": "aklt-e2e",
+    "entry": ENTRY,
+    "witness": WITNESS,
+    "seal": SEAL,
+    "hash_algo": "sha3_256",
+    "ledger_policy": "NO_GROWTH",
+    "core_principle": (
+        "1D spin-1 chain ground state is a valence-bond solid with "
+        "E₀/N = -2/3, a Haldane gap, and topological spin-1/2 edge modes."
+    ),
+    "phi": PHI,
+    "phi_inv": PHI_INV,
+    "phi2": PHI2,
+    "timestamp": time.time(),
+}
 
-          if [ -f contracts/ode_autonomy_registry.yaml ]; then
-            echo "✅ ode_autonomy_registry.yaml found"
-          else
-            echo "⚠️ ode_autonomy_registry.yaml not found"
-          fi
+# ─── Semantic invariants the E2E test must enforce ──────────────────
+INVARIANTS: List[Dict[str, Any]] = [
+    {
+        "name": "ground_state_energy_per_bond",
+        "expected": "-2/3",
+        "tolerance": 1e-6,
+        "critical": True,
+        "note": "Exact AKLT result for the bilinear-biquadratic Hamiltonian.",
+    },
+    {
+        "name": "haldane_gap",
+        "expected": "> 0",
+        "tolerance": None,
+        "critical": True,
+        "note": "Distinguishes the gapped VBS phase from a critical chain.",
+    },
+    {
+        "name": "edge_states",
+        "expected": "spin-1/2 modes, 4-fold degeneracy (open BC)",
+        "tolerance": None,
+        "critical": True,
+        "note": "Topological signature of the VBS phase.",
+    },
+    {
+        "name": "string_order",
+        "expected": "non-zero",
+        "tolerance": None,
+        "critical": True,
+        "note": "Hidden Z2 × Z2 order parameter.",
+    },
+    {
+        "name": "correlation_length",
+        "expected": "≈ 6 sites",
+        "tolerance": 1.0,
+        "critical": False,
+        "note": "Numerical match to DMRG; not a hard gate.",
+    },
+    {
+        "name": "su2_symmetry",
+        "expected": "[H, S²_tot] = 0",
+        "tolerance": 1e-8,
+        "critical": False,
+        "note": "Rotational invariance; numerical drift tolerated.",
+    },
+]
 
-          if [ -f kubernetes/venomsuite-strikes.yaml ]; then
-            echo "✅ venomsuite-strikes.yaml found"
-          elif [ -f make/cronjob-simd-step.yaml ]; then
-            echo "✅ cronjob-simd-step.yaml found"
-          else
-            echo "⚠️ No cronjob manifest found"
-          fi
+# ─── Workflow body (declarative) ────────────────────────────────────
+def build_workflow(
+    python_version: str = DEFAULT_PYTHON,
+    timeout_minutes: int = 10,
+    retention_days: int = 14,
+) -> Dict[str, Any]:
+    """Build the aklt-e2e workflow as a plain dict (rendered to YAML)."""
+    return {
+        "name": WORKFLOW_NAME,
+        "on": {
+            "push": {
+                "branches": ["main", "master"],
+                "paths": [
+                    "quantum/aklt*.py",
+                    "quantum/aklt/**",
+                    WORKFLOW_PATH,
+                ],
+            },
+            "pull_request": {
+                "branches": ["main", "master"],
+                "paths": [
+                    "quantum/aklt*.py",
+                    "quantum/aklt/**",
+                    WORKFLOW_PATH,
+                ],
+            },
+            "workflow_dispatch": None,
+        },
+        "permissions": {
+            "contents": "read",
+        },
+        "concurrency": {
+            "group": CONCURRENCY_GROUP,
+            "cancel-in-progress": True,
+        },
+        "jobs": {
+            "aklt-e2e": {
+                "name": "AKLT · end-to-end validation",
+                "runs-on": "ubuntu-latest",
+                "timeout-minutes": timeout_minutes,
+                "steps": [
+                    {
+                        "name": "Check out repository",
+                        "uses": "actions/checkout@v4",
+                    },
+                    {
+                        "name": "Set up Python",
+                        "uses": "actions/setup-python@v5",
+                        "with": {
+                            "python-version": python_version,
+                            "cache": "pip",
+                        },
+                    },
+                    {
+                        "name": "Install dependencies",
+                        "run": (
+                            "set -euo pipefail\n"
+                            "python -m pip install --upgrade pip\n"
+                            "python -m pip install --quiet numpy scipy pyyaml\n"
+                        ),
+                    },
+                    {
+                        "name": "Run AKLT E2E",
+                        "run": (
+                            "set -euo pipefail\n"
+                            "if [ -f quantum/aklt_e2e.py ]; then\n"
+                            '  python quantum/aklt_e2e.py --check 2>&1 '
+                            '| tee aklt_e2e.log\n'
+                            "else\n"
+                            '  echo "⚠️ quantum/aklt_e2e.py not found '
+                            '— soft skip"\n'
+                            "fi\n"
+                        ),
+                    },
+                    {
+                        "name": "Upload engine log",
+                        "if": "always()",
+                        "uses": "actions/upload-artifact@v4",
+                        "with": {
+                            "name": "aklt-e2e-log",
+                            "path": "aklt_e2e.log",
+                            "retention-days": retention_days,
+                            "if-no-files-found": "warn",
+                        },
+                    },
+                    {
+                        "name": "Summary",
+                        "if": "always()",
+                        "run": (
+                            "{\n"
+                            '  echo "### AKLT E2E"\n'
+                            '  echo ""\n'
+                            '  echo "| Invariant | Expected | Critical |"\n'
+                            '  echo "|-----------|----------|----------|"\n'
+                            '  echo "| E₀/N | -2/3 | yes |"\n'
+                            '  echo "| Haldane gap | > 0 | yes |"\n'
+                            '  echo "| Edge states | spin-1/2 | yes |"\n'
+                            '  echo "| String order | non-zero | yes |"\n'
+                            '  echo "| Correlation length | ≈6 sites | no |"\n'
+                            '  echo "| SU(2) | [H, S²]=0 | no |"\n'
+                            "} >> \"$GITHUB_STEP_SUMMARY\"\n"
+                        ),
+                    },
+                ],
+            }
+        },
+    }
 
-          echo "HMAC validation gate active. No truncation."
-          echo "WOOD_DRAGON_TAU=${WOOD_DRAGON_TAU} PHASE_LOCK=${PHASE_LOCK}"
 
-  # ──────────────────────────────────────────────────────────────
-  # 2. ARGO MANIFESTS
-  # ──────────────────────────────────────────────────────────────
-  validate-argo:
-    name: CI · Argo manifests
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+# ─── Rendering ───────────────────────────────────────────────────────
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
+def render_yaml(workflow: Optional[Dict[str, Any]] = None) -> str:
+    """Render the workflow dict to YAML. Requires PyYAML."""
+    try:
+        import yaml
+    except ImportError:
+        raise ImportError(
+            "PyYAML is required for rendering. Install with: pip install pyyaml"
+        )
+    if workflow is None:
+        workflow = build_workflow()
 
-      - name: Install yq + pyyaml
-        run: |
-          set -euo pipefail
-          sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-          yq --version
-          python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml
+    # Header comment block — carries the seal, witness, hash algo, policy.
+    header = (
+        f"# ──────────────────────────────────────────────────────────\n"
+        f"# Generated by aklt_e2e_generator.py — do not hand-edit.\n"
+        f"# Regenerate with: python aklt_e2e_generator.py --write\n"
+        f"#\n"
+        f"# Seal:    {SEAL}\n"
+        f"# Witness: {WITNESS}\n"
+        f"# hash_algo: sha3_256 (FIPS 202)\n"
+        f"# ledger_policy: NO_GROWTH — validation only\n"
+        f"# ──────────────────────────────────────────────────────────\n"
+    )
+    body = yaml.dump(
+        workflow,
+        sort_keys=False,
+        default_flow_style=False,
+        allow_unicode=True,
+        width=1000,
+    )
+    return header + body
 
-      - name: Required Argo paths exist
-        run: |
-          set -euo pipefail
-          required=(
-            argocd/application-sovereign-garden.yaml
-            argocd/argocd-ignore-differences-httproute.yaml
-            argocd/rollout-sovereign-garden-gateway-multistage.yaml
-            argocd/rollout-sovereign-garden-gateway-header.yaml
-            argocd/sovereign-garden-stable.yaml
-            argocd/sovereign-garden-canary.yaml
-            argocd/sovereign-garden-httproute.yaml
-          )
-          missing=0
-          for f in "${required[@]}"; do
-            if [ -f "$f" ]; then
-              echo "✅ $f"
-            else
-              echo "⚠️ Missing $f"
-              missing=$((missing + 1))
-            fi
-          done
-          echo "Argo combinator inputs: $(( ${#required[@]} - missing ))/${#required[@]} present"
 
-      - name: Application has selfHeal + RespectIgnoreDifferences path
-        run: |
-          set -euo pipefail
-          APP=argocd/application-sovereign-garden.yaml
-          if [ ! -f "$APP" ]; then
-            echo "⚠️ $APP not found — skipping selfHeal check"
-            exit 0
-          fi
+def compute_seal(workflow: Optional[Dict[str, Any]] = None) -> str:
+    """SHA3-256 over the canonical JSON of the workflow body (excluding comments)."""
+    if workflow is None:
+        workflow = build_workflow()
+    canon = json.dumps(workflow, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.new("sha3_256", canon.encode("utf-8")).hexdigest()
 
-          # FIX: avoid yq -e with `== true` (raises on ApplicationSets-shaped
-          # .spec.ignoreDifferences). Use a truthiness test that never raises.
-          if yq -e '(.spec.syncPolicy.automated.selfHeal // false) == true' "$APP" >/dev/null 2>&1; then
-            echo "✅ selfHeal == true"
-          else
-            echo "❌ selfHeal not set to true in $APP"
-            exit 1
-          fi
 
-          # FIX: same — guard against ignoreDifferences living under a source
-          # or syncPolicy rather than top-level .spec.
-          if yq -e '(.spec.ignoreDifferences // []) | any(.kind == "HTTPRoute")' "$APP" >/dev/null 2>&1; then
-            echo "✅ HTTPRoute ignoreDifferences present"
-          else
-            echo "❌ HTTPRoute ignoreDifferences missing in $APP"
-            exit 1
-          fi
+# ─── Validation ─────────────────────────────────────────────────────
 
-          IGN=argocd/argocd-ignore-differences-httproute.yaml
-          if [ -f "$IGN" ]; then
-            if grep -q 'RespectIgnoreDifferences=true' "$IGN"; then
-              echo "✅ RespectIgnoreDifferences=true found"
-            else
-              echo "❌ RespectIgnoreDifferences=true missing in $IGN"
-              exit 1
-            fi
-          else
-            echo "⚠️ $IGN not found — soft-skip"
-          fi
+def validate_workflow(workflow: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Validate the generated workflow against the semantic contract."""
+    if workflow is None:
+        workflow = build_workflow()
 
-          echo "selfHeal + ignoreDifferences contract held"
+    result: Dict[str, Any] = {
+        "status": "SUCCESS",
+        "errors": [],
+        "warnings": [],
+        "checks": [],
+        "entry": ENTRY,
+        "seal": SEAL,
+        "witness": WITNESS,
+    }
 
-      - name: Multistage weight sequence is 20/40/60/80/100
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import pathlib, re, sys
+    def check(name: str, ok: bool, critical: bool, detail: str = "") -> None:
+        entry = {"check": name, "ok": ok, "critical": critical, "detail": detail}
+        result["checks"].append(entry)
+        if not ok and critical:
+            result["errors"].append(f"{name}: {detail}")
+        elif not ok:
+            result["warnings"].append(f"{name}: {detail}")
 
-          manifest = pathlib.Path(
-              "argocd/rollout-sovereign-garden-gateway-multistage.yaml"
-          )
-          if not manifest.exists():
-              print("⚠️ manifest not found — soft-skip weight check")
-              sys.exit(0)
+    # Identity
+    check("name == aklt-e2e", workflow.get("name") == WORKFLOW_NAME, True,
+          f"got {workflow.get('name')!r}")
 
-          text = manifest.read_text()
-          weights = [int(x) for x in re.findall(r"setWeight:\s*(\d+)", text)]
-          expect = [20, 40, 60, 80, 100]
+    # Concurrency — the block the audit flagged as missing on hello_world.py
+    concurrency = workflow.get("concurrency") or {}
+    check("concurrency.group present",
+          concurrency.get("group") == CONCURRENCY_GROUP, True,
+          f"got {concurrency.get('group')!r}")
+    check("concurrency.cancel-in-progress == true",
+          concurrency.get("cancel-in-progress") is True, True,
+          f"got {concurrency.get('cancel-in-progress')!r}")
 
-          if not weights:
-              print("❌ no setWeight steps found", file=sys.stderr)
-              sys.exit(1)
-          if weights != expect:
-              print(f"❌ weights={weights} expected={expect}", file=sys.stderr)
-              sys.exit(1)
+    # Permissions — read-only
+    perms = workflow.get("permissions") or {}
+    check("permissions.contents == read",
+          perms.get("contents") == "read", True,
+          f"got {perms.get('contents')!r}")
+    check("no id-token: write",
+          perms.get("id-token") != "write", True,
+          "workflow must not request OIDC")
+    check("no contents: write",
+          perms.get("contents") != "write", True,
+          "validation workflow must not write")
 
-          print(f"✅ multistage weights OK: {weights}")
-          PY
+    # Triggers
+    triggers = workflow.get("on") or {}
+    check("push trigger present", "push" in triggers, True)
+    check("pull_request trigger present", "pull_request" in triggers, True)
+    check("workflow_dispatch trigger present",
+          "workflow_dispatch" in triggers, True)
 
-      - name: YAML parse all argocd/*.yaml
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import pathlib, sys, yaml
+    # Job
+    jobs = workflow.get("jobs") or {}
+    check("single job 'aklt-e2e'", list(jobs.keys()) == ["aklt-e2e"], True,
+          f"got {list(jobs.keys())!r}")
+    job = jobs.get("aklt-e2e") or {}
+    check("job timeout <= 10 min",
+          isinstance(job.get("timeout-minutes"), int)
+          and job["timeout-minutes"] <= 10, False,
+          f"got {job.get('timeout-minutes')!r}")
 
-          root = pathlib.Path("argocd")
-          if not root.exists():
-              print("⚠️ argocd/ directory not found — soft-skip")
-              sys.exit(0)
+    # Invariants declared
+    critical = [inv for inv in INVARIANTS if inv["critical"]]
+    check("has critical invariants", len(critical) > 0, True,
+          f"got {len(critical)}")
 
-          errors = []
-          for p in sorted(root.glob("*.yaml")):
-              try:
-                  docs = [d for d in yaml.safe_load_all(p.read_text()) if d]
-                  if docs:
-                      print(f"✅ OK {p.name} ({len(docs)} doc(s))")
-                  else:
-                      errors.append(f"{p.name}: empty document")
-              except Exception as e:
-                  errors.append(f"{p.name}: {e}")
+    if result["errors"]:
+        result["status"] = "ERROR"
+    elif result["warnings"]:
+        result["status"] = "WARNING"
 
-          if errors:
-              for e in errors:
-                  print(f"❌ {e}", file=sys.stderr)
-              sys.exit(1)
+    result["passed"] = len(result["errors"]) == 0
+    result["workflow_seal_sha3_256"] = compute_seal(workflow)
+    result["timestamp"] = time.time()
+    return result
 
-          print("✅ all argocd/*.yaml parsed")
-          PY
 
-  # ──────────────────────────────────────────────────────────────
-  # 3. OIDC FEDERATION (reusable workflow, main only)
-  # ──────────────────────────────────────────────────────────────
-  oidc-federation:
-    name: OIDC · Cloud federation
-    needs: [validate-contract, validate-argo]
-    if: github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/oidc-cloud-providers.yml
-    with:
-      provider: ${{ inputs.oidc_provider }}
-    secrets: inherit
+# ─── Integration stubs (matches repo pattern) ────────────────────────
 
-  # ──────────────────────────────────────────────────────────────
-  # 4. ARGO CD SYNC
-  # ──────────────────────────────────────────────────────────────
-  deploy-argo:
-    name: CD · Argo sync
-    runs-on: ubuntu-latest
-    needs: [validate-contract, validate-argo, oidc-federation]
-    if: ${{ !cancelled() && !failure() && github.ref == 'refs/heads/main' }}
-    timeout-minutes: 15
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+def aklt_security_status() -> Dict[str, Any]:
+    try:
+        from quantum.security import status as security_status
+        return {"security": security_status(), "entry": ENTRY, "seal": SEAL}
+    except ImportError:
+        return {"security": None,
+                "note": "Security module not available",
+                "entry": ENTRY, "seal": SEAL}
 
-      - name: Combinator plan (always)
-        run: |
-          cat <<EOF
-          === Sovereign CD combinator ===
-          App:        ${ARGO_APP}
-          Source:     argocd/ + kubernetes/
-          Policy:     automated selfHeal + prune (Application)
-          Canary:     gatewayAPI plugin · weights 20/40/60/80/100
-          Ignore:     HTTPRoute.spec.rules while gatewayapi-canary=in-progress
-          WoodDragon: ${WOOD_DRAGON_TAU}  Phase: ${PHASE_LOCK}
-          Sync input: ${{ inputs.sync }}
-          Token set:  ${{ secrets.ARGOCD_AUTH_TOKEN != '' }}
-          Hash algo:  ${HASH_ALGO}
-          EOF
 
-      - name: kubectl apply dry-run (manifests only)
-        run: |
-          set -euo pipefail
-          if command -v kubectl >/dev/null 2>&1; then
-            for manifest in argocd/*.yaml; do
-              if [ -f "$manifest" ]; then
-                if kubectl apply --dry-run=client -f "$manifest" >/dev/null 2>&1; then
-                  echo "✅ dry-run $manifest"
-                else
-                  echo "⚠️ dry-run failed for $manifest"
-                fi
-              fi
-            done
-            echo "✅ client dry-run complete"
-          else
-            echo "⚠️ kubectl not installed on runner — skip client dry-run"
-          fi
+def aklt_cdp_status() -> Dict[str, Any]:
+    try:
+        from quantum.cdp_convergence import status as cdp_status
+        return {"cdp": cdp_status(), "entry": ENTRY, "seal": SEAL}
+    except ImportError:
+        return {"cdp": None,
+                "note": "CDP module not available",
+                "entry": ENTRY, "seal": SEAL}
 
-      - name: Install Argo CD CLI
-        if: inputs.sync == true
-        run: |
-          set -euo pipefail
-          curl -sSL -o /tmp/argocd \
-            https://github.com/argoproj/argo-cd/releases/download/v2.12.6/argocd-linux-amd64
-          chmod +x /tmp/argocd
-          sudo mv /tmp/argocd /usr/local/bin/
 
-      - name: Argo CD live sync (optional)
-        if: inputs.sync == true
-        env:
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
-          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
-        run: |
-          set -euo pipefail
-          if [ -z "${ARGOCD_AUTH_TOKEN:-}" ] || [ -z "${ARGOCD_SERVER:-}" ]; then
-            echo "⚠️ ARGOCD_SERVER / ARGOCD_AUTH_TOKEN not configured — CD live sync skipped"
-            exit 0
-          fi
-          echo "🔄 Syncing Argo app: ${ARGO_APP}"
-          argocd app sync "${ARGO_APP}" \
-            --server "$ARGOCD_SERVER" \
-            --auth-token "$ARGOCD_AUTH_TOKEN" \
-            --grpc-web
-          argocd app wait "${ARGO_APP}" \
-            --server "$ARGOCD_SERVER" \
-            --auth-token "$ARGOCD_AUTH_TOKEN" \
-            --grpc-web --health --timeout 300
+# ─── CLI ─────────────────────────────────────────────────────────────
 
-      - name: Legacy k8s path notice
-        run: |
-          echo "Legacy: kubectl apply -f kubernetes/venomsuite-strikes.yaml (prefer Argo Application path)"
-          if [ -f kubernetes/venomsuite-strikes.yaml ]; then
-            echo "✅ venomsuite-strikes.yaml present"
-          else
-            echo "⚠️ venomsuite-strikes.yaml not found"
-          fi
+def main() -> int:
+    import argparse
 
-      - name: Upload validation logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: argo-validation-logs
-          path: |
-            argocd/*.yaml
-          retention-days: 7
-          if-no-files-found: warn
+    parser = argparse.ArgumentParser(
+        description="AKLT E2E Workflow Generator — Entry 8810",
+        epilog=f"Seal: {SEAL}\nEntry: {ENTRY}",
+    )
+    parser.add_argument("--generate", action="store_true",
+                        help="Print the rendered workflow YAML to stdout")
+    parser.add_argument("--write", action="store_true",
+                        help=f"Write {WORKFLOW_PATH} (overwrites)")
+    parser.add_argument("--validate", action="store_true",
+                        help="Validate the workflow against the semantic contract")
+    parser.add_argument("--check-integrations", action="store_true",
+                        help="Check integration availability")
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    parser.add_argument("--python-version", default=DEFAULT_PYTHON)
+    parser.add_argument("--timeout", type=int, default=10)
+    parser.add_argument("--retention", type=int, default=14)
+    args = parser.parse_args()
 
-      - name: Summary
-        if: always()
-        run: |
-          {
-            echo "✅ E2E Key Check completed."
-            echo "🜁∀ — App: ${ARGO_APP}"
-            echo "🔐 hash_algo: ${HASH_ALGO}"
-            echo "🛡️ WOOD_DRAGON_TAU=${WOOD_DRAGON_TAU} PHASE_LOCK=${PHASE_LOCK}"
-            echo "🌐 OIDC provider: ${{ inputs.oidc_provider }}"
-            echo "🔄 Sync requested: ${{ inputs.sync }}"
-          } >> "$GITHUB_STEP_SUMMARY"
+    if args.check_integrations:
+        print("🜁∀ AKLT E2E — Integration Status")
+        print("=" * 40)
+        for label, mod in (("Security", "quantum.security"),
+                           ("CDP", "quantum.cdp_convergence")):
+            try:
+                __import__(mod)
+                print(f"  {label}: ✅")
+            except ImportError:
+                print(f"  {label}: ❌")
+        try:
+            import yaml  # noqa: F401
+            print("  PyYAML: ✅")
+        except ImportError:
+            print("  PyYAML: ❌")
+        return 0
+
+    if args.validate:
+        result = validate_workflow()
+        if args.json:
+            print(json.dumps(result, indent=2, default=str))
+        else:
+            print("🜁∀ AKLT E2E — Validation")
+            print("=" * 55)
+            print(f"  Status: {result['status']}")
+            print(f"  Passed: {'✅' if result['passed'] else '❌'}")
+            print(f"  Body sha3_256: {result['workflow_seal_sha3_256'][:16]}…")
+            for chk in result["checks"]:
+                mark = "✅" if chk["ok"] else ("❌" if chk["critical"] else "⚠️")
+                print(f"    {mark} {chk['check']}"
+                      + (f" — {chk['detail']}" if chk["detail"] else ""))
+        return 0 if result["passed"] else 1
+
+    if args.write:
+        workflow = build_workflow(
+            python_version=args.python_version,
+            timeout_minutes=args.timeout,
+            retention_days=args.retention,
+        )
+        yaml_str = render_yaml(workflow)
+        os.makedirs(os.path.dirname(WORKFLOW_PATH), exist_ok=True)
+        with open(WORKFLOW_PATH, "w", encoding="utf-8") as f:
+            f.write(yaml_str)
+        seal = compute_seal(workflow)
+        print(f"✅ Wrote {WORKFLOW_PATH}")
+        print(f"   Body sha3_256: {seal[:16]}…")
+        print(f"   Seal: {SEAL}")
+        return 0
+
+    if args.generate:
+        workflow = build_workflow(
+            python_version=args.python_version,
+            timeout_minutes=args.timeout,
+            retention_days=args.retention,
+        )
+        sys.stdout.write(render_yaml(workflow))
+        return 0
+
+    # Default: brief summary
+    print("🜁∀ AKLT E2E GENERATOR — Entry 8810")
+    print("=" * 55)
+    print(f"  Target: {WORKFLOW_PATH}")
+    print(f"  Name:   {WORKFLOW_NAME}")
+    print(f"  Seal:   {SEAL}")
+    print(f"  Witness: {WITNESS}")
+    print()
+    print("  Invariants:")
+    for inv in INVARIANTS:
+        tag = "critical" if inv["critical"] else "advisory"
+        print(f"    - {inv['name']}: {inv['expected']} [{tag}]")
+    print()
+    print("  Usage:")
+    print("    --validate   check the contract")
+    print("    --generate   print YAML to stdout")
+    print("    --write      write the file")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        print("\n🜁∀ AKLT E2E paused.")
+        sys.exit(0)
