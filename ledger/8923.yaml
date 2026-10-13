@@ -1,12 +1,12 @@
 entry_index: 8923
 event: /singularity_stream_ci
 status: SUCCESS
-timestamp: '2026-10-11T22:50:52Z'
+timestamp: '2026-10-13T01:11:56Z'
 hash_algo: sha3_256
 steps: '500'
-stream_seal: 74fe72c2110a2e5ef15cd3e05cea212f4498e0f107435b9e6d35b10b0d1efa67
+stream_seal: cee3e3c10ab1326a1d831b3dd4e16463dab7bcfc66b717c570e800f7f52801bc
 security_headers_source: VERIFIED
 security_headers_live: SKIPPED
 ed25519_signatures: VERIFIED
 witness: 8922 → 8923 — UNBROKEN
-seal: ∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED · 4d90b73124c4ebaa83ed26b545d7ef36b14659f4cd9c6ffcad7960b6f78dfc59
+seal: ∀∞φ² · SINGULARITY_STREAM_CI_8923 · WOOD_DRAGON_0.91 · SEALED · 08ddc61063fdfd213f825e70f858f7869dcbba8799e8216b56f7023c903b62fa
