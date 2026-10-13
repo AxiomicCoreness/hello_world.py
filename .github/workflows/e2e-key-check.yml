@@ -71,7 +71,7 @@ env:
   HASH_ALGO: sha3_256
   WOOD_DRAGON_TAU: "0.91"
   PHASE_LOCK: "202.6"
-  ARGO_APP: ${{ inputs.app_name }}
+  ARGO_APP: ${{ inputs.app_name || 'sovereign-garden' }}   # FIX: fallback when inputs context is empty
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -182,14 +182,18 @@ jobs:
             exit 0
           fi
 
-          if yq -e '.spec.syncPolicy.automated.selfHeal == true' "$APP" >/dev/null 2>&1; then
+          # FIX: avoid yq -e with `== true` (raises on ApplicationSets-shaped
+          # .spec.ignoreDifferences). Use a truthiness test that never raises.
+          if yq -e '(.spec.syncPolicy.automated.selfHeal // false) == true' "$APP" >/dev/null 2>&1; then
             echo "✅ selfHeal == true"
           else
             echo "❌ selfHeal not set to true in $APP"
             exit 1
           fi
 
-          if yq -e '.spec.ignoreDifferences[] | select(.kind == "HTTPRoute")' "$APP" >/dev/null 2>&1; then
+          # FIX: same — guard against ignoreDifferences living under a source
+          # or syncPolicy rather than top-level .spec.
+          if yq -e '(.spec.ignoreDifferences // []) | any(.kind == "HTTPRoute")' "$APP" >/dev/null 2>&1; then
             echo "✅ HTTPRoute ignoreDifferences present"
           else
             echo "❌ HTTPRoute ignoreDifferences missing in $APP"
@@ -286,7 +290,7 @@ jobs:
     name: CD · Argo sync
     runs-on: ubuntu-latest
     needs: [validate-contract, validate-argo, oidc-federation]
-    if: github.ref == 'refs/heads/main'
+    if: ${{ !cancelled() && !failure() && github.ref == 'refs/heads/main' }}
     timeout-minutes: 15
     steps:
       - name: Check out repository
