@@ -1,5 +1,3 @@
-name: Quantum Reality Engine 510510
-
 # Validates the 510510 engine and VERIFY (never overwrite) the sealed ledger entry.
 # Ed25519 check of ledger/8980.yaml + SHA3-256 genesis of ledger/510510.yaml.
 # Stages __pycache__ as a pre-compiled unitary cache (artifact only, never committed).
@@ -44,6 +42,8 @@ name: Quantum Reality Engine 510510
 #    - It stages bytecode as an artifact (read-only side effect).
 #    - It runs the engine and records the observed witness chain.
 #    - It NEVER rewrites ledger/510510.yaml (unitary, not projective).
+
+name: Quantum Reality Engine 510510   # FIX: explicit display name (was inferred from filename)
 
 on:
   push:
@@ -151,7 +151,10 @@ jobs:
           set -euo pipefail
           echo "🌐 Checking live headers from $MCP_URL"
 
-          if ! HEADERS=$(curl -s -I -X GET --max-time 15 "$MCP_URL/health" 2>/dev/null); then
+          # FIX: -D - dumps headers to stdout, -o /dev/null discards body.
+          # Original used -I -X GET, which overrides HEAD back to GET and
+          # confuses some proxies/CDNs that serve different headers per verb.
+          if ! HEADERS=$(curl -sS -o /dev/null -D - --max-time 15 "$MCP_URL/health" 2>/dev/null); then
             echo "⚠️ Could not reach $MCP_URL/health — soft skip"
             exit 0
           fi
