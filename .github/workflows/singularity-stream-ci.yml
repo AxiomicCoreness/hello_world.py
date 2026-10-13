@@ -19,25 +19,25 @@ on:
     branches: [main]
     paths:
       - "quantum/quantum_singularity_engine.py"
-      - ".github/workflows/singularity_stream_ci.yml"
+      - ".github/workflows/singularity-stream-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "quantum/quantum_singularity_engine.py"
-      - ".github/workflows/singularity_stream_ci.yml"
+      - ".github/workflows/singularity-stream-ci.yml"
   workflow_dispatch:
     inputs:
       steps:
         description: "Evolution steps (CI default 500)"
         required: false
-        default: "500"
+        type: number
+        default: 500
 
 permissions:
-  contents: write   # required to commit ledger/8923.yaml
-  id-token: write
+  contents: write   # required to commit ledger/8923.yaml on push to main
 
 concurrency:
-  group: singularity-stream-ci-${{ github.ref }}
+  group: singularity-stream-ci-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: false
 
 env:
@@ -156,7 +156,9 @@ jobs:
           set -euo pipefail
           echo "🌐 Checking live headers from $MCP_URL"
 
-          if ! HEADERS=$(curl -s -I -X GET --max-time 15 "$MCP_URL/health" 2>/dev/null); then
+          # -D - dumps headers to stdout, -o /dev/null discards body.
+          # Using -I -X GET is an anti-pattern (method override confusion).
+          if ! HEADERS=$(curl -sS -o /dev/null -D - --max-time 15 "$MCP_URL/health" 2>/dev/null); then
             echo "⚠️ Could not reach $MCP_URL/health — soft skip"
             exit 0
           fi
@@ -244,7 +246,7 @@ jobs:
       - name: Stream evolution (NDJSON)
         env:
           PYTHONUNBUFFERED: "1"
-          STEPS: ${{ inputs.steps || '500' }}
+          STEPS: ${{ inputs.steps || 500 }}
         run: |
           set -euo pipefail
           if [ ! -f "${ENGINE}" ]; then
@@ -308,11 +310,13 @@ jobs:
             || echo "⚠️ MCP pulse failed (non-fatal)"
 
       # ── Seal ledger entry 8923 (SHA3-256) ──
+      # NOTE: STREAM_SEAL must NOT be re-declared here. ${{ env.X }} is
+      # resolved at parse time and would shadow the value written to
+      # $GITHUB_ENV during the stream step.
       - name: Seal ledger entry 8923 (SHA3-256)
         if: success()
         env:
-          STREAM_SEAL: ${{ env.STREAM_SEAL }}
-          STEPS_INPUT: ${{ inputs.steps || '500' }}
+          STEPS_INPUT: ${{ inputs.steps || 500 }}
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
@@ -325,6 +329,7 @@ jobs:
           path = Path("ledger/8923.yaml")
 
           mcp_set = bool(os.environ.get("MCP_URL"))
+          stream_seal = os.environ.get("STREAM_SEAL") or "pending"
 
           entry = {
               "entry_index": 8923,
@@ -333,7 +338,7 @@ jobs:
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "hash_algo": HASH_ALGO,
               "steps": os.environ.get("STEPS_INPUT", "500"),
-              "stream_seal": os.environ.get("STREAM_SEAL", "pending"),
+              "stream_seal": stream_seal,
               "security_headers_source": "VERIFIED",
               "security_headers_live": "VERIFIED" if mcp_set else "SKIPPED",
               "ed25519_signatures": "VERIFIED",
@@ -374,8 +379,11 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
 
+      # Only auto-commit on push to main. On pull_request from forks,
+      # GITHUB_TOKEN is read-only regardless of the workflow's
+      # `permissions:` block, so this step would hard-fail the job.
       - name: Commit ledger entry 8923
-        if: success()
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal singularity-stream entry 8923 (sha3_256)"
@@ -385,8 +393,6 @@ jobs:
       # ── Success marker ──
       - name: Seal entry note
         if: success()
-        env:
-          STREAM_SEAL: ${{ env.STREAM_SEAL }}
         run: |
           {
             echo "✅ Singularity stream CI completed."
@@ -413,8 +419,7 @@ jobs:
       - name: Summary
         if: always()
         env:
-          STREAM_SEAL: ${{ env.STREAM_SEAL }}
-          STEPS_INPUT: ${{ inputs.steps || '500' }}
+          STEPS_INPUT: ${{ inputs.steps || 500 }}
         run: |
           {
             echo "### Singularity Stream CI"
