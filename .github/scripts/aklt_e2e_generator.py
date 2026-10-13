@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+# ──────────────────────────────────────────────────────────────────────
+# LABEL BLOCK
+# ──────────────────────────────────────────────────────────────────────
+# label:     garden.spec
+# wire:      AKLT E2E
+# path:      scripts/aklt_e2e_generator.py
+# TYPE:      script
+# STATUS:    open
+# BLOCKER:   none
+# QUEUE:     new — not in carried 17
+# ORIGIN:    extraction from .github/workflows/aklt-e2e.yml heredoc
+# LEDGER:    NO_GROWTH
+# GATE-FIX:  G10 uses _expm_i_pi_S (eigh on Hermitian S, not on iπS)
+# NOTE:      self-contained — no scripts/ dependency at call time
+# ──────────────────────────────────────────────────────────────────────
+
+import math
+import sys
+
+import numpy as np
+
+TOL_EIG = 1e-9
+TOL_ALG = 1e-12
+TOL_MPS = 1e-10
+
+S2 = math.sqrt(2.0)
+Sz = np.diag([1.0, 0.0, -1.0]).astype(complex)
+Sp = np.array([[0.0, S2, 0.0],
+               [0.0, 0.0, S2],
+               [0.0, 0.0, 0.0]], dtype=complex)
+Sm = Sp.conj().T
+Sx = 0.5 * (Sp + Sm)
+Sy = (Sp - Sm) / (2j)
+I3 = np.eye(3, dtype=complex)
+
+
+def kron_ops(ops):
+    out = ops[0]
+    for op in ops[1:]:
+        out = np.kron(out, op)
+    return out
+
+
+def embed_site(op, site, N):
+    return kron_ops([op if k == site else I3 for k in range(N)])
+
+
+def I3_embed(N):
+    return np.eye(3 ** N, dtype=complex)
+
+
+def total_two_site_op(A, B, i, j, N):
+    return embed_site(A, i, N) @ embed_site(B, j, N)
+
+
+def aklt_hamiltonian(N, periodic):
+    H = np.zeros((3 ** N, 3 ** N), dtype=complex)
+    bonds = [(k, k + 1) for k in range(N - 1)]
+    if periodic and N > 2:
+        bonds.append((N - 1, 0))
+    for (i, j) in bonds:
+        SS = (total_two_site_op(Sx, Sx, i, j, N)
+              + total_two_site_op(Sy, Sy, i, j, N)
+              + total_two_site_op(Sz, Sz, i, j, N))
+        H += (SS @ SS + 3.0 * SS + 2.0 * I3_embed(N)) / 6.0
+    return H
+
+
+def gate_G1():
+    err = np.max(np.abs(Sx @ Sy - Sy @ Sx - 1j * Sz))
+    return err < TOL_ALG, f"max|[Sx,Sy]-iSz|={err:.3e}"
+
+
+def gate_G2():
+    err = np.max(np.abs(Sx @ Sx + Sy @ Sy + Sz @ Sz - 2.0 * I3))
+    return err < TOL_ALG, f"max|S^2-2I|={err:.3e}"
+
+
+def gate_G3():
+    SS = np.kron(Sx, Sx) + np.kron(Sy, Sy) + np.kron(Sz, Sz)
+    pi2 = (SS @ SS + 3.0 * SS + 2.0 * np.eye(9, dtype=complex)) / 6.0
+    idem = np.max(np.abs(pi2 @ pi2 - pi2))
+    herm = np.max(np.abs(pi2 - pi2.conj().T))
+    rank = np.linalg.matrix_rank(pi2, tol=1e-9)
+    ok = (idem < TOL_ALG) and (herm < TOL_ALG) and (rank == 3)
+    return ok, f"idem={idem:.2e} herm={herm:.2e} rank={rank}"
+
+
+def gate_G4_G5_G6(N=6):
+    ev = np.linalg.eigvalsh(aklt_hamiltonian(N, periodic=True))
+    e0, e1 = ev[0], ev[1]
+    gap = e1 - e0
+    ok = (abs(e0) < TOL_EIG) and (e0 > -TOL_EIG) and (gap > 1e-6)
+    return ok, f"N={N} PBC E0={e0:.3e} E1={e1:.3e} gap={gap:.3e}"
+
+
+def gate_G7(N=4):
+    ev = np.linalg.eigvalsh(aklt_hamiltonian(N, periodic=False))
+    e0 = ev[0]
+    deg = int(np.sum(np.abs(ev - e0) < 1e-6))
+    return deg == 4, f"N={N} OBC E0={e0:.3e} deg={deg}"
+
+
+def gate_G8_G9():
+    Ap = math.sqrt(2.0 / 3.0) * np.array([[0.0, 1.0], [0.0, 0.0]], dtype=complex)
+    A0 = (1.0 / math.sqrt(3.0)) * np.array([[-1.0, 0.0], [0.0, 1.0]], dtype=complex)
+    Am = math.sqrt(2.0 / 3.0) * np.array([[0.0, 0.0], [-1.0, 0.0]], dtype=complex)
+    T = np.zeros((4, 4), dtype=complex)
+    for A in (Ap, A0, Am):
+        T += np.kron(A, A.conj())
+    mags = np.sort(np.abs(np.linalg.eigvals(T)))[::-1]
+    cnt = int(np.sum(np.abs(mags - 1.0) < TOL_MPS))
+    lam2 = mags[cnt] if cnt < len(mags) else 0.0
+    xi = -1.0 / math.log(lam2) if lam2 > 0 else float("inf")
+    xi_pub = 1.0 / math.log(3.0)
+    ok = (cnt == 1) and (abs(lam2 - 1.0 / 3.0) < TOL_MPS) and (abs(xi - xi_pub) < 1e-9)
+    return ok, f"|λ|=1 count={cnt} |λ2|={lam2:.10f} ξ={xi:.10f}"
+
+
+def _expm_i_pi_S(S):
+    w, V = np.linalg.eigh(S)
+    return V @ np.diag(np.exp(1j * math.pi * w)) @ V.conj().T
+
+
+def gate_G10():
+    Rs = {n: _expm_i_pi_S(S)
+          for n, S in (("x", Sx), ("y", Sy), ("z", Sz))}
+    sq = {n: np.max(np.abs(R @ R - I3)) for n, R in Rs.items()}
+    cm = {
+        "xy": np.max(np.abs(Rs["x"] @ Rs["y"] - Rs["y"] @ Rs["x"])),
+        "xz": np.max(np.abs(Rs["x"] @ Rs["z"] - Rs["z"] @ Rs["x"])),
+        "yz": np.max(np.abs(Rs["y"] @ Rs["z"] - Rs["z"] @ Rs["y"])),
+    }
+    tol = 1e-10
+    ok = (all(e < tol for e in sq.values())
+          and all(e < tol for e in cm.values()))
+    return ok, f"sq={sq} comm={cm}"
+
+
+def aklt_dispatch() -> int:
+    gates = [
+        ("G1  spin-1 algebra",           gate_G1),
+        ("G2  spin-1 Casimir",           gate_G2),
+        ("G3  pi_2 projector",           gate_G3),
+        ("G4/G5/G6  PBC spectrum (N=6)", lambda: gate_G4_G5_G6(N=6)),
+        ("G7  OBC degeneracy (N=4)",     lambda: gate_G7(N=4)),
+        ("G8/G9  MPS xi = 1/ln(3)",      gate_G8_G9),
+        ("G10 hidden Z2 x Z2",           gate_G10),
+    ]
+    all_ok = True
+    for label, fn in gates:
+        try:
+            ok, msg = fn()
+        except Exception as e:
+            ok, msg = False, f"EXCEPTION {type(e).__name__}: {e}"
+        mark = "OK  " if ok else "FAIL"
+        print(f"[{mark}] {label:<32} {msg}")
+        all_ok = all_ok and ok
+    print("-" * 70)
+    print("all AKLT e2e gates passed" if all_ok else "AKLT E2E FAILURE")
+    return 0 if all_ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(aklt_dispatch())
