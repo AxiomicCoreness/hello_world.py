@@ -25,7 +25,6 @@ from pathlib import Path
 
 import yaml
 
-# ── Header / signitorial (AST-visible constants) ─────────────────────
 SIGNITORIAL_NEEDLE = "Clarke Yoursa Tee"
 SIGNITORIAL_AUTHOR = "Clarke Yoursa Tee"
 SEAL_BEGIN = "<!-- SEAL:BEGIN -->"
@@ -45,7 +44,8 @@ SOAK_FILES = [
     Path("scripts/merge_engine_phi.py"),
 ]
 SOAK_CONSTANT_NAMES = {"T_MAX_SOAK_DEFAULT", "T_MAX_SOAK", "GAMMA_JITTER"}
-# (lo, hi] — soak is a physical horizon in seconds, not a cron.
+# (lo, hi] — strictly positive. Zero is not a legitimate config for these.
+# T_MAX_SOAK_DEFAULT = 0.0 (no soak) and GAMMA_JITTER = 0.0 (no jitter) fail.
 SOAK_RANGES: dict[str, tuple[float, float]] = {
     "T_MAX_SOAK_DEFAULT": (0.0, 60.0),
     "T_MAX_SOAK": (0.0, 60.0),
@@ -80,7 +80,6 @@ def check_workflows() -> list[str]:
         if not isinstance(doc, dict):
             errs.append(f"{p}: top-level is {type(doc).__name__}, not mapping")
             continue
-        # PyYAML may parse bare 'on:' as boolean True
         if "on" not in doc and True not in doc:
             errs.append(f"{p}: no top-level 'on' key")
         if "jobs" not in doc:
@@ -89,26 +88,41 @@ def check_workflows() -> list[str]:
 
 
 def _numeric_assignments(tree: ast.Module) -> dict[str, float]:
+    """Collect module-level numeric constants assigned to bare names.
+
+    Handles four literal shapes:
+        NAME = 5            Assign,   Constant
+        NAME = -5           Assign,   UnaryOp(USub, Constant)
+        NAME: float = 5     AnnAssign, Constant
+        NAME: float = -5    AnnAssign, UnaryOp(USub, Constant)
+    Bools are excluded even though isinstance(True, int) is True.
+    Tuple targets (A = B = 5.0) are excluded; only a single Name target counts.
+    """
     out: dict[str, float] = {}
+
+    def literal_value(node: ast.AST) -> float | None:
+        if isinstance(node, ast.Constant) and not isinstance(node.value, bool):
+            if isinstance(node.value, (int, float)):
+                return float(node.value)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
+            inner = literal_value(node.operand)
+            if inner is not None:
+                return -inner if isinstance(node.op, ast.USub) else inner
+        return None
+
     for node in tree.body:
-        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
-            if isinstance(node.value.value, (int, float)):
-                for tgt in node.targets:
-                    if isinstance(tgt, ast.Name):
-                        out[tgt.id] = float(node.value.value)
-        # PHI ** -8 style
-        if isinstance(node, ast.Assign) and isinstance(node.value, ast.BinOp):
-            for tgt in node.targets:
-                if isinstance(tgt, ast.Name) and tgt.id in SOAK_CONSTANT_NAMES:
-                    try:
-                        out[tgt.id] = float(
-                            eval(  # noqa: S307
-                                compile(ast.Expression(node.value), "<ast>", "eval"),
-                                {"PHI": (1 + 5 ** 0.5) / 2},
-                            )
-                        )
-                    except Exception:
-                        pass
+        if isinstance(node, ast.Assign):
+            if len(node.targets) != 1 or not isinstance(node.targets[0], ast.Name):
+                continue
+            v = literal_value(node.value)
+            if v is not None:
+                out[node.targets[0].id] = v
+        elif isinstance(node, ast.AnnAssign):
+            if not isinstance(node.target, ast.Name) or node.value is None:
+                continue
+            v = literal_value(node.value)
+            if v is not None:
+                out[node.target.id] = v
     return out
 
 
@@ -201,7 +215,6 @@ def check_signitorial() -> list[str]:
                 f"{p}: signitorial needle {SIGNITORIAL_NEEDLE!r} "
                 f"missing from masked header"
             )
-    # This file itself must carry the needle (AST-visible).
     here = Path(__file__).resolve()
     src = here.read_text(encoding="utf-8")
     if SIGNITORIAL_NEEDLE not in src:
@@ -220,10 +233,10 @@ def main() -> int:
     for e in errors:
         print(f"::error::{e}")
     if errors:
-        print(f"\n❌ {len(errors)} structural violation(s)")
+        print(f"\n\u274c {len(errors)} structural violation(s)")
         return 1
     print(
-        "✅ structure check: workflows valid, soak constants in range, "
+        "\u2705 structure check: workflows valid, soak constants in range, "
         "no forbidden binds, signitorial Clarke Yoursa Tee present"
     )
     return 0
