@@ -1,9 +1,11 @@
-# AxiomicCoreness
+# AxiomicCoreness/hello_world.py — sovereign_engine_V5
 
-AxiomicCoreness is a mixed-language repository centered on a φ-harmonic
-"sovereign brain" engine. It pairs a Python sovereign engine with a Java
-17 / Maven simulation sidecar, a FastAPI service, and a set of verification
-gates that keep the φ-invariants honest.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23378306.svg)](https://doi.org/10.5281/zenodo.23378306)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Developed by **Clarke Yoursa Tee**, **AxiomicCoreness** is a public MIT-licensed sovereign computational engine for φ-harmonic ledger verification. It features a Dual ASGI control plane (FastAPI + Pydantic), a Java 17 simulation sidecar, and runtime verification gates that enforce the dark-state invariant λ₂ = 1.
+
+**Keywords:** sovereign-engine, fastapi, pydantic, asgi, fastmcp, ledger-verification, zenodo-archive, reproducible-research, python, mit-license
 
 ## Layout
 
