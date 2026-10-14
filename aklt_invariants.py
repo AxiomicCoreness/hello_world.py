@@ -2,20 +2,19 @@
 # -*- coding: utf-8 -*-
 """
 aklt_invariants.py
-────────────────────────────────────────────────────────────────────────────
-ÃƒÂ‚ÃƒÂ±Ã¢Ë†Â€ AKLT INVARIANT TEST SURFACE â€” SELFâ€‑CONTAINED Â· NUMPYâ€‑ONLY ÃƒÂ±Ã¢Ë†Â€
 
-Exercises four distinct invariants of the AKLT (Affleckâ€“Kennedyâ€“Liebâ€“Tasaki)
-spinâ€‑1 chain and exits nonâ€‑zero if any fails.
+AKLT invariant test surface. Numpy only.
+
+Exercises four distinct invariants of the AKLT (Affleck-Kennedy-Lieb-Tasaki)
+spin-1 chain and exits non-zero if any fails.
 
 Invariants tested:
-  I.   Groundâ€‑state energy per bond E/N = âˆ’2/3 (exact AKLT value)
-  II.  Entanglement spectrum degeneracy (singletâ€“triplet structure)
-  III. Stringâ€‑order parameter O_string > 0 (hidden order)
-  IV.  SU(2) singlet of total spin S_tot |GSâſ© = 0
+  I.   Ground-state energy per bond E/N = -2/3 (exact AKLT value)
+  II.  Entanglement spectrum degeneracy (singlet-triplet structure)
+  III. String-order parameter O_string > 0 (hidden order)
+  IV.  SU(2) singlet of total spin S_tot |GS> = 0
 
 No dependency on matplotlib, torch, scipy, or any engine module.
-numpy only.
 """
 
 import sys
@@ -67,7 +66,7 @@ def embed(op, site, N):
 
 
 def aklt_hamiltonian(N):
-    """H = Σ_i [ S_i·S_{i+1} + (1/3)(S_i·S_{i+1})² ]  open boundaries."""
+    """H = sum_i [ S_i.S_{i+1} + (1/3)(S_i.S_{i+1})^2 ]  open boundaries."""
     dim = 3 ** N
     H = np.zeros((dim, dim), dtype=complex)
     S = (Sx, Sy, Sz)
@@ -140,11 +139,11 @@ def check_singlet(N=4, tol=1e-6):
 
 def main():
     print("=" * 78)
-    print("AKLT INVARIANT TEST SURFACE — NUMPY-ONLY")
+    print("AKLT INVARIANT TEST SURFACE -- NUMPY-ONLY")
     print("=" * 78)
     results = {}
     ok1, val1 = check_ground_state_energy(N=4)
-    results["I. Ground-state energy per bond ≈ -2/3"] = (ok1, val1)
+    results["I. Ground-state energy per bond ~ -2/3"] = (ok1, val1)
     ok2, val2 = check_entanglement_degeneracy(N=4)
     results["II. Entanglement spectrum degeneracy"] = (ok2, val2)
     ok3, val3 = check_string_order(N=6)
