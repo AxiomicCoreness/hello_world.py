@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# ──────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────
 # LABEL BLOCK
-# ──────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────
 # label:     garden.spec
 # wire:      AKLT E2E
-# path:      scripts/aklt_e2e_generator.py
+# path:      .github/scripts/aklt_e2e_generator.py
 # TYPE:      script
 # STATUS:    open
 # BLOCKER:   none
@@ -13,7 +13,8 @@
 # LEDGER:    NO_GROWTH
 # GATE-FIX:  G10 uses _expm_i_pi_S (eigh on Hermitian S, not on iπS)
 # NOTE:      self-contained — no scripts/ dependency at call time
-# ──────────────────────────────────────────────────────────────────────
+# G3-FIX:    rank 5 (spec said 3; projector math gives rank 5) — deviation noted
+# ────────────────────────────────────────────────────────────────────────
 
 import math
 import sys
@@ -83,8 +84,11 @@ def gate_G3():
     idem = np.max(np.abs(pi2 @ pi2 - pi2))
     herm = np.max(np.abs(pi2 - pi2.conj().T))
     rank = np.linalg.matrix_rank(pi2, tol=1e-9)
-    ok = (idem < TOL_ALG) and (herm < TOL_ALG) and (rank == 3)
-    return ok, f"idem={idem:.2e} herm={herm:.2e} rank={rank}"
+    # Spec said rank 3; projector math on spin-2 spectrum gives rank 5.
+    # Deviation disclosed rather than forced to match.
+    ok = (idem < TOL_ALG) and (herm < TOL_ALG) and (rank == 5)
+    note = " (spec said 3; math rank 5)" if rank == 5 else ""
+    return ok, f"idem={idem:.2e} herm={herm:.2e} rank={rank}{note}"
 
 
 def gate_G4_G5_G6(N=6):
