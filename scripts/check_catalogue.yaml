@@ -1,0 +1,32 @@
+- id: rank_unison
+  file: scripts/invariants/rank_unison.py
+  severity: error
+  since: b2e6e4ec
+  rationale: |
+    gate_G3 rank drifted across three copies (generator, workflow heredoc,
+    test file). All three now assert 5, but the mechanism is unchanged.
+    This invariant fails if any future edit desyncs them.
+
+- id: no_dead_constants
+  file: scripts/invariants/no_dead_constants.py
+  severity: warning
+  since: 5a9b686f
+  rationale: |
+    SOAK_CONSTANT_NAMES was declared but never read. Same class as the
+    set/range drift; caught by AST, not by eye.
+
+- id: no_gate_duplication
+  file: scripts/invariants/no_gate_duplication.py
+  severity: error
+  since: b2e6e4ec
+  rationale: |
+    Two files defining a function with the same name is how G3 drifted
+    three ways. Detection is name-set intersection over a fixed glob.
+
+- id: literals_only
+  file: scripts/invariants/literals_only.py
+  severity: warning
+  since: 0b01ee72
+  rationale: |
+    T_MAX_SOAK = X passes silently when X = 5.0. The check's docstring
+    documents the boundary; this invariant enforces it.
