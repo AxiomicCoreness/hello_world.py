@@ -140,3 +140,7 @@ Two services run from one image (see `docker-compose.yml`):
 `.container/` holds a stdlib-only HTTP service plus a process
 supervisor. No third-party dependencies. See `.container/README.md` for
 write surfaces, environment, and restart semantics.
+
+## Citation
+
+Yoursa Tee, C. (2026). *AxiomicCoreness/hello_world.py — sovereign_engine_V5* (Version v5.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23378306
