@@ -3,6 +3,7 @@ message: "Cite this MIT-licensed public repository as AxiomicCoreness/hello_worl
 title: "AxiomicCoreness/hello_world.py — sovereign_engine_V5"
 version: "5.0.0"
 date-released: "2026-10-14"
+doi: 10.5281/zenodo.23378306
 authors:
   - family-names: "Yoursa Tee"
     given-names: "Clarke"
