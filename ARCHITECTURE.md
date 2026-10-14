@@ -47,7 +47,7 @@ See `docs/RUNBOOK.md` for expected output and failure modes.
 
 ## 3. Seal convention
 
-A seal is SHA3-256 of canonical JSON:
+A computed seal is SHA3-256 of canonical JSON:
 
 ```json
 {"body_sha3_256":"<hex>","entry_index":<int>,"event":"/<name>","file":"<path>"}
@@ -55,7 +55,9 @@ A seal is SHA3-256 of canonical JSON:
 
 Serialization: `json.dumps(..., sort_keys=True, separators=(",", ":"), ensure_ascii=True)`.
 
-HMAC is used in the JSONL stream (`ledger/witness_stream.jsonl`), not in the per-file seal. The HMAC key is `GARDEN` (public, documented). Algorithm: HMAC-SHA3-256.
+A symbolic seal is a string of the form `\u2200\u221e\u03c6\u00b2 \u00b7 <NAME>_<N> \u00b7 <N>_SEALED`. It is a label, not a digest. The two are distinct fields. A symbolic seal is not recomputable from a preimage. A computed seal is.
+
+HMAC is used in the JSONL stream (`ledger/witness_stream.jsonl`), not in the per-file seal. The HMAC key is `GARDEN` (public, documented). Algorithm: HMAC-SHA3-256. A public key proves adjacency: each line links to the prior. It does not prove authorship: anyone who can write the file can extend the chain with the same key.
 
 The seal line itself is excluded from the preimage.
 
@@ -72,12 +74,14 @@ Full values:
 
 ## 5. Witness stream
 
-`ledger/witness_stream.jsonl`. One JSON object per line. Each line carries `hmac_sha3_256` and `prev_hmac`. The chain is:
+`ledger/witness_stream.jsonl`. One JSON object per line. Each line carries `hmac_sha3_256` and `prev_hmac`. This stream begins at 540. Entries 1–539 are not in this stream. They are not bridged; they are absent.
 
 | Entry | Event | HMAC | Prev |
 |---|---|---|---|
 | 540 | `/aklt_invariant_surface_sealed` | `a581983b...349a` | null |
 | 541 | `/architecture_md_options_committed` | `761ccd9f...f99a` | 540's HMAC |
+
+The stream ends at 541. Entry 542 is not in the stream.
 
 ## 6. Verification
 
@@ -96,7 +100,10 @@ A mismatch is a disclosed defect, not a rewrite.
 
 - No Merkle root for the full chain.
 - No agent count, sheaf, PID gain, or reward pool.
-- Entry 541 is provisional. This document is not itself a sealed chain entry.
+- No authorship from the HMAC chain. The key is public. The chain proves adjacency only.
+- Entries 1–539 are not in `witness_stream.jsonl`. The stream begins at 540.
+- Entry 542 is not in the stream.
+- This document is not itself a sealed chain entry.
 
 ## 9. Status
 
@@ -105,5 +112,5 @@ A mismatch is a disclosed defect, not a rewrite.
 | Package | 9 files, stdlib, javac |
 | Entries | AutonomousDriver, SovereignMain |
 | Sealed | 540 |
-| Stream | 540 → 541 |
+| Stream | begins 540, ends 541 |
 | Ledger rewrite | none |
