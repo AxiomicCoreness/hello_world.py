@@ -25,10 +25,13 @@ from dataclasses import dataclass
 from typing import Optional
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Sourced-value container
+# ──────────────────────────────────────────────────────────────────────
 @dataclass(frozen=True)
 class SourcedGap:
     value: float
-    source: str
+    source: str                       # non-empty required
     uncertainty: Optional[float] = None
 
     @property
@@ -36,20 +39,34 @@ class SourcedGap:
         return bool(self.source and self.source.strip())
 
 
+# ──────────────────────────────────────────────────────────────────────
+# AKLT-point gap — UNSET by default. Operator fills with an actual
+# citation. Left None to prevent silent fabrication.
+# ──────────────────────────────────────────────────────────────────────
 AKLT_GAP: Optional[SourcedGap] = None
 
+# Adjacent value, correctly attributed, retained for reference only.
 HEISENBERG_GAP: SourcedGap = SourcedGap(
     value=0.41049,
     uncertainty=0.00002,
     source="White & Huse, Phys. Rev. B 48, 3844 (1993), DMRG on N=22",
 )
 
+# AKLT θ location for reference.
 import math
-THETA_AKLT_RAD: float = math.atan(1.0 / 3.0)
+THETA_AKLT_RAD: float = math.atan(1.0 / 3.0)   # ≈ 0.32175 rad
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Gate — consistent with the AKLT e2e verdict vocabulary
+# ──────────────────────────────────────────────────────────────────────
 def gate_aklt_gap() -> tuple[str, str]:
-    """Return (verdict, message)."""
+    """Return (verdict, message).
+
+    VERIFIED  — a sourced AKLT-point gap is present and positive.
+    PENDING   — value unset or source empty.
+    FALSE     — value present but non-positive.
+    """
     if AKLT_GAP is None or not AKLT_GAP.is_sourced:
         return (
             "PENDING",
