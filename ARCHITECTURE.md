@@ -80,8 +80,9 @@ Full values:
 |---|---|---|---|
 | 540 | `/aklt_invariant_surface_sealed` | `a581983b...349a` | null |
 | 541 | `/architecture_md_options_committed` | `761ccd9f...f99a` | 540's HMAC |
+| 544 | `/structure_check_migrated` | `839e98bc...53bd` | 541's HMAC |
 
-The stream ends at 541. Entry 542 is not in the stream.
+The stream ends at 544. Entries 542 and 543 are not in the stream.
 
 ## 6. Verification
 
@@ -102,7 +103,7 @@ A mismatch is a disclosed defect, not a rewrite.
 - No agent count, sheaf, PID gain, or reward pool.
 - No authorship from the HMAC chain. The key is public. The chain proves adjacency only.
 - Entries 1–539 are not in `witness_stream.jsonl`. The stream begins at 540.
-- Entry 542 is not in the stream.
+- Entries 542 and 543 are not in the stream.
 - This document is not itself a sealed chain entry.
 
 ## 9. Status
@@ -112,5 +113,5 @@ A mismatch is a disclosed defect, not a rewrite.
 | Package | 9 files, stdlib, javac |
 | Entries | AutonomousDriver, SovereignMain |
 | Sealed | 540 |
-| Stream | begins 540, ends 541 |
+| Stream | begins 540, ends 544 |
 | Ledger rewrite | none |
