@@ -9,8 +9,8 @@ Verifies:
   G1  spin-1 algebra             [S^x, S^y] = i S^z  (ħ=1)
   G2  spin-1 Casimir             S^2 eigenvalue = 2 on triplet
   G3  π_2 projector              idempotent, hermitian, rank 5 (spec said 3)
-  G4  AKLT spectrum              all eigenvalues ≥ 0
-  G5  ground state energy        E_0 = 0 (PBC, even N)
+  G4  AKLT spectrum              E_0 >= -1e-12 (PSD floor)
+  G5  ground state energy        |E_0| < 1e-9 (kernel)
   G6  PBC ground-state degeneracy 1
   G7  OBC ground-state degeneracy 4
   G8  MPS transfer matrix        exactly one |λ| = 1, next |λ_2| = 1/3
@@ -30,6 +30,7 @@ import numpy as np
 TOL_EIG      = 1e-9
 TOL_ALG      = 1e-12
 TOL_MPS      = 1e-10
+TOL_PSD      = 1e-12
 
 S2 = math.sqrt(2.0)
 Sz = np.diag([1.0, 0.0, -1.0]).astype(complex)
@@ -116,11 +117,12 @@ def gate_G4_G5_G6(N=6):
     H = aklt_hamiltonian(N, periodic=True)
     evals = np.linalg.eigvalsh(H)
     min_e = evals[0]
-    e0_ok = abs(min_e) < TOL_EIG
-    nonneg_ok = min_e > -TOL_EIG
+    # PSD floor (1e-12) distinct from kernel tolerance (1e-9).
+    psd_ok = min_e >= -TOL_PSD
+    kernel_ok = abs(min_e) < TOL_EIG
     gap = evals[1] - evals[0]
     unique_gs = gap > 1e-6
-    return (e0_ok and nonneg_ok and unique_gs,
+    return (psd_ok and kernel_ok and unique_gs,
             f"N={N} PBC: E_0={min_e:.3e} E_1={evals[1]:.3e} gap={gap:.3e}")
 
 
