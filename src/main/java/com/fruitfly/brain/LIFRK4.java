@@ -3,11 +3,7 @@ package com.fruitfly.brain;
 /**
  * Runge-Kutta 4 integrator for a leaky integrate-and-fire neuron.
  *
- * <p>Unexecuted draft, co-created from the pasted specification and
- * javac-compiled in the sandbox (JDK 17 present). No correctness claim
- * beyond compilation: it still needs a fixture run on the S0 side.
- *
- * <p>Constants are pinned from a prior pasted LIF spec, NOT verified
+ * Constants are pinned from a prior pasted LIF spec, NOT verified
  * against Shiu et al.
  */
 public final class LIFRK4 {
@@ -21,7 +17,6 @@ public final class LIFRK4 {
     public static final double SYNAPTIC_GAIN = 0.275;
     public static final double BRAIN_TICK_MS  = 50.0;
 
-    /** Placeholder substep count: 50 substeps of 1.0 ms per tick. */
     public static final int SUBSTEPS = 50;
 
     private double v = V_REST;
@@ -29,9 +24,9 @@ public final class LIFRK4 {
     private double refractoryRemaining = 0.0;
 
     public double v() { return v; }
+    public double voltage() { return v; }
     public double g() { return g; }
 
-    /** Advance one brain tick. gDelta = summed synaptic input (mV) this tick. */
     public void stepTick(double gDelta) {
         double dt = BRAIN_TICK_MS / SUBSTEPS;
         for (int i = 0; i < SUBSTEPS; i++) {
