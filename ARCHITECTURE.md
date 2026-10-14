@@ -1,10 +1,53 @@
-# ARCHITECTURE.md — Provenance & Seal Chain
+# ARCHITECTURE.md
 
-Option C. Ledger-anchored. What is on disk, named. What is not on disk, not claimed.
+What is on disk. What is not on disk is not claimed.
 
-## 1. Seal convention
+## 1. Package
 
-A seal in this repository is SHA3-256 of a canonical JSON object:
+`src/main/java/com/fruitfly/brain/`. Stdlib only. Compiles with `javac`. No Maven. No SLF4J.
+
+| File | Role |
+|---|---|
+| `SovereignConstants.java` | phi, eta |
+| `DarkStateInvariant.java` | lambda2 = 1 gate |
+| `SovereigntyState.java` | 8-phase ladder |
+| `LIFRK4.java` | neuron |
+| `Connectome.java` | CSR + delay ring |
+| `SovereignAutomaton.java` | swarm orchestrator |
+| `GradientSynchronization.java` | Hebbian, eta = 1 |
+| `AutonomousDriver.java` | self-starting entry |
+| `SovereignMain.java` | CLI entry |
+
+Compile:
+
+```bash
+javac -d out src/main/java/com/fruitfly/brain/*.java
+```
+
+## 2. Entry points
+
+**AutonomousDriver** — self-starting. Depends on `SovereignConstants`, `DarkStateInvariant`, `SovereigntyState`, `LIFRK4`.
+
+```bash
+java -cp out com.fruitfly.brain.AutonomousDriver
+```
+
+Exit 0 on gate pass. Exit 1 on gate fail.
+
+**SovereignMain** — CLI. Depends on `Connectome`, `SovereignAutomaton`, `GradientSynchronization`.
+
+```bash
+java -cp out com.fruitfly.brain.SovereignMain --chat "hello" --q 1.13 --p 25.96
+java -cp out com.fruitfly.brain.SovereignMain --steps 3
+```
+
+`--q` and `--p` are passthrough. They are not computed by the class.
+
+See `docs/RUNBOOK.md` for expected output and failure modes.
+
+## 3. Seal convention
+
+A seal is SHA3-256 of canonical JSON:
 
 ```json
 {"body_sha3_256":"<hex>","entry_index":<int>,"event":"/<name>","file":"<path>"}
@@ -12,11 +55,11 @@ A seal in this repository is SHA3-256 of a canonical JSON object:
 
 Serialization: `json.dumps(..., sort_keys=True, separators=(",", ":"), ensure_ascii=True)`.
 
-HMAC is not used. No key is supplied. The distinction is recorded here so a later reader does not assume a keyed construction.
+HMAC is used in the JSONL stream (`ledger/witness_stream.jsonl`), not in the per-file seal. The HMAC key is `GARDEN` (public, documented). Algorithm: HMAC-SHA3-256.
 
-The seal line itself is excluded from the preimage. The body hash is computed over the file bytes with the seal header lines removed.
+The seal line itself is excluded from the preimage.
 
-## 2. Current sealed surface
+## 4. Current sealed surface
 
 | Entry | File | Body SHA3-256 | Seal SHA3-256 | Commit |
 |---|---|---|---|---|
@@ -27,37 +70,40 @@ Full values:
 - body: `fd035cd230868996d591793843a0ec86b5d80333f4e402b67de1c17a440aba37`
 - seal: `facc467ef838d0f47f2ccfe59193212ce119f53b79f899dd1437f2a748bb5e68`
 
-## 3. Verification procedure
+## 5. Witness stream
+
+`ledger/witness_stream.jsonl`. One JSON object per line. Each line carries `hmac_sha3_256` and `prev_hmac`. The chain is:
+
+| Entry | Event | HMAC | Prev |
+|---|---|---|---|
+| 540 | `/aklt_invariant_surface_sealed` | `a581983b...349a` | null |
+| 541 | `/architecture_md_options_committed` | `761ccd9f...f99a` | 540's HMAC |
+
+## 6. Verification
 
 1. Check out the commit named in the table.
-2. Read the file. Strip the header lines that begin with `# Seal:`, `# entry_index:`, `# seal_sha3_256:`, `# body_sha3_256:`, `# convention:`.
+2. Read the file. Strip header lines that begin with `# Seal:`, `# entry_index:`, `# seal_sha3_256:`, `# body_sha3_256:`, `# convention:`.
 3. Compute SHA3-256 of the remaining bytes. Compare to the body hash.
-4. Build the canonical JSON above. Compute SHA3-256. Compare to the seal hash.
+4. Build the canonical JSON. Compute SHA3-256. Compare to the seal hash.
 
-A mismatch is a disclosed defect, not a rewrite. Prior entries that fail recomputation are named, not patched.
+A mismatch is a disclosed defect, not a rewrite.
 
-## 4. Where the ledger lives
+## 7. Ledger layout
 
-`ledger/` holds YAML entries. Each entry carries `entry_index`, `event`, `witness_chain`, and a seal field. The chain links by the predecessor's declared seal. A content mismatch between declared and recomputed seal is recorded in a later entry; the earlier file is not rewritten.
+`ledger/` holds per-index YAML entries and the JSONL stream. There is no single `ledger.yaml`. The chain links by the predecessor's declared seal. A content mismatch is recorded in a later entry; the earlier file is not rewritten.
 
-There is no single `ledger.yaml`. The chain is the directory of per-index files.
+## 8. What is not claimed
 
-## 5. What is not claimed
+- No Merkle root for the full chain.
+- No agent count, sheaf, PID gain, or reward pool.
+- Entry 541 is provisional. This document is not itself a sealed chain entry.
 
-- No Merkle root is asserted for the full chain. The recipe is: concatenate the body hashes of the entries in index order, then SHA3-256. It has not been computed here.
-- No agent count, no sheaf, no PID gain, no reward pool is asserted. Those appear in other documents. They are not inputs to this seal.
-- Entry 541 is provisional. This file is the document that presents the options. It is not itself a sealed chain entry.
-
-## 6. Options not taken
-
-A (manifesto), B (full system), D (research), E (runbook), and F (combined) were presented. Option C was selected because it is the only one whose claims can be checked against the current tree without inventing structure.
-
-## 7. Status
+## 9. Status
 
 | Item | Value |
 |---|---|
-| Document | Option C |
-| Entry | 541 (provisional) |
-| Seal | pending |
-| Prior sealed | 540 |
+| Package | 9 files, stdlib, javac |
+| Entries | AutonomousDriver, SovereignMain |
+| Sealed | 540 |
+| Stream | 540 → 541 |
 | Ledger rewrite | none |
