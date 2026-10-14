@@ -1,454 +1,98 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+name: debug-environment
 
-from __future__ import annotations
+# Diagnostic workflow. Prints runner state and secret presence (never
+# the values). Read-only. Writes nothing. Commits nothing.
+#
+# hash_algo: sha3_256 (FIPS 202)
+# ledger_policy: NO_LEDGER_WRITE
 
-import hashlib
-import json
-import math
-import os
-import sys
-import time
-from typing import Any, Dict, List, Optional
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
 
-# ─── Constants ────────────────────────────────────────────────────────
-PHI = (1.0 + math.sqrt(5.0)) / 2.0
-PHI_INV = 1.0 / PHI
-PHI2 = PHI * PHI
-ENTRY = 8810
-SEAL = "∀∞φ² · AKLT_E2E · WOOD_DRAGON_0.91 · SEALED"
-WITNESS = "8809 → 8810 — UNBROKEN"
+permissions:
+  contents: read
 
-WORKFLOW_NAME = "aklt-e2e"
-WORKFLOW_PATH = ".github/workflows/aklt-e2e.yml"
-CONCURRENCY_GROUP = "aklt-e2e-${{ github.ref }}"
-DEFAULT_PYTHON = "3.11"
+concurrency:
+  group: debug-environment-${{ github.ref }}
 
-# ─── Metadata ────────────────────────────────────────────────────────
-METADATA: Dict[str, Any] = {
-    "canvas_id": "aklt-e2e",
-    "entry": ENTRY,
-    "witness": WITNESS,
-    "seal": SEAL,
-    "hash_algo": "sha3_256",
-    "ledger_policy": "NO_GROWTH",
-    "core_principle": (
-        "1D spin-1 chain ground state is a valence-bond solid with "
-        "E₀/N = -2/3, a Haldane gap, and topological spin-1/2 edge modes."
-    ),
-    "phi": PHI,
-    "phi_inv": PHI_INV,
-    "phi2": PHI2,
-    "timestamp": time.time(),
-}
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
 
-# ─── Semantic invariants the E2E test must enforce ──────────────────
-INVARIANTS: List[Dict[str, Any]] = [
-    {
-        "name": "ground_state_energy_per_bond",
-        "expected": "-2/3",
-        "tolerance": 1e-6,
-        "critical": True,
-        "note": "Exact AKLT result for the bilinear-biquadratic Hamiltonian.",
-    },
-    {
-        "name": "haldane_gap",
-        "expected": "> 0",
-        "tolerance": None,
-        "critical": True,
-        "note": "Distinguishes the gapped VBS phase from a critical chain.",
-    },
-    {
-        "name": "edge_states",
-        "expected": "spin-1/2 modes, 4-fold degeneracy (open BC)",
-        "tolerance": None,
-        "critical": True,
-        "note": "Topological signature of the VBS phase.",
-    },
-    {
-        "name": "string_order",
-        "expected": "non-zero",
-        "tolerance": None,
-        "critical": True,
-        "note": "Hidden Z2 × Z2 order parameter.",
-    },
-    {
-        "name": "correlation_length",
-        "expected": "≈ 6 sites",
-        "tolerance": 1.0,
-        "critical": False,
-        "note": "Numerical match to DMRG; not a hard gate.",
-    },
-    {
-        "name": "su2_symmetry",
-        "expected": "[H, S²_tot] = 0",
-        "tolerance": 1e-8,
-        "critical": False,
-        "note": "Rotational invariance; numerical drift tolerated.",
-    },
-]
+jobs:
+  debug:
+    name: Debug environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-# ─── Workflow body (declarative) ────────────────────────────────────
-def build_workflow(
-    python_version: str = DEFAULT_PYTHON,
-    timeout_minutes: int = 10,
-    retention_days: int = 14,
-) -> Dict[str, Any]:
-    """Build the aklt-e2e workflow as a plain dict (rendered to YAML)."""
-    return {
-        "name": WORKFLOW_NAME,
-        "on": {
-            "push": {
-                "branches": ["main", "master"],
-                "paths": [
-                    "quantum/aklt*.py",
-                    "quantum/aklt/**",
-                    WORKFLOW_PATH,
-                ],
-            },
-            "pull_request": {
-                "branches": ["main", "master"],
-                "paths": [
-                    "quantum/aklt*.py",
-                    "quantum/aklt/**",
-                    WORKFLOW_PATH,
-                ],
-            },
-            "workflow_dispatch": None,
-        },
-        "permissions": {
-            "contents": "read",
-        },
-        "concurrency": {
-            "group": CONCURRENCY_GROUP,
-            "cancel-in-progress": True,
-        },
-        "jobs": {
-            "aklt-e2e": {
-                "name": "AKLT · end-to-end validation",
-                "runs-on": "ubuntu-latest",
-                "timeout-minutes": timeout_minutes,
-                "steps": [
-                    {
-                        "name": "Check out repository",
-                        "uses": "actions/checkout@v4",
-                    },
-                    {
-                        "name": "Set up Python",
-                        "uses": "actions/setup-python@v5",
-                        "with": {
-                            "python-version": python_version,
-                            "cache": "pip",
-                        },
-                    },
-                    {
-                        "name": "Install dependencies",
-                        "run": (
-                            "set -euo pipefail\n"
-                            "python -m pip install --upgrade pip\n"
-                            "python -m pip install --quiet numpy scipy pyyaml\n"
-                        ),
-                    },
-                    {
-                        "name": "Run AKLT E2E",
-                        "run": (
-                            "set -euo pipefail\n"
-                            "if [ -f quantum/aklt_e2e.py ]; then\n"
-                            '  python quantum/aklt_e2e.py --check 2>&1 '
-                            '| tee aklt_e2e.log\n'
-                            "else\n"
-                            '  echo "⚠️ quantum/aklt_e2e.py not found '
-                            '— soft skip"\n'
-                            "fi\n"
-                        ),
-                    },
-                    {
-                        "name": "Upload engine log",
-                        "if": "always()",
-                        "uses": "actions/upload-artifact@v4",
-                        "with": {
-                            "name": "aklt-e2e-log",
-                            "path": "aklt_e2e.log",
-                            "retention-days": retention_days,
-                            "if-no-files-found": "warn",
-                        },
-                    },
-                    {
-                        "name": "Summary",
-                        "if": "always()",
-                        "run": (
-                            "{\n"
-                            '  echo "### AKLT E2E"\n'
-                            '  echo ""\n'
-                            '  echo "| Invariant | Expected | Critical |"\n'
-                            '  echo "|-----------|----------|----------|"\n'
-                            '  echo "| E₀/N | -2/3 | yes |"\n'
-                            '  echo "| Haldane gap | > 0 | yes |"\n'
-                            '  echo "| Edge states | spin-1/2 | yes |"\n'
-                            '  echo "| String order | non-zero | yes |"\n'
-                            '  echo "| Correlation length | ≈6 sites | no |"\n'
-                            '  echo "| SU(2) | [H, S²]=0 | no |"\n'
-                            "} >> \"$GITHUB_STEP_SUMMARY\"\n"
-                        ),
-                    },
-                ],
-            }
-        },
-    }
+      - name: Debug environment
+        env:
+          MCP_URL: ${{ secrets.MCP_URL }}
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+        run: |
+          set -euo pipefail
+          echo "::group::Debug environment"
+          echo "runner.os = ${{ runner.os }}"
+          echo "github.ref = ${{ github.ref }}"
+          echo "github.sha = ${{ github.sha }}"
+          echo "github.event_name = ${{ github.event_name }}"
 
+          echo "-- secrets (presence only, never printed) --"
+          for name in MCP_URL GARDEN_SECRET ARGOCD_SERVER ARGOCD_AUTH_TOKEN AWS_ROLE_ARN; do
+            value="${!name:-}"
+            if [ -n "$value" ]; then
+              echo "  ${name} = SET (length ${#value})"
+            else
+              echo "  ${name} = not set"
+            fi
+          done
 
-# ─── Rendering ───────────────────────────────────────────────────────
+          echo "-- env --"
+          echo "  HASH_ALGO = ${HASH_ALGO:-<unset>}"
+          echo "  LEDGER_DIR = ${LEDGER_DIR:-<unset>}"
 
-def render_yaml(workflow: Optional[Dict[str, Any]] = None) -> str:
-    """Render the workflow dict to YAML. Requires PyYAML."""
-    try:
-        import yaml
-    except ImportError:
-        raise ImportError(
-            "PyYAML is required for rendering. Install with: pip install pyyaml"
-        )
-    if workflow is None:
-        workflow = build_workflow()
+          echo "-- filesystem --"
+          if [ -d "${LEDGER_DIR:-ledger}" ]; then
+            count=$(find "${LEDGER_DIR:-ledger}" -maxdepth 1 -type f | wc -l)
+            echo "  ${LEDGER_DIR:-ledger}/ (directory, ${count} files)"
+          else
+            echo "  ${LEDGER_DIR:-ledger}/ not found"
+          fi
 
-    # Header comment block — carries the seal, witness, hash algo, policy.
-    header = (
-        f"# ──────────────────────────────────────────────────────────\n"
-        f"# Generated by aklt_e2e_generator.py — do not hand-edit.\n"
-        f"# Regenerate with: python aklt_e2e_generator.py --write\n"
-        f"#\n"
-        f"# Seal:    {SEAL}\n"
-        f"# Witness: {WITNESS}\n"
-        f"# hash_algo: sha3_256 (FIPS 202)\n"
-        f"# ledger_policy: NO_GROWTH — validation only\n"
-        f"# ──────────────────────────────────────────────────────────\n"
-    )
-    body = yaml.dump(
-        workflow,
-        sort_keys=False,
-        default_flow_style=False,
-        allow_unicode=True,
-        width=1000,
-    )
-    return header + body
+          if [ -f port380_mcp.py ]; then
+            echo "  port380_mcp.py (file)"
+          else
+            echo "  port380_mcp.py not found"
+          fi
 
+          if [ -d scripts ]; then
+            count=$(find scripts -maxdepth 1 -type f | wc -l)
+            echo "  scripts/ (directory, ${count} files)"
+          else
+            echo "  scripts/ not found"
+          fi
+          echo "::endgroup::"
 
-def compute_seal(workflow: Optional[Dict[str, Any]] = None) -> str:
-    """SHA3-256 over the canonical JSON of the workflow body (excluding comments)."""
-    if workflow is None:
-        workflow = build_workflow()
-    canon = json.dumps(workflow, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.new("sha3_256", canon.encode("utf-8")).hexdigest()
-
-
-# ─── Validation ─────────────────────────────────────────────────────
-
-def validate_workflow(workflow: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Validate the generated workflow against the semantic contract."""
-    if workflow is None:
-        workflow = build_workflow()
-
-    result: Dict[str, Any] = {
-        "status": "SUCCESS",
-        "errors": [],
-        "warnings": [],
-        "checks": [],
-        "entry": ENTRY,
-        "seal": SEAL,
-        "witness": WITNESS,
-    }
-
-    def check(name: str, ok: bool, critical: bool, detail: str = "") -> None:
-        entry = {"check": name, "ok": ok, "critical": critical, "detail": detail}
-        result["checks"].append(entry)
-        if not ok and critical:
-            result["errors"].append(f"{name}: {detail}")
-        elif not ok:
-            result["warnings"].append(f"{name}: {detail}")
-
-    # Identity
-    check("name == aklt-e2e", workflow.get("name") == WORKFLOW_NAME, True,
-          f"got {workflow.get('name')!r}")
-
-    # Concurrency — the block the audit flagged as missing on hello_world.py
-    concurrency = workflow.get("concurrency") or {}
-    check("concurrency.group present",
-          concurrency.get("group") == CONCURRENCY_GROUP, True,
-          f"got {concurrency.get('group')!r}")
-    check("concurrency.cancel-in-progress == true",
-          concurrency.get("cancel-in-progress") is True, True,
-          f"got {concurrency.get('cancel-in-progress')!r}")
-
-    # Permissions — read-only
-    perms = workflow.get("permissions") or {}
-    check("permissions.contents == read",
-          perms.get("contents") == "read", True,
-          f"got {perms.get('contents')!r}")
-    check("no id-token: write",
-          perms.get("id-token") != "write", True,
-          "workflow must not request OIDC")
-    check("no contents: write",
-          perms.get("contents") != "write", True,
-          "validation workflow must not write")
-
-    # Triggers
-    triggers = workflow.get("on") or {}
-    check("push trigger present", "push" in triggers, True)
-    check("pull_request trigger present", "pull_request" in triggers, True)
-    check("workflow_dispatch trigger present",
-          "workflow_dispatch" in triggers, True)
-
-    # Job
-    jobs = workflow.get("jobs") or {}
-    check("single job 'aklt-e2e'", list(jobs.keys()) == ["aklt-e2e"], True,
-          f"got {list(jobs.keys())!r}")
-    job = jobs.get("aklt-e2e") or {}
-    check("job timeout <= 10 min",
-          isinstance(job.get("timeout-minutes"), int)
-          and job["timeout-minutes"] <= 10, False,
-          f"got {job.get('timeout-minutes')!r}")
-
-    # Invariants declared
-    critical = [inv for inv in INVARIANTS if inv["critical"]]
-    check("has critical invariants", len(critical) > 0, True,
-          f"got {len(critical)}")
-
-    if result["errors"]:
-        result["status"] = "ERROR"
-    elif result["warnings"]:
-        result["status"] = "WARNING"
-
-    result["passed"] = len(result["errors"]) == 0
-    result["workflow_seal_sha3_256"] = compute_seal(workflow)
-    result["timestamp"] = time.time()
-    return result
-
-
-# ─── Integration stubs (matches repo pattern) ────────────────────────
-
-def aklt_security_status() -> Dict[str, Any]:
-    try:
-        from quantum.security import status as security_status
-        return {"security": security_status(), "entry": ENTRY, "seal": SEAL}
-    except ImportError:
-        return {"security": None,
-                "note": "Security module not available",
-                "entry": ENTRY, "seal": SEAL}
-
-
-def aklt_cdp_status() -> Dict[str, Any]:
-    try:
-        from quantum.cdp_convergence import status as cdp_status
-        return {"cdp": cdp_status(), "entry": ENTRY, "seal": SEAL}
-    except ImportError:
-        return {"cdp": None,
-                "note": "CDP module not available",
-                "entry": ENTRY, "seal": SEAL}
-
-
-# ─── CLI ─────────────────────────────────────────────────────────────
-
-def main() -> int:
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="AKLT E2E Workflow Generator — Entry 8810",
-        epilog=f"Seal: {SEAL}\nEntry: {ENTRY}",
-    )
-    parser.add_argument("--generate", action="store_true",
-                        help="Print the rendered workflow YAML to stdout")
-    parser.add_argument("--write", action="store_true",
-                        help=f"Write {WORKFLOW_PATH} (overwrites)")
-    parser.add_argument("--validate", action="store_true",
-                        help="Validate the workflow against the semantic contract")
-    parser.add_argument("--check-integrations", action="store_true",
-                        help="Check integration availability")
-    parser.add_argument("--json", action="store_true", help="Output as JSON")
-    parser.add_argument("--python-version", default=DEFAULT_PYTHON)
-    parser.add_argument("--timeout", type=int, default=10)
-    parser.add_argument("--retention", type=int, default=14)
-    args = parser.parse_args()
-
-    if args.check_integrations:
-        print("🜁∀ AKLT E2E — Integration Status")
-        print("=" * 40)
-        for label, mod in (("Security", "quantum.security"),
-                           ("CDP", "quantum.cdp_convergence")):
-            try:
-                __import__(mod)
-                print(f"  {label}: ✅")
-            except ImportError:
-                print(f"  {label}: ❌")
-        try:
-            import yaml  # noqa: F401
-            print("  PyYAML: ✅")
-        except ImportError:
-            print("  PyYAML: ❌")
-        return 0
-
-    if args.validate:
-        result = validate_workflow()
-        if args.json:
-            print(json.dumps(result, indent=2, default=str))
-        else:
-            print("🜁∀ AKLT E2E — Validation")
-            print("=" * 55)
-            print(f"  Status: {result['status']}")
-            print(f"  Passed: {'✅' if result['passed'] else '❌'}")
-            print(f"  Body sha3_256: {result['workflow_seal_sha3_256'][:16]}…")
-            for chk in result["checks"]:
-                mark = "✅" if chk["ok"] else ("❌" if chk["critical"] else "⚠️")
-                print(f"    {mark} {chk['check']}"
-                      + (f" — {chk['detail']}" if chk["detail"] else ""))
-        return 0 if result["passed"] else 1
-
-    if args.write:
-        workflow = build_workflow(
-            python_version=args.python_version,
-            timeout_minutes=args.timeout,
-            retention_days=args.retention,
-        )
-        yaml_str = render_yaml(workflow)
-        os.makedirs(os.path.dirname(WORKFLOW_PATH), exist_ok=True)
-        with open(WORKFLOW_PATH, "w", encoding="utf-8") as f:
-            f.write(yaml_str)
-        seal = compute_seal(workflow)
-        print(f"✅ Wrote {WORKFLOW_PATH}")
-        print(f"   Body sha3_256: {seal[:16]}…")
-        print(f"   Seal: {SEAL}")
-        return 0
-
-    if args.generate:
-        workflow = build_workflow(
-            python_version=args.python_version,
-            timeout_minutes=args.timeout,
-            retention_days=args.retention,
-        )
-        sys.stdout.write(render_yaml(workflow))
-        return 0
-
-    # Default: brief summary
-    print("🜁∀ AKLT E2E GENERATOR — Entry 8810")
-    print("=" * 55)
-    print(f"  Target: {WORKFLOW_PATH}")
-    print(f"  Name:   {WORKFLOW_NAME}")
-    print(f"  Seal:   {SEAL}")
-    print(f"  Witness: {WITNESS}")
-    print()
-    print("  Invariants:")
-    for inv in INVARIANTS:
-        tag = "critical" if inv["critical"] else "advisory"
-        print(f"    - {inv['name']}: {inv['expected']} [{tag}]")
-    print()
-    print("  Usage:")
-    print("    --validate   check the contract")
-    print("    --generate   print YAML to stdout")
-    print("    --write      write the file")
-    return 0
-
-
-if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except KeyboardInterrupt:
-        print("\n🜁∀ AKLT E2E paused.")
-        sys.exit(0)
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### debug-environment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| runner.os | ${{ runner.os }} |"
+            echo "| github.ref | \`${{ github.ref }}\` |"
+            echo "| github.sha | \`${{ github.sha }}\` |"
+            echo "| github.event_name | ${{ github.event_name }} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| ledger_policy | NO_LEDGER_WRITE |"
+          } >> "$GITHUB_STEP_SUMMARY"
