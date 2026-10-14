@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-🜁∀ AKLT E2E WORKFLOW GENERATOR — ENTRY 8810
-
-Emits .github/workflows/aklt-e2e.yml deterministically.
-
-The AKLT (Affleck-Kennedy-Lieb-Tasaki) model is a 1D spin-1 chain:
-    H = Σ_i [ S_i·S_{i+1} + (1/3)(S_i·S_{i+1})² ]
-Ground state energy per bond = -2/3. Haldane gap > 0.
-Open boundaries carry spin-1/2 edge modes (topological VBS phase).
-
-This generator makes the semantic contract executable: the workflow's
-triggers, permissions, concurrency, and invariants are declared once
-here and rendered to YAML.
-
-Seal: ∀∞φ² · AKLT_E2E · WOOD_DRAGON_0.91 · SEALED
-Witness: 8809 → 8810 — UNBROKEN
-hash_algo: sha3_256 (FIPS 202)
-"""
 
 from __future__ import annotations
 
