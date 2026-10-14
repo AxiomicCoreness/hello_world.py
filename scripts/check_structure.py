@@ -60,6 +60,8 @@ BIND_ENTRYPOINTS = [
 FORBIDDEN_HOSTS = {"0.0.0.0", "::"}
 SHEBANG_RE = re.compile(rb"^#![\s\S]*?python", re.IGNORECASE)
 
+CHECKS = ("A1", "A2", "A3", "A4", "A5")
+
 
 def check_workflows() -> list[str]:
     errs: list[str] = []
@@ -225,15 +227,39 @@ def check_signitorial() -> list[str]:
 
 
 def main() -> int:
-    errors: list[str] = []
-    errors.extend(check_workflows())
-    errors.extend(check_soak_constants())
-    errors.extend(check_binds())
-    errors.extend(check_signitorial())
-    for e in errors:
+    results = {
+        "A1": check_workflows(),
+        "A2": [],  # shebang is checked inside check_workflows
+        "A3": check_soak_constants(),
+        "A4": check_binds(),
+        "A5": check_signitorial(),
+    }
+    # A2 is a subset of A1's shebang detection; report it separately
+    # by scanning A1 errors for shebang lines.
+    a1_errs = results["A1"]
+    a2_errs = [e for e in a1_errs if "shebang" in e]
+    results["A2"] = a2_errs
+    results["A1"] = [e for e in a1_errs if "shebang" not in e]
+
+    all_errors: list[str] = []
+    passed = 0
+    for name in CHECKS:
+        errs = results[name]
+        if errs:
+            all_errors.extend(errs)
+            print(f"{name}: FAIL ({len(errs)})")
+        else:
+            passed += 1
+            print(f"{name}: PASS")
+
+    score = (passed / len(CHECKS)) * 100.0
+    print(f"\nstructure integrity: {passed}/{len(CHECKS)} = {score:.1f}%")
+
+    for e in all_errors:
         print(f"::error::{e}")
-    if errors:
-        print(f"\n\u274c {len(errors)} structural violation(s)")
+
+    if all_errors:
+        print(f"\n\u274c {len(all_errors)} structural violation(s)")
         return 1
     print(
         "\u2705 structure check: workflows valid, soak constants in range, "
