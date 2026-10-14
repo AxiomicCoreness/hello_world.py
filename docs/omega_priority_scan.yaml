@@ -1,0 +1,151 @@
+# ============================================================================
+# OMEGA PRIORITY SCAN — CONFIG
+# Artifact: quaternary target append, ledger port policy
+# Timestamp: 2026-10-13T00:00:00Z
+# Status: single write. Nothing above removed.
+# Note: ADE table here is modular-invariant (A_n = M(n, n+1)).
+#       Distinct from multibody_simulator/ADE_STATIC.md (Du Val singularities).
+# ============================================================================
+
+meta:
+  document: OMEGA_PRIORITY_SCAN_TRANSCRIPT
+  author: QUARTERNARY_TARGET_APPEND
+  version: 1
+  layer: port_policy_add_on
+  katex_target: false
+  khtml_target: false
+  notes: >
+    Config captures the 3-state port layer, the triple anchor names, the
+    corrected ADE table, and the unresolved arithmetic flags from the
+    pasted body. Flagged claims are recorded under known_issues, not
+    promoted to config truth.
+
+# ----------------------------------------------------------------------------
+# ANCHORS — names only. The port consults these; it does not prove them.
+# ----------------------------------------------------------------------------
+anchors:
+  merkle_root:
+    field: root
+    advances_on: [SEALED]
+    held_on: [HELD, VOID]
+  witness_chain:
+    field: witness
+    extends_on: [SEALED]
+    retains_on: [HELD]
+    fails_on: [VOID]
+  hmac_chain:
+    field: hmac
+    records: [SEALED, HELD, VOID]
+    break_collapses_to: VOID
+
+# ----------------------------------------------------------------------------
+# PORTS — three states, mutually exclusive, no fourth.
+# ----------------------------------------------------------------------------
+ports:
+  states: [SEALED, HELD, VOID]
+  unknown: not_a_state   # modelled as absence-of-read -> HELD
+  self_referential: true # port transitions are themselves ledger entries
+
+transition_table:
+  SEALED:
+    SEALED: accept_delta_if_superset
+    HELD:   witness_gap
+    VOID:   hmac_break
+  HELD:
+    SEALED: witness_restored
+    HELD:   remain_held
+    VOID:   witness_failed
+  VOID:
+    SEALED: external_reseal
+    HELD:   null
+    VOID:   remain_void
+
+dispatch_rules:
+  - id: refuse_void
+    when: port.state == VOID
+    action: REFUSED_VOID
+  - id: hmac_collapse
+    when: not hmac_ok
+    action: COLLAPSED_TO_VOID
+  - id: witness_suspend
+    when: not witness_ok
+    action: SUSPENDED_TO_HELD
+  - id: witness_restore
+    when: port.state == HELD and witness_ok
+    action: SEALED
+  - id: invariant_superset
+    when: not (F_next.invariants >= F_n.invariants)
+    action: INVARIANT_SHRINK_REFUSED
+  - id: accept
+    when: hmac_ok and witness_ok and invariant_superset
+    action: ACCEPTED
+
+reseal:
+  from: VOID
+  to:   SEALED
+  requires: external_root
+  opens: new_genesis_root
+
+# ----------------------------------------------------------------------------
+# LEDGER INVARIANT
+# ----------------------------------------------------------------------------
+invariant: "delta(F_n, sigma) = F_{n+1}  and  I(F_{n+1}) superset_of I(F_n)"
+
+# ----------------------------------------------------------------------------
+# ADE TABLE — corrected. A_n = M(n, n+1). E_n labelled by invariant.
+# ----------------------------------------------------------------------------
+ade_table:
+  convention: "A_n = M(n, n+1); E_n = M(Coxeter, Coxeter+1)"
+  rows:
+    - { label: "A_3 (Ising)",                subgroup: C_4, order: 4,   h: 4,  c: "1/2" }
+    - { label: "A_4 (tricritical Ising)",    subgroup: C_5, order: 5,   h: 5,  c: "7/10" }
+    - { label: "A_5 (critical 3-state Potts)", subgroup: C_6, order: 6, h: 6,  c: "4/5" }
+    - { label: "A_6 (tricritical 3-state Potts)", subgroup: C_7, order: 7, h: 7, c: "6/7" }
+    - { label: "E_6 (exceptional invariant)", subgroup: 2T, order: 24,  h: 12, c: "25/26" }
+    - { label: "E_7 (exceptional invariant)", subgroup: 2O, order: 48,  h: 18, c: "56/57" }
+    - { label: "E_8 (exceptional invariant)", subgroup: 2I, order: 120, h: 30, c: "154/155" }
+  wzw_reference:
+    su2_k28: "c = 3k/(k+2) = 14/5"
+    e8_level1: "c = 248/31 = 8"
+  references:
+    - "Cappelli 1987 (N=1 super-Virasoro modular invariants)"
+    - "Fateev-Lykyanov 1987 (W_3 minimal models)"
+    - "Bouwknegt-Schoutens, Phys. Rep. 223 (1993)"
+
+# ----------------------------------------------------------------------------
+# KNOWN ISSUES — unresolved in the body. Recorded, not repaired here.
+# ----------------------------------------------------------------------------
+known_issues:
+  - id: KI-01
+    claim: "phi^2 * 165 = 432.000"
+    actual: "431.9756"
+    severity: arithmetic
+  - id: KI-02
+    claim: "phi^2 - 1/phi^-1 < 1e-15"
+    actual: "expression = 1; inequality false. Intended form likely phi^2 - phi - 1 < 1e-15"
+    severity: arithmetic
+  - id: KI-03
+    claim: "AES-544 hash"
+    actual: "hex is 72 chars = 288 bits; no standard AES-544 exists"
+    severity: label
+  - id: KI-04
+    claim: "T_7 ⊗ G H_A H_B = phi^2"
+    actual: "contraction H_A · H_B = 1; phi^2 must come from T_7 or G, neither given"
+    severity: arithmetic
+  - id: KI-05
+    claim: "partial_t<System> = 0 implies self-aware"
+    actual: "zero time derivative is constant; non-sequitur"
+    severity: logic
+  - id: KI-06
+    claim: "W_3 c = 6/7 attribution"
+    actual: "c = 2 - 24/(pq) = 6/7 requires pq = 21; standard restriction p,q > 3 fails"
+    severity: domain
+    resolution: cut or qualify
+  - id: KI-07
+    claim: "duplicated body (Sections I-III appear twice)"
+    actual: "deduplicate on ship"
+    severity: format
+
+# ----------------------------------------------------------------------------
+# END CONFIG
+# ============================================================================
