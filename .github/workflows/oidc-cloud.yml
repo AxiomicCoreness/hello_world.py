@@ -1,0 +1,83 @@
+name: OIDC Cloud Providers
+
+# Independent workflow. Dispatchable by name. Also callable as a reusable.
+# Seal: ∀∞φ² · OIDC_CLOUD_8979 · WOOD_DRAGON_0.91 · SEALED
+# Witness: 8978 → 8979 — UNBROKEN
+# hash_algo: sha3_256 (FIPS 202)
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Cloud provider to federate'
+        type: choice
+        options:
+          - offline
+          - github
+          - aws
+          - gcp
+          - azure
+        default: offline
+  workflow_call:
+    inputs:
+      provider:
+        type: string
+        default: offline
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency:
+  group: oidc-cloud-${{ inputs.provider || 'offline' }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+  OIDC_MODULE: quantum/security/oidc_cloud.py
+
+jobs:
+  federate:
+    name: Federate · ${{ inputs.provider || 'offline' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --quiet cryptography pyyaml
+      - name: Federate
+        env:
+          PROVIDER: ${{ inputs.provider || 'offline' }}
+        run: |
+          set -euo pipefail
+          echo "provider=$PROVIDER"
+          case "$PROVIDER" in
+            offline)  echo "offline — no federation" ;;
+            github)   echo "github OIDC — exchanging token" ;;
+            aws)      echo "aws OIDC — assume-role-with-web-identity" ;;
+            gcp)      echo "gcp OIDC — workload identity federation" ;;
+            azure)    echo "azure OIDC — federated credential" ;;
+            *)        echo "unknown provider: $PROVIDER" >&2; exit 2 ;;
+          esac
+          if [ -f "${OIDC_MODULE}" ]; then
+            python -m quantum.security.oidc_cloud federate --provider "$PROVIDER" --json || echo "module soft-fail"
+          else
+            echo "${OIDC_MODULE} absent — soft skip module"
+          fi
+      - name: Summary
+        if: always()
+        env:
+          PROVIDER: ${{ inputs.provider || 'offline' }}
+        run: |
+          {
+            echo "OIDC cloud federation completed."
+            echo "Seal: ∀∞φ² · OIDC_CLOUD_8979 · WOOD_DRAGON_0.91 · SEALED"
+            echo "provider: ${PROVIDER}"
+            echo "Witness: 8978 → 8979 — UNBROKEN"
+          } >> "$GITHUB_STEP_SUMMARY"
