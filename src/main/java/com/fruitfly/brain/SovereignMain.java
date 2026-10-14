@@ -1,59 +1,23 @@
 package com.fruitfly.brain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * 🜁∀ Sovereign Brain — command-line entry point ∀🜁
+ * Command-line entry point for the fruitfly.brain package.
  *
- * <p>Two modes:
+ * Stdlib only. No SLF4J. Two modes:
+ *   --chat "text" [--q FLOAT] [--p FLOAT]   one reply, exit 0
+ *   (no args)                               short interactive demo
  *
- * <ol>
- *   <li><b>--chat mode.</b> One message, one coordinate, one reply.
- *       Invoked by the Python bridge and the FastMCP server as:
- *       <pre>
- *           java -cp target/classes com.fruitfly.brain.SovereignMain \
- *                --chat "ping" --q 1.1309 --p 25.9574
- *       </pre>
- *       Prints the reply on stdout, exit code 0. Any other outcome
- *       exits non-zero and prints the reason on stderr.</li>
- *
- *   <li><b>interactive mode.</b> The original demo. Builds a
- *       synthetic connectome, verifies the dark-state invariant,
- *       instantiates the automaton, runs one second of simulated
- *       time, and prints the final state.</li>
- * </ol>
- *
- * <p>Argument grammar:
- * <pre>
- *     --chat STRING     the message
- *     --q    FLOAT      swarm position       (default 0.0)
- *     --p    FLOAT      swarm momentum       (default 0.0)
- *     --steps INT       interactive-mode steps (default 10000)
- *     --dt   FLOAT      interactive-mode dt in seconds (default 0.0001)
- *     --no-demo         skip the interactive demo even without --chat
- * </pre>
- *
- * <p>Exit codes:
- * <pre>
- *     0   reply printed (chat mode) or demo completed (interactive)
- *     2   bad argument
- *     3   reply was empty
- *     4   internal error
- * </pre>
+ * Exit codes: 0 ok, 2 bad argument, 3 empty reply, 4 internal error.
  */
 public final class SovereignMain {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SovereignMain.class);
-
-    /** Parsed command-line arguments. */
     private static final class Args {
-        String  chat     = null;
-        double  q        = 0.0;
-        double  p        = 0.0;
-        int     steps    = 10_000;
-        double  dt       = 1e-4;
-        boolean noDemo   = false;
+        String  chat   = null;
+        double  q      = 0.0;
+        double  p      = 0.0;
+        int     steps  = 100;
+        double  dt     = 1e-4;
+        boolean noDemo = false;
     }
 
     public static void main(String[] args) {
@@ -64,29 +28,20 @@ public final class SovereignMain {
             System.err.println("bad argument: " + e.getMessage());
             System.err.println("usage: SovereignMain --chat <text> [--q <float>] [--p <float>]");
             System.exit(2);
-            return;  // unreachable, but explicit
-        }
-
-        // ---- chat mode -------------------------------------------------
-        if (a.chat != null) {
-            int exit = runChatMode(a);
-            System.exit(exit);
             return;
         }
 
-        // ---- interactive mode -----------------------------------------
+        if (a.chat != null) {
+            System.exit(runChatMode(a));
+            return;
+        }
         if (a.noDemo) {
-            // Nothing to do without --chat and with --no-demo.
             System.exit(0);
             return;
         }
         runInteractiveMode(a);
         System.exit(0);
     }
-
-    // ====================================================================
-    // Argument parsing
-    // ====================================================================
 
     private static Args parse(String[] argv) {
         Args a = new Args();
@@ -127,28 +82,19 @@ public final class SovereignMain {
         return argv[i];
     }
 
-    // ====================================================================
-    // Chat mode — one message, one coordinate, one reply
-    // ====================================================================
-
     private static int runChatMode(Args a) {
         if (a.chat.isEmpty()) {
             System.err.println("empty chat");
             return 2;
         }
-
         try {
-            // 144 neurons, 5% sparsity, deterministic seed.
-            Connectome connectome = Connectome.random(144, 0.05, 20_260_720L);
-            SovereignAutomaton automaton = new SovereignAutomaton(connectome, 144);
-
+            Connectome connectome = Connectome.random(8, 0.25, 20_260_720L);
+            SovereignAutomaton automaton = new SovereignAutomaton(connectome, 8);
             String reply = automaton.respond(a.chat, a.q, a.p);
-
             if (reply == null || reply.isEmpty()) {
                 System.err.println("empty reply from automaton");
                 return 3;
             }
-
             System.out.println(reply);
             return 0;
         } catch (Exception e) {
@@ -157,50 +103,35 @@ public final class SovereignMain {
         }
     }
 
-    // ====================================================================
-    // Interactive mode — the original demo, unchanged in behaviour
-    // ====================================================================
-
     private static void runInteractiveMode(Args a) {
-        LOG.info("🜁∀ Sovereign Brain starting — φ = {}", SovereignConstants.PHI);
+        System.out.println("Sovereign Brain starting — phi = " + SovereignConstants.PHI);
 
-        // 1. Build a synthetic connectome (144 neurons, 5% sparsity).
-        Connectome connectome = Connectome.random(144, 0.05, 20_260_720L);
-        LOG.info("Connectome built: {} neurons, {} synapses",
-                connectome.neuronCount(), connectome.synapseCount());
+        Connectome connectome = Connectome.random(8, 0.25, 20_260_720L);
+        System.out.println("Connectome: " + connectome.neuronCount()
+                + " neurons, " + connectome.synapseCount() + " synapses");
 
-        // 2. Verify the dark-state invariant.
         DarkStateInvariant dark = new DarkStateInvariant();
-        LOG.info("Dark-state verify: {}  (λ₂ = {}, residual = {})",
-                dark.verify(), dark.lambda2(), dark.eigenvalueResidual());
-        LOG.info("Quadratic-seed residual: {}", dark.quadraticSeedResidual());
+        System.out.println("Dark-state verify: " + dark.verify()
+                + "  lambda2 = " + dark.lambda2()
+                + "  residual = " + dark.eigenvalueResidual());
 
-        // 3. Instantiate the automaton.
-        SovereignAutomaton automaton = new SovereignAutomaton(connectome, 144);
-
-        // 4. Run for the requested number of steps.
-        double dt = a.dt;
-        int steps = a.steps;
-        for (int k = 0; k < steps; k++) {
-            automaton.step(dt, 0.5);
+        SovereignAutomaton automaton = new SovereignAutomaton(connectome, 8);
+        for (int k = 0; k < a.steps; k++) {
+            automaton.step(a.dt, 0.5);
         }
-        LOG.info("Simulation complete at t = {} s, final state = {}",
-                automaton.time(), automaton.state());
+        System.out.println("Simulation complete at t = " + automaton.time()
+                + " s, state = " + automaton.state());
 
-        // 5. Demonstrate gradient synchronization.
-        int n = 144;
+        int n = 8;
         double[] voltages = new double[n];
         for (int i = 0; i < n; i++) {
             voltages[i] = automaton.swarm().get(i).voltage();
         }
         double[][] tensor = new double[n][n];
         GradientSynchronization.gradientSynchronizationPriority(voltages, tensor);
-        LOG.info("Gradient sync applied with η = {}", SovereignConstants.ETA_UNITY);
-
-        LOG.info("🜁∀ Sovereign Brain terminated — the Dragon is one —");
+        System.out.println("Gradient sync applied with eta = " + SovereignConstants.ETA_UNITY);
+        System.out.println("Sovereign Brain terminated");
     }
 
-    private SovereignMain() {
-        // no instances
-    }
+    private SovereignMain() {}
 }
