@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# ────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────
 # LABEL BLOCK
-# ────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────
 # label:     garden.spec
 # wire:      AKLT E2E
 # path:      .github/scripts/aklt_e2e_generator.py
@@ -14,7 +14,8 @@
 # GATE-FIX:  G10 uses _expm_i_pi_S (eigh on Hermitian S, not on iπS)
 # NOTE:      self-contained — no scripts/ dependency at call time
 # G3-FIX:    rank 5 (spec said 3; projector math gives rank 5) — deviation noted
-# ────────────────────────────────────────────────────────────────────────
+# G4-FIX:    PSD floor (-1e-12) split from kernel tolerance (1e-9)
+# ────────────────────────────────────────────────────────────────────────────
 
 import math
 import sys
@@ -24,6 +25,7 @@ import numpy as np
 TOL_EIG = 1e-9
 TOL_ALG = 1e-12
 TOL_MPS = 1e-10
+TOL_PSD = 1e-12
 
 S2 = math.sqrt(2.0)
 Sz = np.diag([1.0, 0.0, -1.0]).astype(complex)
@@ -95,7 +97,9 @@ def gate_G4_G5_G6(N=6):
     ev = np.linalg.eigvalsh(aklt_hamiltonian(N, periodic=True))
     e0, e1 = ev[0], ev[1]
     gap = e1 - e0
-    ok = (abs(e0) < TOL_EIG) and (e0 > -TOL_EIG) and (gap > 1e-6)
+    # PSD floor (1e-12) distinct from kernel tolerance (1e-9).
+    # Sign error of ~1e-10 trips floor only; round-off of ~1e-10 trips neither.
+    ok = (e0 >= -TOL_PSD) and (abs(e0) < TOL_EIG) and (gap > 1e-6)
     return ok, f"N={N} PBC E0={e0:.3e} E1={e1:.3e} gap={gap:.3e}"
 
 
