@@ -11,6 +11,7 @@ Corrections applied:
   - SC1000 placeholder removed from _RULES (dead code)
   - six additional rules: SC2155 SC2162 SC2016 SC2015 SC2048 SC2115
   - # shellcheck disable=... directive support
+  - YAML path prints a one-line confirmation when clean (YAML001/YAML002)
 """
 import sys
 import os
@@ -180,13 +181,17 @@ def run_lint(filepath):
 
     if filepath.endswith(('.yaml', '.yml')):
         findings = lint_yaml_text(content)
+        if findings:
+            sys.stderr.write(format_findings(filepath, findings) + "\n")
+        else:
+            sys.stdout.write(f"{filepath}: YAML001/YAML002 clean\n")
     elif filepath.endswith(('.sh', '.bash')) or content.startswith('#!'):
         findings = lint_shell_text(content, filepath)
+        if findings:
+            sys.stderr.write(format_findings(filepath, findings) + "\n")
     else:
         return 0
 
-    if findings:
-        sys.stderr.write(format_findings(filepath, findings) + "\n")
     return 0
 
 
