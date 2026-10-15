@@ -1,11 +1,21 @@
 entry_index: 9126
 witness_prefix: 19a8923b8f309e057fedf3c9edebe325c6b9a374c89e73d2b0f32b11901e60cb
+# ============================================================================
+# APPENDED · CHANGE 1 — terminal_hex, aligned with validator's expected field
+# ============================================================================
+terminal_hex: 8130fbb53960c828da7bfed2ed78af1d5e397d891c0c3e41df254ddd05ac7f48
+# ============================================================================
+commander: Clarke Yoursa Tee
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-29Z
 event: /audit_9125_verification
 status: SEALED
 proof_class: audit
+# ============================================================================
+# APPENDED · CHANGE 2 — prev_hash, cryptographic back-link to entry 9125
+# ============================================================================
+prev_hash: 19a8923b8f309e057fedf3c9edebe325c6b9a374c89e73d2b0f32b11901e60cb
+# ============================================================================
 witness_hash: 0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a
-commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 
 description: |
@@ -35,6 +45,54 @@ classification:
 
 seal: "∀∞φ² · AUDIT_9125_9126 · SEALED"
 witness_chain: 9125 → 9126 — UNBROKEN
+
+# ============================================================================
+# APPENDED · CHANGE 3 — math_origin, matching the field pattern of 9122
+# ----------------------------------------------------------------------------
+# Declares the closed-form origin of the quantities this entry audits.
+# Only expressions that already appear in description / audit_notes above are
+# restated here; nothing new is introduced.
+# ============================================================================
+math_origin: |
+  φ² = φ + 1              = 2.618033988749895
+  Δ  = b² − 4ac           = φ² − 480 = −477.3819660112501
+  x  = (φ ± i√(480 − φ²))/2
+  θ  = 2.5416018462       (radians, phase-lock 202.6° mod 2π)
+  Ψ(t) = Ψ(0)·e^{i·202.6°·t/T₀}
+  Σ_{i,j,k=1}^7 T_{ijk}^{(7)}
+# ============================================================================
+
+# ============================================================================
+# APPENDED · CHANGE 4 — garden.event.v1 domain binding, matches event_hash.domain
+# ----------------------------------------------------------------------------
+# The event_hash block below already declares domain: GARDEN.EVENT.v1. This
+# append promotes that domain to its own top-level block, matching the
+# pattern used elsewhere in the ledger, and pins the canonicalization rule
+# the digest was computed under.
+# ============================================================================
+garden_event_v1:
+  domain: GARDEN.EVENT.v1
+  entry: "9126"
+  event: "/audit_9125_verification"
+  canonicalization: JCS_rfc8785         # stated; verify against validator
+  fields_in_preimage:
+    - entry_index
+    - event
+    - status
+    - proof_class
+    - prev_hash
+    - payload
+  fields_excluded:
+    - terminal_hex
+    - hex
+    - witness_prefix
+    - witness_hash
+    - seal
+  payload: "9126|/audit_9125_verification|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+  algo: sha3-256
+  hex: 8130fbb53960c828da7bfed2ed78af1d5e397d891c0c3e41df254ddd05ac7f48
+# ============================================================================
+
 event_hash:
   algo: sha3-256
   domain: GARDEN.EVENT.v1
