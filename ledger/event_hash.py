@@ -2,9 +2,10 @@
 """Mathematical event hash for ledger entries.
 
 Form:
-  H = SHA3-256(  "GARDEN.EVENT.v1"  ||  0x00  ||  payload )
+  H = SHA3-256(  "GARDEN.EVENT.v1.LEDGER"  ||  0x00  ||  payload )
   payload = index|event|phi2|delta=b^2-4ac|theta
 
+Used for entry_index >= 9281. Prior entries use GARDEN.EVENT.v1.
 Does not replace genesis_hash on 510510.yaml.
 """
 from __future__ import annotations
@@ -17,8 +18,9 @@ from typing import Any, Dict
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI2 = PHI * PHI
 THETA = PHI * math.pi / 2.0
-DOMAIN = "GARDEN.EVENT.v1"
-FORMULA = "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|phi2|delta=b^2-4ac|theta)"
+DOMAIN = "GARDEN.EVENT.v1.LEDGER"
+DOMAIN_LEGACY = "GARDEN.EVENT.v1"
+FORMULA = "H=SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || index|event|phi2|delta=b^2-4ac|theta)"
 
 
 def payload(index: int, event: str) -> str:
@@ -27,8 +29,8 @@ def payload(index: int, event: str) -> str:
     )
 
 
-def event_hash(index: int, event: str) -> str:
-    raw = DOMAIN.encode("utf-8") + b"\x00" + payload(index, event).encode("utf-8")
+def event_hash(index: int, event: str, domain: str = DOMAIN) -> str:
+    raw = domain.encode("utf-8") + b"\x00" + payload(index, event).encode("utf-8")
     return hashlib.sha3_256(raw).hexdigest()
 
 
