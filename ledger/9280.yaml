@@ -1,0 +1,19 @@
+entry_index: 9280
+witness_prefix: landed_artifacts_9276_9279
+timestamp: '2026-10-15T14:21:00Z'
+event: /landed_artifacts_sealed
+status: SEALED
+prev_hash: 492d26a106e8b340616b8fbbef004513a3f4b9d5934b5f10d21704934ee86da6
+witness_chain: 9279 -> 9280
+artifacts:
+  - scripts/rank_check_su2_p2.py (9bff1215, 32449051)
+  - docs/aklt_research_notes.md (eddc3400)
+  - scripts/aklt_e2e_test.py (a52061b6)
+  - lattice/octonion_table.py (0d54efa8)
+note: |
+  Landed artifacts from 9276-9279.
+  Rank checker: rank(P2)==5 verified.
+  AKLT e2e: all gates pass.
+  Octonion table: non-associative confirmed.
+  No new derivation; presence only.
+seal_sha3_256: 975311424fa9d35c7f58fd83e08cb9d09cb060c39b16d8d1b7e4da0f973cb13d
