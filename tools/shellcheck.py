@@ -4,7 +4,14 @@
 # ──────────────────────────────────────────────────────────────────────
 # label:     garden.gate
 # wire:      MCP call aggregate
-# path:      tools/shellcheck.py  (entry shim: tools/shellcheck.sh)
+# path:      tools/mcp_call_gate.py  (entry shim: tools/mcp_call_gate.sh)
+# RENAMED:   from tools/shellcheck.py — name collision went red in CI on
+#            2026-10-15: the singularity workflow invokes
+#            `python3 tools/shellcheck.py ledger/0353.yaml` expecting the
+#            YAML001/YAML002 linter, but the gate's argparse rejects the
+#            positional argument (exit 2). The linter is restored at
+#            tools/shellcheck.py from commit 20515417 (7,482 bytes, held
+#            verbatim in the companion canvas); the gate moves here.
 # TYPE:      gate
 # STATUS:    open
 # BLOCKER:   none
@@ -24,7 +31,7 @@
 # ──────────────────────────────────────────────────────────────────────
 #
 # Usage (via shim, which preserves exit codes):
-#   ./shellcheck.sh [--run-id <id>] [--gate-name <name>] [--tmp DIR] [--tools DIR]
+#   ./mcp_call_gate.sh [--run-id <id>] [--gate-name <name>] [--tmp DIR] [--tools DIR]
 #
 # Contract:
 #   1. Locate the most recent MCP run log under /tmp/ (mtime-descending):
