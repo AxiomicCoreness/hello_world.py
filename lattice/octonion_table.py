@@ -8,6 +8,8 @@ from typing import Dict, Tuple
 
 # ── Fano Plane Oriented Triples ──
 # Each triple (a, b, c) means: e_a * e_b = e_c, e_b * e_a = -e_c
+# Landed orientation: (1,7,6) and (3,6,5). Opposite cyclic order
+# is valid but not used here.
 FANO_TRIPLES = [
     (1, 2, 3),
     (1, 4, 5),
