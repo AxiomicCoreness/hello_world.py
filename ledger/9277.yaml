@@ -12,4 +12,4 @@ note: |
   subspace and 0 on S=1 and S=0.
   Multiplicities follow the eigenvalues: rank(P2) = dim(S=2) = 5.
   This is the mathematical basis for the G3 rank-5 assertion.
-seal_sha3_256: null
+seal_sha3_256: e5d47cab185584c17f7b089ed18bf059847df6bcd86fc282a24a00fcc9a2b78c
