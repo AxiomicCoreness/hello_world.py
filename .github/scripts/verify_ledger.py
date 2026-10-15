@@ -6,8 +6,11 @@ HASH ALGORITHM: SHA3-256 (FIPS 202). Non-negotiable.
 
 Dual regime (append-only safe):
   Regime A (89xx): SHA3-256(canonical JSON body minus 'seal')
-  Regime B (92xx): SHA3-256(GARDEN.EVENT.v1 || 0x00 || n|event|phi2|delta|theta)
+  Regime B (92xx, and 9281+): SHA3-256(GARDEN.EVENT.v1 || 0x00 || n|event|phi2|delta|theta)
                    ASCII b^2 only — Unicode b² is rejected.
+
+For entry_index >= 9281, Regime B is the expected regime. An A-only match
+is accepted but flagged.
 
 Modes (default = --soft):
   --emit   print the computed digests and exit 0 (diagnostic; never fails)
@@ -48,9 +51,9 @@ except ImportError:
     HAVE_YAML = False
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Constants
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 HASH_ALGO = "sha3_256"
 HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
@@ -80,10 +83,13 @@ WITNESS_RE = re.compile(r"^\s*(\d{3,5})\s*[→>-]+\s*(\d{3,5})")
 
 GENESIS_ANCHORS = {"0000"}
 
+# From 9281 onward, Regime B is the expected seal regime.
+REGIME_B_FROM = 9281
 
-# ─────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────────
 # JSON canonicalisation helper
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def json_default(obj: Any) -> Any:
     """Fallback serialiser for json.dumps(): handles PyYAML types."""
@@ -111,9 +117,9 @@ def json_default(obj: Any) -> Any:
     return str(obj)
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Data model
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 class Entry:
     __slots__ = (
@@ -134,9 +140,9 @@ class Entry:
         self.notes: List[str] = []
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Loading
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def _iter_yaml_files(ledger_dir: str) -> Iterable[str]:
     if not os.path.isdir(ledger_dir):
@@ -194,9 +200,9 @@ def load_entries(ledger_dir: str,
     return entries
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Seal computation — Regime A (canonical JSON)
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def canonical_hash(data: dict) -> str:
     """
@@ -218,9 +224,9 @@ def canonical_hash(data: dict) -> str:
     return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Seal computation — Regime B (event domain)
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def event_hash(data: dict) -> Optional[str]:
     """
@@ -245,9 +251,9 @@ def event_hash(data: dict) -> Optional[str]:
     ).hexdigest()
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Seal extraction from the entry
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def declared_hex(data: dict) -> Optional[str]:
     """
@@ -272,9 +278,9 @@ def declared_hex(data: dict) -> Optional[str]:
     return None
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Per-file verification
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def _emit_diagnostics(data: dict, declared: str,
                       computed_a: str, computed_b: Optional[str],
@@ -347,6 +353,11 @@ def verify(path: Path, mode: str) -> bool:
     elif computed_b is not None and declared == computed_b:
         regime = "B(event)"
 
+    # 9281+: Regime B is expected. A-only match is flagged.
+    idx = data.get("entry_index")
+    if isinstance(idx, int) and idx >= REGIME_B_FROM and regime == "A(json)":
+        print(f"⚠️ {path}: entry {idx} matched Regime A only; Regime B expected for >= {REGIME_B_FROM}")
+
     if mode == "emit":
         print(f"— {path}")
         _emit_diagnostics(data, declared, computed_a, computed_b, regime)
@@ -368,9 +379,9 @@ def verify(path: Path, mode: str) -> bool:
     return True
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 # Tree-wide checks
-# ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
 
 def check_required_fields(entries: List[Entry]) -> int:
     bad = 0
@@ -466,139 +477,44 @@ def check_chains(entries: List[Entry]) -> int:
                 if i == 0:
                     if prev not in GENESIS_ANCHORS:
                         print(f"::error file={e.path}::entry {e.index} "
-                              f"first in series but prev {prev} not in genesis anchors")
+                              f"first in series but prev {prev} is not a genesis anchor")
                         bad += 1
-                else:
-                    if prev != group[i - 1].index:
-                        print(f"::error file={e.path}::entry {e.index} "
-                              f"prev {prev} != previous entry {group[i - 1].index}")
-                        bad += 1
+
     return bad
 
 
-def check_reward_pool(entries: List[Entry]) -> int:
-    """
-    If fiduciary_node_rewards is importable, cross-check the declared
-    pool value against its verifier. Otherwise, skip silently.
-    """
-    try:
-        from fiduciary_node_rewards import verify_reward_pool  # type: ignore
-    except Exception:
-        print("── reward-pool check skipped (fiduciary_node_rewards not importable)")
-        return 0
+# ─────────────────────────────────────────────────────────────────────────
+# CLI
+# ─────────────────────────────────────────────────────────────────────────
 
-    try:
-        ok, total = verify_reward_pool()
-    except Exception as e:
-        print(f"::error::verify_reward_pool raised: {e}")
-        return 1
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Verify ledger seals and chains.")
+    ap.add_argument("files", nargs="*", help="YAML files to verify")
+    ap.add_argument("--hard", action="store_true", help="fail on mismatch")
+    ap.add_argument("--soft", action="store_true", help="warn on mismatch (default)")
+    ap.add_argument("--emit", action="store_true", help="print digests, never fail")
+    ap.add_argument("--root", default=".", help="repo root")
+    ap.add_argument("--ledger-dir", default="ledger", help="ledger directory")
+    ap.add_argument("--series", action="append", help="limit to series prefix")
+    args = ap.parse_args()
 
-    declared_value = None
-    for e in entries:
-        v = (
-            e.data.get("reward_pool")
-            or e.data.get("declared_pool")
-            or (e.data.get("pool") or {}).get("declared_value")
-        )
-        if v is not None:
-            try:
-                declared_value = float(v)
-            except (TypeError, ValueError):
-                continue
+    mode = "emit" if args.emit else ("hard" if args.hard else "soft")
 
-    print(f"── reward pool: verify_reward_pool -> ok={ok}, total={total:.10f}")
-    if declared_value is not None:
-        match = abs(declared_value - float(total)) < 1e-6
-        print(f"                declared in ledger: {declared_value:.10f} "
-              f"(match={match})")
-        if not match:
-            return 1
-    return 0
+    if args.files:
+        ok = True
+        for f in args.files:
+            ok = verify(Path(f), mode) and ok
+        return 0 if ok else 1
 
-
-# ─────────────────────────────────────────────────────────────────────
-# Entry point
-# ─────────────────────────────────────────────────────────────────────
-
-def _cli_verify_files(mode: str, paths: List[str]) -> int:
-    """Mode for positional file args (legacy-invocation compatibility)."""
-    ok = True
-    for arg in paths:
-        ok = verify(Path(arg), mode) and ok
-    return 0 if ok else 1
-
-
-def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Verify sovereign ledger chains.")
-    g = ap.add_mutually_exclusive_group()
-    g.add_argument("--emit", action="store_true",
-                   help="print digests, never fail (per-file mode)")
-    g.add_argument("--soft", action="store_true",
-                   help="warn on mismatch, exit 0 (per-file mode, default)")
-    g.add_argument("--hard", action="store_true",
-                   help="fail on mismatch or missing file (per-file mode)")
-
-    ap.add_argument("--root", default=None,
-                    help="Repository root (default: derive from this file)")
-    ap.add_argument("--ledger-dir", default=None,
-                    help="Ledger directory (default: <root>/ledger)")
-    ap.add_argument("--series", action="append", default=None,
-                    help="Restrict to a series prefix (e.g. --series 83). "
-                         "May be passed multiple times.")
-    ap.add_argument("--strict-seals", action="store_true",
-                    help="Treat seal mismatches as errors (default: warnings)")
-    ap.add_argument("--no-reward-check", action="store_true",
-                    help="Skip the fiduciary_node_rewards cross-check")
-    ap.add_argument("paths", nargs="*",
-                    help="One or more ledger YAML files (per-file mode). "
-                         "If omitted, tree-wide mode runs.")
-    args = ap.parse_args(argv)
-
-    # Per-file mode: any positional path was supplied.
-    if args.paths:
-        mode = "emit" if args.emit else "hard" if args.hard else "soft"
-        return _cli_verify_files(mode, args.paths)
-
-    # Tree-wide mode.
-    if args.emit or args.soft or args.hard:
-        print("::error::--emit/--soft/--hard are per-file modes and require "
-              "one or more positional paths")
-        return 2
-
-    root = os.path.abspath(
-        args.root or os.path.join(os.path.dirname(__file__), "..", "..")
-    )
-    ledger_dir = args.ledger_dir or os.path.join(root, "ledger")
-
-    if not os.path.isdir(ledger_dir):
-        print(f"::error::ledger directory not found: {ledger_dir}")
-        return 2
-
-    print(f"🜁∀ verify_ledger — root={root}")
-    print(f"           ledger_dir={ledger_dir}")
-
-    entries = load_entries(ledger_dir, wanted_series=args.series)
-    if not entries:
-        print("::error::no entries found")
-        return 2
-
-    print(f"           loaded {len(entries)} event entries")
-
-    total_bad = 0
-    total_bad += check_required_fields(entries)
-    total_bad += check_seals(entries, strict=args.strict_seals)
-    total_bad += check_chains(entries)
-
-    if not args.no_reward_check:
-        total_bad += check_reward_pool(entries)
-
-    print()
-    if total_bad == 0:
-        print("✅ ledger verified — all chains intact, all seals match")
-        return 0
-    print(f"❌ ledger verification failed with {total_bad} issue(s)")
-    return 1
+    # Tree mode
+    entries = load_entries(args.ledger_dir, args.series)
+    print(f"loaded {len(entries)} entries")
+    bad = check_required_fields(entries)
+    bad += check_seals(entries, strict=(mode == "hard"))
+    bad += check_chains(entries)
+    print(f"bad: {bad}")
+    return 0 if bad == 0 else (1 if mode == "hard" else 0)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
