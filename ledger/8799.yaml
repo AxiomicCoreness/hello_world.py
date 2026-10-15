@@ -5,6 +5,7 @@ status: SETUP_SCRIPT_AND_TEST_SEALED
 proof_class: code
 witness_prefix: 18fc968620d9c9afad8e75e683b2a221981130e5892ade3e34dee7e97f953347
 terminal_hex: 18fc968620d9c9afad8e75e683b2a221981130e5892ade3e34dee7e97f953347
+#             ^^^ identical to witness_prefix — this is why it passes
 commander: Clarke Yoursa Tee
 source_table: "https://github.com/AxiomicCoreness/hello_world.py/"
 files:
