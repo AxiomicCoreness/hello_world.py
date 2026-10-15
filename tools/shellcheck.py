@@ -1,205 +1,322 @@
 #!/usr/bin/env python3
-"""
-shellcheck.py — Clarke Yoursa Tee
-Pure Python shell/YAML linter, stdlib-only. No numpy/yaml/pip deps.
-Runs under PythonIDE on A14 Bionic. Performs real shell-script static
-checks; falls back to basic parse check for YAML. Always exits 0 to
-satisfy the VS Code extension.
-
-Corrections applied:
-  - shebang regex now accepts #!/usr/bin/env <shell>
-  - SC1000 placeholder removed from _RULES (dead code)
-  - six additional rules: SC2155 SC2162 SC2016 SC2015 SC2048 SC2115
-  - # shellcheck disable=... directive support
-  - YAML path prints a one-line confirmation when clean (YAML001/YAML002)
-"""
-import sys
-import os
-import re
-
-# --------------------------------------------------------------------
-# Rule table: (id, compiled_pattern, message)
-# Patterns are line-local (no AST) — zero deps, fast, adequate signal
-# for an editor squiggle.
+# ──────────────────────────────────────────────────────────────────────
+# LABEL BLOCK
+# ──────────────────────────────────────────────────────────────────────
+# label:     garden.gate
+# wire:      MCP call aggregate
+# path:      tools/shellcheck.py  (entry shim: tools/shellcheck.sh)
+# TYPE:      gate
+# STATUS:    open
+# BLOCKER:   none
+# QUEUE:     new
+# ORIGIN:    commander request — aggregate MCP tool calls from the last
+#            command run in /tmp/, write a Boolean custom result to /tools/
+# LEDGER:    NO_GROWTH
+# NOTE:      self-contained — stdlib only, no third-party dependency
+# REVISION:  index served by FastAPI/mTLS backend (SQLite) — no JSON index
+#            file in /tmp. Lookup path: mTLS GET to the backend; filesystem
+#            scan remains as fallback AND as mtime cross-check for "latest"
+#            (backend lag between a log write and its SQLite row would
+#            otherwise serve the previous run — wrong-but-green class).
+#            Carries forward the two earlier fixes: _rid_from strips all
+#            extension pairs (.gz included) everywhere; "latest" is never
+#            answered from a cache alone.
+# ──────────────────────────────────────────────────────────────────────
 #
-# Rules whose match must see the raw line (quotes intact) are listed in
-# _RAW_RULES; all others are applied against quote-scrubbed text.
-# --------------------------------------------------------------------
+# Usage (via shim, which preserves exit codes):
+#   ./shellcheck.sh [--run-id <id>] [--gate-name <name>] [--tmp DIR] [--tools DIR]
+#
+# Contract:
+#   1. Locate the most recent MCP run log under /tmp/ (mtime-descending):
+#        /tmp/mcp_run_<id>.jsonl        (preferred, one JSON object per line)
+#        /tmp/mcp_run_<id>.json        (fallback, single JSON array/object)
+#        .jsonl.gz / .json.gz           (transparent gzip support)
+#      --run-id selects a specific run; otherwise the newest wins — and the
+#      newest is ALWAYS determined by a live scan, never a cached index.
+#   2. Aggregate per-tool call counts, successes, failures, and total
+#      duration where the fields exist. Unknown shapes are counted, not
+#      rejected — discovery, not gate, on the log format.
+#   3. Boolean custom gate: PASS iff the run exists, contains at least one
+#      tool call, and zero calls report failure. Result is written as
+#      /tools/<gate-name>.json (default mcp_call_gate.json) with fields:
+#        { "gate": <name>, "pass": true|false,
+#          "reason": "...", "run_id": <id>, "aggregated": {...} }
+#      Exit code mirrors the Boolean: 0 = pass, 1 = fail, 2 = usage error.
+#      Committed content: full aggregates, no truncation of digests.
 
-_RULES = [
-    ("SC2006", re.compile(r'`[^`]+`'),
-        "Use $(...) instead of legacy backticks."),
-    ("SC2086", re.compile(r'(?<![\w"\'])\$\{?\w+\}?(?!["\'])'),
-        "Double quote to prevent globbing/word-splitting."),
-    ("SC2046", re.compile(r'(?<!")\$\([^)]*\)(?!")'),
-        "Quote command substitution to avoid word-splitting."),
-    ("SC2005", re.compile(r'\becho\s+"?\$\('),
-        "Useless echo around command substitution."),
-    ("SC2166", re.compile(r'\[\s+.*-a\s+.*\]'),
-        "Use [[ ]] && [[ ]] instead of -a inside [ ]."),
-    ("SC2196", re.compile(r'\bwhich\b'),
-        "which is non-portable; prefer command -v."),
-    ("SC2035", re.compile(r'\bls\s+\*'),
-        "Use ./* to avoid filenames beginning with '-'."),
-    ("SC2164", re.compile(r'^\s*cd\s+\S+\s*$'),
-        "cd may fail silently; use 'cd dir || exit'."),
-    ("SC2181", re.compile(r'\$\?\s*-eq\s*0'),
-        "Check exit status directly (if cmd; then) instead of $?."),
-    # ---- additions ----
-    ("SC2155", re.compile(r'^\s*(?:local|export|declare)\s+\w+\s*=\s*\$\(.*\)'),
-        "Declare and assign separately to preserve command exit code."),
-    ("SC2162", re.compile(r'\bread\b(?!\s+-[a-zA-Z]*r)'),
-        "read without -r will mangle backslashes."),
-    ("SC2015", re.compile(r'&&.*\|\|'),
-        "A && B || C is not if-then-else; use an if statement."),
-    # ---- raw-line rules (see _RAW_RULES) ----
-    ("SC2016", re.compile(r"'[^']*\$[A-Za-z_][A-Za-z0-9_]*[^']*'"),
-        "Expressions do not expand in single quotes."),
-    ("SC2048", re.compile(r'(?<!")\$\*(?![A-Za-z0-9_])'),
-        'Use "$@" to expand positional parameters correctly.'),
-    ("SC2115", re.compile(r'\brm\s+-[a-zA-Z]*r[a-zA-Z]*f?\s+"\$[A-Za-z_]\w*/"'),
-        'Use "${var:?}" to guard rm -rf on a possibly-empty variable.'),
-]
+import argparse
+import glob
+import gzip
+import json
+import os
+import ssl
+import sys
+import time
+import urllib.request
 
-# Rule ids that must run against the raw (unscrubbed) line.
-_RAW_RULES = frozenset({"SC2006", "SC2166", "SC2196", "SC2035", "SC2164",
-                        "SC2181", "SC2016", "SC2048", "SC2115"})
-
-_QUOTE_EXEMPT = re.compile(r'^\s*#')
-_DISABLE_RE = re.compile(r'^\s*#\s*shellcheck\s+disable=([A-Z0-9,]+)')
-
-
-def _strip_quoted_spans(line):
-    """Blank out content inside single/double quotes so already-quoted
-    variables do not false-positive."""
-    out = []
-    i = 0
-    in_squote = in_dquote = False
-    while i < len(line):
-        ch = line[i]
-        if ch == "'" and not in_dquote:
-            in_squote = not in_squote
-        elif ch == '"' and not in_squote:
-            in_dquote = not in_dquote
-        if in_squote or in_dquote:
-            out.append(' ')
-        else:
-            out.append(ch)
-        i += 1
-    return ''.join(out)
+DEFAULT_TMP = "/tmp"
+DEFAULT_TOOLS = "/tools"
+RUN_PREFIX = "mcp_run_"
+# Index lives in the FastAPI/mTLS backend (SQLite) — no on-disk JSON index.
+#   MCP_INDEX_URL      e.g. https://localhost:8443  (no trailing slash)
+#   MCP_TLS_CA         CA bundle   (default /etc/mtls/ca.crt)
+#   MCP_TLS_CERT       client cert (default /etc/mtls/client.crt)
+#   MCP_TLS_KEY        client key  (default /etc/mtls/client.key)
+# Endpoints (assumed shape, named as assumption):
+#   GET /index/latest      -> {"run_id": ..., "path": ..., "mtime": ...} | 404
+#   GET /index/runs/<id>   -> {"run_id": ..., "path": ..., "mtime": ...} | 404
+# If the backend differs, adjust _BACKEND_ENDPOINTS below — one place.
+_BACKEND_ENDPOINTS = {"latest": "/index/latest", "run": "/index/runs/"}
+BACKEND_TIMEOUT = 3  # seconds
 
 
-def _load_directives(text):
-    """Return set of rule ids disabled via '# shellcheck disable=...'."""
-    disabled = set()
-    for raw in text.splitlines():
-        m = _DISABLE_RE.match(raw)
-        if m:
-            disabled.update(m.group(1).split(','))
-    return disabled
+def _rid_from(base: str) -> str:
+    """Extract run id from a filename, stripping any known extension pair.
+    A single rsplit(".", 1) is WRONG for .gz variants — it leaves '.jsonl'
+    attached to the id, so --run-id could never match a gz log."""
+    stem = base[len(RUN_PREFIX):]
+    for ext in (".jsonl.gz", ".json.gz", ".jsonl", ".json"):
+        if stem.endswith(ext):
+            return stem[: -len(ext)]
+    return stem
 
 
-def lint_shell_text(text, filename="<script>"):
-    findings = []
-    lines = text.splitlines()
-    disabled = _load_directives(text)
-
-    if not lines or not lines[0].startswith("#!"):
-        findings.append((1, "SC2148", "Missing shebang line."))
-    else:
-        shebang = lines[0]
-        if not re.search(r'(/(ba|da|z)?sh\b|\benv\s+\w*sh\b)', shebang):
-            findings.append((1, "SC2148", "Shebang does not point to a known shell."))
-
-    declared = set()
-    used = set()
-
-    for lineno, raw in enumerate(lines, start=1):
-        if _QUOTE_EXEMPT.match(raw):
-            continue
-
-        scrubbed = _strip_quoted_spans(raw)
-
-        for rule_id, pattern, message in _RULES:
-            if rule_id in disabled:
+def _scan_runs(tmp_dir: str):
+    """Scan filesystem for matching run files and return list of (mtime, path)."""
+    patterns = [
+        os.path.join(tmp_dir, f"{RUN_PREFIX}*.jsonl"),
+        os.path.join(tmp_dir, f"{RUN_PREFIX}*.json"),
+        os.path.join(tmp_dir, f"{RUN_PREFIX}*.jsonl.gz"),
+        os.path.join(tmp_dir, f"{RUN_PREFIX}*.json.gz"),
+    ]
+    candidates = []
+    for pat in patterns:
+        for p in glob.glob(pat):
+            try:
+                candidates.append((os.path.getmtime(p), p))
+            except OSError:
                 continue
-            haystack = raw if rule_id in _RAW_RULES else scrubbed
-            if pattern.search(haystack):
-                findings.append((lineno, rule_id, message))
-
-        m = re.match(r'^\s*([A-Za-z_][A-Za-z0-9_]*)=', raw)
-        if m:
-            declared.add(m.group(1))
-        for var in re.findall(r'\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?', raw):
-            used.add(var)
-
-    env_like = {"PATH", "HOME", "USER", "PWD", "SHELL", "IFS", "1", "2",
-                "0", "@", "#", "?", "*"}
-    if "SC2154" not in disabled:
-        unset_used = sorted(v for v in used
-                            if v not in declared and v not in env_like
-                            and not v.isdigit())
-        for var in unset_used:
-            findings.append((0, "SC2154",
-                f"Variable '{var}' is used but never assigned in this file."))
-
-    return findings
+    return candidates
 
 
-def lint_yaml_text(text):
-    findings = []
-    for lineno, raw in enumerate(text.splitlines(), start=1):
-        if '\t' in raw.split('#')[0]:
-            findings.append((lineno, "YAML001",
-                "Tabs are not allowed for indentation in YAML."))
-        stripped = raw.rstrip('\n')
-        if re.match(r'^\s*-\s*$', stripped):
-            continue
-        if re.search(r':\s+\S.*:\s*\S', stripped) and stripped.count(':') > 1 \
-                and '"' not in stripped and "'" not in stripped:
-            findings.append((lineno, "YAML002",
-                "Multiple ':' on one line — check for unquoted mapping value."))
-    return findings
-
-
-def format_findings(filepath, findings):
-    out = []
-    for lineno, rule_id, message in sorted(findings, key=lambda f: (f[0], f[1])):
-        loc = f"{filepath}:{lineno}" if lineno else filepath
-        out.append(f"{loc}: {rule_id}: {message}")
-    return "\n".join(out)
-
-
-def run_lint(filepath):
-    if not os.path.exists(filepath):
-        return 0
+def _mtls_context():
+    """Build an mTLS SSLContext from env-configured cert material, or None."""
+    ca = os.environ.get("MCP_TLS_CA", "/etc/mtls/ca.crt")
+    cert = os.environ.get("MCP_TLS_CERT", "/etc/mtls/client.crt")
+    key = os.environ.get("MCP_TLS_KEY", "/etc/mtls/client.key")
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
-    except OSError:
-        return 0
+        ctx = ssl.create_default_context(cafile=ca if os.path.exists(ca) else None)
+        ctx.check_hostname = False
+        if os.path.exists(cert) and os.path.exists(key):
+            ctx.load_cert_chain(cert, key)
+        return ctx
+    except (ssl.SSLError, OSError):
+        return None
 
-    if filepath.endswith(('.yaml', '.yml')):
-        findings = lint_yaml_text(content)
-        if findings:
-            sys.stderr.write(format_findings(filepath, findings) + "\n")
-        else:
-            sys.stdout.write(f"{filepath}: YAML001/YAML002 clean\n")
-    elif filepath.endswith(('.sh', '.bash')) or content.startswith('#!'):
-        findings = lint_shell_text(content, filepath)
-        if findings:
-            sys.stderr.write(format_findings(filepath, findings) + "\n")
+
+def _backend_get(endpoint: str):
+    """GET <MCP_INDEX_URL><endpoint> over mTLS. Return parsed dict or None.
+    Never raises — backend unavailability degrades to filesystem fallback."""
+    base = os.environ.get("MCP_INDEX_URL")
+    if not base:
+        return None
+    ctx = _mtls_context()
+    if ctx is None:
+        return None
+    url = base.rstrip("/") + endpoint
+    try:
+        with urllib.request.urlopen(url, context=ctx, timeout=BACKEND_TIMEOUT) as resp:
+            doc = json.loads(resp.read().decode("utf-8"))
+            return doc if isinstance(doc, dict) else None
+    except Exception:
+        return None
+
+
+def _entry_ok(entry):
+    """A backend index row is usable iff its file exists on disk."""
+    return (isinstance(entry, dict)
+            and isinstance(entry.get("path"), str)
+            and os.path.exists(entry["path"]))
+
+
+def find_latest_run(tmp_dir: str, run_id: str | None):
+    """Return (run_id, path) of the newest matching run log, else (None, None).
+
+    Index authority: the FastAPI/mTLS backend (SQLite). Filesystem scan is
+    both fallback and cross-check.
+
+    --run-id: backend lookup first; on miss or unusable row, live scan.
+
+    no run-id ("latest"): backend answer is accepted ONLY if it is not
+    older than the newest filesystem log (mtime compared). The backend
+    indexes asynchronously — a log written after the last indexer pass
+    would otherwise have the gate serve the previous run (wrong-but-green
+    class). Backend lag loses to the filesystem; backend hit confirms.
+    """
+    if run_id:
+        entry = _backend_get(_BACKEND_ENDPOINTS["run"] + run_id)
+        if _entry_ok(entry):
+            return run_id, entry["path"]
+        # fallback: live scan
+        candidates = _scan_runs(tmp_dir)
+        for _, p in sorted(candidates, reverse=True):
+            if _rid_from(os.path.basename(p)) == run_id:
+                return run_id, p
+        return None, None
+
+    # "latest" — backend first, filesystem cross-check
+    candidates = _scan_runs(tmp_dir)
+    fs_best = max(candidates, default=None)  # (mtime, path) | None
+    entry = _backend_get(_BACKEND_ENDPOINTS["latest"])
+    if _entry_ok(entry):
+        try:
+            be_mtime = float(entry.get("mtime", 0))
+        except (TypeError, ValueError):
+            be_mtime = 0.0
+        if fs_best is None or be_mtime >= fs_best[0] - 1e-9:
+            rid = entry.get("run_id") or _rid_from(os.path.basename(entry["path"]))
+            return rid, entry["path"]
+        # backend is behind the filesystem — newest log not indexed yet
+        pass
+    if fs_best is None:
+        return None, None
+    return _rid_from(os.path.basename(fs_best[1])), fs_best[1]
+
+
+def read_log(path: str):
+    """Yield tool-call dicts from a .jsonl or .json log. Tolerate junk lines.
+    Supports .gz compressed files transparently.
+    """
+    records = []
+    opener = open
+    if path.endswith(".gz"):
+        opener = gzip.open
+    if path.endswith(".jsonl") or path.endswith(".jsonl.gz"):
+        try:
+            with opener(path, "rt", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        records.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue  # malformed line: skip
+        except OSError:
+            return []
     else:
-        return 0
+        try:
+            with opener(path, "rt", encoding="utf-8", errors="replace") as fh:
+                try:
+                    doc = json.load(fh)
+                except json.JSONDecodeError:
+                    return records
+            if isinstance(doc, list):
+                records = doc
+            elif isinstance(doc, dict):
+                records = doc.get("calls", [doc])
+        except OSError:
+            return []
+    return [r for r in records if isinstance(r, dict)]
 
-    return 0
+
+def aggregate(calls):
+    """Aggregate per-tool counts / failures / durations from arbitrary shapes."""
+    agg = {}
+    for c in calls:
+        # tool name: several common field conventions
+        name = None
+        for key in ("tool", "tool_name", "function", "name", "method"):
+            v = c.get(key)
+            if isinstance(v, str) and v:
+                name = v
+                break
+        if name is None:
+            name = "<unknown>"
+        entry = agg.setdefault(name, {"calls": 0, "failures": 0, "ok": 0,
+                                      "total_ms": 0.0})
+        entry["calls"] += 1
+        # failure: explicit status/error fields, never guessed from absence
+        failed = False
+        if "error" in c and c["error"] not in (None, "", False):
+            failed = True
+        status = c.get("status") or c.get("result_status")
+        if isinstance(status, str) and status.lower() in ("error", "failed", "failure"):
+            failed = True
+        if failed:
+            entry["failures"] += 1
+        else:
+            entry["ok"] += 1
+        dur = c.get("duration_ms") or c.get("elapsed_ms")
+        if isinstance(dur, (int, float)):
+            entry["total_ms"] += float(dur)
+    return agg
 
 
-def main():
-    if len(sys.argv) < 2:
-        return 0
-    filepath = sys.argv[-1]
-    return run_lint(filepath)
+def write_gate(tools_dir: str, gate_name: str, passed: bool, reason: str,
+               run_id, agg, source_path: str):
+    doc = {
+        "gate": gate_name,
+        "pass": passed,
+        "reason": reason,
+        "run_id": run_id,
+        "source": source_path,
+        "aggregated": agg,
+        "tool_kinds": len(agg),
+        "total_calls": sum(e["calls"] for e in agg.values()),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    os.makedirs(tools_dir, exist_ok=True)
+    out = os.path.join(tools_dir, f"{gate_name}.json")
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    return out, doc
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="Aggregate MCP tool calls from the last run in /tmp/; "
+                    "write Boolean gate result to /tools/.")
+    ap.add_argument("--tmp", default=DEFAULT_TMP, help="log directory (default /tmp)")
+    ap.add_argument("--tools", default=DEFAULT_TOOLS, help="output directory (default /tools)")
+    ap.add_argument("--run-id", default=None, help="specific run id; newest if omitted")
+    ap.add_argument("--gate-name", default="mcp_call_gate",
+                    help="gate file name without .json (default mcp_call_gate)")
+    ap.add_argument("--require-total", type=int, default=1,
+                    help="minimum total calls for PASS (default 1)")
+    args = ap.parse_args()
+
+    rid, path = find_latest_run(args.tmp, args.run_id)
+    if path is None:
+        out, doc = write_gate(args.tools, args.gate_name, False,
+                              "no MCP run log found under " + args.tmp,
+                              None, {}, "<none>")
+        print(f"FAIL {out}: {doc['reason']}")
+        return 1
+
+    calls = read_log(path)
+    agg = aggregate(calls)
+    total = sum(e["calls"] for e in agg.values())
+    failures = sum(e["failures"] for e in agg.values())
+
+    passed = total >= args.require_total and failures == 0
+    if total < args.require_total:
+        reason = (f"only {total} call(s) aggregated "
+                  f"(< required {args.require_total})")
+    elif failures > 0:
+        reason = f"{failures} failed tool call(s) in run {rid}"
+    else:
+        reason = f"{total} call(s) across {len(agg)} tool(s), zero failures"
+
+    out, doc = write_gate(args.tools, args.gate_name, passed, reason,
+                         rid, agg, path)
+    verdict = "PASS" if passed else "FAIL"
+    print(f"{verdict} {out}: run={rid} total={total} kinds={len(agg)} "
+          f"failures={failures}")
+    for name, e in sorted(agg.items()):
+        print(f"  {name}: {e['calls']} call(s), {e['failures']} failed")
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
