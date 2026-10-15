@@ -40,4 +40,5 @@ math_origin: |
   x = (φ ± i·sqrt(480 - φ²))/2
   Ψ(t) = Ψ(0)·e^{i·202.6°·t/T₀}
   Σ_{i,j,k=1}^7 T_{ijk}^{(7)}
-hex: cd3724144eaf84365b4d68246f8f1a6cac06b9aaca19aae6df1cff1aefec93e1
+terminal_hex: cd3724144eaf84365b4d68246f8f1a6cac06b9aaca19aae6df1cff1aefec93e1
+hex:          cd3724144eaf84365b4d68246f8f1a6cac06b9aaca19aae6df1cff1aefec93e1
