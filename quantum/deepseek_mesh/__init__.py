@@ -5,6 +5,8 @@
 # RHO-MERGE / OAuth2 coherent gate injected at package boundary.
 # Client implementation replaced with async deepseek.api (wrapped sync).
 # Seal: ∀∞φ² · RHO_MERGE_GATE · WOOD_DRAGON_0.91 · SEALED
+#
+# endpoint is imported lazily so terminal_ci can run without fastapi.
 
 from __future__ import annotations
 
@@ -13,7 +15,7 @@ import os
 import time
 from typing import Any, Dict
 
-from . import client, endpoint, dsh_adapter
+from . import client, dsh_adapter
 from .dsh_adapter import (
     MODE_DEEPSEEK_HTTP,
     MODE_DSH,
@@ -31,6 +33,15 @@ from .client import (
     echo as _echo,
     status as _status,
 )
+
+
+def __getattr__(name: str):
+    """Lazy import for endpoint (requires fastapi)."""
+    if name == "endpoint":
+        from . import endpoint
+        return endpoint
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 # ============================================================
 # RHO-MERGE / OAUTH2 GATE MACRO
