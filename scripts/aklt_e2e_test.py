@@ -162,9 +162,10 @@ def gate_G8_G9():
 
 
 def _expm_i_pi_S(S):
-    """exp(iπ S) via general eigendecomposition. S is Hermitian."""
-    w, V = np.linalg.eig(1j * math.pi * S)
-    return (V @ np.diag(np.exp(w)) @ np.linalg.inv(V)).real
+    """exp(iπ S) for Hermitian S. Diagonalize πS, then exp(1j*w)."""
+    M = math.pi * S
+    w, V = np.linalg.eigh(M)
+    return V @ np.diag(np.exp(1j * w)) @ V.conj().T
 
 
 def gate_G10():
