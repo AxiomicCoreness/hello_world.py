@@ -8,4 +8,4 @@ witness_chain: 9274 -> 9275
 note: |
   Witness chain continues from 9274 seal.
   Next free index is 9276.
-seal_sha3_256: null
+seal_sha3_256: b6f1e97936b7c63b39cbdf6ac41d52159e41d5664f312c000a9a0dcaa67c973b
