@@ -1,0 +1,15 @@
+entry_index: 9277
+witness_prefix: p2_rank_derivation
+timestamp: '2026-10-14T21:14:00Z'
+event: /p2_projector_rank_recorded
+status: RECORDED
+prev_hash: d497adf7ed0647da73036e36f876b439350552cba00e13a2492bd84ea01578bb
+witness_chain: 9276 -> 9277
+note: |
+  Two spin-1 sites give 3 ⊗ 3 = 9 states, which decompose under SU(2) as
+  S=2 ⊕ S=1 ⊕ S=0 with dimensions 5 + 3 + 1 = 9.
+  The projector P2 = (SS² + 3·SS + 2·I) / 6 evaluates to 1 on the S=2
+  subspace and 0 on S=1 and S=0.
+  Multiplicities follow the eigenvalues: rank(P2) = dim(S=2) = 5.
+  This is the mathematical basis for the G3 rank-5 assertion.
+seal_sha3_256: null
