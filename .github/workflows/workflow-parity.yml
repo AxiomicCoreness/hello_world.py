@@ -9,6 +9,7 @@ name: Workflow parity
 # api-key-rotator.yml, md-scalar-matrix.yml, sovereign-pulse.yml.
 # sovereign-ci-cd.yml keeps its own cron and is not dispatched here.
 # No actions/* uses. gh is on the GitHub-hosted image.
+# set -eu so a failing gh workflow run fails the step.
 
 on:
   schedule:
@@ -40,7 +41,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SLOT_INPUT: ${{ github.event.inputs.slot }}
         run: |
-          set -u
+          set -eu
           if [ -n "${SLOT_INPUT}" ]; then
             slot="${SLOT_INPUT}"
           else
