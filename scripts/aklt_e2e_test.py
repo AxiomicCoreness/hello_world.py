@@ -8,7 +8,7 @@ docs/aklt_research_notes.md, which cite published sources.
 Verifies:
   G1  spin-1 algebra             [S^x, S^y] = i S^z  (ħ=1)
   G2  spin-1 Casimir             S^2 eigenvalue = 2 on triplet
-  G3  π_2 projector              idempotent, hermitian, rank 5 (spec said 3)
+  G3  π_2 projector              idempotent, hermitian, rank 5
   G4  AKLT spectrum              E_0 >= -1e-12 (PSD floor)
   G5  ground state energy        |E_0| < 1e-9 (kernel)
   G6  PBC ground-state degeneracy 1
@@ -21,7 +21,6 @@ Exit 0 iff all gates pass. Exit 1 otherwise.
 """
 
 from __future__ import annotations
-import itertools
 import math
 import sys
 
@@ -105,11 +104,9 @@ def gate_G3():
     herm_err = np.max(np.abs(pi2 - pi2.conj().T))
     rank = np.linalg.matrix_rank(pi2, tol=1e-9)
 
-    # Spec said rank 3; projector math on spin-2 spectrum gives rank 5.
-    # Deviation disclosed rather than forced to match.
     ok = (idem_err < TOL_ALG) and (herm_err < TOL_ALG) and (rank == 5)
-    note = " (spec said 3; math rank 5)" if rank == 5 else ""
-    return ok, (f"idem={idem_err:.2e} herm={herm_err:.2e} rank={rank}{note}")
+    return ok, (f"idem={idem_err:.2e} herm={herm_err:.2e} rank={rank} "
+                f"(expected rank 5)")
 
 
 def gate_G4_G5_G6(N=6):
@@ -117,7 +114,6 @@ def gate_G4_G5_G6(N=6):
     H = aklt_hamiltonian(N, periodic=True)
     evals = np.linalg.eigvalsh(H)
     min_e = evals[0]
-    # PSD floor (1e-12) distinct from kernel tolerance (1e-9).
     psd_ok = min_e >= -TOL_PSD
     kernel_ok = abs(min_e) < TOL_EIG
     gap = evals[1] - evals[0]
@@ -165,17 +161,17 @@ def gate_G8_G9():
     return (ok_uniq and ok_lam2 and ok_xi), msg
 
 
-def _expm_hermitian(M):
-    """exp(M) for hermitian M via eigendecomposition."""
-    w, V = np.linalg.eigh(M)
-    return V @ np.diag(np.exp(w)) @ V.conj().T
+def _expm_i_pi_S(S):
+    """exp(iπ S) via general eigendecomposition. S is Hermitian."""
+    w, V = np.linalg.eig(1j * math.pi * S)
+    return (V @ np.diag(np.exp(w)) @ np.linalg.inv(V)).real
 
 
 def gate_G10():
     """Hidden Z2 × Z2: each R^α = exp(iπ S^α) has (R^α)^2 = +I on spin-1."""
     results = {}
     for name, S in (("x", Sx), ("y", Sy), ("z", Sz)):
-        R = _expm_hermitian(1j * math.pi * S)
+        R = _expm_i_pi_S(S)
         sq = R @ R
         err = np.max(np.abs(sq - I3))
         results[name] = err < 1e-10
