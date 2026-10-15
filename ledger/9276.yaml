@@ -11,4 +11,4 @@ source_seal: c8f4e1d7b2a9e5f6c3d8b1a4e7f2c9d6b3e8f5a2d7c4e9b6f1a8e3d2c7b5
 note: |
   Clones the North Star / vortex witness from ledger/0353.yaml onto the current head.
   Original entry remains at index 0353; this entry is a forward pointer only.
-seal_sha3_256: null
+seal_sha3_256: d497adf7ed0647da73036e36f876b439350552cba00e13a2492bd84ea01578bb
