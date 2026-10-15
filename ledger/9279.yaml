@@ -1,0 +1,17 @@
+entry_index: 9279
+witness_prefix: fixed_point_projection
+timestamp: '2026-10-15T13:51:00Z'
+event: /fixed_point_projection
+status: RECORDED
+prev_hash: 533358fb7580190246842b98dfa958f8d93ab949f531cde0744b87e078e06750
+witness_chain: 9278 -> 9279
+formula: |
+  x_{n+1} = x_n + α · (target - x_n) · φ_scaling
+target_epoch: 2026.5
+step_size: phi_inv
+phi_scaling: false
+note: |
+  Next free index after 9278. Fixed-point projection
+  toward target_epoch = 2026.5 using φ-harmonic relaxation.
+  φ_scaling disabled for stability. Not a seal of prior content.
+seal_sha3_256: null
