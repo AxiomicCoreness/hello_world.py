@@ -1,0 +1,11 @@
+entry_index: pause
+event: /ledger_paused
+timestamp: '2026-10-15T13:54:00Z'
+status: PAUSED
+head_at_pause: 9279
+next_free_at_pause: 9280
+note: |
+  Declared pause. Not a chain entry.
+  Head remains 9279. Next free remains 9280.
+  Resume by appending at 9280 with prev_hash = seal of 9279.
+seal_sha3_256: null
