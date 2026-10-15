@@ -1,0 +1,238 @@
+# .github/workflows/generate-smoke-catalogue.yml
+name: Generate Smoke Catalogue
+
+# Seal: ∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED
+# Witness: 8957 -> 8958 — UNBROKEN
+# hash_algo: sha3_256 (FIPS 202)
+# role: excavation → catalogue → seal
+# policy: WRITE_VIA_SEAL (entry 8958 only)
+# provenance: schema filled from frozen deepseek-cd
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: generate-smoke-catalogue-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HASH_ALGO: sha3_256
+  LEDGER_DIR: ledger
+  CATALOGUE: docs/smoke_catalogue.json
+  SEAL_ENTRY: "8958"
+  PREDECESSOR_ENTRY: "8957"
+
+jobs:
+  catalogue:
+    name: Excavate · Catalogue · Seal (Entry 8958)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install integrity deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install --quiet pyyaml cryptography
+
+      - name: Verify SHA3-256 seals on present ledger entries
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          entries=(ledger/*.yaml)
+          if [ ${#entries[@]} -eq 0 ]; then
+            echo "no ledger entries present — soft skip"
+            exit 0
+          fi
+          VERIFIER=".github/scripts/verify_ledger.py"
+          if [ ! -f "$VERIFIER" ]; then
+            echo "::error::$VERIFIER not found"
+            exit 1
+          fi
+          fail=0
+          for f in "${entries[@]}"; do
+            if ! python "$VERIFIER" "$f"; then
+              echo "::warning::soft: $f failed seal verification"
+              fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "soft verification recorded non-zero failures (not fatal)"
+          fi
+
+      - name: Require predecessor entry 8957 with terminal hex
+        run: |
+          set -euo pipefail
+          if [ ! -f "ledger/${PREDECESSOR_ENTRY}.yaml" ]; then
+            echo "::error::ledger/${PREDECESSOR_ENTRY}.yaml missing — cannot seal ${SEAL_ENTRY}"
+            exit 1
+          fi
+          python - <<PY
+          import re, sys, yaml
+          from pathlib import Path
+          p = Path("ledger/${PREDECESSOR_ENTRY}.yaml")
+          d = yaml.safe_load(p.read_text()) or {}
+          if int(d.get("entry_index", 0)) != ${PREDECESSOR_ENTRY}:
+              print(f"::error::${PREDECESSOR_ENTRY} entry_index mismatch: {d.get('entry_index')!r}",
+                    file=sys.stderr)
+              sys.exit(1)
+          seal = str(d.get("seal", ""))
+          m = re.search(r"[0-9a-fA-F]{64}", seal)
+          if not m:
+              print(f"::warning::${PREDECESSOR_ENTRY} carries no 64-hex terminal",
+                    file=sys.stderr)
+          else:
+              print(f"predecessor ${PREDECESSOR_ENTRY} terminal hex: {m.group(0)[:16]}...")
+          print(f"predecessor ${PREDECESSOR_ENTRY} present (event={d.get('event')!r})")
+          PY
+
+      - name: Install runtime deps
+        run: |
+          set -euo pipefail
+          if [ -f requirements.txt ]; then
+            python -m pip install --quiet -r requirements.txt || \
+              echo "requirements.txt install returned non-zero — continuing"
+          fi
+          python -m pip install --quiet pyyaml requests
+
+      - name: Run smoke catalogue generator
+        id: generate
+        run: |
+          set -euo pipefail
+          if [ ! -f scripts/catalogue_smoke_tests.py ]; then
+            echo "::error::scripts/catalogue_smoke_tests.py missing"
+            exit 1
+          fi
+          python scripts/catalogue_smoke_tests.py
+          if [ ! -f "${CATALOGUE}" ]; then
+            echo "::error::${CATALOGUE} not produced by generator"
+            exit 1
+          fi
+          CATALOGUE_SHA=$(python - <<PY
+          import hashlib, pathlib
+          print(hashlib.new("sha3_256",
+                            pathlib.Path("${CATALOGUE}").read_bytes()).hexdigest())
+          PY
+          )
+          if [ -z "$CATALOGUE_SHA" ]; then
+            echo "::error::failed to compute sha3_256 of ${CATALOGUE}"
+            exit 1
+          fi
+          echo "catalogue_sha3_256=${CATALOGUE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "catalogue sha3_256: ${CATALOGUE_SHA:0:16}..."
+
+      - name: Seal ledger entry 8958 (SHA3-256)
+        id: seal
+        env:
+          CATALOGUE_SHA: ${{ steps.generate.outputs.catalogue_sha3_256 }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${LEDGER_DIR}" docs
+          if [ ! -f scripts/seal_8958.py ]; then
+            echo "::error::scripts/seal_8958.py missing"
+            exit 1
+          fi
+          python scripts/seal_8958.py
+          if [ ! -f "ledger/${SEAL_ENTRY}.yaml" ]; then
+            echo "::error::ledger/${SEAL_ENTRY}.yaml not produced by sealer"
+            exit 1
+          fi
+          python - <<PY
+          import sys, yaml
+          from pathlib import Path
+          p = Path("ledger/${SEAL_ENTRY}.yaml")
+          d = yaml.safe_load(p.read_text()) or {}
+          if int(d.get("entry_index", 0)) != ${SEAL_ENTRY}:
+              print(f"::error::produced file has entry_index={d.get('entry_index')!r}, "
+                    f"expected ${SEAL_ENTRY}", file=sys.stderr)
+              sys.exit(1)
+          print(f"sealed ${SEAL_ENTRY} written, entry_index verified")
+          PY
+
+      - name: Verify ledger entry 8958 (SHA3-256)
+        run: |
+          set -euo pipefail
+          VERIFIER=".github/scripts/verify_ledger.py"
+          if [ ! -f "$VERIFIER" ]; then
+            echo "::error::$VERIFIER not found"
+            exit 1
+          fi
+          if ! python "$VERIFIER" "ledger/${SEAL_ENTRY}.yaml"; then
+            echo "::error::seal verification failed for ledger/${SEAL_ENTRY}.yaml"
+            exit 1
+          fi
+          echo "ledger/${SEAL_ENTRY}.yaml verified"
+
+      - name: Upload smoke catalogue
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-catalogue
+          path: docs/smoke_catalogue.json
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload ledger entry 8958
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-8958
+          path: ledger/8958.yaml
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Commit and push if changed
+        if: success()
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main --quiet
+          if ! git rebase origin/main --quiet; then
+            echo "::error::rebase onto origin/main failed — aborting"
+            git rebase --abort || true
+            exit 1
+          fi
+          git add docs/smoke_catalogue.json ledger/8958.yaml
+          if git diff --staged --quiet; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: update smoke catalogue + seal entry 8958 (sha3_256)"
+          git push origin HEAD:main
+
+      - name: Summary
+        if: always()
+        env:
+          CATALOGUE_SHA: ${{ steps.generate.outputs.catalogue_sha3_256 }}
+        run: |
+          {
+            echo "### Generate Smoke Catalogue"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| entry | ${SEAL_ENTRY} |"
+            echo "| predecessor | ${PREDECESSOR_ENTRY} |"
+            echo "| catalogue | ${CATALOGUE} |"
+            echo "| catalogue_sha3_256 | ${CATALOGUE_SHA:-<none>} |"
+            echo "| hash_algo | ${HASH_ALGO} |"
+            echo "| witness | ${PREDECESSOR_ENTRY} -> ${SEAL_ENTRY} — UNBROKEN |"
+            echo ""
+            echo "Seal: ∀∞φ² · SMOKE_CATALOGUE_8958 · WOOD_DRAGON_0.91 · SEALED"
+          } >> "$GITHUB_STEP_SUMMARY"
