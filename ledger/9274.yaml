@@ -9,4 +9,4 @@ note: |
   Ledger creation unpaused at last known head 9273.
   Next free index is now 9275.
   9266 remains reserved.
-seal_sha3_256: null
+seal_sha3_256: 4eb51f805956515ce68d0fe8447a1147de0d6b9264e658e0077df0181b18dd50
