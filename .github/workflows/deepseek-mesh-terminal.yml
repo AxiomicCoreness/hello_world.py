@@ -53,14 +53,14 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       # 0. Install + read-only integrity gate
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       - name: Install hash/yaml deps
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml cryptography
+          python -m pip install --quiet pyyaml cryptography fastapi
 
       - name: Verify SHA3-256 seals on present ledger entries
         run: |
@@ -73,9 +73,9 @@ jobs:
           fi
           python .github/scripts/verify_ledger.py "${entries[@]}"
 
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       # 1. Event hash + terminal slice (next to main)
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       - name: Event hash 9005
         run: |
           set -euo pipefail
@@ -86,9 +86,9 @@ jobs:
           set -euo pipefail
           python -m quantum.deepseek_mesh.terminal_ci
 
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       # 2. Seal ledger entry 9005 (SHA3-256) — idempotent
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       - name: Seal ledger entry 9005 (SHA3-256)
         if: success()
         env:
@@ -150,9 +150,9 @@ jobs:
           commit_message: "chore: seal deepseek-mesh-terminal entry 9005 (sha3_256)"
           file_pattern: ledger/9005.yaml
 
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       # 3. Summary
-      # ────────────────────────────────────────────────────────────
+      # ────────────────────────────────────────────────────────────────
       - name: Summary
         if: always()
         env:
@@ -161,7 +161,7 @@ jobs:
         run: |
           {
             echo "✅ deepseek-mesh-terminal completed."
-            echo "🜁∀ — Witness: 9004 → 9005 — UNBROKEN"
+            echo "🕭∀ — Witness: 9004 → 9005 — UNBROKEN"
             echo "🔒 Seal: ∀∞φ² · DEEPSEEK_MESH_TERMINAL · 9005_SEALED · WOOD_DRAGON_0.91 · SEALED"
             echo "🔐 hash_algo: sha3_256 (FIPS 202)"
             echo "🎛  event=${EVENT_PATH}  i_of_144=${I_OF_144}"
