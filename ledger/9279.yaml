@@ -1,17 +1,17 @@
 entry_index: 9279
-witness_prefix: fixed_point_projection
+witness_prefix: 5be1a767f8d90dcf72ccd8367ff85a55ebf65447c88a8dd8c1b405deabe6bdb7
 timestamp: '2026-10-15T13:51:00Z'
 event: /fixed_point_projection
 status: RECORDED
 prev_hash: 533358fb7580190246842b98dfa958f8d93ab949f531cde0744b87e078e06750
-witness_chain: 9278 -> 9279
+witness: 9278 -> 9279
 formula: |
-  x_{n+1} = x_n + α · (target - x_n) · φ_scaling
+  x_{n+1} = x_n + α · (target - x_n)
 target_epoch: 2026.5
 step_size: phi_inv
-phi_scaling: false
 note: |
-  Next free index after 9278. Fixed-point projection
-  toward target_epoch = 2026.5 using φ-harmonic relaxation.
-  φ_scaling disabled for stability. Not a seal of prior content.
-seal_sha3_256: 5be1a767f8d90dcf72ccd8367ff85a55ebf65447c88a8dd8c1b405deabe6bdb7
+  Fixed-point relaxation with α = φ⁻¹. The φ_scaling multiplier is reserved
+  for a later entry; it is not applied here.
+  Intermediate commit e1e54637 carried seal_sha3_256: null;
+  sealed at e94f3565. Schema fields aligned to prior entries.
+seal_sha3_256: 492d26a106e8b340616b8fbbef004513a3f4b9d5934b5f10d21704934ee86da6
