@@ -14,4 +14,4 @@ note: |
   Next free index after 9278. Fixed-point projection
   toward target_epoch = 2026.5 using φ-harmonic relaxation.
   φ_scaling disabled for stability. Not a seal of prior content.
-seal_sha3_256: null
+seal_sha3_256: 5be1a767f8d90dcf72ccd8367ff85a55ebf65447c88a8dd8c1b405deabe6bdb7
