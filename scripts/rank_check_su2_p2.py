@@ -18,6 +18,8 @@ Two independent methods:
         while J=1 is antisymmetric.
 
 Both must yield a rank-5 projector, with P² = P, P† = P, Tr(P) = 5.
+Residuals are expected at machine precision (~1e-16); the 1e-10
+threshold is not tight.
 
 Constraint: numpy only. No external CAS. Runs in < 1 s.
 """
