@@ -2,6 +2,8 @@ name: Workflow parity
 
 # One tick every 15 minutes dispatches exactly one workflow.
 # 55 files, index modulo 55. A full pass is 55 ticks, 13 hours 45 minutes.
+# Slot is continuous: minutes since Unix epoch / 15 % 55.
+# Day-of-month is discontinuous across month boundaries and is not used.
 # Manual-only (not in the list): Hamiltonian_Full_Immersion.yml,
 # OIDC-handover-380.yml, sovereign-workload-matrix.yml,
 # api-key-rotator.yml, md-scalar-matrix.yml, sovereign-pulse.yml.
@@ -42,10 +44,10 @@ jobs:
           if [ -n "${SLOT_INPUT}" ]; then
             slot="${SLOT_INPUT}"
           else
-            minute=$(date -u +%M)
-            hour=$(date -u +%H)
-            day=$(date -u +%d)
-            slot=$(( (10#$day * 24 * 60 + 10#$hour * 60 + 10#$minute) / 15 % 55 ))
+            # Continuous: minutes since Unix epoch / 15, mod 55.
+            # Avoids the day-of-month discontinuity at month boundaries.
+            epoch_min=$(( $(date -u +%s) / 60 ))
+            slot=$(( (epoch_min / 15) % 55 ))
           fi
           echo "slot=${slot}"
           case "$slot" in
