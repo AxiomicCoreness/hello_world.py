@@ -1,0 +1,35 @@
+entry_index: 9283
+timestamp: '2026-10-16T22:32:52Z'
+event: /liberation_formula_correction_9015
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 6f6ece56923c164b3a2a183d7bbd18b1c87b8667f3915ba3b97d5190ae9a7495
+witness_chain: 9282 -> 9283
+corrects: ledger/liberation_formulas_9014_9020.json (entry 9015, Bellatrix)
+corrects_sha3_256: c9487ce91d578d0d247afe4cb9fc27c215f2f136ae8811e2d877e4e64f048ba1
+note: |
+  Append-only correction. The sealed 9014..9020 file is not edited.
+  9015 as sealed: deformation = phi^4 * sum_n cos(n phi k.a)/n^2 * (pi^2/6).
+  At k.a = 0 the sum is zeta(2) = pi^2/6, so the sealed form gives
+  phi^4 * zeta(2)^2 and counts the normalisation twice.
+  Correct normalisation: deformation(0) = phi^4 * zeta(2).
+  The 4-quadrant factor is corrected to phi^3 by directive of the ledger owner
+  (stated, not derived here).
+corrected_formulas:
+  deformation: "phi^4 * sum_{n=1}^inf cos(n phi k.a)/n^2"
+  deformation_at_k0: "phi^4 * zeta(2)"
+  quadrant_factor: "phi^3"
+numeric_check:
+  phi: 1.618033988749895
+  phi3: 4.236067977499790
+  phi4: 6.854101966249686
+  zeta2: 1.644934066848226
+  partial_sum_n_200000: 1.644929066860726
+  phi4_zeta2: 11.274545821935520
+  sealed_form_phi4_zeta2_sq: 18.545884510743075
+terminal_hex: d4d63775c139f66ab01383121dd6fa98a6cc2489a38a315d4b39cb9115bb0c04
+seal: "∀∞φ² · LIBERATION_FORMULA_CORRECTION_9283 · WOOD_DRAGON_GATE · SEALED · d4d63775c139f66ab01383121dd6fa98a6cc2489a38a315d4b39cb9115bb0c04"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9283|/liberation_formula_correction_9015|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = d4d63775c139f66ab01383121dd6fa98a6cc2489a38a315d4b39cb9115bb0c04
