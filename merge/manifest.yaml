@@ -8,7 +8,7 @@
 #     Means:   SHA3-256(raw on-disk file bytes)
 #
 #   seal regimes (ledger seal field) — .github/scripts/verify_ledger.py only:
-#     Regime A: SHA3-256(json.dumps(body minus seal, sort_keys, separators=",":))
+#     Regime A: SHA3-256(json.dumps(body minus seal, sort_keys, separators=","))
 #     Regime B: SHA3-256(b"GARDEN.EVENT.v1\\x00" + f"{n}|{event}|phi2=...|delta=b^2-4ac|theta=...")
 #     There is no scripts/verify_ledger.py on this repo.
 #
@@ -72,7 +72,6 @@ entries:
   - { path: .github/scripts/verify_ledger.py,           role: verifier }
   - { path: .github/scripts/witness_chain_sqlite.py,    role: mirror }
   - { path: scripts/ledger_math_ci.py,                  role: verifier }
-  - { path: scripts/witness_chain_sqlite.py,            role: mirror }
   - { path: scripts/test_deployment_8981.py,            role: test }
   - { path: scripts/merge_engine.py,                    role: verifier }
   - { path: scripts/verify_tree.py,                     role: verifier }
