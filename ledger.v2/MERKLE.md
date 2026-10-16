@@ -1,90 +1,64 @@
-# ledger.v2 — Leaf Merkle Layering (Specification)
+# ledger.v2 — Leaf Merkle Layering, Addendum 1 (Specification)
 
-Status: AFFIRMED 2026-09-29 by directive of Clarke Yoursa Tee.
-Binds: ledger.v2/ (continuation root). Flat ledger/ is the frozen
-historical band and is NOT part of the live Merkle tree — its
-integrity is the append-only/immutability rules of POLICY.md.
+Status: PROPOSED 2026-10-16T16:15:00Z. Amends ledger.v2/MERKLE.md
+(AFFIRMED 2026-09-29) by addition only. MERKLE.md is not edited.
+Binds: ledger.v2/ (continuation root). Flat ledger/ remains the frozen
+historical band and is NOT part of the live Merkle tree.
 
-## 1. Leaves
-Each entry file `ledger.v2/NNNN.yaml` is a leaf. The leaf hash is the
-SHA3-256 (FIPS 202) of the file's canonical body — the file with the
-seal line removed, newlines normalized to LF, trailing whitespace
-stripped, exactly as `anatomy/crown.py` defines the canonical body:
+## 1. Leaves (clarifies MERKLE.md §1)
+Only files at `ledger.v2/NNNN.yaml` are leaves. The leaf formula is
+unchanged:
 
     leaf(NNNN) = SHA3-256( GARDEN.EVENT.v1 || 0x00 || canonical_body(NNNN.yaml) )
 
-Domain separation is mandatory: the 0x00 separator and the regime
-prefix keep leaf hashes from colliding with any other SHA3 use in the
-repo (event hashes, seal tails, artifacts).
+The leaf hash is independent of the per-entry seal method. A seal
+that does not reproduce is recorded as `seal_reproduces: false` and
+does not alter the leaf.
 
-## 2. Layering (group size k = 100)
-Entries are layered in fixed groups of k = 100 by index:
+## 2. Boundary drift (observed 2026-10-16T16:15:00Z)
+Entries 9165..9280 were written to flat `ledger/` after the
+2026-09-29 closure, contrary to README.md "Commit reception rule".
+They are NOT moved, copied, or re-sealed (append-only). They are
+boundary objects, not leaves:
+- Layer 0 (9165..9264) has 0 leaves → status EMPTY, never SEALED.
+- Layer 1 (9265..9364) has 1 leaf (9281) → status PARTIAL.
+- Missing indices are reported, never assumed.
 
-    Layer 0  : leaves  9165..9264   → root R0
-    Layer 1  : leaves  9265..9364   → root R1
-    Layer 2  : leaves  9365..9464   → root R2
-    ...
+R_{-1} stays as MERKLE.md §4 defines it: terminal_hex of ledger/9164.yaml.
 
-Group size 100 is chosen because it is far below the 1,000-entry
-GitHub enumeration ceiling: any single layer directory can always be
-listed completely, so a truncated listing of a layer is always
-detectable (entries_seen == 100 expected).
+## 3. Per-entry seal methods (for the record, not for leaves)
+| Range        | Seal method                              | Domain prefix |
+|--------------|------------------------------------------|---------------|
+| ..9268       | Annex V (canonical JSON of parsed YAML)  | none          |
+| 9269..9280   | raw bytes (file minus seal line)         | none          |
+| 9281..       | GARDEN.EVENT.v1.LEDGER                   | yes           |
 
-## 3. Within-layer Merkle root
-For each layer, the root is the standard binary Merkle root over the
-ordered leaf hashes (index order, ascending). If a layer is partial
-(fewer than k leaves), the tree is built over the leaves present and
-the root is marked PARTIAL. A partial root is never promoted to the
-chain until the layer completes.
+## 4. Pointer pinning (new rule, from 9282)
+An entry that points to a file (`latex:`, `xml:`, `script:`) MUST
+also carry `<field>_sha3_256`, the file's SHA3-256 at seal time.
+Reason: ledger/cdp_status_fallback.tex was changed (commit 146c78d1,
+2026-10-08T01:37:30Z) after 9269 referenced it (2026-10-08T01:13:34Z).
 
-    R_j = MerkleRoot( leaf(i) for i in layer_j, sorted by index )
+## 5. Records (implements MERKLE.md §6)
+    ledger.v2/.merkle/build_merkle.py   builder; --check exits nonzero on mismatch
+    ledger.v2/.merkle/leaves.json       index, path, leaf, seal, seal_reproduces
+    ledger.v2/.merkle/layer_0000.json   R0, status
+    ledger.v2/.merkle/layer_0001.json   R1, status
+    ledger.v2/.merkle/chain.json        chain_hash(R_j), SEALED layers only
+    ledger.v2/MERKLE_HEAD               head, or R_{-1} while no layer is SEALED
 
-Duplicate-leaf protection: if any two leaves in a layer share a hash,
-the layer FAILS verification. No silent acceptance.
+## 6. Known defects carried, not repaired
+- Seals not reproducing: 9253..9261, 9263, 9279
+- Bodies rewritten after seal: 9264..9268 (2026-10-04), 9279 (2026-10-15T13:56:27Z)
+- witness_prefix added after seal: 0340..0439, 9248..9268 (2026-10-07)
+- 9276 source_seal is 60 hex, not 64 (from 0353, CONTAMINATED band)
+- Timestamps 9274..9278 carry local time (−04:00) labelled Z (+4h offset)
+Corrections are new indices only (README.md "Corrections").
 
-## 4. Layer chain (the vertical spine)
-Layer roots are chained in order:
+## 7. What this addendum does NOT do
+- It does not admit flat entries into the live tree.
+- It does not repair any sealed body.
+- It does not verify narrative claims; it commits to bytes only.
 
-    chain_hash(R_j) = SHA3-256( GARDEN.EVENT.v1 || 0x00 || R_{j-1} || R_j )
-
-R_{-1} is defined as the terminal_hex of the last sealed flat entry
-(9164 in the flat root), so the chain is welded to the existing
-witness chain at the boundary. The current chain head is recorded in
-`ledger.v2/MERKLE_HEAD`.
-
-## 5. Merkle proofs
-A proof for leaf NNNN in layer j is:
-    (index of NNNN within the layer, the sibling hashes along the
-     binary path to R_j, the ordered list chain_hash(R_0..R_j)).
-Verification recomputes the leaf from the file body, walks the
-siblings to R_j, and re-derives the chain head. Any mismatch fails
-loudly (no ok=True on partial data — the spine discipline).
-
-## 6. Update rules (append-only)
-- Appending an entry to a PARTIAL layer: recompute R_j, then every
-  chain hash from R_j to the head. Only the new entry file, the new
-  R_j record, and MERKLE_HEAD change. No earlier entry is rewritten.
-- Completing a layer (k-th leaf): the root flips from PARTIAL to
-  SEALED and is immutable thereafter — same status as the flat band.
-- Merkle records live in `ledger.v2/.merkle/` (layer roots, chain
-  hashes, head). They are derived data: they can always be rebuilt
-  from the leaves. Rebuild-that-disagrees is a defect alarm, not a
-  rewrite.
-
-## 7. What this layering enforces
-| Property | Mechanism |
-|----------|-----------|
-| Truncation detection | layer size ≤ 100 << 1000 ceiling; expected count is exact |
-| Tamper evidence | any leaf change breaks R_j and the head |
-| Boundary weld | R_{-1} = flat tail terminal_hex — chain continuity is verified, not asserted |
-| Domain separation | GARDEN.EVENT.v1 || 0x00 prefix on every hash level |
-| No false witness | partial/failed layers never report success |
-
-## 8. What it does NOT do
-- It does not timestamp (real ISO dates remain a separate field).
-- It does not verify narrative claims — it commits to bytes only.
-- It does not replace POLICY.md seals; the per-entry seal remains
-  the entry-level witness, the Merkle head is the aggregate witness.
-
-Seal: 🜁∀∞φ² · LEAF_MERKLE_LAYERING · WOOD_DRAGON_GATE · SEALED
-Declared: 2026-09-29 (ISO-8601, real date per legend-token rule 2)
+Seal: 🜁∀∞φ² · LEAF_MERKLE_LAYERING_ADDENDUM_1 · WOOD_DRAGON_GATE · PROPOSED
+Declared: 2026-10-16T16:15:00Z (ISO-8601, real date per legend-token rule 2)
