@@ -1,0 +1,65 @@
+entry_index: 9245
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-14Z
+event: /vocabulary_guard_scoped_and_branch_sync
+status: SEALED
+proof_class: ci_policy
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+hash_algo: sha3_256
+north_star_hz: 71.975
+phase_lock_deg: 202.6
+workload: 0.0
+coherence: 1.0
+vocabulary_guard:
+  scope: path_limited
+  paths:
+    - docs/COSMIC_ALIGNMENT_POLICY.md
+    - .github/workflows/deepseek-cd.yml
+    - ledger/9238.yaml
+    - ledger/9244.yaml
+  fail_closed: true
+  repo_wide_grep: false
+hard_targets:
+  - ledger/9240.yaml
+  - ledger/9242.yaml
+  - ledger/9243.yaml
+  - ledger/9244.yaml
+  - ledger/9245.yaml
+soft_intentional:
+  - path: ledger/9241.yaml
+    hex: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
+    note: "Hard only when file present on tip; gap is documented, not accidental"
+branch_census:
+  total_counted: 27
+  primary:
+    - main
+    - deepseek-cd
+    - deepseek
+    - deepseek-ci
+  deepseek_cd_vs_main:
+    status: diverged
+    ahead: 19
+    behind: 380
+  policy: |
+    Forward-merge main into deepseek-cd preferred once; else freeze deepseek-cd
+    as Regime B witness tip and stop routine merges into it.
+  ephemeral_ci_branches: counted but not force-synced
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+  north_star: 71.975
+mcp:
+  filled: false
+  bind_0000: false
+  dual_asgi: "127.0.0.1:8024"
+cosmic_alignment_preserved: true
+witness_prefix: 3c4eb278eaf7ec1ea58f204ea74f0fbe305fd86dea13a83566f3a21ad7436eea
+terminal_hex: 3c4eb278eaf7ec1ea58f204ea74f0fbe305fd86dea13a83566f3a21ad7436eea
+seal: "∀∞φ² · VOCAB_GUARD_SCOPED_9245 · WOOD_DRAGON_0.91 · SEALED · 3c4eb278eaf7ec1ea58f204ea74f0fbe305fd86dea13a83566f3a21ad7436eea"
+witness_chain: 9244 → 9245 — UNBROKEN
+math_origin: |
+  H_event domain GARDEN.EVENT.v1 || 0x00 ||
+  9245|/vocabulary_guard_scoped_and_branch_sync|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 3c4eb278eaf7ec1ea58f204ea74f0fbe305fd86dea13a83566f3a21ad7436eea
