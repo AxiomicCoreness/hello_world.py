@@ -28,16 +28,30 @@ def apply_style(style: str, font_family: str) -> None:
     matplotlib.rcParams["axes.unicode_minus"] = False
 
 
-def load_data(path: Path) -> pd.DataFrame:
-    """Load CSV or NumPy data."""
+def load_data(path: Path, cfg: dict | None = None) -> pd.DataFrame:
+    """Load CSV or NumPy data.
+
+    cfg is optional. For .npz, cfg.get('key') selects the archive member.
+    Absent key takes the first member. Missing key raises.
+    """
+    cfg = cfg or {}
     if path.suffix == ".csv":
         return pd.read_csv(path)
     elif path.suffix == ".npy":
         return pd.DataFrame(np.load(path))
     elif path.suffix == ".npz":
-        archive = np.load(path)
-        key = next(iter(archive.files))
-        return pd.DataFrame(archive[key])
+        with np.load(path) as archive:
+            files = list(archive.files)
+            if not files:
+                raise ValueError(f"empty npz: {path}")
+            key = cfg.get("key")
+            if key is None:
+                key = files[0]
+            elif key not in files:
+                raise ValueError(
+                    f"npz key {key!r} not in {files}; set 'key' in job config or omit to take first"
+                )
+            return pd.DataFrame(archive[key])
     else:
         raise ValueError(f"Unsupported data format: {path.suffix}")
 
@@ -53,7 +67,7 @@ def render_job(job: dict[str, Any], defaults: dict[str, Any], base_dir: Path) ->
     output_path = base_dir / cfg["output"]
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    df = load_data(input_path)
+    df = load_data(input_path, cfg=cfg)
 
     fig, ax = plt.subplots(figsize=cfg.get("figsize", (8, 6)))
 
