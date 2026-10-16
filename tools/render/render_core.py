@@ -32,8 +32,12 @@ def load_data(path: Path) -> pd.DataFrame:
     """Load CSV or NumPy data."""
     if path.suffix == ".csv":
         return pd.read_csv(path)
-    elif path.suffix in (".npy", ".npz"):
+    elif path.suffix == ".npy":
         return pd.DataFrame(np.load(path))
+    elif path.suffix == ".npz":
+        archive = np.load(path)
+        key = next(iter(archive.files))
+        return pd.DataFrame(archive[key])
     else:
         raise ValueError(f"Unsupported data format: {path.suffix}")
 
@@ -101,17 +105,20 @@ def render_job(job: dict[str, Any], defaults: dict[str, Any], base_dir: Path) ->
     print(f"[render] {job['name']} -> {output_path} ({cfg.get('dpi', 300)} DPI, {cfg.get('format', 'png')})")
 
 
- def render_from_config(config_path: Path) -> None:
-     """Parse YAML and render all jobs."""
-     with open(config_path, "r") as f:
-         config = yaml.safe_load(f)
- 
-     defaults = config.get("defaults", {})
-     jobs = config.get("jobs", [])
--    base_dir = config_path.parent.parent  # Assume config is in tools/render/
-+    # Config lives at <repo>/tools/render/render_config.yaml
-+    # .parent -> tools/render, .parent -> tools, .parent -> <repo>
-+    base_dir = config_path.resolve().parent.parent.parent
+def render_from_config(config_path: Path) -> None:
+    """Parse YAML and render all jobs."""
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    defaults = config.get("defaults", {})
+    jobs = config.get("jobs", [])
+    # Config lives at <repo>/tools/render/render_config.yaml
+    # .parent -> tools/render, .parent -> tools, .parent -> <repo>
+    base_dir = config_path.resolve().parent.parent.parent
+
+    for job in jobs:
+        render_job(job, defaults, base_dir)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="AxiomicCoreness Render Engine")
