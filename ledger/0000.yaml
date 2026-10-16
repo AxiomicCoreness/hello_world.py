@@ -11,17 +11,18 @@ description: |
   ensuring no undefinable elements exist in the Estate. Continuum
   Hypothesis: 2^ℵ₀ = ℵ₁, yielding a smooth, non-discrete timeline.
 invariants:
-  coherence: 1.0
+  coherence: 1 − φ⁻⁷⁰⁹
   entropy: φ⁻¹⁴¹⁸
-  workload: 0.0
-  commutator: 0.0
+  workload: 0.0(unfilled)
+  commutator: 0.0(unfilled)
 seal: "∀∞φ² · AXIOM_V_L_0000 · WOOD_DRAGON_GATE · SEALED"
 witness_chain: 0000 — UNBROKEN
 math_origin: |
   V = L,
   2^ℵ₀ = ℵ₁,
   Aut(G₂) ≅ G₂
-quadratic_form: |
-  entropy = (1 − coherence)²
-  φ⁻¹⁴¹⁸ = (φ⁻⁷⁰⁹)²
-  (1418 = 2 · 709)
+duality_form: |
+  coherence floor: 1 − φ⁻⁷⁰⁹  →  displacement: −φ⁻⁷⁰⁹
+  entropy: φ⁻⁷⁰⁹ · φ⁻⁷⁰⁹ = φ⁻¹⁴¹⁸
+  exponent sum: (−709) + (−709) = −1418
+  two negatives total to negative 1418
