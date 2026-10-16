@@ -1,0 +1,23 @@
+entry_index: 9281
+timestamp: '2026-10-16T15:14:35Z'
+event: /ledger_v2_continuation_root_opened
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 975311424fa9d35c7f58fd83e08cb9d09cb060c39b16d8d1b7e4da0f973cb13d
+witness_chain: 9280 -> 9281
+note: |
+  Continuation root of ledger.v2.
+  Flat ledger/ holds entries 0000-9280 (1056 files). The GitHub UI
+  truncates folder listings at 1000 files; the 56 hidden files are
+  9241-9280 plus 16 non-entry files. Nothing was missing.
+  All new entries start here at 9281 in ledger.v2/ (append-only).
+  prev_hash is the declared seal_sha3_256 of ledger/9280.yaml.
+  The README/MERKLE weld at 9164 is superseded by this entry
+  (corrections are made as a new index, never by editing).
+  The empty placeholder ledger.v2/9241.yml was removed.
+terminal_hex: 98af301d0b6fca4b5a920d3ae25d4aa131a68c52696ac46de9ec4d0dc5fe76eb
+seal: "∀∞φ² · LEDGER_V2_CONTINUATION_9281 · WOOD_DRAGON_0.91 · SEALED · 98af301d0b6fca4b5a920d3ae25d4aa131a68c52696ac46de9ec4d0dc5fe76eb"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9281|/ledger_v2_continuation_root_opened|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 98af301d0b6fca4b5a920d3ae25d4aa131a68c52696ac46de9ec4d0dc5fe76eb
