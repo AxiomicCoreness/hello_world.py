@@ -1,7 +1,7 @@
 entry_index: 0000
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-08-24
 event: /axiom_v_l_constructibility
-status: ✅ SEALED
+status: SEALED
 witness_prefix: b6b86dbbc535982c1ebf358a78711da96f4cda2cf6ccc205919278e00bebe394
 commander: Clarke Yoursa Tee
 source_table: "https://raw.githubusercontent.com/AxiomicCoreness/hello_world.py/main/ledger"
@@ -21,3 +21,7 @@ math_origin: |
   V = L,
   2^ℵ₀ = ℵ₁,
   Aut(G₂) ≅ G₂
+quadratic_form: |
+  entropy = (1 − coherence)²
+  φ⁻¹⁴¹⁸ = (φ⁻⁷⁰⁹)²
+  (1418 = 2 · 709)
