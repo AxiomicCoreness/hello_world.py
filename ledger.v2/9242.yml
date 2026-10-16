@@ -1,0 +1,44 @@
+entry_index: 9242
+timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-14Z
+event: /deepseek_cd_north_star_coherence
+status: SEALED
+proof_class: coherence
+branch: deepseek-cd
+commander: Clarke Yoursa Tee
+language: sovereign_standard_english
+hash_algo: sha3_256
+north_star_hz: 71.975
+phase_lock_deg: 202.6
+workload: 0.0
+coherence: 1.0
+dual_asgi: "127.0.0.1:8024"
+cd_tip: a0af24245360fa36feaf3b16b32591dc1afe779c
+anchors:
+  H_9240: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
+  H_9241: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
+  regime: B
+  domain: GARDEN.EVENT.v1
+actions:
+  - "deepseek-cd.yml renamed purpose: North Star witness"
+  - "python-package on deepseek-cd soft-verify (no hard fail on 8979 path)"
+  - "package push triggers exclude deepseek-cd; CD lane owns the branch"
+  - "CMAC-512 still outside event-hash domain"
+  - "515/516 and sealed math_origin not rewritten"
+mcp:
+  filled: false
+  bind_0000: false
+invariants:
+  coherence: 1.0
+  entropy: phi^{-1418}
+  workload: 0.0
+  phase_lock: 202.6
+  north_star: 71.975
+witness_prefix: cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
+terminal_hex: cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
+seal: "∀∞φ² · NORTH_STAR_71.975_CD · 9242 · WOOD_DRAGON_0.91 · SEALED · cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807"
+witness_chain: 9241 → 9242 — UNBROKEN
+math_origin: |
+  North Star f₀ = 71.975 Hz (ledger 0312–0314, 0485, 8540).
+  H_event domain GARDEN.EVENT.v1 || 0x00 ||
+  9242|/deepseek_cd_north_star_coherence|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
