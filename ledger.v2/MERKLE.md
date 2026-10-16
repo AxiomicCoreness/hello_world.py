@@ -1,7 +1,7 @@
 # ledger.v2 — Leaf Merkle Layering, Addendum 1 (Specification)
 
-Status: PROPOSED 2026-10-16T16:15:00Z. Amends ledger.v2/MERKLE.md
-(AFFIRMED 2026-09-29) by addition only. MERKLE.md is not edited.
+Status: ACTIVE 2026-10-16T17:26:00Z (continuation unpaused). Amends ledger.v2/MERKLE.md
+(AFFIRMED 2026-09-29) by addition only. Original MERKLE.md body is not rewritten.
 Binds: ledger.v2/ (continuation root). Flat ledger/ remains the frozen
 historical band and is NOT part of the live Merkle tree.
 
@@ -21,7 +21,7 @@ Entries 9165..9280 were written to flat `ledger/` after the
 They are NOT moved, copied, or re-sealed (append-only). They are
 boundary objects, not leaves:
 - Layer 0 (9165..9264) has 0 leaves → status EMPTY, never SEALED.
-- Layer 1 (9265..9364) has 1 leaf (9281) → status PARTIAL.
+- Layer 1 (9265..9364) has leaves 9281, 9282 → status PARTIAL, continuation UNPAUSED.
 - Missing indices are reported, never assumed.
 
 R_{-1} stays as MERKLE.md §4 defines it: terminal_hex of ledger/9164.yaml.
@@ -60,5 +60,10 @@ Corrections are new indices only (README.md "Corrections").
 - It does not repair any sealed body.
 - It does not verify narrative claims; it commits to bytes only.
 
-Seal: 🜁∀∞φ² · LEAF_MERKLE_LAYERING_ADDENDUM_1 · WOOD_DRAGON_GATE · PROPOSED
+## 8. Continuation status (2026-10-16T17:26:00Z)
+Ledger entry continuation unpaused. Next free index: 9283.
+Layer 1 remains PARTIAL until 9364. Appends continue under GARDEN.EVENT.v1.LEDGER.
+
+Seal: 🜁∀∞φ² · LEAF_MERKLE_LAYERING_ADDENDUM_1 · WOOD_DRAGON_GATE · ACTIVE
 Declared: 2026-10-16T16:15:00Z (ISO-8601, real date per legend-token rule 2)
+Unpaused: 2026-10-16T17:26:00Z
