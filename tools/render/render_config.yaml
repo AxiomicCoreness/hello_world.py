@@ -1,0 +1,42 @@
+defaults:
+  dpi: 300
+  format: png
+  style: dark_background  # options: classic, seaborn-v0_8, ggplot, dark_background
+  tight_layout: true
+  bbox_inches: tight
+  pad_inches: 0.1
+  font_family: DejaVu Sans
+
+jobs:
+  - name: "spike_train"
+    input: "data/spikes.csv"
+    output: "build/render/spike_train.png"
+    plot_type: "line"
+    x_col: "time_ms"
+    y_col: "amplitude"
+    title: "Spike Train Activity"
+    xlabel: "Time (ms)"
+    ylabel: "Amplitude (mV)"
+    color: "#00FFAA"
+    linewidth: 1.5
+
+  - name: "weight_distribution"
+    input: "data/weights.csv"
+    output: "build/render/weights.png"
+    plot_type: "scatter"
+    x_col: "epoch"
+    y_col: "loss"
+    title: "Training Loss"
+    xlabel: "Epoch"
+    ylabel: "Loss"
+    color: "#FF5555"
+    marker: "o"
+    markersize: 4
+
+  - name: "connectome_heatmap"
+    input: "data/connectome_matrix.csv"
+    output: "build/render/connectome.pdf"
+    plot_type: "imshow"
+    title: "Connectome Adjacency"
+    cmap: "viridis"
+    format: "pdf"  # Override default format for this job
