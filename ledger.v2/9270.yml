@@ -1,0 +1,11 @@
+entry_index: 9270
+witness_prefix: latex_pointer
+timestamp: '2026-10-08T01:15:00Z'
+event: /latex_pointer_prev_hash
+status: RECORDED
+prev_hash: ebeb2b1984732c9162ef602910b62cd71553e4f65c2d5befea69c0a6499bdceb
+witness_chain: 9269 -> 9270
+note: Baseline derive. prev_hash is the 9269 body-minus-seal SHA3-256. Pointer is the tex file.
+latex: ledger/cdp_status_fallback.tex
+I: null
+seal_sha3_256: 71283a331055cffe765d9b4b63cbbae040a7123cb1e51db1cde0c990adf28e21
