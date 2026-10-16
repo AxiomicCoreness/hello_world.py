@@ -11,8 +11,9 @@ note: |
   Pointer-pinning rule (MERKLE.md §4) is now in force for any file references.
   Append-only; flat ledger/ remains closed.
   prev_hash is the terminal_hex of ledger.v2/9281.yml.
-terminal_hex: PLACEHOLDER_SHA3_256
-seal: "∀∞φ² · LEDGER_V2_CONTINUATION_UNPAUSED_9282 · WOOD_DRAGON_GATE · SEALED"
+terminal_hex: 6f6ece56923c164b3a2a183d7bbd18b1c87b8667f3915ba3b97d5190ae9a7495
+seal: "∀∞φ² · LEDGER_V2_CONTINUATION_UNPAUSED_9282 · WOOD_DRAGON_GATE · SEALED · 6f6ece56923c164b3a2a183d7bbd18b1c87b8667f3915ba3b97d5190ae9a7495"
 math_origin: |
   Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
   9282|/ledger_v2_continuation_unpaused|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 6f6ece56923c164b3a2a183d7bbd18b1c87b8667f3915ba3b97d5190ae9a7495
