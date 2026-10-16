@@ -117,7 +117,19 @@ jobs:
         if: steps.rows.outputs.rows_ok == 'true'
         run: |
           set -euo pipefail
-          python -c "import sqlite3,sys; db=sqlite3.connect('witness_chain.db'); rows=db.execute('SELECT entry_index, prev_hash, hash FROM witness ORDER BY entry_index').fetchall();\nimport sys\nif not rows:\n  print('no rows'); sys.exit(1)\nprev=''\nfor i,p,h in rows:\n  if p!=prev:\n    print('break at',i); sys.exit(1)\n  prev=h\nprint('chain intact',len(rows))"
+          python - <<'PY'
+          import sqlite3, sys
+          rows = sqlite3.connect("witness_chain.db").execute(
+              "SELECT entry_index, prev_hash, hash FROM witness ORDER BY entry_index").fetchall()
+          if not rows:
+              print("no rows"); sys.exit(1)
+          prev = ""
+          for i, p, h in rows:
+              if p != prev:
+                  print("break at", i); sys.exit(1)
+              prev = h
+          print("chain intact", len(rows))
+          PY
 
       - name: Upload witness chain artifacts
         if: always()
