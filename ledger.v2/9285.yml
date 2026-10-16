@@ -1,0 +1,33 @@
+entry_index: 9285
+timestamp: '2026-10-16T22:58:35Z'
+event: /pending_fields_resolved_and_9280_pointer
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 500f0e32e8fbd80cd46d75781d9822abffdde28feda4a4e065201148a67ab7af
+witness_chain: 9284 -> 9285
+resolves:
+  target: ledger.v2/9284.yml
+  target_blob: 484ed4909e8ac8292c492727d40e057c2cdd974a
+  target_commit: e0c10f82
+  prev_hash_declared: PENDING_9283
+  prev_hash_resolved: d4d63775c139f66ab01383121dd6fa98a6cc2489a38a315d4b39cb9115bb0c04
+  prev_hash_rule: terminal_hex of ledger.v2/9283.yml (blob f50350845d023a23ba0206bcc1c811f9d8527c1c)
+  timestamp_declared: PENDING_9283
+  timestamp_resolved: '2026-10-16T22:56:51Z'
+  timestamp_rule: author time of commit e0c10f82
+  note: 9283 and 9284 carry the same event; 9284 is the pinned-pointer form, 9283 the first form. Both stand.
+pointer:
+  target: ledger.v2/9280.yml
+  target_blob: 193d7f76672bedf161b1e519bf449070355dc0a7
+  target_file_sha3_256: abacdf8f712a5a41f08c7650ae8a28aa38e70be206fd5a1a6859d5f1b19e1872
+  declared_seal_sha3_256: 975311424fa9d35c7f58fd83e08cb9d09cb060c39b16d8d1b7e4da0f973cb13d
+  declared_reproduces: false
+  fixed_digest: 3614f4b5cecbfac0c198229d35865e5a06901e74b4b214fd7428524e3244f715
+  fixed_digest_rule: SHA3-256 of the file text with the seal_sha3_256 line removed (rule 9269..9278 verify under)
+  chain_note: 9281 prev_hash points at the declared 9753… value; it stays, recorded not rewritten
+terminal_hex: 056aa8f8d5eff4e002afb1bf8e9741f4d9d00364e859450b460cb969e6cdd2f7
+seal: "∀∞φ² · PENDING_FIELDS_RESOLVED_9285 · WOOD_DRAGON_GATE · SEALED · 056aa8f8d5eff4e002afb1bf8e9741f4d9d00364e859450b460cb969e6cdd2f7"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9285|/pending_fields_resolved_and_9280_pointer|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 056aa8f8d5eff4e002afb1bf8e9741f4d9d00364e859450b460cb969e6cdd2f7
