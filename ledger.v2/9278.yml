@@ -1,0 +1,21 @@
+entry_index: 9278
+witness_prefix: elliptic_torus_math_origin
+timestamp: '2026-10-14T21:27:00Z'
+event: /elliptic_torus_math_origin
+status: RECORDED
+prev_hash: e5d47cab185584c17f7b089ed18bf059847df6bcd86fc282a24a00fcc9a2b78c
+witness_chain: 9277 -> 9278
+script: scripts/elliptic_torus_300dpi.py
+equation: y^2 = x^3 + Ax + B
+knot: (2,3) torus knot
+note: |
+  300 dpi black-background visualization of a torus with:
+  - cyan wireframe surface
+  - red outer equator
+  - yellow (2,3) torus knot
+  - white 12-point equatorial lattice
+  - green G marker at s=pi
+  - yellow orientation arrows
+  Math origin: the elliptic curve equation y^2 = x^3 + Ax + B.
+  Generator is self-contained (numpy + matplotlib, Agg backend).
+seal_sha3_256: 533358fb7580190246842b98dfa958f8d93ab949f531cde0744b87e078e06750
