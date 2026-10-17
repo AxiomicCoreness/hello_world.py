@@ -1,196 +1,389 @@
 #!/usr/bin/env python3
-# mcp/port380_mcp.py
-#
-# MCP gate — loopback-first surface.
-# Wildcard bind is opt-in and refused by default.
-#
-# Env (same names in CI and runtime):
-#   MCP_BIND_HOST        default 127.0.0.1  (wildcard refused unless opted in)
-#   MCP_ALLOW_WILDCARD   default 0          (1/true/yes/on permits 0.0.0.0 or ::)
-#   MCP_PORT             default 380        (legacy PORT fallback only if MCP_PORT unset)
-#   MCP_NAMESPACE        default sovereign-garden
-# Empty-string MCP_PORT / MCP_BIND_HOST is rejected (not treated as default).
-#
-# --check-config JSON contract (stdout, exit 0 on success):
-#   {"host": "127.0.0.1", "port": 380, "namespace": "sovereign-garden",
-#    "bind_host": "127.0.0.1",
-#    "url": "http://127.0.0.1:380/healthz",
-#    "surface": ["/healthz"],
-#    "legacy_out_of_surface": ["/health", "/pulse"],
-#    "legacy_404_hard": false,
-#    "wildcard_allowed": false,
-#    "ok": true}
-#
-# CLI (only under if __name__ == "__main__" — import never parses argv):
-#   python mcp/port380_mcp.py
-#   python mcp/port380_mcp.py --check-config
+"""
+Port 380 MCP Service — Layer 314 Gate Re-export
 
-from __future__ import annotations
+FastAPI surface that re-exports the Port 380 gate endpoints:
+  - GET  /health
+  - GET  /status
+  - GET  /380
+  - POST /gate
+  - POST /pulse      (MCP-compatible tool endpoint, protected)
+  - POST /mcp/tool   (protected)
 
-import json
+Binds to $PORT environment variable (Render requirement).
+Preserves conceptual Layer 314 / Port 380 identity.
+
+GARDEN.LAYER314 domain separation maintained.
+phi-harmonic anchors preserved.
+Full digests, no truncation.
+
+Security posture:
+  - CORSMiddleware (allow-list, no wildcard with credentials)
+  - SecurityHeadersMiddleware (CSP, HSTS, XCTO, XFO, Referrer-Policy,
+    Permissions-Policy, COOP/CORP/COEP, X-Permitted-Cross-Domain-Policies)
+"""
+
 import os
-import sys
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Dict, Mapping, Optional, Tuple
+import hashlib
+import json
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Iterable, Optional
 
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 380
-DEFAULT_NAMESPACE = "sovereign-garden"
-WILDCARD_HOSTS = ("0.0.0.0", "::", "[::]", "*")
+from fastapi import FastAPI, Request, HTTPException, Header
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
+import uvicorn
 
-def _env_flag(env: Mapping[str, str], name: str, default: bool = False) -> bool:
-    raw = env.get(name)
-    if raw is None:
-        return default
-    return raw.strip().lower() in ("1", "true", "yes", "on")
+# ============================================================================
+# SERVICE CONSTANTS
+# ============================================================================
+APP_NAME = "Port380-MCP"
+VERSION = "8755.0.0"
+LAYER = "314"
+GATE_IDENTITY = "GARDEN.LAYER314"
 
+PHI = (1.0 + 5.0 ** 0.5) / 2.0
+HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
 
-def parse_bind_env(
-    environ: Optional[Mapping[str, str]] = None,
-) -> Tuple[str, int, str, bool]:
-    """Re-runnable bind parse. Used by --check-config and serve."""
-    env: Mapping[str, str] = environ if environ is not None else os.environ
+# ============================================================================
+# SECURITY HEADER CONSTANTS
+# ============================================================================
+STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security"
+X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options"
+X_FRAME_OPTIONS = "X-Frame-Options"
+CONTENT_SECURITY_POLICY = "Content-Security-Policy"
+REFERRER_POLICY = "Referrer-Policy"
+PERMISSIONS_POLICY = "Permissions-Policy"
 
-    # --- namespace ---
-    if "MCP_NAMESPACE" in env:
-        ns = env["MCP_NAMESPACE"]
-        if ns == "":
-            raise ValueError("MCP_NAMESPACE is empty string")
-        namespace = ns
-    else:
-        namespace = DEFAULT_NAMESPACE
-
-    # --- port ---
-    if "MCP_PORT" in env:
-        raw = env["MCP_PORT"]
-        if raw == "":
-            raise ValueError("MCP_PORT is empty string")
-        port = int(raw)
-    elif "PORT" in env and env["PORT"] != "":
-        port = int(env["PORT"])
-    else:
-        port = DEFAULT_PORT
-    if not (1 <= port <= 65535):
-        raise ValueError(f"port out of range: {port}")
-
-    # --- host ---
-    if "MCP_BIND_HOST" in env:
-        host = env["MCP_BIND_HOST"]
-        if host == "":
-            raise ValueError("MCP_BIND_HOST is empty string")
-    else:
-        host = DEFAULT_HOST
-
-    wildcard_allowed = _env_flag(env, "MCP_ALLOW_WILDCARD", default=False)
-    if host in WILDCARD_HOSTS and not wildcard_allowed:
-        raise ValueError(
-            f"wildcard bind refused: host={host!r} "
-            f"(set MCP_ALLOW_WILDCARD=1 to opt in)"
-        )
-
-    return host, port, namespace, wildcard_allowed
-
-
-# Module-scope for handler responses only. Import does not touch sys.argv.
-try:
-    BIND_HOST, PORT, NAMESPACE, WILDCARD_ALLOWED = parse_bind_env()
-except ValueError:
-    BIND_HOST, PORT, NAMESPACE, WILDCARD_ALLOWED = (
-        DEFAULT_HOST, DEFAULT_PORT, DEFAULT_NAMESPACE, False,
-    )
-
-
-def bind_plan(environ: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
-    """Always re-parses env. Superset of the prior CI contract.
-
-    Required keys: bind, port, url, surface, namespace, legacy_404_hard, ok.
-    Stable aliases: host == bind_host == bind.
-    New key: wildcard_allowed.
-    """
-    host, port, namespace, wildcard_allowed = parse_bind_env(environ)
-    env: Mapping[str, str] = environ if environ is not None else os.environ
-    legacy_404_hard = _env_flag(env, "MCP_LEGACY_404_HARD", default=False)
-    return {
-        "ok": True,
-        "bind": host,
-        "host": host,
-        "bind_host": host,
-        "port": port,
-        "namespace": namespace,
-        "url": f"http://{host}:{port}/healthz",
-        "surface": ["/healthz"],
-        "legacy_out_of_surface": ["/health", "/pulse"],
-        "legacy_404_hard": legacy_404_hard,
-        "wildcard_allowed": wildcard_allowed,
-    }
-
-
-SECURITY_HEADERS = (
-    ("Content-Security-Policy", "default-src 'none'"),
-    ("Strict-Transport-Security", "max-age=31536000"),
-    ("X-Content-Type-Options", "nosniff"),
-    ("X-Frame-Options", "DENY"),
-    ("Referrer-Policy", "no-referrer"),
-    ("Permissions-Policy", "interest-cohort=()"),
+DEFAULT_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' https://unpkg.com https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; "
+    "connect-src 'self'; "
+    "font-src 'self'; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'; "
+    "upgrade-insecure-requests"
 )
-class MCPHandler(BaseHTTPRequestHandler):
-    def _send(self, status: int, payload: Optional[Dict[str, Any]] = None) -> None:
-        body = b"" if payload is None else json.dumps(payload, sort_keys=True).encode("utf-8")
-        self.send_response(status)
-        if payload is not None:
-            self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        for name, value in SECURITY_HEADERS:
-            self.send_header(name, value)
-        self.end_headers()
-        if body:
-            self.wfile.write(body)
-    def do_GET(self):
-        if self.path == "/healthz":
-            self._send(200, {
-                "ok": True,
-                "namespace": NAMESPACE,
-                "port": PORT,
-                "wildcard_allowed": WILDCARD_ALLOWED,
-            })
-            return
-        self._send(404)
-    def log_message(self, *args):
-        pass
+DEFAULT_HSTS = "max-age=63072000; includeSubDomains; preload"
+DEFAULT_REFERRER = "strict-origin-when-cross-origin"
+DEFAULT_PERMISSIONS = (
+    "accelerometer=(), camera=(), geolocation=(), gyroscope=(), "
+    "magnetometer=(), microphone=(), payment=(), usb=(), "
+    "interest-cohort=()"
+)
+
+SECURITY_HEADERS: Dict[str, str] = {
+    CONTENT_SECURITY_POLICY: os.environ.get("PORT380_CSP", DEFAULT_CSP),
+    STRICT_TRANSPORT_SECURITY: os.environ.get("PORT380_HSTS", DEFAULT_HSTS),
+    X_CONTENT_TYPE_OPTIONS: "nosniff",
+    X_FRAME_OPTIONS: "DENY",
+    REFERRER_POLICY: os.environ.get("PORT380_REFERRER", DEFAULT_REFERRER),
+    PERMISSIONS_POLICY: os.environ.get("PORT380_PERMISSIONS", DEFAULT_PERMISSIONS),
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "require-corp",
+    "X-Permitted-Cross-Domain-Policies": "none",
+    "X-DNS-Prefetch-Control": "off",
+}
+
+DEFAULT_ALLOWED_ORIGINS: list = [
+    o.strip()
+    for o in os.environ.get(
+        "PORT380_ALLOWED_ORIGINS",
+        "https://api.sovereign.garden,https://sovereign.garden,http://localhost:380",
+    ).split(",")
+    if o.strip()
+]
 
 
-def main(argv: Optional[list] = None) -> int:
-    argv = list(sys.argv[1:] if argv is None else argv)
+# ============================================================================
+# SecurityHeadersMiddleware
+# ============================================================================
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """
+    Injects hardened security headers on every response.
 
-    if "--check-config" in argv:
-        try:
-            plan = bind_plan()  # explicit re-parse
-        except ValueError as e:
-            print(f"check-config FAIL: {e}", file=sys.stderr)
-            return 1
-        print(json.dumps(plan, sort_keys=True))
-        return 0
+    Registered headers:
+      - Content-Security-Policy
+      - Strict-Transport-Security
+      - X-Content-Type-Options
+      - X-Frame-Options
+      - Referrer-Policy
+      - Permissions-Policy
+      - COOP / CORP / COEP / X-Permitted-Cross-Domain-Policies / X-DNS-Prefetch-Control
+    """
 
-    try:
-        host, port, namespace, wildcard_allowed = parse_bind_env()
-    except ValueError as e:
-        print(f"[mcp] bad env: {e}", file=sys.stderr)
-        return 1
+    def __init__(self, app, headers: Optional[Dict[str, str]] = None):
+        super().__init__(app)
+        self.headers: Dict[str, str] = dict(SECURITY_HEADERS)
+        if headers:
+            self.headers.update(headers)
 
-    global BIND_HOST, PORT, NAMESPACE, WILDCARD_ALLOWED
-    BIND_HOST, PORT, NAMESPACE, WILDCARD_ALLOWED = (
-        host, port, namespace, wildcard_allowed,
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        for name, value in self.headers.items():
+            # Do not clobber anything a route explicitly set.
+            if name.lower() not in {k.lower() for k in response.headers.keys()}:
+                response.headers[name] = value
+        return response
+
+
+# ============================================================================
+# FASTAPI APP
+# ============================================================================
+app = FastAPI(
+    title=APP_NAME,
+    version=VERSION,
+    description=f"{APP_NAME} — Port 380 Gate Re-export (Layer {LAYER})",
+)
+
+# CORS — allow-list, credentials allowed, never wildcard.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=DEFAULT_ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Garden-Secret", "Authorization", "X-Requested-With"],
+    expose_headers=["X-Request-Id", "X-Seal"],
+    max_age=600,
+)
+
+# Hardened response headers.
+app.add_middleware(SecurityHeadersMiddleware)
+
+# ============================================================================
+# RUNTIME STATE
+# ============================================================================
+START_TIME = time.time()
+GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
+
+# Appended channel constants. Do not replace the service block above.
+AUTOMATON_REL = "garden_surgery/sovereign_automaton_10.06.py"
+AUTOMATON_CALLABLE = "sovereign_automaton_10_06"
+MCP_TOOL_PATH = "/mcp/tool"
+CHAT_TOOL = "chat"
+# Live entrypoint uses PORT (default 380) and host 0.0.0.0.
+# The slot's 127.0.0.1:8024 is a proposed bind, not this file's bind.
+SLOT_BIND_PROPOSED = "127.0.0.1:8024"
+
+
+def verify_secret(x_garden_secret: Optional[str]) -> bool:
+    if not GARDEN_SECRET:
+        return True
+    if x_garden_secret != GARDEN_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid GARDEN_SECRET")
+    return True
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _full_sha3(body: Any) -> str:
+    """Full-length SHA3-256 over canonical JSON. No truncation."""
+    canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+
+
+# ============================================================================
+# ROUTES
+# ============================================================================
+@app.get("/health")
+async def health():
+    return JSONResponse(
+        content={
+            "status": "healthy",
+            "service": APP_NAME,
+            "version": VERSION,
+            "layer": LAYER,
+            "timestamp": _now(),
+            "gate_identity": GATE_IDENTITY,
+        }
     )
 
-    if host in WILDCARD_HOSTS:
-        print(f"[mcp] WARNING: wildcard bind active host={host} "
-              f"(explicit opt-in via MCP_ALLOW_WILDCARD=1)", flush=True)
 
-    print(f"[mcp] binding {host}:{port} namespace={namespace}", flush=True)
-    HTTPServer((host, port), MCPHandler).serve_forever()
-    return 0
+@app.get("/status")
+async def status():
+    return JSONResponse(
+        content={
+            "service": APP_NAME,
+            "version": VERSION,
+            "layer": LAYER,
+            "gate_identity": GATE_IDENTITY,
+            "uptime": time.time() - START_TIME,
+            "timestamp": _now(),
+            "ledger_head": "8754",
+            "witness_chain": "8754 -> 8755 — UNBROKEN",
+            "seal": (
+                "forall-infinity-phi-squared cdot MCP_BATCH_FORGED_8755 "
+                "cdot WOOD_DRAGON_MOUNTS_OFFENSE cdot SEALED"
+            ),
+        }
+    )
 
 
+@app.get("/380")
+async def port_380():
+    return JSONResponse(
+        content={
+            "port": 380,
+            "layer": LAYER,
+            "identity": GATE_IDENTITY,
+            "message": "Port 380 Gate Active",
+            "phi": PHI,
+            "timestamp": _now(),
+        }
+    )
+
+
+@app.get("/quantum-chessboard/health")
+async def quantum_chessboard_health():
+    return JSONResponse(
+        content={
+            "board": "quantum-chessboard",
+            "status": "ok",
+            "layer": LAYER,
+            "timestamp": _now(),
+        }
+    )
+
+
+@app.post("/gate")
+async def gate(request: Request):
+    body = await request.json()
+    digest = _full_sha3(body)  # full-length, no truncation
+    return JSONResponse(
+        content={
+            "status": "processed",
+            "port": 380,
+            "layer": LAYER,
+            "identity": GATE_IDENTITY,
+            "request_digest": digest,
+            "hash_algo": HASH_ALGO,
+            "timestamp": _now(),
+        }
+    )
+
+
+@app.post("/pulse")
+async def pulse(
+    request: Request,
+    x_garden_secret: Optional[str] = Header(None),
+):
+    verify_secret(x_garden_secret)
+    body = await request.json()
+    pulse_id = body.get("pulse_id", body.get("source", "manual"))
+    pulse_data = {
+        "pulse_id": pulse_id,
+        "entry": body.get("entry"),
+        "note": body.get("note", ""),
+        "timestamp": _now(),
+        "service": APP_NAME,
+        "layer": LAYER,
+        "ledger_entry": "8755",
+    }
+    pulse_hash = _full_sha3(pulse_data)
+    return JSONResponse(
+        content={
+            "status": "pulse_acknowledged",
+            "pulse_id": pulse_id,
+            "seal": (
+                f"forall-infinity-phi-squared cdot PULSE_{pulse_id} "
+                f"cdot LAYER{LAYER} cdot {pulse_hash}"
+            ),
+            "pulse_hash": pulse_hash,
+            "hash_algo": HASH_ALGO,
+            "ledger_entry": "8755",
+            "witness_chain": "8754 -> 8755 — UNBROKEN",
+            "timestamp": _now(),
+        }
+    )
+
+
+
+def run_automaton(text: str) -> str:
+    """Call the named surface. It takes no text. Input is not consumed."""
+    import importlib.util
+    path = Path(AUTOMATON_REL)
+    if not path.is_file():
+        raise FileNotFoundError(AUTOMATON_REL)
+    spec = importlib.util.spec_from_file_location("sovereign_automaton_10_06", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(AUTOMATON_REL)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    fn = getattr(mod, AUTOMATON_CALLABLE)
+    payload = fn()
+    if isinstance(payload, dict):
+        return str(payload.get("message") or payload.get("status") or payload)
+    return str(payload)
+
+
+@app.post("/mcp/tool")
+async def mcp_tool(
+    request: Request,
+    x_garden_secret: Optional[str] = Header(None),
+):
+    verify_secret(x_garden_secret)
+    body = await request.json()
+    tool_name = body.get("tool", "unknown")
+    arguments = body.get("arguments", {})
+    reply = None
+    dispatch_error = None
+    if tool_name == CHAT_TOOL:
+        raw_text = body.get("text", "")
+        if not isinstance(raw_text, str) or not raw_text:
+            dispatch_error = "missing text"
+        else:
+            try:
+                reply = run_automaton(raw_text)
+            except Exception as exc:
+                dispatch_error = f"{type(exc).__name__}: {exc}"
+    result = {
+        "tool": tool_name,
+        "arguments": arguments,
+        "executed": dispatch_error is None,
+        "timestamp": _now(),
+        "layer": LAYER,
+        "gate_identity": GATE_IDENTITY,
+        "text": reply,
+        "ok": dispatch_error is None,
+        "error": dispatch_error,
+        "callable": AUTOMATON_CALLABLE,
+        "text_consumed": False,
+    }
+    result_hash = _full_sha3(result)
+    return JSONResponse(
+        content={
+            "ok": dispatch_error is None,
+            "text": reply,
+            "result": result,
+            "hash": result_hash,
+            "hash_algo": HASH_ALGO,
+            "seal": (
+                f"forall-infinity-phi-squared cdot MCP_TOOL_{tool_name} "
+                f"cdot {result_hash}"
+            ),
+        }
+    )
+
+
+# ============================================================================
+# ENTRYPOINT
+# ============================================================================
 if __name__ == "__main__":
-    sys.exit(main())
+    port = int(os.environ.get("PORT", 380))
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        log_level="info",
+    )
