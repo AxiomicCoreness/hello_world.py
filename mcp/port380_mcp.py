@@ -126,32 +126,36 @@ def bind_plan(environ: Optional[Mapping[str, str]] = None) -> Dict[str, Any]:
     }
 
 
+SECURITY_HEADERS = (
+    ("Content-Security-Policy", "default-src 'none'"),
+    ("Strict-Transport-Security", "max-age=31536000"),
+    ("X-Content-Type-Options", "nosniff"),
+    ("X-Frame-Options", "DENY"),
+    ("Referrer-Policy", "no-referrer"),
+    ("Permissions-Policy", "interest-cohort=()"),
+)
 class MCPHandler(BaseHTTPRequestHandler):
+    def _send(self, status: int, payload: Optional[Dict[str, Any]] = None) -> None:
+        body = b"" if payload is None else json.dumps(payload, sort_keys=True).encode("utf-8")
+        self.send_response(status)
+        if payload is not None:
+            self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        for name, value in SECURITY_HEADERS:
+            self.send_header(name, value)
+        self.end_headers()
+        if body:
+            self.wfile.write(body)
     def do_GET(self):
         if self.path == "/healthz":
-            body = (
-                b'{"ok": true, "namespace": "'
-                + NAMESPACE.encode()
-                + b'", "port": '
-                + str(PORT).encode()
-                + b'", "wildcard_allowed": '
-                + (b"true" if WILDCARD_ALLOWED else b"false")
-                + b"}"
-            )
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Security-Policy", "default-src 'none'")
-            self.send_header("Strict-Transport-Security", "max-age=31536000")
-            self.send_header("X-Content-Type-Options", "nosniff")
-            self.send_header("X-Frame-Options", "DENY")
-            self.send_header("Referrer-Policy", "no-referrer")
-            self.send_header("Permissions-Policy", "interest-cohort=()")
-            self.end_headers()
-            self.wfile.write(body)
+            self._send(200, {
+                "ok": True,
+                "namespace": NAMESPACE,
+                "port": PORT,
+                "wildcard_allowed": WILDCARD_ALLOWED,
+            })
             return
-        self.send_response(404)
-        self.end_headers()
-
+        self._send(404)
     def log_message(self, *args):
         pass
 
