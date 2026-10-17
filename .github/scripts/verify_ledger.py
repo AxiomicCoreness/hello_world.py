@@ -302,6 +302,45 @@ def _emit_diagnostics(data: dict, declared: str,
     )
 
 
+
+# ───────────────────────────────────────────────────────────────────────
+# Sealed-entry concreteness gate
+# ───────────────────────────────────────────────────────────────────────
+# An entry with status SEALED must not carry an unresolved chain edge.
+# Applies from SEALED_CONCRETE_FROM on; earlier entries are not re-judged.
+# 9284 (PENDING_9283, resolved by 9285) is the recorded exception.
+SEALED_CONCRETE_FROM = 9286
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _pending_fields(obj: Any, path: str = "") -> List[str]:
+    found: List[str] = []
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            found += _pending_fields(v, f"{path}.{k}" if path else str(k))
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            found += _pending_fields(v, f"{path}[{i}]")
+    elif isinstance(obj, str) and obj.strip().upper().startswith("PENDING"):
+        found.append(path)
+    return found
+
+
+def sealed_concrete_violations(data: dict) -> List[str]:
+    """Reasons a SEALED entry is not concrete; empty list means it passes."""
+    idx = data.get("entry_index")
+    if str(data.get("status", "")).upper() != "SEALED":
+        return []
+    if not isinstance(idx, int) or idx < SEALED_CONCRETE_FROM:
+        return []
+    problems = []
+    prev = data.get("prev_hash")
+    if not (isinstance(prev, str) and _HEX64.match(prev)):
+        problems.append(f"prev_hash not 64-hex: {prev!r}")
+    problems += [f"unresolved field: {f}" for f in _pending_fields(data)]
+    return problems
+
+
 def verify(path: Path, mode: str) -> bool:
     """
     Verify a single ledger file.
@@ -340,6 +379,13 @@ def verify(path: Path, mode: str) -> bool:
     if _is_non_event(data):
         print(f"— {path}: document_class={data.get('document_class') or data.get('kind')} — seal check skipped")
         return True
+
+    problems = sealed_concrete_violations(data) if isinstance(data, dict) else []
+    if problems:
+        for pr in problems:
+            print(f"❌ {path}: SEALED but not concrete ({pr})")
+        if mode == "hard":
+            return False
 
     declared = declared_hex(data)
     if not declared:
@@ -385,4 +431,236 @@ def verify(path: Path, mode: str) -> bool:
     return True
 
 
-# Note: remaining functions (check_required_fields, seal_field_matches, check_seals, check_chains, main) are unchanged from prior version and truncated here for the call; full file is local. In real use the complete content is passed.
+# Restored from 68407560 (ledger-v2-weld-9281), where these functions were
+# last present in full; 7f339b6f truncated them. Appended, existing code kept.
+# load_entries() above no longer records load errors; LOAD_ERRORS is kept
+# so main() is unchanged in shape.
+LOAD_ERRORS: List[str] = []
+
+# ─────────────────────────────────────────────────────────────────────────
+# Tree-wide checks
+# ─────────────────────────────────────────────────────────────────────────
+
+def check_required_fields(entries: List[Entry]) -> int:
+    bad = 0
+    for e in entries:
+        missing = [f for f in REQUIRED_FIELDS if f not in e.data]
+        if missing:
+            print(f"::error file={e.path}::entry {e.index} missing fields: {missing}")
+            bad += 1
+    return bad
+
+
+def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
+    """
+    Match the declared digest(s) against a computed digest.
+
+    Accepts:
+    - seal == digest (exact match)
+    - seal's final whitespace-delimited token == digest
+    - declared_hex(data) == digest (last 64-hex run in seal / terminal_hex)
+    - seal_sha3_256 == digest (first-class declared digest field)
+    """
+    if not computed:
+        return False
+    computed = computed.lower()
+    seal = data.get("seal", "")
+    if isinstance(seal, str):
+        if seal.lower() == computed:
+            return True
+        parts = seal.split()
+        if parts and parts[-1].lower() == computed:
+            return True
+    d = declared_hex(data)
+    if d and d == computed:
+        return True
+    s = data.get("seal_sha3_256")
+    if isinstance(s, str) and s.strip().lower() == computed:
+        return True
+    return False
+
+
+def entry_declared_digest(data: Dict[str, Any]) -> Optional[str]:
+    """Declared digest: seal_sha3_256 if present, else declared_hex()."""
+    s = data.get("seal_sha3_256")
+    if isinstance(s, str) and HASH_RE.fullmatch(s.strip()):
+        return s.strip().lower()
+    return declared_hex(data)
+
+
+def check_seals(entries: List[Entry], strict: bool = False) -> int:
+    """Accept Regime A (canonical JSON) or Regime B (event hash)."""
+    bad = 0
+    for e in entries:
+        computed_a = canonical_hash(e.data)
+        computed_b = event_hash(e.data)
+        ok_a = seal_field_matches(e.data, computed_a)
+        ok_b = computed_b is not None and seal_field_matches(e.data, computed_b)
+        ok = ok_a or ok_b
+        e.seal_computed = computed_b if ok_b else computed_a
+        e.seal_ok = ok
+        idx = e.data.get("entry_index")
+        if ok_a and not ok_b and isinstance(idx, int) and idx >= REGIME_B_FROM:
+            print(f"::warning file={e.path}::entry {e.index} matched Regime A only; "
+                  f"Regime B expected for >= {REGIME_B_FROM}")
+        if not ok:
+            bad += 1
+            level = "error" if strict else "warning"
+            print(f"::{level} file={e.path}::entry {e.index} seal mismatch")
+            print(f"        computed_A:      {computed_a}")
+            print(f"        computed_B:      {computed_b}")
+            print(f"        seal field:      {e.data.get('seal')}")
+            if "seal_sha3_256" in e.data:
+                print(f"        seal_sha3_256:   {e.data.get('seal_sha3_256')}")
+    return bad
+
+
+def _weld_anchor(root: str, prev_index: str) -> Optional[str]:
+    """Declared digest of ledger/<prev_index>.yaml (the flat-ledger weld point)."""
+    for ext in (".yaml", ".yml"):
+        p = os.path.join(root, "ledger", prev_index + ext)
+        if os.path.isfile(p):
+            try:
+                docs = _load_yaml_file(p)
+            except Exception:
+                return None
+            for d in docs:
+                if str(d.get("entry_index", "")).zfill(4) == prev_index:
+                    return entry_declared_digest(d)
+    return None
+
+
+def check_chains(entries: List[Entry], weld_root: Optional[str] = None) -> int:
+    """
+    Verify witness-chain continuity per series.
+
+    Each entry's witness_chain must be "PPPP → NNNN" where:
+    - NNNN equals the entry's own index
+    - PPPP equals the previous entry's index in the same series
+    - The first entry of a series must point at a genesis anchor, OR
+      (when weld_root is set, i.e. verifying ledger.v2) at a flat-ledger
+      entry ledger/PPPP.yaml whose declared digest equals this entry's
+      prev_hash (weld anchor).
+    """
+    by_series: Dict[str, List[Entry]] = {}
+    for e in entries:
+        by_series.setdefault(e.series, []).append(e)
+
+    bad = 0
+    for series, group in sorted(by_series.items()):
+        group.sort(key=lambda x: x.index)
+        print(f"── series {series}: {len(group)} entries "
+              f"({group[0].index}..{group[-1].index})")
+
+        for i, e in enumerate(group):
+            m = WITNESS_RE.match(str(e.data.get("witness_chain", "")))
+            if not m:
+                print(f"::error file={e.path}::entry {e.index} "
+                      f"unparseable witness_chain: {e.data.get('witness_chain')!r}")
+                bad += 1
+                continue
+            prev, nxt = m.group(1).zfill(4), m.group(2).zfill(4)
+            e.chain_prev, e.chain_next = prev, nxt
+
+            if nxt != e.index:
+                print(f"::error file={e.path}::entry {e.index} "
+                      f"chain arrow target {nxt} != index {e.index}")
+                bad += 1
+                continue
+
+            if i > 0:
+                prev_entry = group[i - 1]
+                if prev_entry.chain_next != e.index and prev != prev_entry.index:
+                    print(f"::error file={e.path}::entry {e.index} "
+                          f"previous series entry {prev_entry.index} "
+                          f"points at {prev_entry.chain_next}, expected {e.index}")
+                    bad += 1
+
+            if e.index not in GENESIS_ANCHORS and i == 0 and prev not in GENESIS_ANCHORS:
+                if weld_root is not None:
+                    anchor = _weld_anchor(weld_root, prev)
+                    ph = str(e.data.get("prev_hash", "")).strip().lower()
+                    if anchor and ph == anchor:
+                        print(f"   weld: {e.index} <- ledger/{prev} ({anchor[:16]}...)")
+                        continue
+                    print(f"::error file={e.path}::entry {e.index} weld to ledger/{prev} "
+                          f"failed: prev_hash={ph or None} anchor={anchor}")
+                    bad += 1
+                else:
+                    print(f"::error file={e.path}::entry {e.index} "
+                          f"first in series but prev {prev} is not a genesis anchor")
+                    bad += 1
+
+    return bad
+
+
+def check_cross_root_duplicates(root: str) -> int:
+    """No entry_index may appear in both ledger/ and ledger.v2/."""
+    a = load_entries(os.path.join(root, "ledger"))
+    b = load_entries(os.path.join(root, "ledger.v2"))
+    if not b:
+        return 0
+    flat = {e.index: e.path for e in a}
+    bad = 0
+    for e in b:
+        if e.index in flat:
+            print(f"::error file={e.path}::entry {e.index} duplicates {flat[e.index]}")
+            bad += 1
+    print(f"── cross-root: ledger/={len(a)} ledger.v2/={len(b)} duplicates={bad}")
+    return bad
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# CLI
+# ─────────────────────────────────────────────────────────────────────────
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Verify ledger seals and chains.")
+    ap.add_argument("files", nargs="*", help="YAML files to verify")
+    ap.add_argument("--hard", action="store_true", help="fail on mismatch")
+    ap.add_argument("--soft", action="store_true", help="warn on mismatch (default)")
+    ap.add_argument("--emit", action="store_true", help="print digests, never fail")
+    ap.add_argument("--root", default=".", help="repo root")
+    ap.add_argument("--ledger-dir", default="ledger",
+                    help="ledger directory relative to --root (ledger or ledger.v2)")
+    ap.add_argument("--series", action="append", help="limit to series prefix")
+    ap.add_argument("--strict-seals", action="store_true",
+                    help="tree mode: seal mismatches are errors and fail the run")
+    ap.add_argument("--no-reward-check", action="store_true",
+                    help="accepted for workflow compatibility; no reward check exists")
+    ap.add_argument("--mode", choices=["soft", "hard", "emit"],
+                    help="explicit mode; overrides --hard/--soft/--emit")
+    args = ap.parse_args()
+
+    missing = [f for f in args.files if not os.path.isfile(f)]
+    if missing:
+        for f in missing:
+            print(f"::error::missing path: {f}")
+        return 2
+
+    ap_mode = getattr(args, "mode", None)
+    mode = ap_mode or ("emit" if args.emit else ("hard" if args.hard else "soft"))
+
+    if args.files:
+        ok = True
+        for f in args.files:
+            ok = verify(Path(f), mode) and ok
+        return 0 if ok else 1
+
+    # Tree mode
+    ledger_dir = os.path.join(args.root, args.ledger_dir)
+    is_v2 = os.path.basename(os.path.normpath(args.ledger_dir)) == "ledger.v2"
+    entries = load_entries(ledger_dir, args.series)
+    print(f"loaded {len(entries)} entries from {ledger_dir}")
+    strict = mode == "hard" or args.strict_seals
+    bad = len(LOAD_ERRORS)
+    bad += check_required_fields(entries)
+    bad += check_seals(entries, strict=strict)
+    bad += check_chains(entries, weld_root=args.root if is_v2 else None)
+    bad += check_cross_root_duplicates(args.root)
+    print(f"bad: {bad}")
+    return 0 if bad == 0 else (1 if strict else 0)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
