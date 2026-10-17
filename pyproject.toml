@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "axiomiccoreness"
-version = "5.0.0"
+version = "8755.0.0"
 description = "AxiomicCoreness/hello_world.py — sovereign_engine_V5: public MIT-licensed sovereign engine for φ-harmonic ledger verification."
 readme = "README.md"
 authors = [
@@ -35,5 +35,6 @@ api = [
 [project.urls]
 "Homepage" = "https://github.com/AxiomicCoreness/hello_world.py"
 "Repository" = "https://github.com/AxiomicCoreness/hello_world.py"
-"Zenodo Archive" = "https://doi.org/10.5281/zenodo.23378306"
+"Zenodo Archive" = "https://doi.org/10.5281/zenodo.23378305"
 "Bug Tracker" = "https://github.com/AxiomicCoreness/hello_world.py/issues"
+
