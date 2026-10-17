@@ -11,7 +11,6 @@ metadata:
 spec:
   selector:
     app: sovereign-garden
-    role: canary
   ports:
     - name: http
       port: 8000
@@ -19,3 +18,34 @@ spec:
     - name: http-fallback-1
       port: 8001
       targetPort: 8001
+    # Dockerfile binds BIND_PORT_START..BIND_PORT_END (8080-8089); Services take no ranges
+    - name: http-8080
+      port: 8080
+      targetPort: 8080
+    - name: http-8081
+      port: 8081
+      targetPort: 8081
+    - name: http-8082
+      port: 8082
+      targetPort: 8082
+    - name: http-8083
+      port: 8083
+      targetPort: 8083
+    - name: http-8084
+      port: 8084
+      targetPort: 8084
+    - name: http-8085
+      port: 8085
+      targetPort: 8085
+    - name: http-8086
+      port: 8086
+      targetPort: 8086
+    - name: http-8087
+      port: 8087
+      targetPort: 8087
+    - name: http-8088
+      port: 8088
+      targetPort: 8088
+    - name: http-8089
+      port: 8089
+      targetPort: 8089
