@@ -1,26 +1,37 @@
 cff-version: 1.2.0
-message: "Cite this MIT-licensed public repository as AxiomicCoreness/hello_world.py"
-title: "AxiomicCoreness/hello_world.py — sovereign_engine_V5"
-version: "5.0.0"
-date-released: "2026-10-14"
-doi: 10.5281/zenodo.23378306
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+title: "AxiomicCoreness/hello_world.py — sovereign_engine"
+version: "8755.0.0"
+date-released: "2026-10-17"
+# Concept DOI: always resolves to the latest archived version.
+doi: 10.5281/zenodo.23378305
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23378305
+    description: "Concept DOI (all versions)"
+  - type: doi
+    value: 10.5281/zenodo.23378306
+    description: "Version 5.0.0"
 authors:
   - family-names: "Yoursa Tee"
     given-names: "Clarke"
 license: MIT
-license-url: "https://github.com/AxiomicCoreness/hello_world.py/blob/main/LICENSE"
 repository-code: "https://github.com/AxiomicCoreness/hello_world.py"
 url: "https://github.com/AxiomicCoreness/hello_world.py"
 keywords:
   - AxiomicCoreness
   - hello_world.py
   - sovereign-engine
-  - MIT
   - FastAPI
   - pydantic
-  - Dual-ASGI
   - fastMCP
-  - phase-lock
+  - hash-chained-ledger
+  - SHA3-256
+  - argo-rollouts
+  - gateway-api
 abstract: >-
-  Public MIT-licensed sovereign engine (Garden ledger, Dual ASGI 127.0.0.1:8024,
-  fastMCP unfilled stub). Search: repo:AxiomicCoreness/hello_world.py license:MIT
+  Public MIT-licensed sovereign engine: a FastAPI application with a
+  Port-380 MCP gate, an append-only hash-chained YAML ledger (ledger/ and
+  ledger.v2/) sealed with SHA3-256, a ledger verifier run in CI, and
+  Argo CD / Argo Rollouts manifests for Gateway API canary delivery.
