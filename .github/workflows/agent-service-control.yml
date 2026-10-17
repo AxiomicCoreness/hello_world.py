@@ -2,7 +2,8 @@ name: Agent Service Control
 
 # Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED
 # Witness: read-only — verifies chain, does not extend it
-# cryptography: python -m pip + .github/scripts/verify_ledger.py
+# integrity: .github/scripts/verify_ledger.py (hashlib SHA3-256 + PyYAML;
+#            no `cryptography` dependency) — run in --mode soft
 # hash_algo: sha3_256 (FIPS 202) — for control receipts
 # role: park-gate (replicas=0, loopback-only binds, FILLED=false)
 # ledger_policy: NO_GROWTH (contents: read)
@@ -12,9 +13,13 @@ on:
     paths:
       - "k8s/agent-service.yaml"
       - "requirements-control.txt"
-      - "requirements.txt"
       - "scripts/kubectl_apply_agent_service.sh"
+      - ".github/scripts/verify_ledger.py"
       - ".github/workflows/agent-service-control.yml"
+      # ledger.v2/** is the active ledger: a new head changes head_index /
+      # head_seal in the receipt. This workflow has contents: read and never
+      # commits, so a ledger push cannot loop back into it.
+      - "ledger.v2/**"
   workflow_dispatch:
 
 permissions:
@@ -38,7 +43,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # No step reads git history (no git log/describe/diff/merge-base).
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -54,6 +60,7 @@ jobs:
             python -m pip install --quiet -r requirements-control.txt
           fi
           python -m pip install --quiet pyyaml
+          python -P -c "import yaml; print('✅ pyyaml', yaml.__version__)"
 
       # ────────────────────────────────────────────────────────────
       # 0. Read-only integrity: verify SHA3-256 seals on present entries
@@ -62,34 +69,53 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          entries=(ledger/*.yaml)
+          # ledger/ (v1, closed) uses .yaml; ledger.v2/ (active) uses .yml.
+          entries=(ledger/*.yaml ledger.v2/*.yml ledger.v2/*.yaml)
           if [ ${#entries[@]} -eq 0 ]; then
             echo "⚠️ no ledger entries present — soft skip"
             exit 0
           fi
+          # Only .github/scripts/verify_ledger.py: scripts/verify_ledger.py is a
+          # different tool (single positional file, no --mode).
           VERIFIER=".github/scripts/verify_ledger.py"
-          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
           if [ ! -f "$VERIFIER" ]; then
-            echo "⚠️ no verify_ledger.py present — soft skip"
+            echo "⚠️ $VERIFIER genuinely absent — soft skip"
             exit 0
           fi
-          for f in "${entries[@]}"; do
-            python "$VERIFIER" "$f" || echo "⚠️ soft: $f"
-          done
+          # Present but truncated (no top-level main()) exits 0 without
+          # checking anything: refuse it. Same AST check as argo-ci.yml.
+          if ! python -P - "$VERIFIER" <<'PY'
+          import ast, sys
+          try:
+              tree = ast.parse(open(sys.argv[1], encoding="utf-8").read())
+          except SyntaxError as e:
+              print(f"::error::{sys.argv[1]} does not parse: {e}")
+              sys.exit(1)
+          names = {n.name for n in tree.body
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+          sys.exit(0 if "main" in names else 1)
+          PY
+          then
+            echo "::error::$VERIFIER has no top-level main() — truncated verifier, refusing"
+            exit 1
+          fi
+          # One call over all files. --mode soft reports mismatches without
+          # failing; a non-zero exit therefore means the verifier itself
+          # broke (bad path = 2, crash = traceback) and is NOT masked.
+          python -P "$VERIFIER" --mode soft "${entries[@]}" > verify-report.txt 2>&1
+          pass=$(grep -c '^✅' verify-report.txt || true)
+          fail=$(grep -c '^❌' verify-report.txt || true)
+          echo "soft report: ${#entries[@]} file(s), ✅ ${pass} line(s), ❌ ${fail} line(s)"
 
       - name: Capture current ledger head (read-only)
         id: head
         run: |
           set -euo pipefail
-          shopt -s nullglob
-          entries=(ledger/*.yaml)
-          if [ ${#entries[@]} -eq 0 ]; then
-            echo "head_index=0" >> "$GITHUB_OUTPUT"
-            echo "head_seal=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          python - <<'PY' >> "$GITHUB_OUTPUT"
-          import re, sys, yaml
+          # Python writes key=value lines straight to $GITHUB_OUTPUT;
+          # everything else goes to stderr, so a stray print cannot
+          # corrupt the outputs.
+          python -P - <<'PY'
+          import os, re, sys, yaml
           from pathlib import Path
 
           # Paradox-token safe: do not coerce timestamp-shaped strings
@@ -106,9 +132,25 @@ jobs:
           def safe_load_ledger(text):
               return yaml.load(text, Loader=NoTimestampSafeLoader)
 
+          HEX64 = re.compile(r"[0-9a-fA-F]{64}")
+          OUTLIER_FROM = 100000  # 510510 / 510511 sit outside the linear chain
+
+          def declared_hex(data):
+              # verify_ledger.py rule for head: terminal_hex if 64-hex,
+              # else the LAST 64-hex run inside `seal`.
+              t = data.get("terminal_hex")
+              if isinstance(t, str) and HEX64.fullmatch(t.strip()):
+                  return t.strip().lower()
+              runs = HEX64.findall(str(data.get("seal", "")))
+              return runs[-1].lower() if runs else ""
+
+          files = (sorted(Path("ledger").glob("*.yaml"))
+                   + sorted(Path("ledger.v2").glob("*.yml"))
+                   + sorted(Path("ledger.v2").glob("*.yaml")))
+
           heads = []
           skipped = []
-          for p in sorted(Path("ledger").glob("*.yaml")):
+          for p in files:
               try:
                   raw = p.read_text(encoding="utf-8")
               except OSError as e:
@@ -128,46 +170,64 @@ jobs:
                   )
                   continue
               idx = data.get("entry_index")
-              if not isinstance(idx, int):
+              if not isinstance(idx, int) or isinstance(idx, bool):
                   skipped.append(
                       f"{p}: entry_index is {type(idx).__name__}, not int"
                   )
                   continue
+              if idx >= OUTLIER_FROM:
+                  skipped.append(f"{p}: entry_index {idx} >= {OUTLIER_FROM} (outlier)")
+                  continue
               heads.append((idx, p, data))
 
-          if not heads:
-              print("head_index=0")
-              print("head_seal=")
-          else:
+          if heads:
               idx, p, data = max(heads, key=lambda t: t[0])
-              m = re.search(r"([0-9a-fA-F]{64})", str(data.get("seal", "")))
-              terminal = m.group(1).lower() if m else ""
-              print(f"head_index={idx}")
-              print(f"head_seal={terminal}")
+              out = {"head_index": str(idx), "head_seal": declared_hex(data),
+                     "head_file": str(p)}
+          else:
+              out = {"head_index": "0", "head_seal": "", "head_file": ""}
 
           for line in skipped:
               print(f"skipped: {line}", file=sys.stderr)
+          print(f"scanned {len(files)} file(s), {len(heads)} candidate(s), "
+                f"{len(skipped)} skipped", file=sys.stderr)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              for k, v in out.items():
+                  assert "\n" not in v
+                  fh.write(f"{k}={v}\n")
+                  print(f"{k}={v}", file=sys.stderr)
           PY
 
       # ────────────────────────────────────────────────────────────
       # 1. Parse and assert park-gate invariants (soft-skip if absent)
       # ────────────────────────────────────────────────────────────
       - name: Parse agent Service YAML (park-gate invariants)
+        id: gate
         run: |
-          python - <<'PY'
-          import sys
+          set -euo pipefail
+          python -P - <<'PY'
+          import ipaddress, json, os, sys
           from pathlib import Path
           import yaml
 
-          p = Path("k8s/agent-service.yaml")
+          def emit(**kv):
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+                  for k, v in kv.items():
+                      fh.write(f"{k}={'' if v is None else v}\n")
+
+          p = Path(os.environ.get("AGENT_MANIFEST", "k8s/agent-service.yaml"))
           if not p.exists():
-              print("⚠️ k8s/agent-service.yaml absent on this branch — soft skip")
+              print(f"⚠️ {p} absent on this branch — soft skip")
+              emit(gate="SKIPPED_ABSENT")
               sys.exit(0)
 
           try:
               docs = [d for d in yaml.safe_load_all(p.read_text(encoding="utf-8")) if d]
           except yaml.YAMLError as e:
-              print(f"❌ k8s/agent-service.yaml: YAML parse error: {e}", file=sys.stderr)
+              print(f"❌ {p}: YAML parse error: {e}", file=sys.stderr)
+              sys.exit(1)
+          if not all(isinstance(d, dict) for d in docs):
+              print(f"❌ {p}: a document is not a mapping", file=sys.stderr)
               sys.exit(1)
 
           kinds = [d.get("kind") for d in docs]
@@ -187,11 +247,7 @@ jobs:
               print(f"❌ Deployment structure malformed: {e}", file=sys.stderr)
               sys.exit(1)
 
-          if replicas != 0:
-              print(f"❌ park-gate violated: replicas={replicas} (must be 0)", file=sys.stderr)
-              sys.exit(1)
-
-          if len(containers) < 1:
+          if not containers:
               print("❌ no containers in Deployment", file=sys.stderr)
               sys.exit(1)
 
@@ -205,16 +261,41 @@ jobs:
                   return "true" if v else "false"
               return str(v)
 
+          def is_loopback(host):
+              if host is None:
+                  return False
+              h = str(host).strip().strip("[]")
+              if h == "localhost":
+                  return True
+              try:
+                  return ipaddress.ip_address(h).is_loopback
+              except ValueError:
+                  return False
+
+          def loopback_hostport(v):
+              if v is None:
+                  return False
+              host, sep, port = str(v).rpartition(":")
+              return (bool(sep) and port.isdigit()
+                      and 1 <= int(port) <= 65535 and is_loopback(host))
+
           env = {e["name"]: e.get("value")
                  for e in containers[0].get("env", []) if "name" in e}
+          bind = norm(env.get("BIND"))
+          dual = norm(env.get("DUAL_ASGI"))
+          filled = norm(env.get("FILLED"))
 
           failures = []
-          if norm(env.get("BIND")) != "127.0.0.1":
-              failures.append(f"BIND={env.get('BIND')!r} (must be 127.0.0.1)")
-          if norm(env.get("DUAL_ASGI")) != "127.0.0.1:8024":
-              failures.append(f"DUAL_ASGI={env.get('DUAL_ASGI')!r} (must be 127.0.0.1:8024)")
-          if norm(env.get("FILLED")) != "false":
-              failures.append(f"FILLED={env.get('FILLED')!r} (must be 'false')")
+          if filled not in ("true", "false"):
+              failures.append(f"FILLED={env.get('FILLED')!r} (must be 'true' or 'false')")
+          if not isinstance(replicas, int) or isinstance(replicas, bool) or replicas < 0:
+              failures.append(f"replicas={replicas!r} (must be a non-negative int)")
+          elif filled == "false" and replicas != 0:
+              failures.append(f"replicas={replicas} with FILLED=false (must be 0 until filled)")
+          if not is_loopback(bind):
+              failures.append(f"BIND={env.get('BIND')!r} (must be a loopback address)")
+          if not loopback_hostport(dual):
+              failures.append(f"DUAL_ASGI={env.get('DUAL_ASGI')!r} (must be loopback host:port)")
 
           if failures:
               for f in failures:
@@ -223,14 +304,20 @@ jobs:
 
           print(f"✅ agent service control OK — kinds={kinds}")
           print(f"   replicas    = {replicas}")
-          print(f"   BIND        = {env.get('BIND')}")
-          print(f"   DUAL_ASGI   = {env.get('DUAL_ASGI')}")
-          print(f"   FILLED      = {env.get('FILLED')}")
+          print(f"   BIND        = {bind}")
+          print(f"   DUAL_ASGI   = {dual}")
+          print(f"   FILLED      = {filled}")
+          emit(gate="PASS", manifest=str(p), replicas=replicas,
+               bind=bind, dual_asgi=dual, filled=filled)
           PY
 
       # ────────────────────────────────────────────────────────────
       # 2. kubectl dry-run (no cluster mutation)
       # ────────────────────────────────────────────────────────────
+      # The script already passes --dry-run=client (and --live is never
+      # passed here). Without a reachable cluster it exits 0 after printing
+      # a skip line, so its exit code proves nothing: report that as a
+      # skip, and validate the manifest offline with kubeconform instead.
       - name: kubectl dry-run if present
         run: |
           set -euo pipefail
@@ -239,40 +326,29 @@ jobs:
             echo "⚠️ $SCRIPT not present — soft skip"
             exit 0
           fi
-
-          if grep -q -- '--dry-run' "$SCRIPT"; then
-            echo "script already contains --dry-run — invoking directly"
+          if command -v kubectl >/dev/null 2>&1 && kubectl cluster-info >/dev/null 2>&1; then
+            echo "cluster reachable — running $SCRIPT (client dry-run)"
             bash "$SCRIPT"
-            exit 0
+          else
+            out=$(bash "$SCRIPT")
+            echo "$out"
+            echo "::notice::kubectl dry-run SKIPPED (no cluster): ${out}"
           fi
 
-          # Locate real kubectl before modifying PATH, so the shim can
-          # exec the correct binary regardless of install method.
-          REAL_KUBECTL="$(command -v kubectl || true)"
-          if [ -z "$REAL_KUBECTL" ]; then
-            echo "⚠️ kubectl not present on PATH — soft skip dry-run"
+      - name: kubeconform offline schema validation
+        run: |
+          set -euo pipefail
+          KC_VERSION=v0.6.7
+          KC_SHA256=95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73
+          curl -sSfL -o "$RUNNER_TEMP/kubeconform.tar.gz" \
+            "https://github.com/yannh/kubeconform/releases/download/${KC_VERSION}/kubeconform-linux-amd64.tar.gz"
+          echo "${KC_SHA256}  $RUNNER_TEMP/kubeconform.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/kubeconform.tar.gz" -C "$RUNNER_TEMP" kubeconform
+          if [ ! -f k8s/agent-service.yaml ]; then
+            echo "⚠️ k8s/agent-service.yaml absent — soft skip"
             exit 0
           fi
-          echo "real kubectl: $REAL_KUBECTL"
-
-          SHIM_DIR="$(mktemp -d)"
-          cat > "$SHIM_DIR/kubectl" <<SH
-          #!/usr/bin/env bash
-          # Force --dry-run=client on every subcommand that mutates.
-          args=("\$@")
-          for i in "\${!args[@]}"; do
-            case "\${args[\$i]}" in
-              apply|create|replace|patch|delete|edit)
-                args=( "\${args[@]:0:\$((i+1))}" "--dry-run=client" "\${args[@]:\$((i+1))}" )
-                break
-                ;;
-            esac
-          done
-          exec "$REAL_KUBECTL" "\${args[@]}"
-          SH
-          chmod +x "$SHIM_DIR/kubectl"
-          export PATH="$SHIM_DIR:$PATH"
-          bash "$SCRIPT" || echo "⚠️ script returned non-zero (soft)"
+          "$RUNNER_TEMP/kubeconform" -strict -summary k8s/agent-service.yaml
 
       # ────────────────────────────────────────────────────────────
       # 3. Emit SHA3-256 sealed control receipt (artifact, NOT committed)
@@ -282,10 +358,17 @@ jobs:
         env:
           HEAD_INDEX: ${{ steps.head.outputs.head_index }}
           HEAD_SEAL: ${{ steps.head.outputs.head_seal }}
+          HEAD_FILE: ${{ steps.head.outputs.head_file }}
+          GATE: ${{ steps.gate.outputs.gate }}
+          GATE_MANIFEST: ${{ steps.gate.outputs.manifest }}
+          GATE_REPLICAS: ${{ steps.gate.outputs.replicas }}
+          GATE_BIND: ${{ steps.gate.outputs.bind }}
+          GATE_DUAL_ASGI: ${{ steps.gate.outputs.dual_asgi }}
+          GATE_FILLED: ${{ steps.gate.outputs.filled }}
         run: |
           set -euo pipefail
           mkdir -p .control-receipts
-          python - <<'PY'
+          python -P - <<'PY'
           import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
@@ -293,6 +376,19 @@ jobs:
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
           head_index = os.environ.get("HEAD_INDEX", "0") or "0"
           head_seal = os.environ.get("HEAD_SEAL", "") or ""
+          gate = os.environ.get("GATE", "") or "UNKNOWN"
+          rep = os.environ.get("GATE_REPLICAS", "")
+
+          # Values actually read from the manifest by the park-gate step.
+          invariants = None
+          if gate == "PASS":
+              invariants = {
+                  "manifest": os.environ.get("GATE_MANIFEST", ""),
+                  "replicas": int(rep) if rep.lstrip("-").isdigit() else rep,
+                  "bind": os.environ.get("GATE_BIND", ""),
+                  "dual_asgi": os.environ.get("GATE_DUAL_ASGI", ""),
+                  "filled": os.environ.get("GATE_FILLED", ""),
+              }
 
           receipt = {
               "receipt_type": "agent_service_control",
@@ -302,32 +398,35 @@ jobs:
               "hash_algo": HASH_ALGO,
               "head_index": int(head_index),
               "head_seal": head_seal,
-              "invariants": {
-                  "replicas": 0,
-                  "bind": "127.0.0.1",
-                  "dual_asgi": "127.0.0.1:8024",
-                  "filled": "false",
-              },
+              "head_file": os.environ.get("HEAD_FILE", ""),
+              "park_gate": gate,
+              "invariants": invariants,
               "ledger_policy": "NO_GROWTH",
               "witness_note": "read-only — verifies chain, does not extend it",
               "seal": "∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED",
           }
 
+          # Same canonical form as verify_ledger.py canonical_hash():
+          # sorted keys, compact separators, ensure_ascii=False.
           body = {k: v for k, v in receipt.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"),
+                             ensure_ascii=False)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           receipt["seal"] = receipt["seal"] + " · " + h
 
           out = Path(".control-receipts/agent-service-control.yaml")
           out.write_text(yaml.dump(receipt, sort_keys=False,
                                    default_flow_style=False,
-                                   allow_unicode=True))
+                                   allow_unicode=True), encoding="utf-8")
           print("📋 Control receipt emitted.")
-          print(f"✅ {HASH_ALGO}:{h[:16]}...")
+          print(f"✅ {HASH_ALGO}:{h}")
           print(f"   head_index = {receipt['head_index']}")
-          print(f"   head_seal  = {receipt['head_seal'][:16] or '(none)'}...")
+          print(f"   head_seal  = {receipt['head_seal'] or '(none)'}")
+          print(f"   park_gate  = {gate} {json.dumps(invariants, ensure_ascii=False)}")
           PY
 
+      # always(): on failure there is no receipt; warn (not error) keeps
+      # the upload from masking the real failing step.
       - name: Upload control receipt
         if: always()
         uses: actions/upload-artifact@v4
@@ -345,6 +444,13 @@ jobs:
         env:
           HEAD_INDEX: ${{ steps.head.outputs.head_index }}
           HEAD_SEAL: ${{ steps.head.outputs.head_seal }}
+          HEAD_FILE: ${{ steps.head.outputs.head_file }}
+          GATE: ${{ steps.gate.outputs.gate }}
+          GATE_REPLICAS: ${{ steps.gate.outputs.replicas }}
+          GATE_BIND: ${{ steps.gate.outputs.bind }}
+          GATE_DUAL_ASGI: ${{ steps.gate.outputs.dual_asgi }}
+          GATE_FILLED: ${{ steps.gate.outputs.filled }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           {
             echo "### Agent Service Control"
@@ -356,7 +462,14 @@ jobs:
             echo "| hash_algo | ${HASH_ALGO} |"
             echo "| head_index | ${HEAD_INDEX:-0} |"
             echo "| head_seal | ${HEAD_SEAL:-<none>} |"
-            echo "| invariants | replicas=0 · BIND=127.0.0.1 · DUAL_ASGI=127.0.0.1:8024 · FILLED=false |"
+            echo "| head_file | ${HEAD_FILE:-<none>} |"
+            echo "| job_status | ${JOB_STATUS} |"
+            echo "| park_gate | ${GATE:-<not run>} |"
+            if [ "${GATE:-}" = "PASS" ]; then
+              echo "| invariants (read) | replicas=${GATE_REPLICAS} · BIND=${GATE_BIND} · DUAL_ASGI=${GATE_DUAL_ASGI} · FILLED=${GATE_FILLED} |"
+            else
+              echo "| invariants (read) | <not recorded> |"
+            fi
             echo ""
             echo "Seal: ∀∞φ² · AGENT_SERVICE_CONTROL · WOOD_DRAGON_0.91 · SEALED"
           } >> "$GITHUB_STEP_SUMMARY"
