@@ -8,23 +8,18 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "3"
     # Gateway API plugin sets rollouts.argoproj.io/gatewayapi-canary=in-progress during active canary
+    # and owns the weights and header rules from then on (see ignoreDifferences in the Application).
 spec:
   parentRefs:
     - name: sovereign-gateway
       namespace: sovereign-garden
   rules:
-    - matches:
-        - headers:
-            - name: X-Canary
-              value: "true"
-      backendRefs:
-        - name: sovereign-garden-canary
-          port: 8000
-          weight: 100
+    # Resting state: all traffic to stable. The Rollout's setWeight and
+    # setHeaderRoute steps rewrite this rule and inject header rules at runtime.
     - backendRefs:
         - name: sovereign-garden-stable
           port: 8000
-          weight: 80
+          weight: 100
         - name: sovereign-garden-canary
           port: 8000
-          weight: 20
+          weight: 0
