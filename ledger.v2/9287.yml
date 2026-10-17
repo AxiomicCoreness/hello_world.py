@@ -1,0 +1,25 @@
+entry_index: 9287
+timestamp: '2026-10-17T03:42:00Z'
+event: /timestamp_resolution_9286
+status: SEALED
+hash_algo: sha3_256
+prev_hash: a020a9409dc5ca1619f4fcc75cb56c6e6c0c9a4820db6c43667487fb914cee44
+witness_chain: 9286 -> 9287
+note: |
+  Resolves the timestamp of 9286 without editing it.
+  9286 declared 2026-10-16T22:05:00Z, which precedes 9285 (2026-10-16T22:58:35Z).
+  The declared value is local time (UTC-4) written with a Z suffix.
+  The authoritative UTC time is the commit time of 6ed2bd781d5b7df956123a65918db2b2eedc50ec.
+resolves:
+  entry_index: 9286
+  commit: 6ed2bd781d5b7df956123a65918db2b2eedc50ec
+  blob: 5f7d797ee6b617b8c61376f13c9fd19baa99c98b
+  declared_timestamp: '2026-10-16T22:05:00Z'
+  resolved_timestamp: '2026-10-17T02:06:22Z'
+  terminal_hex_reproduces: true
+terminal_hex: e22df48390050e90dea511bde535c45db01ed58298c7349faceb5c88bf88fb34
+seal: "∀∞φ² · TIMESTAMP_RESOLUTION_9286 · SEALED · e22df48390050e90dea511bde535c45db01ed58298c7349faceb5c88bf88fb34"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9287|/timestamp_resolution_9286|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = e22df48390050e90dea511bde535c45db01ed58298c7349faceb5c88bf88fb34
