@@ -42,12 +42,10 @@ spec:
       canaryService: sovereign-garden-canary
       stableService: sovereign-garden-stable
       trafficRouting:
-        istio:
-          virtualService:
-            name: sovereign-garden-vs
-            routes:
-            - canary
-            - stable
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: sovereign-garden-route
+            namespace: sovereign-garden
       steps:
       - setWeight: 20
       - pause: {duration: 30s}
