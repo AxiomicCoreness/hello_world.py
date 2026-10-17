@@ -189,8 +189,21 @@ jobs:
           fi
           # The verifier must have a CLI. A truncated copy (no main())
           # exits 0 without checking anything.
-          if ! grep -q '^def main' "$VERIFIER"; then
-            echo "::error::$VERIFIER has no main() — truncated verifier, refusing to report green"
+          # AST check: catches async def main, and a file cut off mid-function
+          # (a parse error), which a grep for '^def main' cannot.
+          if ! python -P - "$VERIFIER" <<'PY'
+          import ast, sys
+          try:
+              tree = ast.parse(open(sys.argv[1], encoding="utf-8").read())
+          except SyntaxError as e:
+              print(f"::error::{sys.argv[1]} does not parse: {e}")
+              sys.exit(1)
+          names = {n.name for n in tree.body
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+          sys.exit(0 if "main" in names else 1)
+          PY
+          then
+            echo "::error::$VERIFIER has no top-level main() — truncated verifier, refusing to report green"
             exit 1
           fi
 
