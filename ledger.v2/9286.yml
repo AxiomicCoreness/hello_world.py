@@ -1,0 +1,26 @@
+entry_index: 9286
+timestamp: '2026-10-16T22:05:00Z'
+event: /torsion_structure_assembly_corrected
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 056aa8f8d5eff4e002afb1bf8e9741f4d9d00364e859450b460cb969e6cdd2f7
+witness_chain: 9285 -> 9286
+note: |
+  Corrected complex torsion conventions and pure-twist structure equations.
+  τ(z) := T^{2}_{13}(z) = -T^{1}_{23}(z); κ(z) := T^{3}_{12}(z).
+  Under pure-twist ansatz κ=0 and T^{3}=0; frame rotates about e^{3} as z advances.
+  Assembly: λ_{0} = 952072 nm ≈ 952.1 μm from Σ n_k t_k = 535805 nm and θ_lock = 3.536037 rad.
+  f_{0} = 314.9 GHz. ω_NS = 452.232 rad/s. Residual absorbed by Σ γ_k = -Δ.
+corrected:
+  theta_lock_rad: 3.536037
+  omega_NS: 452.232
+  lambda0_nm: 952072
+  f0_GHz: 314.9
+  pure_twist: true
+  kappa_zero: true
+terminal_hex: a020a9409dc5ca1619f4fcc75cb56c6e6c0c9a4820db6c43667487fb914cee44
+seal: "∀∞φ² · TORSION_STRUCTURE_ASSEMBLY_9286 · WOOD_DRAGON_GATE · SEALED · a020a9409dc5ca1619f4fcc75cb56c6e6c0c9a4820db6c43667487fb914cee44"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9286|/torsion_structure_assembly_corrected|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = a020a9409dc5ca1619f4fcc75cb56c6e6c0c9a4820db6c43667487fb914cee44
