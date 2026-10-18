@@ -48,6 +48,7 @@ spec:
               name: mcp
           env:
             - { name: PORT,       value: "380" }
+            - { name: BIND_HOST,  value: "0.0.0.0" }
             - { name: MCP_FILLED, value: "false" }
       volumes:
         - name: app-code
