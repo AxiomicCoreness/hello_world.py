@@ -24,6 +24,8 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            - name: BIND_HOST
+              value: "0.0.0.0"
             - name: PHASE
               value: "202.6"
             - name: MESH_NODES
