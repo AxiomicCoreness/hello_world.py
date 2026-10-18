@@ -27,6 +27,9 @@ public final class LIFRK4 {
     public double voltage() { return v; }
     public double g() { return g; }
 
+    /** Seconds of remaining refractory period; > 0 right after a spike. */
+    public double refractoryRemaining() { return refractoryRemaining; }
+
     public void stepTick(double gDelta) {
         double dt = BRAIN_TICK_MS / SUBSTEPS;
         for (int i = 0; i < SUBSTEPS; i++) {
