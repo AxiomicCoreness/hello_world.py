@@ -1,0 +1,46 @@
+entry_index: 9290
+timestamp: '2026-10-18T15:44:36Z'
+event: /compileall_tech_debt_9290
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 544880da0ee55e046d2f8ac77e7cb0116115b7a34f8030c2524bcbd88dd13284
+witness_chain: 9289 -> 9290
+note: |
+  Records Python sources on main that do not compile, so the debt stays visible
+  after the 510510 workflow's compileall step was made best-effort. No source
+  file is edited, renamed, or deleted by this entry. Ledger spec affirmed by
+  directive of Clarke Yoursa Tee.
+measured_at_commit: 3bd60bc0
+compileall:
+  python: '3.12'
+  failures: 8
+tech_debt:
+  - path: '.github/scripts/E2E _workflow_dispatch.py'
+    error: 'SyntaxError: invalid syntax'
+    status: OPEN
+  - path: 'Immutable/self_improvement_trigger.py'
+    error: 'SyntaxError: invalid syntax'
+    status: OPEN
+  - path: 'estate_25d/scripts/dashboard_repl.py'
+    error: 'SyntaxError: unterminated string literal (line 19)'
+    status: OPEN
+  - path: 'pythonIDE/jitter_soak.py'
+    error: 'IndentationError: expected an indented block after class definition on line 17'
+    status: OPEN
+  - path: 'pythonIDE/optimize_toi.py'
+    error: 'SyntaxError: unterminated string literal (line 72)'
+    status: OPEN
+  - path: 'scripts/ledger_append_canonical.py'
+    error: 'SyntaxError: truncated \UXXXXXXXX escape (unicodeescape)'
+    status: OPEN
+  - path: 't_rotator.py'
+    error: 'IndentationError: unexpected indent (line 2); file content is the less(1) help screen, not Python, created in f8332804'
+    status: OPEN
+  - path: 'wood_dragon_technique.py'
+    error: 'SyntaxError: from __future__ imports must occur at the beginning of the file (second __future__ at line 29 of 5346)'
+    status: OPEN
+workflow:
+  file: .github/workflows/quantum_reality_engine_510510.yml
+  pycache_upload: 'if: always() (uploads even when compileall fails)'
+terminal_hex: eab8ac104b5fb818ed3b1ede7310a798f4f13552c8039c5ff090017196be84e9
+seal: "∀∞φ² · COMPILEALL_TECH_DEBT_9290 · WOOD_DRAGON_GATE · SEALED · eab8ac104b5fb818ed3b1ede7310a798f4f13552c8039c5ff090017196be84e9"
