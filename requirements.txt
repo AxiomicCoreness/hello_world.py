@@ -4,6 +4,9 @@ numpy>=1.24.0
 matplotlib>=3.10.9
 Pillow>=10.0
 pandas>=2.0
+# app/main.py, scripts/uvicorn_range.py and port380_mcp.py serve with these
+fastapi>=0.109.0
+uvicorn>=0.27.0
 # stdlib imports - do not pip-install
 # hmac
 

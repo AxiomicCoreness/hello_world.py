@@ -39,7 +39,6 @@ WORKDIR /build
 
 # Copy POM first so Maven dependency cache survives source edits.
 COPY pom.xml ./
-COPY pom.yaml ./
 
 # Resolve dependencies into the layer cache.
 RUN mvn -B -q dependency:go-offline || true
@@ -55,7 +54,9 @@ RUN test -f target/classes/com/fruitfly/brain/SovereignMain.class \
 # ============================================================================
 # STAGE 3 — PYTHON RUNTIME (install requirements.txt + JDK)
 # ============================================================================
-FROM python:3.12-slim AS runtime
+# Pinned to bookworm: python:3.12-slim now tracks trixie, which has no
+# openjdk-17-jre-headless (only 21/25).
+FROM python:3.12-slim-bookworm AS runtime
 
 # ----------------------------------------------------------------------------
 # SYSTEM RUNTIMES — JDK 17 required by the Java subprocess (Stage 2 output)
@@ -95,7 +96,7 @@ COPY quantum     ./quantum
 COPY tests       ./tests
 COPY scripts     ./scripts
 COPY port380_mcp.py ./port380_mcp.py
-COPY luminara_slot.yaml ./luminara_slot.yaml
+COPY docs/luminara_slot.yaml ./luminara_slot.yaml
 
 # ----------------------------------------------------------------------------
 # JAVA ARTIFACTS
@@ -135,7 +136,7 @@ ENV BIND_HOST=0.0.0.0 \
     BIND_PORT=8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8000/healthz || curl -fsS http://127.0.0.1:8080/healthz || exit 1
+    CMD curl -fsS http://127.0.0.1:8000/health || curl -fsS http://127.0.0.1:8080/health || exit 1
 
 # ----------------------------------------------------------------------------
 # ENTRYPOINT

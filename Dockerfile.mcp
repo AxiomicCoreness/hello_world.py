@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1.7
-# MCP gate image — loopback default; widen MCP_BIND_HOST only explicitly.
+# MCP gate image — listens on BIND_HOST=0.0.0.0 inside the container; publish the port explicitly.
 FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    MCP_BIND_HOST=127.0.0.1 \
+    BIND_HOST=0.0.0.0 \
     MCP_PORT=13800 \
     MCP_NAMESPACE=sovereign-garden \
     MCP_SELFIMPROVE=0

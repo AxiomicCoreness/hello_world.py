@@ -163,4 +163,4 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.environ.get("PORT", os.environ.get("GRAVASTAR_PORT", "8012")))
-    uvicorn.run("app_main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("app_main:app", host=os.environ.get("BIND_HOST", "127.0.0.1"), port=port, reload=False)

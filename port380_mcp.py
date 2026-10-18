@@ -52,9 +52,12 @@ HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
 # ============================================================================
 # SECURITY HEADER CONSTANTS
 # ============================================================================
+CONTENT_SECURITY_POLICY = "Content-Security-Policy"
 STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security"
 X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options"
 X_FRAME_OPTIONS = "X-Frame-Options"
+REFERRER_POLICY = "Referrer-Policy"
+PERMISSIONS_POLICY = "Permissions-Policy"
 
 DEFAULT_CSP = (
     "default-src 'self'; "
@@ -380,7 +383,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 380))
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host=os.environ.get("BIND_HOST", "127.0.0.1"),
         port=port,
         log_level="info",
     )
