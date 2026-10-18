@@ -81,9 +81,22 @@ NON_EVENT_CLASSES = frozenset({"design-note", "policy", "index"})
 KNOWN_SERIES_PREFIXES = ("83", "91", "92", "51", "00")
 
 # Witness chain pattern: "NNNN → MMMM — UNBROKEN"
-WITNESS_RE = re.compile(r"^\s*(\d{3,5})\s*[→>-]+\s*(\d{3,5})")
+# 6 digits admits the >=100000 outliers (510510, 510511); 3-5 digit chains parse as before.
+WITNESS_RE = re.compile(r"^\s*(\d{3,6})\s*[→>-]+\s*(\d{3,6})")
 
 GENESIS_ANCHORS = {"0000"}
+
+# Series origins that open their series from an entry in another series
+# instead of from a genesis anchor: index -> declared predecessor.
+# 510510 (MATH_ORIGIN, p7#) opens series 51 as "8980 → 510510"; 510511
+# then chains from 510510 inside the series and needs no entry here.
+# Flat ledger/ only: ledger.v2 keeps the prev_hash weld check.
+SERIES_ORIGINS = {"510510": "8980"}
+
+# YAML 1.1 octal trap: PyYAML reads an unquoted `entry_index: 0010` as octal
+# (int 8) and `0019` as the string '0019'. The index is taken from the raw
+# text instead, so 0010 stays 10 and 0019 becomes 19.
+ENTRY_INDEX_RE = re.compile(r"^entry_index:\s*['\"]?(\d+)", re.MULTILINE)
 
 # From 9281 onward, Regime B is the expected seal regime.
 REGIME_B_FROM = 9281
@@ -125,14 +138,16 @@ def json_default(obj: Any) -> Any:
 
 class Entry:
     __slots__ = (
-        "path", "index", "series", "data",
+        "path", "index", "n", "series", "data",
         "seal_ok", "seal_computed",
         "chain_prev", "chain_next", "notes",
     )
 
-    def __init__(self, path: str, index: str, series: str, data: Dict[str, Any]):
+    def __init__(self, path: str, index: str, series: str, data: Dict[str, Any],
+                 n: Any = None):
         self.path = path
         self.index = index
+        self.n = n if n is not None else data.get("entry_index")
         self.series = series
         self.data = data
         self.seal_ok: Optional[bool] = None
@@ -164,6 +179,26 @@ def _load_yaml_file(path: str) -> List[Dict[str, Any]]:
     return [d for d in docs if isinstance(d, dict) and d]
 
 
+def resolve_entry_index(data: Dict[str, Any], raw_text: Optional[str] = None,
+                        raw_match: Optional[str] = None) -> Any:
+    """Integer entry_index read from the raw YAML text, falling back to the
+    parsed value. Digit strings ('0019') become int; anything else is
+    returned as parsed."""
+    if raw_match is None and raw_text is not None:
+        m = ENTRY_INDEX_RE.search(raw_text)
+        raw_match = m.group(1) if m else None
+    if raw_match is not None:
+        return int(raw_match)
+    parsed = data.get("entry_index") if isinstance(data, dict) else None
+    if isinstance(parsed, str) and parsed.strip().isdigit():
+        return int(parsed.strip())
+    return parsed
+
+
+def _index_str(n: Any) -> str:
+    return str(n).zfill(4)
+
+
 def _series_of(index: str) -> str:
     """Return the series prefix for an index (zero-padded to at least 4)."""
     z = index.zfill(4)
@@ -188,17 +223,24 @@ def load_entries(ledger_dir: str,
         except Exception as e:
             print(f"::error file={path}::failed to parse: {e}")
             continue
+        with open(path, "r", encoding="utf-8") as f:
+            raw_hits = ENTRY_INDEX_RE.findall(f.read())
+        with_index = [d for d in docs if d.get("entry_index") is not None]
+        # Pair raw indexes with documents only when they line up one-to-one.
+        raw_for = dict(zip(map(id, with_index), raw_hits)) \
+            if len(raw_hits) == len(with_index) else {}
         for doc in docs:
             if _is_non_event(doc):
                 continue
             raw_index = doc.get("entry_index")
             if raw_index is None:
                 continue
-            index = str(raw_index).zfill(4)
+            n = resolve_entry_index(doc, raw_match=raw_for.get(id(doc)))
+            index = _index_str(n)
             series = _series_of(index)
             if wanted_series and series not in wanted_series:
                 continue
-            entries.append(Entry(path=path, index=index, series=series, data=doc))
+            entries.append(Entry(path=path, index=index, series=series, data=doc, n=n))
     return entries
 
 
@@ -230,7 +272,7 @@ def canonical_hash(data: dict) -> str:
 # Seal computation — Regime B (event domain)
 # ───────────────────────────────────────────────────────────────────────
 
-def event_hash(data: dict) -> Optional[str]:
+def event_hash(data: dict, n: Any = None) -> Optional[str]:
     """
     Regime B — SHA3-256(domain || 0x00 || payload).
 
@@ -241,10 +283,14 @@ def event_hash(data: dict) -> Optional[str]:
     integer index and its event name, followed by the phi2, delta, and
     theta constants. The ASCII form of b^2 is mandatory; the Unicode
     b² is rejected at the .encode("ascii") call.
+
+    n is the resolved integer index (resolve_entry_index); when omitted
+    the parsed value is used, as before.
     """
-    n = data.get("entry_index")
+    if n is None:
+        n = resolve_entry_index(data)
     event = data.get("event")
-    if not isinstance(n, int) or not isinstance(event, str):
+    if not isinstance(n, int) or isinstance(n, bool) or not isinstance(event, str):
         return None
     domain = EVENT_DOMAIN_LEDGER if n >= REGIME_B_FROM else EVENT_DOMAIN
     payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
@@ -290,8 +336,8 @@ def declared_hex(data: dict) -> Optional[str]:
 
 def _emit_diagnostics(data: dict, declared: str,
                       computed_a: str, computed_b: Optional[str],
-                      regime: Optional[str]) -> None:
-    print(f"   entry_index:  {data.get('entry_index', '?')}")
+                      regime: Optional[str], idx: Any = None) -> None:
+    print(f"   entry_index:  {idx if idx is not None else data.get('entry_index', '?')}")
     print(f"   declared:     {declared}")
     print(f"   computed_A:   {computed_a}")
     print(f"   computed_B:   {computed_b}")
@@ -326,9 +372,9 @@ def _pending_fields(obj: Any, path: str = "") -> List[str]:
     return found
 
 
-def sealed_concrete_violations(data: dict) -> List[str]:
+def sealed_concrete_violations(data: dict, n: Any = None) -> List[str]:
     """Reasons a SEALED entry is not concrete; empty list means it passes."""
-    idx = data.get("entry_index")
+    idx = n if n is not None else resolve_entry_index(data)
     if str(data.get("status", "")).upper() != "SEALED":
         return []
     if not isinstance(idx, int) or idx < SEALED_CONCRETE_FROM:
@@ -366,7 +412,8 @@ def verify(path: Path, mode: str) -> bool:
         return True
 
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        text = path.read_text(encoding="utf-8")
+        data = yaml.safe_load(text) or {}
     except (yaml.YAMLError, ValueError) as e:
         print(f"❌ {path}: YAML parse error: {e}")
         return False if mode == "hard" else True
@@ -380,7 +427,8 @@ def verify(path: Path, mode: str) -> bool:
         print(f"— {path}: document_class={data.get('document_class') or data.get('kind')} — seal check skipped")
         return True
 
-    problems = sealed_concrete_violations(data) if isinstance(data, dict) else []
+    idx = resolve_entry_index(data, text)
+    problems = sealed_concrete_violations(data, idx)
     if problems:
         for pr in problems:
             print(f"❌ {path}: SEALED but not concrete ({pr})")
@@ -394,7 +442,7 @@ def verify(path: Path, mode: str) -> bool:
 
     try:
         computed_a = canonical_hash(data)
-        computed_b = event_hash(data)
+        computed_b = event_hash(data, idx)
     except Exception as e:
         print(f"❌ {path}: canonicalisation failed: {e}")
         return False if mode == "hard" else True
@@ -406,13 +454,12 @@ def verify(path: Path, mode: str) -> bool:
         regime = "B(event)"
 
     # 9281+: Regime B is expected. A-only match is flagged.
-    idx = data.get("entry_index")
     if isinstance(idx, int) and idx >= REGIME_B_FROM and regime == "A(json)":
         print(f"⚠️ {path}: entry {idx} matched Regime A only; Regime B expected for >= {REGIME_B_FROM}")
 
     if mode == "emit":
         print(f"— {path}")
-        _emit_diagnostics(data, declared, computed_a, computed_b, regime)
+        _emit_diagnostics(data, declared, computed_a, computed_b, regime, idx)
         return True
 
     if regime is None:
@@ -423,7 +470,7 @@ def verify(path: Path, mode: str) -> bool:
             print(f"   computed_B: {computed_b}")
         return False if mode == "hard" else True
 
-    entry_index = data.get("entry_index", "?")
+    entry_index = idx if idx is not None else "?"
     print(
         f"✅ {path}: sha3_256 seal verified "
         f"(entry_index={entry_index}, regime={regime}, {declared[:16]}...)"
@@ -493,13 +540,13 @@ def check_seals(entries: List[Entry], strict: bool = False) -> int:
     bad = 0
     for e in entries:
         computed_a = canonical_hash(e.data)
-        computed_b = event_hash(e.data)
+        computed_b = event_hash(e.data, e.n)
         ok_a = seal_field_matches(e.data, computed_a)
         ok_b = computed_b is not None and seal_field_matches(e.data, computed_b)
         ok = ok_a or ok_b
         e.seal_computed = computed_b if ok_b else computed_a
         e.seal_ok = ok
-        idx = e.data.get("entry_index")
+        idx = e.n
         if ok_a and not ok_b and isinstance(idx, int) and idx >= REGIME_B_FROM:
             print(f"::warning file={e.path}::entry {e.index} matched Regime A only; "
                   f"Regime B expected for >= {REGIME_B_FROM}")
@@ -522,10 +569,13 @@ def _weld_anchor(root: str, prev_index: str) -> Optional[str]:
         if os.path.isfile(p):
             try:
                 docs = _load_yaml_file(p)
+                with open(p, "r", encoding="utf-8") as f:
+                    text = f.read()
             except Exception:
                 return None
             for d in docs:
-                if str(d.get("entry_index", "")).zfill(4) == prev_index:
+                n = resolve_entry_index(d, text if len(docs) == 1 else None)
+                if n is not None and _index_str(n) == prev_index:
                     return entry_declared_digest(d)
     return None
 
@@ -543,8 +593,10 @@ def check_chains(entries: List[Entry], weld_root: Optional[str] = None) -> int:
       prev_hash (weld anchor).
     """
     by_series: Dict[str, List[Entry]] = {}
+    by_index: Dict[str, Entry] = {}
     for e in entries:
         by_series.setdefault(e.series, []).append(e)
+        by_index.setdefault(e.index, e)
 
     bad = 0
     for series, group in sorted(by_series.items()):
@@ -587,11 +639,33 @@ def check_chains(entries: List[Entry], weld_root: Optional[str] = None) -> int:
                           f"failed: prev_hash={ph or None} anchor={anchor}")
                     bad += 1
                 else:
+                    pred = by_index.get(prev) if SERIES_ORIGINS.get(e.index) == prev else None
+                    succ = pred.data.get("successor") if pred is not None else None
+                    if pred is not None and (succ is None or _index_str(succ) == e.index):
+                        print(f"   origin: {e.index} <- {prev} (series {series} origin)")
+                        continue
                     print(f"::error file={e.path}::entry {e.index} "
                           f"first in series but prev {prev} is not a genesis anchor")
                     bad += 1
 
     return bad
+
+
+def _is_verified_mirror(root: str, e: "Entry", flat_path: str) -> bool:
+    """A ledger.v2 entry that declares `mirrors: {file: ledger/N.yaml, sha3_256: H}`
+    is an append-only mirror, not a duplicate, when H is the SHA3-256 of the
+    current bytes of that v1 file and the file is the duplicated one."""
+    m = e.data.get("mirrors")
+    if not isinstance(m, dict) or e.data.get("supersedes", "none") != "none":
+        return False
+    f, want = m.get("file"), str(m.get("sha3_256", "")).lower()
+    if not isinstance(f, str) or os.path.normpath(os.path.join(root, f)) != os.path.normpath(flat_path):
+        return False
+    try:
+        raw = Path(flat_path).read_bytes()
+    except OSError:
+        return False
+    return hashlib.new(HASH_ALGO, raw).hexdigest() == want
 
 
 def check_cross_root_duplicates(root: str) -> int:
@@ -604,6 +678,9 @@ def check_cross_root_duplicates(root: str) -> int:
     bad = 0
     for e in b:
         if e.index in flat:
+            if _is_verified_mirror(root, e, flat[e.index]):
+                print(f"   mirror: {e.path} mirrors {flat[e.index]} (sha3_256 of v1 bytes matches)")
+                continue
             print(f"::error file={e.path}::entry {e.index} duplicates {flat[e.index]}")
             bad += 1
     print(f"── cross-root: ledger/={len(a)} ledger.v2/={len(b)} duplicates={bad}")
