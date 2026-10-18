@@ -1,0 +1,59 @@
+entry_index: 9288
+timestamp: '2026-10-17T18:55:20Z'
+event: /torsion_lock_corrections_9288
+status: SEALED
+hash_algo: sha3_256
+prev_hash: e22df48390050e90dea511bde535c45db01ed58298c7349faceb5c88bf88fb34
+witness_chain: 9287 -> 9288
+note: |
+  Ingests the torsion / assembly / residual corrections and records only values
+  that recompute. 9286 is not edited; where this entry differs from the submitted
+  text, the recomputed value is recorded and the submitted value is listed under
+  discrepancies. Ledger spec affirmed by directive of Clarke Yoursa Tee.
+  Torsion: T^a = 1/2 T^a_bc e^b∧e^c, T^a_bc = -T^a_cb.
+  τ(z) := T^2_13 = -T^1_23; κ(z) := T^3_12; 𝒯_k = τ_k + iκ_k.
+  Pure twist: T^1 = -τ e^2∧e^3, T^2 = +τ e^1∧e^3, T^3 = 0, so κ = 0 and 𝒯_k = τ_k.
+  The earlier κ := T^1_23 gave κ = -τ (collapse); superseded convention, not an edit of 9286.
+corrected:
+  theta_lock_deg: 202.6
+  theta_lock_rad: 3.536037
+  sum_n_t_nm: 535805
+  lambda0_nm: 952072
+  lambda0_um: 952.1
+  f0_GHz: 314.88
+  omega_NS_rad_s: 452.232
+  omega_7_rad_s: 2.14e12
+  omega_ratio: 2.1e-10
+  fixed_design_lambda_nm: 951145
+  fixed_design_sum_theta_deg: 202.797
+  fixed_design_residual_deg: 0.197
+  stated_row_sum_deg: 202.813
+  row_sum_minus_stated_deg: -0.016
+  sum_gamma_deg: -0.197
+  lock_closure: "202.797 + (-0.197) = 202.600"
+  pure_twist: true
+  kappa_zero: true
+  torsion_signs_consistent: true
+discrepancies:
+  - field: lambda0_nm
+    submitted: 952057
+    recomputed: 952072.08
+    reason: "2π·535805 / 3.536037 = 952072.08 nm; matches 9286 (952072). 952057 is off by -15 nm."
+  - field: fixed_design_sum_theta_deg
+    submitted: 202.82
+    recomputed: 202.797
+    reason: "Σθ = 360·535805 / 951145 = 202.7975°, residual +0.197°, not +0.22°."
+  - field: residual_delta_deg
+    submitted: "Δ = 0.197 (beside row sum 202.797 vs stated 202.813)"
+    recomputed: "202.797 - 202.813 = -0.016; 202.797 - 202.6 = +0.197"
+    reason: "0.197 is the offset from θ_lock, not from the stated sum. Σγ = -0.197 closes the recomputed sum exactly; against the stated 202.813 it leaves +0.016."
+  - field: layer_recursion_seed
+    submitted: "t_0 = 0 with t_(k+1) = s_k t_k"
+    recomputed: "not resolved here"
+    reason: "With t_0 = 0 the recursion gives t_k = 0 for all k, so z_8 = 0 and Σ n_k t_k = 0. Needs a nonzero seed (e.g. t_1 > 0, z_0 = 0). Recorded as an open issue, no value sealed."
+terminal_hex: de4ca6cb2c9c637513f104771d3da297e75d0511c2521315e85055f83b6c523d
+seal: "∀∞φ² · TORSION_LOCK_CORRECTIONS_9288 · WOOD_DRAGON_GATE · SEALED · de4ca6cb2c9c637513f104771d3da297e75d0511c2521315e85055f83b6c523d"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9288|/torsion_lock_corrections_9288|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = de4ca6cb2c9c637513f104771d3da297e75d0511c2521315e85055f83b6c523d
