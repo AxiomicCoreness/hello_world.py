@@ -383,7 +383,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 380))
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host=os.environ.get("BIND_HOST") or os.environ.get("MCP_BIND_HOST", "127.0.0.1"),
         port=port,
         log_level="info",
     )
