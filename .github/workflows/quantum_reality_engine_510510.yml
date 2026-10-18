@@ -43,7 +43,7 @@
 #    - It runs the engine and records the observed witness chain.
 #    - It NEVER rewrites ledger/510510.yaml (unitary, not projective).
 
-name: Quantum Reality Engine 510510   # FIX: explicit display name (was inferred from filename)
+name: Quantum Reality Engine 510510
 
 on:
   push:
@@ -51,18 +51,26 @@ on:
     paths:
       - "quantum_reality_engine.py"
       - "ledger/510510.yaml"
+      - "ledger/510511.yaml"
       - "ledger/8980.yaml"
+      - "ledger.v2/510510.yml"
+      - "ledger.v2/510511.yml"
       - "port380_mcp.py"
       - ".github/scripts/verify_510510_genesis.py"
+      - ".github/scripts/verify_ledger.py"
       - ".github/workflows/quantum_reality_engine_510510.yml"
   pull_request:
     branches: [main, master]
     paths:
       - "quantum_reality_engine.py"
       - "ledger/510510.yaml"
+      - "ledger/510511.yaml"
       - "ledger/8980.yaml"
+      - "ledger.v2/510510.yml"
+      - "ledger.v2/510511.yml"
       - "port380_mcp.py"
       - ".github/scripts/verify_510510_genesis.py"
+      - ".github/scripts/verify_ledger.py"
       - ".github/workflows/quantum_reality_engine_510510.yml"
   workflow_dispatch:
     inputs:
@@ -76,11 +84,10 @@ on:
         type: boolean
         default: true
 
+# FIX: least privilege. Every job is read-only except `federate`, which
+# raises its own permissions (see that job).
 permissions:
-  contents: write   # only so the reusable OIDC workflow can persist its own
-                    # ledger/8979.yaml when federation runs; this workflow
-                    # itself never writes ledger/510510.yaml (see seal job)
-  id-token: write
+  contents: read
 
 concurrency:
   group: quantum-engine-510510
@@ -90,13 +97,17 @@ env:
   HASH_ALGO: sha3_256
   LEDGER_DIR: ledger
   MATH_ORIGIN: "510510"                  # p₇# = 2·3·5·7·11·13·17
-  MCP_URL: ${{ secrets.MCP_URL }}        # unified with all sibling workflows
-  MCP_CONNECTOR_URL: ${{ secrets.MCP_URL }}
-  GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
+  GENESIS_SHA3_256: eb78315bb5a70b59e0d43f0e763b194cf1ab4ce3d109e0240e2c1f2da57f6314
+  # FIX: -P everywhere. The repo has cryptography/ and kubernetes/ dirs that
+  # shadow the real packages when cwd is on sys.path (python - <<PY, python -c).
+  PY: python -P
+  # FIX: secrets are no longer exported to every step; only the steps that
+  # use them read MCP_URL / GARDEN_SECRET.
+  MCP_URL: ${{ secrets.MCP_URL }}
 
 jobs:
   # ──────────────────────────────────────────────────────────────
-  # 0. VERIFY — genesis + full-ledger SHA3-256 + live headers
+  # 0. VERIFY — genesis + ledger SHA3-256 + live headers
   # ──────────────────────────────────────────────────────────────
   verify-integrity:
     name: Verify 510510 genesis and signature
@@ -112,6 +123,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+          cache-dependency-path: requirements-ci.txt
 
       - name: Install deps
         run: |
@@ -119,41 +131,40 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
-      - name: Verify SHA3-256 seals on present ledger entries
+      # verify_ledger.py takes positional files (argparse `files`, nargs="*").
+      # Per-file mode is soft by default. The v1 entries are advisory only:
+      # under --hard ledger/510510.yaml fails the 9286+ concreteness gate
+      # (no prev_hash) and 510511/8980 carry non-reproducible witness_prefix
+      # digests, so v1 stays soft. The v2 mirrors are the hard gate.
+      - name: Verify SHA3-256 seals (v1 soft, v2 mirrors hard)
         run: |
           set -euo pipefail
           shopt -s nullglob
-          entries=(ledger/*.yaml)
-          if [ ${#entries[@]} -eq 0 ]; then
-            echo "⚠️ no ledger entries present — soft skip"
-            exit 0
-          fi
-          VERIFIER=".github/scripts/verify_ledger.py"
-          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          if [ -f "$VERIFIER" ]; then
-            python "$VERIFIER" "${entries[@]}"
+          V=.github/scripts/verify_ledger.py
+          [ -f "$V" ] || { echo "::warning::no verify_ledger.py — skip"; exit 0; }
+          echo "── v1 (advisory, --soft)"
+          $PY "$V" --soft ledger/8980.yaml ledger/510510.yaml ledger/510511.yaml
+          v2=(ledger.v2/510510.yml ledger.v2/510511.yml)
+          present=()
+          for f in "${v2[@]}"; do [ -f "$f" ] && present+=("$f"); done
+          if [ ${#present[@]} -gt 0 ]; then
+            echo "── v2 mirrors (--hard)"
+            $PY "$V" --hard "${present[@]}"
           else
-            echo "⚠️ no verify_ledger.py — soft skip"
+            echo "::warning::ledger.v2 mirrors of 510510/510511 not present"
           fi
 
       - name: Verify 510510 genesis and signature
         run: |
           set -euo pipefail
-          if [ -f .github/scripts/verify_510510_genesis.py ]; then
-            python .github/scripts/verify_510510_genesis.py
-          else
-            echo "⚠️ verify_510510_genesis.py not found — soft skip"
-          fi
+          test -f .github/scripts/verify_510510_genesis.py
+          $PY .github/scripts/verify_510510_genesis.py
 
       - name: Verify live security headers from MCP_URL (soft)
         if: ${{ env.MCP_URL != '' }}
         run: |
           set -euo pipefail
           echo "🌐 Checking live headers from $MCP_URL"
-
-          # FIX: -D - dumps headers to stdout, -o /dev/null discards body.
-          # Original used -I -X GET, which overrides HEAD back to GET and
-          # confuses some proxies/CDNs that serve different headers per verb.
           if ! HEADERS=$(curl -sS -o /dev/null -D - --max-time 15 "$MCP_URL/health" 2>/dev/null); then
             echo "⚠️ Could not reach $MCP_URL/health — soft skip"
             exit 0
@@ -162,39 +173,23 @@ jobs:
             echo "⚠️ Empty response — soft skip"
             exit 0
           fi
-
-          echo "===== Response Headers ====="
           echo "$HEADERS"
-          echo "==========================="
-
-          check_header() {
-            local name="$1" label="$2"
-            if echo "$HEADERS" | grep -qi "^${name}:"; then
-              echo "✅ ${label} present"
-            else
-              echo "❌ ${label} missing"
-              exit 1
-            fi
-          }
-          check_header "content-security-policy" "Content-Security-Policy"
-          check_header "strict-transport-security" "Strict-Transport-Security"
-          check_header "x-content-type-options" "X-Content-Type-Options"
-          check_header "x-frame-options" "X-Frame-Options"
-          check_header "referrer-policy" "Referrer-Policy"
-          check_header "permissions-policy" "Permissions-Policy"
-
-          echo "✅ All live security headers verified."
+          fail=0
+          for h in content-security-policy strict-transport-security \
+                   x-content-type-options x-frame-options \
+                   referrer-policy permissions-policy; do
+            if grep -qi "^${h}:" <<<"$HEADERS"; then echo "✅ ${h}"; else echo "❌ ${h} missing"; fail=1; fi
+          done
+          exit "$fail"
 
   # ──────────────────────────────────────────────────────────────
-  # 1. PYCACHE — stage pre-compiled unitaries as an artifact
+  # 1. PYCACHE — best-effort bytecode artifact (optimization only)
   # ──────────────────────────────────────────────────────────────
   pycache:
     name: Stage pycache (pre-compiled unitary cache)
     runs-on: ubuntu-latest
     needs: verify-integrity
-    if: |
-      github.event_name != 'workflow_dispatch'
-      || inputs.stage_pycache == true
+    if: github.event_name != 'workflow_dispatch' || inputs.stage_pycache
     timeout-minutes: 5
 
     steps:
@@ -205,7 +200,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
 
       - name: Restore pycache
         uses: actions/cache@v4
@@ -216,20 +210,64 @@ jobs:
           restore-keys: |
             pycache-cpython311-
 
-      - name: compileall (stage bytecode)
+      # FIX: best-effort. Several tracked .py files are not valid Python
+      # (prose, truncated strings); they are listed, never edited, and do
+      # not fail the job. .git and virtualenvs are excluded.
+      - name: compileall (stage bytecode, best-effort)
+        id: compileall
         run: |
-          set -euo pipefail
-          python -m compileall -q -f .
-          N=$(find . -type d -name __pycache__ | wc -l)
-          echo "Staged ${N} __pycache__ dirs"
-          find . -type d -name __pycache__ | head -50
+          # Actions runs `bash -e -o pipefail`; turn -e off so no single
+          # command (compileall, grep, find) can end the step early.
+          set +e
+          set -uo pipefail
+          rc=0
+          python -m compileall -q -f \
+            -x '(^|/)(\.git|\.venv|venv|env|\.tox|node_modules|site-packages)(/|$)' \
+            . > compileall.log 2>&1 || rc=$?
+          grep -E "^\*\*\* Error compiling '" compileall.log \
+            | sed -E "s/^\*\*\* Error compiling '(.*)'\.\.\.$/\1/" \
+            | sort -u > compile_failures.txt || true
+          FAILS=$(wc -l < compile_failures.txt | tr -d ' ')
+          N=$(find . -path ./.git -prune -o -type d -name __pycache__ -print 2>/dev/null | wc -l | tr -d ' ')
+          echo "compileall rc=${rc}; staged ${N} __pycache__ dirs; ${FAILS} file(s) failed"
+          {
+            echo "### pycache staging"
+            echo ""
+            echo "Staged **${N}** \`__pycache__\` dirs. compileall rc=${rc}."
+            echo ""
+            echo "**${FAILS}** file(s) failed to compile."
+            if [ "$FAILS" -gt 0 ]; then
+              echo ""
+              echo "> [!WARNING]"
+              echo "> ${FAILS} file(s) did not compile and have no bytecode (sources not modified):"
+              echo ""
+              while IFS= read -r f; do printf -- "- \`%s\`\n" "$f"; done < compile_failures.txt
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$FAILS" -gt 0 ]; then
+            echo "::warning title=compileall::${FAILS} file(s) are not valid Python; bytecode staged for the rest (rc=${rc})"
+          fi
+          while IFS= read -r f; do
+            echo "::warning file=${f#./}::compileall: not valid Python, no bytecode staged"
+          done < compile_failures.txt
+          {
+            echo "rc=${rc}"
+            echo "failures=${FAILS}"
+          } >> "$GITHUB_OUTPUT"
+          exit 0
 
+      # Runs whatever happened above except a cancelled run; an upload
+      # problem (quota, empty set) never fails the job.
       - name: Upload pycache artifact
-        if: always()
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: pycache-cpython311
-          path: "**/__pycache__/**"
+          path: |
+            **/__pycache__/**
+            compile_failures.txt
+            !.git/**
           retention-days: 7
           if-no-files-found: warn
           include-hidden-files: true
@@ -241,10 +279,17 @@ jobs:
     name: Quantum Reality Engine · Hamiltonian evolution
     runs-on: ubuntu-latest
     needs: [verify-integrity, pycache]
-    # engine runs even if pycache failed (best-effort optimization),
-    # but NOT if verify-integrity failed (that is a hard gate).
+    # Runs even if pycache failed or was skipped; never if verify failed.
     if: always() && needs.verify-integrity.result == 'success'
     timeout-minutes: 10
+    # FIX: job outputs. Without this block needs.engine.outputs.* in the
+    # seal Summary were always empty.
+    outputs:
+      rotation_count: ${{ steps.engine.outputs.rotation_count }}
+      witness_verified: ${{ steps.engine.outputs.witness_verified }}
+      seal_verified: ${{ steps.engine.outputs.seal_verified }}
+      run_mode: ${{ steps.engine.outputs.run_mode }}
+      ledger_untouched: ${{ steps.after.outputs.ledger_untouched }}
 
     steps:
       - name: Check out repository
@@ -254,7 +299,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
 
       - name: Install dependencies
         run: |
@@ -262,13 +306,26 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet numpy
 
+      # FIX: the "untouched" check has to run in the job that runs the
+      # engine; a fresh checkout in another job can never differ from HEAD.
+      - name: Hash protected ledger files (before engine)
+        run: |
+          set -euo pipefail
+          sha3sum() { $PY -c 'import hashlib,sys;print(hashlib.new("sha3_256",open(sys.argv[1],"rb").read()).hexdigest())' "$1"; }
+          : > "$RUNNER_TEMP/ledger_before.txt"
+          for f in ledger/8980.yaml ledger/510510.yaml ledger/510511.yaml ledger.v2/510510.yml ledger.v2/510511.yml; do
+            [ -f "$f" ] && echo "$(sha3sum "$f")  $f" >> "$RUNNER_TEMP/ledger_before.txt"
+          done
+          cat "$RUNNER_TEMP/ledger_before.txt"
+
       - name: Run Quantum Reality Engine (if present)
         id: engine
         run: |
           set -euo pipefail
-
+          # quantum_reality_engine.py is not on main today; the skip is the
+          # normal path until it lands.
           if [ ! -f quantum_reality_engine.py ]; then
-            echo "⚠️ quantum_reality_engine.py not on this ref — soft skip"
+            echo "::notice::quantum_reality_engine.py not on this ref — engine skipped"
             {
               echo "rotation_count=0"
               echo "witness_verified=skipped"
@@ -278,24 +335,42 @@ jobs:
             exit 0
           fi
 
-          python quantum_reality_engine.py 2>&1 | tee engine_output.log
+          $PY quantum_reality_engine.py 2>&1 | tee engine_output.log
 
-          ROTATION_COUNT=$(grep -oP 'Rotation Count:\s*\K\d+' engine_output.log | head -1 || echo "0")
-          echo "rotation_count=${ROTATION_COUNT}" >> "$GITHUB_OUTPUT"
+          ROTATION_COUNT=$(grep -oP 'Rotation Count:\s*\K\d+' engine_output.log | head -1 || true)
+          echo "rotation_count=${ROTATION_COUNT:-0}" >> "$GITHUB_OUTPUT"
 
-          if grep -q "Witness: 1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN" engine_output.log; then
+          # FIX: whole-line fixed-string match, not a substring/regex match.
+          if grep -Fxq "Witness: 1 → 632 → 635 → 637 → 638 → 640 → Ωⁿ → 510510 — UNBROKEN" engine_output.log; then
             echo "witness_verified=true" >> "$GITHUB_OUTPUT"
           else
             echo "witness_verified=false" >> "$GITHUB_OUTPUT"
           fi
-
-          if grep -q "Seal: ∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED" engine_output.log; then
+          if grep -Fxq "Seal: ∀∞Ωⁿ · QUANTUM_REALITY_ENGINE · 510510_SEALED" engine_output.log; then
             echo "seal_verified=true" >> "$GITHUB_OUTPUT"
           else
             echo "seal_verified=false" >> "$GITHUB_OUTPUT"
           fi
-
           echo "run_mode=executed" >> "$GITHUB_OUTPUT"
+
+      - name: Assert engine did not rewrite ledger files
+        id: after
+        if: always() && steps.engine.outcome != 'skipped'
+        run: |
+          set -euo pipefail
+          sha3sum() { $PY -c 'import hashlib,sys;print(hashlib.new("sha3_256",open(sys.argv[1],"rb").read()).hexdigest())' "$1"; }
+          : > "$RUNNER_TEMP/ledger_after.txt"
+          for f in ledger/8980.yaml ledger/510510.yaml ledger/510511.yaml ledger.v2/510510.yml ledger.v2/510511.yml; do
+            [ -f "$f" ] && echo "$(sha3sum "$f")  $f" >> "$RUNNER_TEMP/ledger_after.txt"
+          done
+          if diff -u "$RUNNER_TEMP/ledger_before.txt" "$RUNNER_TEMP/ledger_after.txt" && git diff --quiet -- ledger ledger.v2; then
+            echo "ledger_untouched=true" >> "$GITHUB_OUTPUT"
+            echo "✅ ledger files unchanged by the engine run"
+          else
+            echo "ledger_untouched=false" >> "$GITHUB_OUTPUT"
+            echo "::error::engine run modified protected ledger files"
+            exit 1
+          fi
 
       - name: Upload engine log
         if: always()
@@ -304,10 +379,12 @@ jobs:
           name: quantum-engine-log
           path: engine_output.log
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: ignore
 
       - name: MCP pulse (if MCP_URL set)
         if: ${{ env.MCP_URL != '' }}
+        env:
+          GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
         run: |
           set -euo pipefail
           curl -sS --max-time 20 \
@@ -323,11 +400,14 @@ jobs:
   federate:
     name: OIDC federation · ${{ inputs.oidc_provider || 'offline' }}
     needs: engine
-    # Manual dispatch only — push/PR runs skip federation to avoid
-    # granting cloud trust to arbitrary commits.
-    if: |
-      github.event_name == 'workflow_dispatch'
-      && needs.engine.result == 'success'
+    if: github.event_name == 'workflow_dispatch' && needs.engine.result == 'success'
+    # oidc-cloud-providers.yml declares contents: write + id-token: write at
+    # its top level and a called workflow cannot exceed its caller, so both
+    # are granted here and only here. That workflow never commits or pushes;
+    # once it is lowered to contents: read, lower this to read too.
+    permissions:
+      contents: write
+      id-token: write
     uses: ./.github/workflows/oidc-cloud-providers.yml
     with:
       provider: ${{ inputs.oidc_provider || 'offline' }}
@@ -341,7 +421,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [verify-integrity, engine]
-    if: success()
+    if: always() && needs.verify-integrity.result == 'success' && needs.engine.result == 'success'
 
     steps:
       - name: Check out repository
@@ -353,7 +433,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
 
       - name: Install deps
         run: |
@@ -361,77 +440,90 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
-      # ── 1. Re-verify genesis after engine run ──
       - name: Verify 510510 genesis and signature (post-engine)
         run: |
           set -euo pipefail
-          if [ -f .github/scripts/verify_510510_genesis.py ]; then
-            python .github/scripts/verify_510510_genesis.py
-          else
-            echo "⚠️ verify_510510_genesis.py not found — soft skip"
-          fi
+          $PY .github/scripts/verify_510510_genesis.py
 
-      # ── 2. Prove the entry was not rewritten by this run ──
-      - name: Assert 510510 untouched (no rewrite by this workflow)
+      # FIX: the old step compared the working tree to HEAD of the same fresh
+      # checkout, which can never differ. These checks can fail:
+      #   1. genesis.hash_sha3_256 and the recomputed canonical payload hash
+      #      equal the pinned GENESIS_SHA3_256;
+      #   2. ledger/510510.yaml bytes match the SHA3-256 recorded in the
+      #      append-only mirror ledger.v2/510510.yml (mirrors.sha3_256);
+      #   3. the push / PR did not change ledger/510510.yaml relative to its
+      #      base (github.event.before or the PR base sha).
+      - name: Assert 510510 untouched
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import hashlib, subprocess, sys
+          $PY - <<'PY'
+          import hashlib, json, os, subprocess, sys, yaml
           from pathlib import Path
-
-          HASH_ALGO = "sha3_256"
-          target = Path("ledger/510510.yaml")
-
-          if not target.exists():
-              print("⚠️ ledger/510510.yaml absent — soft skip "
-                    "(this workflow does not create it)")
-              sys.exit(0)
-
-          current = hashlib.new(HASH_ALGO, target.read_bytes()).hexdigest()
-
-          try:
-              head_bytes = subprocess.check_output(
-                  ["git", "show", f"HEAD:{target.as_posix()}"],
-                  stderr=subprocess.DEVNULL,
-              )
-              head_hash = hashlib.new(HASH_ALGO, head_bytes).hexdigest()
-          except subprocess.CalledProcessError:
-              print("⚠️ 510510 not tracked at HEAD — soft skip")
-              sys.exit(0)
-
-          if current != head_hash:
-              print(f"❌ 510510.yaml was modified in this run "
-                    f"({head_hash[:16]}… → {current[:16]}…)", file=sys.stderr)
-              sys.exit(1)
-
-          print(f"✅ 510510.yaml untouched (sha3_256={current[:16]}…)")
+          H = lambda b: hashlib.new("sha3_256", b).hexdigest()
+          pinned = os.environ["GENESIS_SHA3_256"]
+          v1 = Path("ledger/510510.yaml")
+          raw = v1.read_bytes()
+          d = yaml.safe_load(raw.decode("utf-8"))
+          g = d["genesis"]
+          body = json.dumps(g["canonical_payload"], sort_keys=True,
+                            separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+          got = H(g["domain"].encode() + b"\x00" + body)
+          bad = 0
+          if not (got == g["hash_sha3_256"] == pinned):
+              print(f"::error::genesis mismatch computed={got} stored={g['hash_sha3_256']} pinned={pinned}")
+              bad += 1
+          else:
+              print(f"✅ genesis {got}")
+          m = Path("ledger.v2/510510.yml")
+          if m.is_file():
+              want = (yaml.safe_load(m.read_text(encoding="utf-8")).get("mirrors") or {}).get("sha3_256")
+              if H(raw) != want:
+                  print(f"::error::ledger/510510.yaml sha3={H(raw)} != ledger.v2 mirror {want}")
+                  bad += 1
+              else:
+                  print(f"✅ ledger/510510.yaml matches ledger.v2 mirror ({want[:16]}…)")
+          else:
+              print("::warning::ledger.v2/510510.yml absent — mirror check skipped")
+          base = os.environ.get("BASE_SHA", "")
+          if base and set(base) != {"0"}:
+              r = subprocess.run(["git", "diff", "--quiet", base, "HEAD", "--", "ledger/510510.yaml"])
+              if r.returncode == 1:
+                  print(f"::error::ledger/510510.yaml changed since {base[:12]} (append-only)")
+                  bad += 1
+              elif r.returncode == 0:
+                  print(f"✅ ledger/510510.yaml unchanged since {base[:12]}")
+              else:
+                  print(f"::warning::base {base[:12]} not available — diff check skipped")
+          sys.exit(1 if bad else 0)
           PY
 
-      # ── 3. Assert the witness chain 8980 → 510510 still holds ──
+      # FIX: exact field comparison instead of "8980" in s and "510510" in s.
       - name: Assert witness chain 8980 → 510510 still holds
         run: |
           set -euo pipefail
-          python - <<'PY'
+          $PY - <<'PY'
           import sys, yaml
           from pathlib import Path
-
-          pred = Path("ledger/8980.yaml")
-          succ = Path("ledger/510510.yaml")
-
-          if not pred.exists() or not succ.exists():
-              print("⚠️ predecessor or successor missing — soft skip")
-              sys.exit(0)
-
-          # Force structural load
-          _ = yaml.safe_load(pred.read_text()) or {}
-          s = yaml.safe_load(succ.read_text()) or {}
-
-          wc = str(s.get("witness", ""))
-          if "8980" in wc and "510510" in wc:
-              print(f"✅ witness chain holds: {wc}")
-          else:
-              print(f"❌ witness mismatch on 510510: {wc}", file=sys.stderr)
-              sys.exit(1)
+          load = lambda p: yaml.safe_load(Path(p).read_text(encoding="utf-8")) or {}
+          pred, succ = load("ledger/8980.yaml"), load("ledger/510510.yaml")
+          bad = 0
+          def want(label, got, exp):
+              global bad
+              ok = got == exp
+              bad += not ok
+              print(("✅" if ok else "❌"), f"{label}: {got!r}" + ("" if ok else f" (expected {exp!r})"))
+          want("8980.successor", pred.get("successor"), 510510)
+          want("510510.witness_chain", succ.get("witness_chain"), "8980 → 510510 — UNBROKEN")
+          want("510510 ed25519 pk == 8980 pk",
+               succ["verifications"]["ed25519_ledger_8980"]["public_key_hex"],
+               pred["ed25519"]["public_key_hex"])
+          m = Path("ledger.v2/510510.yml")
+          if m.is_file():
+              want("ledger.v2/510510.prev_hash == 8980.witness_prefix",
+                   load(m).get("prev_hash"), pred.get("witness_prefix"))
+          sys.exit(1 if bad else 0)
           PY
 
       - name: Summary
@@ -441,12 +533,19 @@ jobs:
           WITNESS_VERIFIED: ${{ needs.engine.outputs.witness_verified }}
           SEAL_VERIFIED: ${{ needs.engine.outputs.seal_verified }}
           RUN_MODE: ${{ needs.engine.outputs.run_mode }}
-          STAGE_PYCACHE: ${{ inputs.stage_pycache }}
+          LEDGER_UNTOUCHED: ${{ needs.engine.outputs.ledger_untouched }}
+          STAGE_PYCACHE: ${{ github.event_name != 'workflow_dispatch' || inputs.stage_pycache }}
+          JOB_STATUS: ${{ job.status }}
         run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            RESULT="510510.yaml was NOT overwritten (unitary, not projective)."
+          else
+            RESULT="510510 checks FAILED — see the steps above."
+          fi
           {
             echo "### Quantum Reality Engine — 510510"
             echo ""
-            echo "**Result: 510510.yaml was NOT overwritten (unitary, not projective).**"
+            echo "**Result: ${RESULT}**"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
@@ -455,16 +554,14 @@ jobs:
             echo "| rotation_count | ${ROTATION_COUNT:-0} |"
             echo "| witness_verified | ${WITNESS_VERIFIED:-unknown} |"
             echo "| seal_verified | ${SEAL_VERIFIED:-unknown} |"
-            echo "| stage_pycache | ${STAGE_PYCACHE:-n/a} |"
+            echo "| ledger_untouched (engine job) | ${LEDGER_UNTOUCHED:-unknown} |"
+            echo "| stage_pycache | ${STAGE_PYCACHE} |"
             echo "| hash_algo | sha3_256 (FIPS 202) |"
             echo ""
-            echo "**Genesis check:** SHA3-256 over ledger/510510.yaml + Ed25519(ledger/8980.yaml)"
+            echo "**Genesis check:** SHA3-256(GARDEN.GENESIS.QUADRATIC_QUADRANT.v1 ‖ 0x00 ‖ canonical JSON payload) = \`${GENESIS_SHA3_256}\` + Ed25519(ledger/8980.yaml)"
             echo ""
-            echo "**Pycache:** staged as artifact \`pycache-cpython311\` — pre-compiled unitary cache, not committed."
+            echo "**Pycache:** artifact \`pycache-cpython311\`, best-effort, not committed."
             echo ""
             echo "**Seal:** \`∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED\`"
             echo "**Witness:** \`8980 → 510510 — UNBROKEN\`"
-            echo ""
-            echo "**Quantum/cybernetic frame:** ρ(t) = U(t) ρ(0) U(t)† — unitary evolution only."
-            echo "No collapse, no rewrite, no re-seal of the 510510 anchor."
           } >> "$GITHUB_STEP_SUMMARY"
