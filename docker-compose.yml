@@ -1,82 +1,147 @@
-# docker-compose.yml – Sovereign Garden port map + symplectic_status
-# Usage: docker compose up --build
+# ============================================================================
+# AxiomicCoreness — unified canonical compose surface
+# ============================================================================
+# MERGED CONTEXT: 
+#   - Core services: FastAPI (8000) + MCP Bridge (380) [New Context]
+#   - Sidecars: app_main (8001/8012), hyperian (8080) [Old Context]
+#   - Metrics: Prometheus (9090), Workload exporter (9095) [Old Context]
+#   - Utilities & Daemons: Symplectic (oneshot), Gemini Daemon [Old Context]
+#
+# USAGE:
+#   docker compose up -d                      # Starts core + sidecars
+#   docker compose --profile status run ...   # Runs symplectic validation
+#   docker compose --profile daemon up -d     # Starts Gemini daemon
+# ============================================================================
 version: "3.8"
 
+# Shared environment for services built from the canonical image
+x-common-env: &common-env
+  GARDEN_SECRET: ${GARDEN_SECRET:?GARDEN_SECRET is required}
+  BIND_HOST: 0.0.0.0
+  SOVEREIGN_CP: /app/target/classes
+  SOVEREIGN_TIMEOUT_S: 180
+  SOVEREIGN_MODE: ${SOVEREIGN_MODE:-production}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
 services:
-  sovereign-api:
-    build: .
-    image: fastapi-sovereign:620
-    container_name: sovereign-core
+
+  # --------------------------------------------------------------------------
+  # CORE: FastAPI app — app.main:app on port 8000
+  # --------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: axiomic-coreness:latest
+    container_name: axiomic-app
     ports:
       - "8000:8000"
     environment:
-      - SOVEREIGN_MODE=${SOVEREIGN_MODE:-production}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - PORT=8000
+      <<: *common-env
+      BIND_PORT: 8000
+      PORT: 8000
+    volumes:
+      - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-    volumes:
-      - ./data:/app/data
 
+  # --------------------------------------------------------------------------
+  # CORE: port380 MCP restart bridge — port380_mcp.py on port 380
+  # --------------------------------------------------------------------------
+  mcp-bridge:
+    image: axiomic-coreness:latest
+    container_name: axiomic-mcp-bridge
+    command: ["python3", "port380_mcp.py"]
+    ports:
+      - "380:380"
+    environment:
+      <<: *common-env
+      PORT: 380
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # SIDECAR: app_main (port 8001)
+  # --------------------------------------------------------------------------
   app-main:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-app-main
     command: ["uvicorn", "app_main:app", "--host", "0.0.0.0", "--port", "8001"]
     ports:
       - "8001:8001"
     environment:
-      - PORT=8001
+      <<: *common-env
+      PORT: 8001
     restart: unless-stopped
 
+  # --------------------------------------------------------------------------
+  # SIDECAR: Gravastar Trigger (port 8012)
+  # --------------------------------------------------------------------------
   gravastar-trigger:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-gravastar
     command: ["uvicorn", "app_main:app", "--host", "0.0.0.0", "--port", "8012"]
     ports:
       - "8012:8012"
     environment:
-      - PORT=8012
-      - GRAVASTAR_PORT=8012
+      <<: *common-env
+      PORT: 8012
+      GRAVASTAR_PORT: 8012
     restart: unless-stopped
 
+  # --------------------------------------------------------------------------
+  # SIDECAR: Hyperian JSON Server (port 8080)
+  # --------------------------------------------------------------------------
   hyperian:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-hyperian
     command: ["python", "hyperian_json_server.py", "--port", "8080"]
     ports:
       - "8080:8080"
+    environment:
+      <<: *common-env
+      PORT: 8080
     restart: unless-stopped
 
+  # --------------------------------------------------------------------------
+  # METRICS: Prometheus Metrics Server (port 9090)
+  # --------------------------------------------------------------------------
   metrics:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-metrics
     command: ["python", "-m", "prometheus.metrics_server", "--port", "9090"]
     ports:
       - "9090:9090"
+    environment:
+      <<: *common-env
     restart: unless-stopped
 
+  # --------------------------------------------------------------------------
+  # METRICS: Sovereign Workload Exporter (port 9095)
+  # --------------------------------------------------------------------------
   workload:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-workload
     command: ["python", "monitoring/sovereign_workload_exporter.py", "--port", "9095"]
     ports:
       - "9095:9095"
+    environment:
+      <<: *common-env
     restart: unless-stopped
 
-  # Merged: symplectic dual-output generator (oneshot; re-run via compose run)
+  # --------------------------------------------------------------------------
+  # UTILITY: Symplectic dual-output generator (oneshot)
+  # Profile: status
+  # --------------------------------------------------------------------------
   symplectic-status:
-    build: .
-    image: fastapi-sovereign:620
+    image: axiomic-coreness:latest
     container_name: garden-symplectic-status
     working_dir: /app
     command:
@@ -88,13 +153,17 @@ services:
         python -m jsonschema -i symplectic_status.json schemas/symplectic-status.json &&
         echo "ACK steps 1-9 complete" &&
         head -n 4 symplectic_status.agent.jsonl
+    environment:
+      <<: *common-env
     volumes:
       - ./:/app
     profiles:
       - status
 
-  # Gemini daemon — integrated codespace health + optional Gemini handoff
-  # Not standalone: lives on the Garden compose surface (Entry 8953)
+  # --------------------------------------------------------------------------
+  # DAEMON: Gemini Daemon (codespace health + optional handoff)
+  # Profile: daemon, full
+  # --------------------------------------------------------------------------
   gemini-daemon:
     build:
       context: .
