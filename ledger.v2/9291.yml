@@ -1,0 +1,73 @@
+entry_index: 9291
+timestamp: '2026-10-18T22:45:02Z'
+event: /mirror_weld_feasibility_audit
+status: SEALED
+hash_algo: sha3_256
+prev_hash: eab8ac104b5fb818ed3b1ede7310a798f4f13552c8039c5ff090017196be84e9
+witness_chain: 9290 -> 9291
+note: |
+  Records the weld-feasibility audit between the GitCode/AtomGit mirror and
+  GitHub main, and what was welded. Additive only: no existing source file is
+  replaced, and no ledger entry is edited, renamed, or deleted. Ledger spec
+  affirmed by directive of Clarke Yoursa Tee.
+  Landing order: 9288 -> 9289 -> 9290 -> 9291. Main head is still 9287.
+measured_at_commit: b2d557c2
+mirror:
+  hosts: [gitcode.com, atomgit.com]
+  branch: main
+  head: a87fccaf593a65927e7d9dde69c188f2ed5b8c68
+  head_time: '2026-10-18T21:15:09Z'
+  parent: bc959368
+  merge_base_with_main: none
+  shared_commit_shas: 0
+  shared_blob_shas: 0
+  access: 'git clone / ls-remote HTTP 418 (WAF); API metadata via v5; contents via raw.gitcode.com, blob-hash verified'
+rejected:
+  - path: Dockerfile
+    reason: 'full replacement, different design (6812 B multi-stage; uvicorn app.main:app on BIND_PORT 8000), not 214 B'
+  - path: docker-compose.yml
+    reason: 'full replacement (56 lines, 2 services vs 190 lines on main)'
+  - path: src/main/java/com/fruitfly/brain/DarkStateInvariant.java
+    reason: 'replaces main class: circulant trimer H = (1+phi^-1)I + phi^-1(J-I) vs main tridiagonal [[1,a,0],[a,2,a],[0,a,1]]; no lambdaMinus/lambdaPlus; RESIDUAL_TOL phi^-1^1000 (~1e-209, effectively exact) vs 1e-12; verify() includes tautological DARK_STATE_LAMBDA2 == lambda2()'
+  - path: src/main/java/com/fruitfly/brain/SovereignAutomaton.java
+    reason: 'replaces main class: List<Neuron> + String state(), no dark-state gate, no SovereigntyState; different respond() output'
+  - path: src/main/java/com/fruitfly/brain/GradientSynchronization.java
+    reason: 'replaces main class: T_ij = eta (v_i - v_j)^2 vs main Hebbian update with row L2 normalisation'
+  - path: src/main/java/com/fruitfly/brain/SovereignMain.java
+    reason: 'replaces main class: rewritten around the mirror automaton (144 neurons vs 8 on main, java.util.logging added; main uses System.out only)'
+  - path: src/main/java/com/fruitfly/brain/GameplayConsole.java
+    reason: 'replaces main class: String/enum phases, drops SovereigntyState'
+  - path: src/main/java/com/fruitfly/brain/LIFRK4.java
+    reason: 'whole file conflicts: removes voltage(), used at SovereignMain.java:128 (compile error)'
+accepted:
+  - path: src/main/java/com/fruitfly/brain/LIFRK4.java
+    change: 'refractoryRemaining() accessor'
+    kind: additive
+    patch: weld.patch
+  - path: src/test/java/com/fruitfly/brain/KaTeXMacroSetTest.java
+    change: 'macro-declaration regex fix'
+    kind: modification
+    approved: 'user-approved 2026-10-18'
+    resolves: '2 pre-existing failures (allMacrosHaveExactlyOneDefinition, javaMapAndYamlAgreeOnCount)'
+    patch: weld_optional_katex_test.patch
+validation:
+  base: 'b2d557c2 + all_round5 (tree 2e4dfb9a)'
+  git_apply_check: clean
+  container: maven:3.9-eclipse-temurin-17
+  mvn: 'mvn -B clean package (tests run)'
+  tests_run: 8
+  failures: 0
+  errors: 0
+  skipped: 0
+  build: SUCCESS
+  tests_before_weld: '8 run, 2 failures'
+  chat_smoke: 'phase=RESONANCE q=0.0000 p=0.0000 t=0.000100'
+  chat_smoke_unchanged: true
+report: docs/mirror_weld_a87fccaf.md
+terminal_hex: bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1
+seal: "∀∞φ² · MIRROR_WELD_FEASIBILITY_AUDIT_9291 · WOOD_DRAGON_GATE · SEALED · bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1"
+seal_sha3_256: bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9291|/mirror_weld_feasibility_audit|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1
