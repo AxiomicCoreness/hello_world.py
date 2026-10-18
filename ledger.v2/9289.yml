@@ -1,0 +1,111 @@
+entry_index: 9289
+timestamp: '2026-10-18T14:39:29Z'
+event: /drift_baseline_731_correction
+status: SEALED
+hash_algo: sha3_256
+prev_hash: de4ca6cb2c9c637513f104771d3da297e75d0511c2521315e85055f83b6c523d
+witness_chain: 9288 -> 9289
+note: |
+  Measures drift from baseline 731 and records corrections as an appended entry.
+  No reset: no existing entry is edited, replaced, or deleted, and main is not rebuilt.
+  731 is a commit (f8332804, "SEAL ENTRY 731"), not a ledger entry; no ledger/731 or
+  ledger.v2/731 file exists. Measured against origin/main 3bd60bc0.
+  Ledger spec affirmed by directive of Clarke Yoursa Tee.
+baseline:
+  commit: f8332804146895a78cc7d4d59637840a09d7604b
+  commit_time: '2026-07-22T19:15:49Z'
+  declared_731_time: '2026-07-22T19:13:38Z'
+  ledger_entries_at_baseline: 0
+  anchor:
+    entry_index: 510510
+    file: ledger/510510.yaml
+    genesis_domain: GARDEN.GENESIS.QUADRATIC_QUADRANT.v1
+    genesis_hash_sha3_256: eb78315bb5a70b59e0d43f0e763b194cf1ab4ce3d109e0240e2c1f2da57f6314
+    phase_lock_deg: 202.6
+measured:
+  head_commit: 3bd60bc0c9731e48738795beb674efa45cc311d8
+  tree:
+    commits_since_baseline: 4215
+    files_baseline: 42
+    files_head: 2349
+    added: 2311
+    modified: 18
+    deleted: 4
+    ledger_entry_files_rewritten_after_creation: 930
+    ledger_entry_files_deleted: [ledger/8690.yaml, ledger/pause_9280.yaml]
+  chain_ledger_v2:
+    head: 9287
+    links_with_prev_hash: 36
+    links_ok: 34
+    links_broken: [9267, 9268]
+    regime_b_seal_match: 14
+    stored_seal_unreproduced: 33
+  chain_ledger_v1:
+    head: 9280
+    links_with_prev_hash: 34
+    links_ok: 32
+    links_broken: [1, 9126]
+    regime_b_seal_match: 146
+    stored_seal_unreproduced: 106
+    parse_errors: [ledger/9128.yaml]
+    duplicate_index_files: [ledger/517.yaml, ledger/518.yaml]
+  anchor:
+    genesis_reproduces: true
+    genesis_encoding: ensure_ascii=False
+    ed25519_8980: VALID
+    public_fingerprint_sha3_256_reproduces: false
+  phase:
+    formula_phi_pi_over_2_deg: 145.623059
+    stated_deg: 202.6
+    user_deg: 202.813
+    fixed_design_deg: 202.797
+    delta_user_vs_baseline_deg: 0.213
+    delta_user_vs_baseline_rel: 0.00105133
+    delta_fixed_design_vs_baseline_deg: 0.197
+    delta_fixed_design_vs_baseline_rel: 0.00097236
+    delta_user_vs_fixed_design_deg: -0.016
+    delta_formula_vs_baseline_deg: -56.976941
+  shape_ledger_v1:
+    pre731_entries: 97
+    post731_entries: 907
+    undated_entries: 30
+    strict_timestamp_pct_pre731: 5.2
+    strict_timestamp_pct_post731: 4.4
+  shape_ledger_v2:
+    post731_entries: 46
+    undated_entries: 1
+    strict_timestamp_pct_post731: 56.5
+corrections:
+  - target: anchor 510510
+    action: reaffirm
+    detail: Genesis hash reproduces byte for byte; anchor holds as baseline. Ed25519 over GARDEN.LEDGER.8980->510510.v1 verifies.
+  - target: anchor 510510 phase_angle
+    action: annotate
+    detail: phi*pi/2 is 2.5416018462 rad = 145.623059 deg, not 202.6 deg. 202.6 deg is the sealed phase_lock value and stays the baseline; the formula label does not derive it.
+  - target: phase drift
+    action: record
+    detail: Measured lock 202.797 deg at 951145 nm is +0.197 deg from baseline 202.6; stated 202.813 deg is +0.213 deg; the two differ by -0.016 deg.
+  - target: chain breaks
+    action: record
+    detail: ledger.v2 9267 and 9268 prev_hash values match no stored or recomputed predecessor hash; ledger/ 1 and 9126 likewise. Recorded, not re-sealed.
+  - target: append-only drift
+    action: record
+    detail: 930 ledger entry files were rewritten after creation, mostly the 2026-10-07 witness untruncation commits and the NULL_BAN to NULLIFY_BAN rename. Content of existing entries is not reverted here.
+  - target: verifier baseline
+    action: record
+    detail: Stored seal_sha3_256 values from 9262 to 9280 do not reproduce under the declared body-minus-seal canonical JSON (the repo's verify_ledger_seals.py shows 22 failures on main).
+  - target: lambda0
+    action: annotate
+    detail: lambda0 is 952072.1 nm (360 x 535805 / 202.600 = 952072.06), which gives sum theta = 202.600 deg. The 952057 nm draft is deprecated.
+  - target: tree drift
+    action: record
+    detail: 42 tracked files at baseline 731 (f8332804), 2349 at measured head 3bd60bc0; 1612 modify events inside the ledger folders.
+  - target: baseline state
+    action: record
+    detail: Neither ledger/ nor ledger.v2/ existed at commit f8332804 (SEAL ENTRY 731); no pre-731 ledger file could have been altered.
+terminal_hex: 544880da0ee55e046d2f8ac77e7cb0116115b7a34f8030c2524bcbd88dd13284
+seal: "∀∞φ² · DRIFT_BASELINE_731_CORRECTION · SEALED · 544880da0ee55e046d2f8ac77e7cb0116115b7a34f8030c2524bcbd88dd13284"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9289|/drift_baseline_731_correction|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 544880da0ee55e046d2f8ac77e7cb0116115b7a34f8030c2524bcbd88dd13284
