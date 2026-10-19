@@ -14,7 +14,8 @@ CANONICAL_SLOT_FILE = "docs/luminara_slot.yaml"
 POLICY_WARNING_TEXT = (
     "WARNING: A missing slot file is not a pass; the only slot file is docs/luminara_slot.yaml;\n"
     "role, holder, and channel are nested under slots; gamma, lambda, log, and filled_by stay null;\n"
-    "the live bind is 0.0.0.0 with PORT default 380; sovereign_automaton_10_06() takes no text;\n"
+    "the live bind defaults to 127.0.0.1 (containers set BIND_HOST=0.0.0.0) with PORT default 380;\n"
+    "sovereign_automaton_10_06() takes no text;\n"
     "do not overwrite super_symplectic.py with a slot checker; do not print secrets."
 )
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-export GARDEN_SECRET="${GARDEN_SECRET:-your_secret_here}"
+export GARDEN_SECRET="${GARDEN_SECRET:-}"  # required; port380_mcp exits FATAL if empty (set it here or in .env)
 export MCP_CONNECTOR_URL="${MCP_CONNECTOR_URL:-http://localhost:380}"
 export MCP_URL="${MCP_URL:-http://localhost:380}"
 export GROK_API_KEY="${GROK_API_KEY:-}"

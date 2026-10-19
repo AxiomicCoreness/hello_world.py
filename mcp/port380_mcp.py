@@ -24,7 +24,9 @@ Security posture:
 """
 
 import os
+import sys
 import hashlib
+from contextlib import asynccontextmanager
 import json
 import time
 from datetime import datetime, timezone
@@ -137,12 +139,42 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 # ============================================================================
+# GARDEN_SECRET FAIL-FAST
+# ============================================================================
+def garden_secret_missing() -> bool:
+    """True when GARDEN_SECRET is unset, empty or whitespace only."""
+    return not os.environ.get("GARDEN_SECRET", "").strip()
+
+
+def require_garden_secret() -> None:
+    """Refuse to serve without GARDEN_SECRET: print FATAL to stderr and exit 1."""
+    if garden_secret_missing():
+        print(
+            "FATAL: GARDEN_SECRET is unset or empty; refusing to start "
+            "(/pulse and /mcp/tool would be unauthenticated).",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise SystemExit(1)
+
+
+@asynccontextmanager
+async def _lifespan(_app):
+    # Also covers `uvicorn port380_mcp:app`, which skips __main__.
+    if garden_secret_missing():
+        print("FATAL: GARDEN_SECRET is unset or empty; refusing to start.", file=sys.stderr, flush=True)
+        raise RuntimeError("GARDEN_SECRET is unset or empty")
+    yield
+
+
+# ============================================================================
 # FASTAPI APP
 # ============================================================================
 app = FastAPI(
     title=APP_NAME,
     version=VERSION,
     description=f"{APP_NAME} — Port 380 Gate Re-export (Layer {LAYER})",
+    lifespan=_lifespan,
 )
 
 # CORS — allow-list, credentials allowed, never wildcard.
@@ -170,14 +202,15 @@ AUTOMATON_REL = "garden_surgery/sovereign_automaton_10.06.py"
 AUTOMATON_CALLABLE = "sovereign_automaton_10_06"
 MCP_TOOL_PATH = "/mcp/tool"
 CHAT_TOOL = "chat"
-# Live entrypoint uses PORT (default 380) and host 0.0.0.0.
+# Live entrypoint uses PORT (default 380); host defaults to 127.0.0.1,
+# and containers override it with BIND_HOST=0.0.0.0.
 # The slot's 127.0.0.1:8024 is a proposed bind, not this file's bind.
 SLOT_BIND_PROPOSED = "127.0.0.1:8024"
 
 
 def verify_secret(x_garden_secret: Optional[str]) -> bool:
-    if not GARDEN_SECRET:
-        return True
+    if not GARDEN_SECRET.strip():
+        raise HTTPException(status_code=503, detail="GARDEN_SECRET not configured")
     if x_garden_secret != GARDEN_SECRET:
         raise HTTPException(status_code=403, detail="Invalid GARDEN_SECRET")
     return True
@@ -380,6 +413,7 @@ async def mcp_tool(
 # ENTRYPOINT
 # ============================================================================
 if __name__ == "__main__":
+    require_garden_secret()
     port = int(os.environ.get("PORT") or os.environ.get("MCP_PORT") or 380)
     uvicorn.run(
         app,

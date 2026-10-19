@@ -27,7 +27,7 @@ POLICY_WARNING = (
     "docs/luminara_slot.yaml is the only slot file; there is no slots/ tree. "
     "role, holder, and channel are nested under slots. "
     "gamma, lambda, log, and filled_by stay null. "
-    "port380_mcp.py binds 0.0.0.0 and PORT default 380, not 127.0.0.1:8024. "
+    "port380_mcp.py binds host default 127.0.0.1 (containers override with BIND_HOST=0.0.0.0) and PORT default 380, not 127.0.0.1:8024. "
     "sovereign_automaton_10_06() takes no text. "
     "Do not overwrite super_symplectic.py with a slot checker. "
     "Do not print secrets."

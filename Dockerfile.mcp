@@ -21,10 +21,16 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/*
 
+COPY requirements-mcp.txt ./
+RUN pip install --no-cache-dir -r requirements-mcp.txt
+
 COPY mcp/ ./mcp/
 COPY math_origin.py ./
 
 USER sovereign
+
+# GARDEN_SECRET is required at runtime (mcp/port380_mcp.py exits with FATAL if it is empty).
+# Pass it with `docker run -e GARDEN_SECRET=...`; never bake it into the image.
 
 HEALTHCHECK --interval=20s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:${MCP_PORT}/health" || exit 1

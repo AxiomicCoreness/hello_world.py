@@ -25,12 +25,12 @@ spec:
           command: ["python", "/app/port_380_http.py"]
           ports:
             - name: gate
-              containerPort: 380
+              containerPort: 8380
           env:
             - name: PORT380_HOST
               value: "0.0.0.0"
             - name: PORT380_PORT
-              value: "380"
+              value: "8380"  # Service port-380-gate maps 380 -> 8380
             - name: MCP_URL
               valueFrom:
                 configMapKeyRef:
@@ -64,13 +64,13 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 380
+              port: 8380
             initialDelaySeconds: 3
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /health
-              port: 380
+              port: 8380
             initialDelaySeconds: 10
             periodSeconds: 20
           resources:
@@ -92,7 +92,7 @@ spec:
           command: ["python", "/sidecar/sidecar.py", "--interval", "30"]
           env:
             - name: CORE_HEALTH_URL
-              value: "http://127.0.0.1:380/health"
+              value: "http://127.0.0.1:8380/health"
             - name: SIDECAR_INTERVAL
               value: "30"
             - name: MCP_URL

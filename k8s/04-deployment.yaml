@@ -44,12 +44,17 @@ spec:
           image: register-mcp:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 380
+            - containerPort: 8380
               name: mcp
           env:
-            - { name: PORT,       value: "380" }
+            - { name: PORT,       value: "8380" }   # non-root friendly; Service maps 380 -> 8380
             - { name: BIND_HOST,  value: "0.0.0.0" }
             - { name: MCP_FILLED, value: "false" }
+            - name: GARDEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: register-app-secret
+                  key: GARDEN_SECRET
       volumes:
         - name: app-code
           configMap:

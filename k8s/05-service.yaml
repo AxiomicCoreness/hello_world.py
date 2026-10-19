@@ -9,4 +9,4 @@ spec:
     app: register-app
   ports:
     - { name: http, port: 80,  targetPort: 80 }
-    - { name: mcp,  port: 380, targetPort: 380 }
+    - { name: mcp,  port: 380, targetPort: 8380 }

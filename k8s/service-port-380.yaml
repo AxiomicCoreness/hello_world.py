@@ -13,6 +13,6 @@ spec:
   ports:
     - name: gate
       port: 380
-      targetPort: 380
+      targetPort: 8380
       protocol: TCP
   type: ClusterIP
