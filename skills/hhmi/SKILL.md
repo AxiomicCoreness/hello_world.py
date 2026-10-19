@@ -24,7 +24,9 @@ and `SovereignMain.diff`. Nothing is on either GitCode mirror.
   `SovereignAutomaton`.
 - `SovereignAutomaton(connectome, n)` throws unless `n == connectome.neuronCount()`
   (`SovereignAutomaton.java:24-25`). Callers must pass `connectome.neuronCount()`, never 8.
-- `--chat` stdout is the reply `port380_mcp.py` reads back, so load progress goes to stderr.
+- `--chat` stdout is only the bare reply line, and load progress goes to stderr, so any caller
+  can parse stdout. GitHub main's `port380_mcp.py` does not invoke `SovereignMain` (it has no
+  subprocess or Java call), so nothing in the repo reads that output today.
   `SovereignMain.parse()` rejects unknown tokens, so the flag is added there.
 - `assets/HHMIJaneliaMap.xml` is a hand-written 3-neuron ring A→B→C→A. It is **NOT**
   FlyEM data; it exists so `ConnectomeLoaderTest.janeliaMapResourceIsPresent` and the

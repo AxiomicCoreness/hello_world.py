@@ -1,6 +1,6 @@
 {
   "skill": "hhmi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repo": "AxiomicCoreness/hello_world.py",
   "base_commit_measured": "fd76685",
   "package": "com.fruitfly.brain",
@@ -11,7 +11,8 @@
     "connectome_storage": "CSR: Connectome(n, rowPtr, colIdx, weight, delayMs)",
     "neuron": "interface (no constructor, no connectTo)",
     "automaton_requires": "SovereignAutomaton(connectome, n) with n == connectome.neuronCount()",
-    "chat_stdout": "the port380_mcp.py reply; load progress goes to stderr",
+    "chat_stdout": "bare reply line only; load progress goes to stderr so any caller can parse stdout",
+    "port380_mcp_invokes_sovereignmain": false,
     "unknown_flags": "SovereignMain.parse() rejects them; --connectome-file added there",
     "fallback": "Connectome.random(8, 0.25, 20260720L)",
     "bad_connectome_file_exit": 2

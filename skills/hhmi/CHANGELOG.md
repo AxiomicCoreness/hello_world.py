@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3] - 2026-10-19
+### Fixed
+- SKILL.md and `assets/context.json` no longer say `port380_mcp.py` reads `SovereignMain --chat`
+  output. GitHub main's `port380_mcp.py` does not invoke `SovereignMain`. `--chat` stdout is still
+  kept to the bare reply, with load progress on stderr, so any future caller can parse it
+  (`assets/context.json` adds `port380_mcp_invokes_sovereignmain: false`).
+
 ## [1.0.2] - 2026-10-19
 ### Changed
 - The loader is now applied in `src/` on main at `1dfeaec`
