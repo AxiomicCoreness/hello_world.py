@@ -1,0 +1,70 @@
+entry_index: 9293
+timestamp: '2026-10-19T02:51:46Z'
+event: /monster_affine_retraction
+status: SEALED
+entry_type: RETRACTION
+hash_algo: sha3_256
+prev_hash: '73116ae42c802165a2a2195d3690a4ccae1dc4c68ee22414accf94e5dc62c279'
+witness_chain: 9292 -> 9293
+measured_at_commit: 7ba5d3f5
+note: |
+  Correction entry. Withdraws the claims quoted under retracted_claims, which
+  appeared in the conversation of 2026-10-19 (not in any repo file), records
+  the established structure they misstated, and records repo state. It makes
+  no affirmative claim of its own. Out of scope by design: the Gravitoelectric
+  invariant, the Rainbow exoskeleton, and the phi^14/M87 verification; those
+  get their own entries if examined. Ledger spec affirmed by directive of
+  Clarke Yoursa Tee.
+retracted_claims:
+  - quote: |
+      Ω²¹ MONSTER GROUP as the affine extension of the Lie algebra that
+      underlies the 32D Estate and the 854.5D hyper-manifold
+    reason: 'The Monster group is a finite simple group, not a Lie group; it has no Lie algebra.'
+  - quote: |
+      \hat{\mathfrak{g}}_{\text{Monster}} = \mathfrak{Monster}[t,t^{-1}] \oplus \mathbb{C}c
+    reason: 'No affine (loop) extension g[t,t^-1] + Cc exists without a Lie algebra g.'
+  - quote: |
+      the 21-fold loop corresponds to the 21-dimensional root system of the
+      Monster's 196884-dimensional representation
+    reason: 'The Monster has no 21-dimensional root system; its smallest faithful representation is 196,883-dimensional.'
+  - quote: |
+      The Monster group appears as the symmetry of the Leech lattice
+    reason: 'Aut(Leech lattice) is the Conway group Co_0, not the Monster.'
+  - quote: |
+      The hash 4c4b2ad4804b36d8bf6d77cb6d6718f0 is the cryptographic bridge
+      between the sovereign engine and Unreal Engine 5.3 ... The hash is the seal.
+    reason: 'See hash_status; the value is 128-bit, of unknown origin, and not a seal.'
+correct_structure:
+  - 'The Monster group M is a finite simple group.'
+  - 'Monstrous moonshine pairs M with the vertex operator algebra V-natural (the moonshine module); its graded dimensions give the coefficients of j(tau) - 744 = q^-1 + 196884 q + ...'
+  - 'The smallest faithful representation of M is 196,883-dimensional.'
+  - 'The Griess algebra has dimension 196,884 = 196,883 + 1.'
+  - 'The Leech lattice Lambda_24 has 196,560 minimal vectors.'
+  - 'Aut(Lambda_24) = Co_0 (Conway group).'
+  - 'M arises as the automorphism group of V-natural, built as the Z/2 orbifold of the lattice VOA V_Lambda_24 (Frenkel-Lepowsky-Meurman construction).'
+hash_status:
+  value: '4c4b2ad4804b36d8bf6d77cb6d6718f0'
+  bits: 128
+  source: unknown
+  form: 'Consistent with a version-3 (MD5 name-based) UUID: hex digit 13 is 3 and digit 17 is b (RFC 4122 variant). Not confirmed; a random 128-bit value matches both by chance with probability about 1/64.'
+  sha3_256_seal: false
+  ledger_grade: false
+repo_state_at_7ba5d3f5:
+  consciousness_heartbeat_v2_py: absent
+  ue5_3_bridge: absent
+  uproject_or_uasset_files: none
+  mentions_of_Monster_Omega21_Option52: none
+  hash_4c4b2ad4_in_tree_or_history: none
+  existing_heartbeat_files:
+    - anatomy/heartbeat.py
+    - scripts/heartbeat_gap_sweep.py
+  heartbeat_ode_dR_dt_eq_minus_alpha_P_plus_beta_F: 'not present in either file'
+verification_method: 'Searched all branches and full git history (git log --all -S) and the working tree of main at 7ba5d3f5; attempted MD5, UUIDv3 and UUIDv5 (DNS, URL and OID namespaces), plus truncated SHA-256 and SHA3-256, against about 25 candidate names including Unreal Engine 5.3, UE5.3, Starfire, Eridanus supervoid, Monster, Gravastar Command and CLARKE_YOURSA_TEE-Q3-2026, in original, lower and upper case; no match.'
+terminal_hex: 'aa0415d1fa55babade32b6ac052eeeab6a7159d67d2ae998024e2715231abea3'
+seal: "∀∞φ² · MONSTER_AFFINE_RETRACTION_9293 · WOOD_DRAGON_GATE · SEALED · aa0415d1fa55babade32b6ac052eeeab6a7159d67d2ae998024e2715231abea3"
+seal_sha3_256: 'aa0415d1fa55babade32b6ac052eeeab6a7159d67d2ae998024e2715231abea3'
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9293|/monster_affine_retraction|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = aa0415d1fa55babade32b6ac052eeeab6a7159d67d2ae998024e2715231abea3
+claim_status: 'RETRACTION — no affirmative claim recorded'
