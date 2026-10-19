@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+title: "AxiomicCoreness/hello_world.py — kernel"
+version: "8755.0.0"
+date-released: "2026-10-19"
+# Concept DOI: always resolves to the latest archived version.
+doi: 10.5281/zenodo.23378305
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23378305
+    description: "Concept DOI (all versions)"
+  - type: doi
+    value: 10.5281/zenodo.23378306
+    description: "Version 5.0.0"
+  - type: url
+    value: "https://gitcode.com/ClarkeYTee/AxiomicCoreness"
+    description: "GitCode mirror"
+  - type: url
+    value: "https://atomgit.com/ClarkeYTee/AxiomicCoreness"
+    description: "AtomGit mirror"
+authors:
+  - family-names: "Yoursa Tee"
+    given-names: "Clarke"
+license: MIT
+repository-code: "https://github.com/AxiomicCoreness/hello_world.py"
+keywords:
+  - closure-kernel
+  - phi-band
+  - patch-algebra
+  - math-origin-audit
+  - SHA3-256
+  - hash-chained-ledger
+abstract: >-
+  Golden-section closure kernel of the AxiomicCoreness repo: the open
+  phi-band word algebra (phi^-1 < |w| < phi, atom norm 1, contraction
+  composition), the Delta-replay patch law with its exactness theorem,
+  and the math_origin defect audit (11 entries, D9 open), as measured
+  at commit 1e449302.
