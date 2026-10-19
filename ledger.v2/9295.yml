@@ -1,0 +1,83 @@
+entry_index: 9295
+timestamp: '2026-10-19T23:40:58Z'
+event: /infrastructure_hardening_and_schema_contract
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 'eb07a6bb5ed505ab76fc7ab7a890f25029b3293d274c5ab0c0f32290f9f87583'
+witness_chain: 9294 -> 9295
+measured_at_commit: '26257033'
+note: |
+  Records commits landed on main between 997db1a5 (ledger.v2 9294) and
+  26257033 on 2026-10-19: the t_rotator_graphs skip reporting, the
+  evolanus_flow bit-flip H0 build with a suspended CronJob, the KaTeX
+  \darklambda macro, the two workflow fixes that stop CI writing to the
+  ledger, and the connectome XSD contract. Each fact below is checkable
+  against the named commit. Test counts are the number of tests in the
+  named file at that commit. No CI result, timing, running process or
+  server state is recorded. No commit in this range changes ledger/ or
+  ledger.v2/, and no existing ledger file is edited, renamed, or deleted
+  by this entry. Ledger spec affirmed by directive of Clarke Yoursa Tee.
+commits:
+  - sha: 9b4aafedb093e30b377b8b97f114a7e87a89c9fc
+    subject: 'fix(scripts): t_rotator_graphs reads anchored and YAML-native timestamps, visible date-only markers'
+  - sha: 55bd7e63c0e2d772da6490caf6f0b7b0252513a1
+    subject: 'feat(scripts): evolanus_flow dense H0 to n=12 with exact step; suspended ledger-sync CronJob'
+  - sha: a5bc5d684bff885982227dc87be6207372d3ad73
+    subject: 'feat(katex): add \darklambda macro, exact-match macro tests, fix wiring doc'
+  - sha: 6a548a7c3df53b6be4fc3505712402b305f067f1
+    subject: 'fix(ci): master-equation-ci no longer overwrites sealed ledger/8976.yaml'
+  - sha: 74ee4af54340e1041edb3207f9c10180b4982bd9
+    subject: 'fix(ci): cd-combinator-argo-rollout no longer writes or commits ledger entries'
+  - sha: 262570332f66273f455d10353994765b8c719045
+    subject: 'feat(connectome): XSD contract for connectome XML + loader/schema agreement test'
+t_rotator_graphs:
+  commit: 9b4aafedb093e30b377b8b97f114a7e87a89c9fc
+  files:
+    - scripts/t_rotator_graphs.py
+    - tests/test_t_rotator_graphs.py
+  change: 'load_entries() skips a file that cannot be read (OSError or UnicodeDecodeError) instead of aborting the run; files that cannot be read or have no top-level entry_index are reported on stderr and listed under skipped_files in summary.json'
+  tests: 'tests/test_t_rotator_graphs.py, 19 tests'
+evolanus_flow:
+  commit: 55bd7e63c0e2d772da6490caf6f0b7b0252513a1
+  files:
+    - scripts/evolanus_flow.py
+    - tests/test_evolanus_flow.py
+    - k8s/cronjob-sync.yaml
+  h0: 'H0 = phi^2 sum Z_i + phi^-2 sum_{i<j} X_i X_j, built entry-wise from bit flips instead of a pure-Python matrix product'
+  max_dense_n: 12
+  step: 'step(state, dtau, n) is exact by dense eigendecomposition (numpy eigh), O(8^n) in n; validates state length and dtau'
+  tests: 'tests/test_evolanus_flow.py, 38 tests against numpy.kron references and scipy expm'
+  cronjob: 'k8s/cronjob-sync.yaml has suspend: true; its image, sync.py, namespace, ConfigMap, Secret and PVC do not exist in the repo at this commit'
+katex:
+  commit: a5bc5d684bff885982227dc87be6207372d3ad73
+  macro: '\darklambda = \lambda_{2} = 1'
+  files:
+    - src/main/java/com/fruitfly/brain/KaTeXMacros.java
+    - docs/katex_macros.yaml
+    - docs/katex_macros.tex
+    - docs/katex_wiring.md
+    - pom.xml
+    - src/test/java/com/fruitfly/brain/KaTeXMacroSetTest.java
+  tests: 'KaTeXMacroSetTest.java, 13 tests (5 new exact-match tests)'
+workflow_ledger_fixes:
+  - commit: 6a548a7c3df53b6be4fc3505712402b305f067f1
+    file: .github/workflows/master-equation-ci.yml
+    change: 'no longer writes or auto-commits ledger/8976.yaml (sealed, /ci_failures_diagnosed); the run record is uploaded as an artifact only; a step fails the job if ledger/ or ledger.v2/ changes; Ed25519 step reports STRUCTURE_ONLY; LEDGER_DIR typo fixed; path filters include the workflow file'
+  - commit: 74ee4af54340e1041edb3207f9c10180b4982bd9
+    file: .github/workflows/cd-combinator-argo-rollout.yml
+    change: 'permissions contents: read; the ledger/8926.yaml seal step is replaced by a run record uploaded as an artifact only; auto-commit removed; a step fails the job if anything under ledger/ or ledger.v2/ is modified or added'
+connectome_schema:
+  commit: 262570332f66273f455d10353994765b8c719045
+  files:
+    - src/main/resources/connectome.xsd
+    - src/test/java/com/fruitfly/brain/ConnectomeSchemaTest.java
+  contract: 'root <hemibrain>, no target namespace; neuron@id required, non-blank, unique (xs:key); connection@from/@to required and must name declared neurons (xs:keyref); (from,to) pairs unique; weight required, finite xs:double; delayMs optional, default 1.0, > 0'
+  tests: 'ConnectomeSchemaTest.java, 10 tests; javax.xml.validation with secure processing; 600 seeded random documents must get the same verdict from ConnectomeLoader and the schema'
+  unchanged: 'ConnectomeLoader, HHMIJaneliaMap.xml, pom.xml and skills/hhmi/java/'
+terminal_hex: '6d15f8d931d0e077e610e40e93f5b2800afcd5c26ea5164158d974c223912d8e'
+seal: "∀∞φ² · INFRASTRUCTURE_HARDENING_SCHEMA_CONTRACT_9295 · WOOD_DRAGON_GATE · SEALED · 6d15f8d931d0e077e610e40e93f5b2800afcd5c26ea5164158d974c223912d8e"
+seal_sha3_256: '6d15f8d931d0e077e610e40e93f5b2800afcd5c26ea5164158d974c223912d8e'
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9295|/infrastructure_hardening_and_schema_contract|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 6d15f8d931d0e077e610e40e93f5b2800afcd5c26ea5164158d974c223912d8e
