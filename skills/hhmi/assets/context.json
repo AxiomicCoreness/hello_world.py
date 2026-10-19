@@ -1,0 +1,52 @@
+{
+  "skill": "hhmi",
+  "version": "1.0.1",
+  "repo": "AxiomicCoreness/hello_world.py",
+  "base_commit_measured": "fd76685",
+  "package": "com.fruitfly.brain",
+  "committed": true,
+  "applied_to_src": false,
+  "api_facts": {
+    "connectome_storage": "CSR: Connectome(n, rowPtr, colIdx, weight, delayMs)",
+    "neuron": "interface (no constructor, no connectTo)",
+    "automaton_requires": "SovereignAutomaton(connectome, n) with n == connectome.neuronCount()",
+    "chat_stdout": "the port380_mcp.py reply; load progress goes to stderr",
+    "unknown_flags": "SovereignMain.parse() rejects them; --connectome-file added there",
+    "fallback": "Connectome.random(8, 0.25, 20260720L)",
+    "bad_connectome_file_exit": 2
+  },
+  "loader_rules": {
+    "root": "hemibrain",
+    "doctype": "refused (XXE hardening)",
+    "neuron_id": "non-empty, unique, trimmed, indexed in document order",
+    "connection_endpoints": "must name declared neurons",
+    "weight": "required, finite; negative = inhibitory",
+    "delayMs": {"optional": true, "default": 1.0, "must_be": "> 0 and finite"},
+    "self_loops": "allowed",
+    "duplicate_pair": "rejected"
+  },
+  "placeholder": {
+    "file": "assets/HHMIJaneliaMap.xml",
+    "is_flyem_data": false,
+    "neurons": 3,
+    "connections": 3,
+    "shape": "ring A->B->C->A, weights 1.0, 0.8, 0.5"
+  },
+  "real_data": {
+    "dataset": "FlyEM hemibrain v1.2 exported traced adjacencies",
+    "format": "CSV",
+    "source": "gs://hemibrain/v1.2/exported-traced-adjacencies-v1.2.tar.gz",
+    "https": "https://storage.googleapis.com/hemibrain/v1.2/exported-traced-adjacencies-v1.2.tar.gz",
+    "reference": "https://connectome-neuprint.github.io/neuprint-python/docs/faq.html",
+    "traced_neurons_csv": {"columns": ["bodyId", "type", "instance"], "rows": 21739},
+    "traced_total_connections_csv": {"columns": ["bodyId_pre", "bodyId_post", "weight"],
+                                     "rows_approx": 3550000},
+    "weight_meaning": "synapse count; no sign, no delay"
+  },
+  "known_limits": {
+    "currentsFrom": "allocates double[n] per presynaptic neuron per step (Connectome.java:121)",
+    "per_step_allocation_at_full_n": "21739^2 = 4.73e8 doubles, about 3.8 GB",
+    "step_feedback": "FIXED in main by 4b6d07d 'fix(brain): deliver connectome currents to postsynaptic targets in SovereignAutomaton.step'; step now sums currents into incoming[target] (SovereignAutomaton.java:44-53)"
+  },
+  "tests": {"python_evals": 26, "java_junit": 21, "java_breakdown": {"KaTeXMacroSetTest": 8, "ConnectomeLoaderTest": 11, "SovereignAutomatonPropagationTest": 2}}
+}
