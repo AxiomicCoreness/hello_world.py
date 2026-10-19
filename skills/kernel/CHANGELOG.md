@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.1] - 2026-10-19
+### Changed
+- Renamed the skill package `scripts/` to `kernel_scripts/` (`__init__.py`,
+  `check_kernel.py`, `install_jdk.sh`, `run_endpoint.sh`,
+  `java/com/fruitfly/brain/Endpoint.java`). `evals/conftest.py` puts the skill root
+  first on `sys.path`, so under a repo-root `pytest` the old name resolved
+  `scripts` to this folder and shadowed the repo's own `scripts/` (breaking
+  `tests/test_dual_asyncio_cicd.py` and `tests/test_hook_branch_policy.py`).
+  Updated `evals/test_kernel.py`, `evals/conftest.py`, `evals/test_endpoint.py`,
+  `SKILL.md` and the javac path inside `run_endpoint.sh`. Entries below keep the
+  old paths as they were at the time.
+
 ## [1.1.0] - 2026-10-19
 ### Added
 - Demo Java endpoint `scripts/java/com/fruitfly/brain/Endpoint.java` (JDK 17 stdlib:

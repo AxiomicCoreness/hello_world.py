@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.check_kernel import (ATOM_NORM, CLAIMS, PHI, PHI_INV, classify_claim,
+from kernel_scripts.check_kernel import (ATOM_NORM, CLAIMS, PHI, PHI_INV, classify_claim,
                                   compose_norm, count_ts_assertions, deepen, in_band,
                                   main, phi_gate)
 

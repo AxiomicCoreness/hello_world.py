@@ -1,4 +1,4 @@
-# Live checks for the demo Java endpoint (scripts/run_endpoint.sh). Skipped when
+# Live checks for the demo Java endpoint (kernel_scripts/run_endpoint.sh). Skipped when
 # nothing is listening on 127.0.0.1:8025.
 import json
 import struct

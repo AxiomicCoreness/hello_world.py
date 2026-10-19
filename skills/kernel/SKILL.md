@@ -98,11 +98,11 @@ D7, D8, D10 are FIXED_LANDED (`:79-99`); D7 is recomputed via `_verifier7_detect
    - `bun run kernel/closure_kernel.test.ts` and `bun run kernel/exactness.test.ts`,
      or `npx -y tsx@4 kernel/<file>.test.ts`. Each line must start with `PASS`; for
      `exactness.test.ts` check the output, not just the exit code.
-3. Run `python -P scripts/check_kernel.py [--repo /workspace/hw] [--strict]`. It
+3. Run `python -P kernel_scripts/check_kernel.py [--repo /workspace/hw] [--strict]`. It
    prints `[+] OK` or `[!] WARNING` per check (`doc:` marks README/test-file
    discrepancies, which fail only under `--strict`). `--math-only` skips the repo.
    Exit codes: 0 ok, 1 failed check, 2 no `kernel/` found.
-4. To check a quoted number, run `python -P scripts/check_kernel.py --claim NAME VALUE`
+4. To check a quoted number, run `python -P kernel_scripts/check_kernel.py --claim NAME VALUE`
    (NAME is one of E0, detG, HB, frobenius, trace, phi^2.5, c4_hz). It prints `[+] OK`
    for the recomputed value, `[!] WARNING` for the audited false claim, or
    `[?] UNRECOGNISED` for anything else (±1e-6, set with `--tol`).
@@ -113,9 +113,9 @@ D7, D8, D10 are FIXED_LANDED (`:79-99`); D7 is recomputed via `_verifier7_detect
 7. Cite with `templates/CITATION.cff` (concept DOI 10.5281/zenodo.23378305).
 
 ## Java endpoint (demo, JDK 17 standard library only)
-- `scripts/install_jdk.sh` installs JDK 17 idempotently (apt `openjdk-17-jdk-headless`
+- `kernel_scripts/install_jdk.sh` installs JDK 17 idempotently (apt `openjdk-17-jdk-headless`
   if available; Debian 13 lacks it, so Temurin 17 goes to `/opt/jdk-17`).
-- `scripts/run_endpoint.sh` compiles `scripts/java/com/fruitfly/brain/Endpoint.java` to
+- `kernel_scripts/run_endpoint.sh` compiles `kernel_scripts/java/com/fruitfly/brain/Endpoint.java` to
   `/tmp/endpoint_classes` and starts it on `127.0.0.1:8025` (pid `/tmp/endpoint.pid`,
   log `/tmp/endpoint.log`).
 - Routes: `GET /healthz` → `{"status":"ok"}`; `GET /schema` → `assets/render_schema.json`

@@ -1,4 +1,4 @@
-# Make `scripts` importable from the skill root even under `python -P`
+# Make `kernel_scripts` importable from the skill root even under `python -P`
 # (safe-path mode drops the working directory from sys.path).
 import sys
 from pathlib import Path
