@@ -1,0 +1,65 @@
+# ledger-sync CronJob: SUSPENDED, NOT DEPLOYABLE AS-IS.
+#
+# None of the things this manifest depends on exist in this repo (checked on
+# main before this commit). It must stay suspended until each one exists
+# and has been approved:
+#   - namespace axiomic-ledger              (k8s/00-namespace.yaml is seagate-mimic)
+#   - image ledger-tilelang:0.1             (no Dockerfile or build produces it)
+#   - /usr/local/bin/sync.py in that image  (no sync.py anywhere in the repo;
+#                                            exec form needs +x and a shebang)
+#   - ConfigMap ledger-config, key git_remote
+#   - Secret gitcode-deploy-key, keys id_ed25519 and known_hosts
+#   - PVC ledger-spool
+#
+# Open questions before suspend is lifted:
+#   - Pushing every 5 minutes must keep the ledger append-only: no rewriting
+#     sealed entries, no force-push, and the next free index must be checked
+#     on each run. sync.py's behaviour is unknown, so this is unverified.
+#   - There is no securityContext and no resources block. The ssh key is read
+#     with defaultMode 0400, so it must run as the key owner (root by default).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ledger-sync
+  namespace: axiomic-ledger
+spec:
+  suspend: true
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: sync
+              image: ledger-tilelang:0.1
+              imagePullPolicy: IfNotPresent
+              command: ["/usr/local/bin/sync.py"]
+              env:
+                - name: LEDGER_ROOT
+                  value: /spool
+                - name: LEDGER_GIT_REMOTE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ledger-config
+                      key: git_remote
+                - name: GIT_SSH_COMMAND
+                  value: "ssh -i /keys/id_ed25519 -o UserKnownHostsFile=/keys/known_hosts -o StrictHostKeyChecking=yes"
+              volumeMounts:
+                - name: spool
+                  mountPath: /spool
+                - name: keys
+                  mountPath: /keys
+                  readOnly: true
+          volumes:
+            - name: spool
+              persistentVolumeClaim:
+                claimName: ledger-spool
+            - name: keys
+              secret:
+                secretName: gitcode-deploy-key
+                defaultMode: 0400
