@@ -40,6 +40,7 @@
         <directory>docs</directory>
         <includes>
           <include>katex_macros.yaml</include>
+          <include>katex_macros.tex</include>
         </includes>
       </testResource>
     </testResources>

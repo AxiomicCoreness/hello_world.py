@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -124,5 +126,76 @@ class KaTeXMacroSetTest {
         int javaCount = KaTeXMacros.count();
         assertEquals(yamlCount, javaCount,
                 "YAML declares " + yamlCount + " macros; Java map has " + javaCount);
+    }
+
+    // ---- exact key-set checks (added) ---------------------------------
+    // The presence checks above use substring matching, so "\\ket" would
+    // still pass via "\\ketbra" if "\\ket" itself were deleted. These
+    // tests compare exact key sets instead.
+
+    private static final String TEX_RESOURCE = "katex_macros.tex";
+
+    /** Captures the macro name from `"\\name":` lines. */
+    private static final Pattern YAML_KEY = Pattern.compile(
+            "^\\s*\"\\\\{1,2}([A-Za-z]+)\"\\s*:", Pattern.MULTILINE);
+
+    /** Captures the macro name from `\newcommand{\name}` lines. */
+    private static final Pattern TEX_KEY = Pattern.compile(
+            "^\\\\newcommand\\{\\\\([A-Za-z]+)\\}", Pattern.MULTILINE);
+
+    private static String readResource(String name) throws Exception {
+        try (InputStream in = KaTeXMacroSetTest.class.getClassLoader()
+                .getResourceAsStream(name)) {
+            assertNotNull(in, name + " must be on the classpath");
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static Set<String> keys(Pattern p, String text) {
+        Set<String> out = new LinkedHashSet<>();
+        Matcher m = p.matcher(text);
+        while (m.find()) {
+            assertTrue(out.add("\\" + m.group(1)), "duplicate macro \\" + m.group(1));
+        }
+        return out;
+    }
+
+    @Test
+    void yamlKeySetMatchesJavaMap() throws Exception {
+        assertEquals(KaTeXMacros.KATEX_MACROS.keySet(),
+                keys(YAML_KEY, stripCommentsAndWrappers(readMacroFile())));
+    }
+
+    @Test
+    void texMirrorKeySetMatchesJavaMap() throws Exception {
+        assertEquals(KaTeXMacros.KATEX_MACROS.keySet(),
+                keys(TEX_KEY, readResource(TEX_RESOURCE)));
+    }
+
+    @Test
+    void namedMacrosDeclaredExactly() {
+        for (String k : new String[]{"\\half", "\\ket", "\\bra", "\\Tr", "\\Disc",
+                "\\vertex", "\\darktrace", "\\darklambda", "\\seedeq"}) {
+            assertTrue(KaTeXMacros.has(k), k + " missing from KATEX_MACROS");
+        }
+    }
+
+    @Test
+    void darkTraceAndLambdaBodies() {
+        assertEquals("\\Tr(\\rho) = 1, \\quad \\Tr(\\rho^{2}) = 1",
+                KaTeXMacros.KATEX_MACROS.get("\\darktrace"));
+        assertEquals("\\lambda_{2} = 1", KaTeXMacros.KATEX_MACROS.get("\\darklambda"));
+        assertEquals(1.0, new DarkStateInvariant().lambda2(), 0.0);
+    }
+
+    /** \seedeq claims Delta = 5 and x_vertex = 1/2; check that against \seedpoly (x^2 - x - 1). */
+    @Test
+    void seedEqMatchesSeedPoly() {
+        assertEquals("x^{2} - x - 1 = 0", KaTeXMacros.KATEX_MACROS.get("\\seedpoly"));
+        String seedeq = (String) KaTeXMacros.KATEX_MACROS.get("\\seedeq");
+        assertTrue(seedeq.contains("= 5") && seedeq.endsWith("= \\half"), seedeq);
+        double a = 1, b = -1, c = -1;
+        assertEquals(5.0, b * b - 4 * a * c, 0.0);
+        assertEquals(0.5, -b / (2 * a), 0.0);
     }
 }

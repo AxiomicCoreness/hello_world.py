@@ -61,6 +61,7 @@ public final class KaTeXMacros {
         m.put("\\seedpoly",  "x^{2} - x - 1 = 0");
         m.put("\\seedeq",    "\\Disc = b^{2} - 4ac = 5, \\quad x_{\\vertex} = -\\frac{b}{2a} = \\half");
         m.put("\\darktrace", "\\Tr(\\rho) = 1, \\quad \\Tr(\\rho^{2}) = 1");
+        m.put("\\darklambda", "\\lambda_{2} = 1");
         m.put("\\darkeig",   "H\\ket{\\psitwo} = 1 \\cdot \\ket{\\psitwo}");
         m.put("\\darksv",    "\\ket{\\psitwo} = \\frac{1}{\\sqrt{2}} \\begin{pmatrix} 1 \\\\ 0 \\\\ -1 \\end{pmatrix}");
         m.put("\\trimerham", "H = \\begin{pmatrix} 1 & \\phiinv & 0 \\\\ \\phiinv & 2 & \\phiinv \\\\ 0 & \\phiinv & 1 \\end{pmatrix}");

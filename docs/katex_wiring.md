@@ -6,10 +6,10 @@ KaTeXMacros.KATEX_MACROS (Java source, single source of truth)
 │
 ├──► docs/katex_macros.yaml (generated — human-readable)
 ├──► docs/katex_macros.tex (generated — LaTeX mirror)
-└──► src/main/resources/katex_macros.yaml (classpath copy)
 │
-▼
-KaTeXMacroSetTest.java (reads classpath copy)
+▼ (pom.xml <testResources> puts docs/katex_macros.yaml and
+│  docs/katex_macros.tex on the test classpath; no src/main/resources copy)
+KaTeXMacroSetTest.java (reads the classpath copies)
 
 ## Why three copies
 
@@ -18,13 +18,14 @@ KaTeXMacroSetTest.java (reads classpath copy)
   `Map<String, Object>` where each value is either a `String`
   (no arguments) or a `[String, int]` pair (template + arity).
 - **YAML in docs/** — for humans. A reader opens one file and sees
-  all 30 macros without reading Java.
+  all 31 macros without reading Java.
 - **TeX in docs/** — for the LaTeX side. Same macros, `\newcommand`
   form. Drop into a `.tex` document with
   `\input{docs/katex_macros.tex}`.
-- **YAML on the classpath** — so the test can assert the YAML matches
-  the Java map. Byte-for-byte identity is not asserted; count and key
-  presence are.
+- **Test classpath** — Maven copies the docs/ YAML and TeX into
+  target/test-classes, so the test can assert both declare exactly
+  the Java map's keys. Byte-for-byte identity of bodies is not
+  asserted; count and key sets are.
 
 ## Regenerating
 
@@ -34,12 +35,12 @@ When `KATEX_MACROS` changes, regenerate the derived files:
 # 1. Edit src/main/java/com/fruitfly/brain/KaTeXMacros.java
 # 2. Copy the katex.macros block into docs/katex_macros.yaml
 # 3. Copy the \newcommand block into docs/katex_macros.tex
-# 4. Copy docs/katex_macros.yaml to src/main/resources/
 ```
 
-Until a generator exists, the three copies must be kept in sync by
-hand. The test catches drift by counting macro declarations and
-checking for six specific keys.
+Until a generator exists, the Java map, YAML and TeX must be kept in
+sync by hand. The test catches drift by counting macro declarations,
+comparing the YAML and TeX key sets with the Java map, and checking
+for specific keys.
 
 ## The six keys the test asserts
 
@@ -51,7 +52,8 @@ If any of these is missing from the classpath YAML, the test fails.
 
 - That the YAML and the Java map are byte-identical.
 - That every LaTeX command in a macro is KaTeX-supported.
-- That the TeX mirror matches the YAML.
+- That the TeX mirror bodies match the YAML bodies (only the key sets
+  are compared).
 - That a renderer successfully renders any macro.
 
 Those are separate concerns. The test guards against accidental
