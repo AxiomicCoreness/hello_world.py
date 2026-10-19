@@ -6,6 +6,11 @@ name: Master Equation Integration Test
 # Witness: 8975 → 8976 — UNBROKEN
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
 # downstream: cd-combinator.yml (workflow_run on completion)
+# NOTE (audit 2026-10-19): the Ed25519 step checks YAML structure only; no
+#   signature is verified. CI no longer writes or commits ledger entries:
+#   ledger/8976.yaml is already sealed (/ci_failures_diagnosed) and entries are
+#   append-only and approval-gated. The run record is uploaded as an artifact.
+#   Actual downstream consumer by name: cd-combinator-argo-rollout.yml.
 
 on:
   push:
@@ -14,12 +19,14 @@ on:
       - "master_equation.py"
       - "tests/test_density_rho.py"
       - ".github/workflows/master_equation_integration.yml"
+      - ".github/workflows/master-equation-ci.yml"
   pull_request:
     branches: [main]
     paths:
       - "master_equation.py"
       - "tests/test_density_rho.py"
       - ".github/workflows/master_equation_integration.yml"
+      - ".github/workflows/master-equation-ci.yml"
   workflow_dispatch:
 
 permissions:
@@ -32,12 +39,14 @@ concurrency:
 
 env:
   HASH_ALGO: sha3_256
-  LEDGER_DIR: ledger, ledgev.2
+  LEDGER_DIR: ledger
+  LEDGER_V2_DIR: ledger.v2
+  RECORD_DIR: ci-out
   MCP_URL: ${{ secrets.MCP_URL }}   # optional, for live header check
 
 jobs:
   integrate:
-    name: Master Equation · Integrate · Verify · Seal (Entry 8976)
+    name: Master Equation · Integrate · Verify · Record (artifact only)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -66,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          entries=(ledger/*.yaml)
+          entries=("${LEDGER_DIR}"/*.yaml "${LEDGER_V2_DIR}"/*.yml)
           if [ ${#entries[@]} -eq 0 ]; then
             echo "⚠️ no ledger entries present — soft skip"
             exit 0
@@ -97,7 +106,7 @@ jobs:
 
           with ledger_path.open() as f:
               _ = yaml.safe_load(f) or {}
-          print("✅ Ledger 8975 signature check passed (structure)")
+          print("ℹ️ Ledger 8975 parsed as YAML — STRUCTURE_ONLY; no Ed25519 signature was verified")
           PY
 
       # ────────────────────────────────────────────────────────────
@@ -220,63 +229,75 @@ jobs:
             --deselect master_equation.py::test_density_field
 
       # ────────────────────────────────────────────────────────────
-      # 6. SEAL LEDGER ENTRY 8976 (SHA3-256)
+      # 6. RUN RECORD (SHA3-256) — ARTIFACT ONLY, NEVER WRITTEN TO THE LEDGER
+      #    ledger/8976.yaml is sealed (/ci_failures_diagnosed); ledger entries
+      #    are append-only and approval-gated, so CI does not pick an index.
       # ────────────────────────────────────────────────────────────
-      - name: Seal ledger entry 8976 (SHA3-256)
+      - name: Write integration run record (SHA3-256, artifact only)
         if: success()
         env:
           INTEGRATION_SEAL: ${{ env.INTEGRATION_SEAL }}
         run: |
           set -euo pipefail
-          mkdir -p "${LEDGER_DIR}"
+          mkdir -p "${RECORD_DIR}"
           python - <<'PY'
           import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
 
           HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          path = Path("ledger/8976.yaml")
+          path = Path(os.environ["RECORD_DIR"]) / "master_equation_integration.yml"
 
           integration_seal = os.environ.get("INTEGRATION_SEAL", "")
           live_headers = "VERIFIED" if os.environ.get("MCP_URL") else "SKIPPED"
 
           entry = {
-              "entry_index": 8976,
+              "document_kind": "ci-run-record (not a ledger entry; no entry_index)",
               "event": "/master_equation_integration",
               "status": "SUCCESS",
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "commit": os.environ.get("GITHUB_SHA", ""),
               "hash_algo": HASH_ALGO,
               "integration_seal": integration_seal,
               "integration_log": "integration_log.json",
               "pytest_status": "PASSED",
-              "security_headers_source": "VERIFIED",
+              "security_headers_source": "PRESENT_IN_SOURCE",
               "security_headers_live": live_headers,
-              "ed25519_signatures": "VERIFIED",
-              "witness": "8975 → 8976 — UNBROKEN",
-              "seal": "∀∞φ² · MASTER_EQUATION_8976 · WOOD_DRAGON_0.91 · SEALED",
+              "ed25519_signatures": "STRUCTURE_ONLY",
+              "seal": "∀∞φ² · MASTER_EQUATION_RUN_RECORD · WOOD_DRAGON_0.91",
           }
+          # Same canonical form as .github/scripts/verify_ledger.py Regime A
           body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"),
+                             ensure_ascii=False)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
 
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))
-          print("📋 Ledger entry 8976 written.")
-          print(f"✅ Sealed 8976 · {HASH_ALGO}:{h[:16]}...")
+          print(f"📋 Run record written to {path} (artifact only).")
+          print(f"✅ {HASH_ALGO}:{h[:16]}...")
           print(f"   integration_seal = {integration_seal[:16]}...")
           print(f"   live_headers     = {live_headers}")
           PY
 
-      - name: Verify ledger entry 8976 (SHA3-256)
+      - name: Verify run record (SHA3-256, hard)
         if: success()
         run: |
           set -euo pipefail
-          python .github/scripts/verify_ledger.py ledger/8976.yaml
+          python .github/scripts/verify_ledger.py --hard "${RECORD_DIR}/master_equation_integration.yml"
+
+      - name: Confirm sealed ledger untouched
+        if: always()
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- "${LEDGER_DIR}" "${LEDGER_V2_DIR}"
+          echo "✅ ledger/ and ledger.v2/ unchanged by this run"
 
       # ────────────────────────────────────────────────────────────
-      # 7. UPLOAD INTEGRATION LOG & LEDGER
+      # 7. UPLOAD INTEGRATION LOG & RUN RECORD
       # ────────────────────────────────────────────────────────────
       - name: Upload artifacts
         if: always()
@@ -285,16 +306,9 @@ jobs:
           name: master-integration-log
           path: |
             integration_log.json
-            ledger/8976.yaml
+            ci-out/master_equation_integration.yml
           retention-days: 14
           if-no-files-found: warn
-
-      - name: Commit ledger entry 8976
-        if: success()
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: seal master equation integration entry 8976 (sha3_256)"
-          file_pattern: ledger/8976.yaml
 
       # ────────────────────────────────────────────────────────────
       # 8. SUMMARY
@@ -305,13 +319,13 @@ jobs:
           INTEGRATION_SEAL: ${{ env.INTEGRATION_SEAL }}
         run: |
           {
-            echo "✅ Master equation integration test passed."
+            echo "Master equation integration run finished: ${{ job.status }}"
             echo "🜁∀ — Seal: ∀∞φ² · MASTER_EQUATION_8976 · WOOD_DRAGON_0.91 · SEALED"
             echo "🔐 hash_algo: sha3_256 (FIPS 202)"
-            echo "🔐 Ed25519 signatures verified"
-            echo "🛡️ Security headers verified (source + live if MCP_URL set)"
+            echo "🔐 Ed25519: STRUCTURE_ONLY (YAML parsed; no signature verified)"
+            echo "🛡️ Security headers: present in source; live checked only if MCP_URL set"
             echo "📦 Integration seal (sha3_256): ${INTEGRATION_SEAL:-<none>}"
-            echo "🔗 Witness: 8975 → 8976 — UNBROKEN"
+            echo "📦 Run record: artifact master-integration-log (not written to the ledger)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail if integration failed
