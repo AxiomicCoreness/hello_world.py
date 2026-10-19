@@ -6,6 +6,7 @@ description: Work with AxiomicCoreness/hello_world.py — φ-harmonic lattice, P
 # AxiomicCoreness/hello_world.py
 
 Public Sovereign Engine on GitHub `AxiomicCoreness/hello_world.py` (branch `main`).
+The engine is dynamic, deterministic and nonstochastic: the same inputs and seed give the same trajectory.
 
 Prefer **current `main` HEAD** over any pinned short SHA in older notes. Files exist even when GitHub code search returns empty — use path/filename or clone.
 
@@ -42,7 +43,9 @@ Flask + HTMX bridge to credit vault; φ-harmonic fee paths.
 
 ### Port 380 — `run_port380.py` → `quantum/port_380_http.py`
 - GET `/health`, `/status`, `/380`; POST `/gate`
-- Ternary scaling: `python3 quantum/port_380_gate.py --ternary {-1,0,1}`
+- Pentad rank scaling: `python3 quantum/radar_lindblad/port_380_gate.py --ternary {-2,-1,0,1,2}` (`--pentad` is an alias)
+  - −1/0/+1 behave as before; +2/−2 are strong pass/invert (2× the ±1 scaling), explicit override only. CDP/OAuth derivation still yields only −1/0/+1. Implemented at `fe9fc38`; see `docs/pentad_rank.md`.
+  - BitNet b1.58 weights (`quantum/port_380_implicit.py`) and sealed entries 8213/8224 stay ternary.
 - Layer 314 anchors (full hex):
   - Anchor: `8a250cf445e8ad0cc8d06d0096b969029a175a14eb58838e734f1975358b860d`
   - Leaf: `807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68`
