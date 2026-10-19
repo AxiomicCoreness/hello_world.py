@@ -320,6 +320,21 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      # Append-only gate: new ledger files may be added; an existing file
+      # under ledger/ or ledger.v2/ must never be modified, deleted or renamed.
+      - name: Append-only guard (no existing ledger file modified)
+        if: success()
+        run: |
+          set -euo pipefail
+          changed=$(git diff --no-renames --name-only --diff-filter=MDT HEAD -- ledger ledger.v2)
+          if [ -n "$changed" ]; then
+            while IFS= read -r f; do
+              echo "::error file=$f::append-only violation: existing ledger file modified/deleted/renamed"
+            done <<< "$changed"
+            exit 1
+          fi
+          echo "✅ append-only: no existing ledger file modified"
+
       - name: Commit ledger entry 8988
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
