@@ -12,3 +12,13 @@ uvicorn>=0.27.0
 
 # Ascend stack: requirements-ascend.txt (commented; not the 1.8.1 CPU wheel)
 # torch is not required by the core quantum/ or app/ paths shown; add only if ml_sovereign_core is imported
+
+# ── Prebuild notes (comments only; no new dependencies) ─────────────────────
+# Java side (not pip): JDK 17 (pom.xml maven.compiler.release=17) and Maven.
+#   `mvn test` runs the 21 JUnit 5 tests under src/test/java;
+#   `mvn package` bundles src/main/resources/HHMIJaneliaMap.xml into the jar.
+# Python servers: fastapi + uvicorn (above). The MCP image installs the
+#   minimal set in requirements-mcp.txt (fastapi, uvicorn[standard], pydantic).
+# port380_mcp.py refuses to start without GARDEN_SECRET (FATAL, exit 1).
+#   `python port380_mcp.py --check-config [--json]` validates BIND_HOST,
+#   PORT/MCP_PORT and GARDEN_SECRET without binding a port; exits 0 or 1.
