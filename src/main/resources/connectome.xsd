@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XML Schema (XSD 1.0) for the project-local connectome format read by
+  com.fruitfly.brain.ConnectomeLoader (see HHMIJaneliaMap.xml).
+  This is NOT the FlyEM/neuPrint hemibrain export format.
+
+  Mirrors the loader's rules:
+    - root element <hemibrain>, no namespace (loader is namespace-unaware
+      and compares the tag name to "hemibrain");
+    - <neuron id="..."/>: id required, non-blank, unique (xs:key);
+    - <connection from="..." to="..." weight="..." [delayMs="..."]/>:
+      from/to required and must name a declared neuron (xs:keyref),
+      weight required and finite, delayMs optional (default 1.0 =
+      ConnectomeLoader.DEFAULT_DELAY_MS), finite and > 0;
+    - a repeated (from, to) pair is rejected (xs:unique); self-loops are
+      allowed; neurons and connections may appear in any order.
+
+  The schema is deliberately STRICTER than the loader in a few places
+  (unknown elements/attributes, text content, nesting, a default
+  namespace, surrounding whitespace in ids, Java-only number spellings
+  such as "1d" or "0x1p0"). Those cases are listed and tested in
+  ConnectomeSchemaTest. A document that is valid against this schema is
+  always accepted by the loader.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="unqualified"
+           attributeFormDefault="unqualified">
+
+  <!-- Non-blank id with no leading/trailing XML whitespace. The loader
+       trims ids (ConnectomeLoader.required); requiring them pre-trimmed
+       keeps xs:key / xs:keyref equality identical to the loader's. -->
+  <xs:simpleType name="NeuronId">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\S([\s\S]*\S)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Finite double: excludes NaN, INF and -INF (Double.isFinite). -->
+  <xs:simpleType name="FiniteDouble">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="-1.7976931348623157E308"/>
+      <xs:maxInclusive value="1.7976931348623157E308"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Finite and strictly positive (delayMs must be > 0). -->
+  <xs:simpleType name="PositiveFiniteDouble">
+    <xs:restriction base="FiniteDouble">
+      <xs:minExclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="Neuron">
+    <xs:attribute name="id" type="NeuronId" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="Connection">
+    <xs:attribute name="from" type="NeuronId" use="required"/>
+    <xs:attribute name="to" type="NeuronId" use="required"/>
+    <xs:attribute name="weight" type="FiniteDouble" use="required"/>
+    <xs:attribute name="delayMs" type="PositiveFiniteDouble" use="optional" default="1.0"/>
+  </xs:complexType>
+
+  <xs:element name="hemibrain">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="neuron" type="Neuron"/>
+        <xs:element name="connection" type="Connection"/>
+      </xs:choice>
+    </xs:complexType>
+
+    <xs:key name="neuronId">
+      <xs:selector xpath="neuron"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+    <xs:keyref name="connectionFrom" refer="neuronId">
+      <xs:selector xpath="connection"/>
+      <xs:field xpath="@from"/>
+    </xs:keyref>
+    <xs:keyref name="connectionTo" refer="neuronId">
+      <xs:selector xpath="connection"/>
+      <xs:field xpath="@to"/>
+    </xs:keyref>
+    <xs:unique name="connectionPair">
+      <xs:selector xpath="connection"/>
+      <xs:field xpath="@from"/>
+      <xs:field xpath="@to"/>
+    </xs:unique>
+  </xs:element>
+</xs:schema>
