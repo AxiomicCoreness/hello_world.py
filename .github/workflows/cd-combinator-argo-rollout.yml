@@ -4,6 +4,12 @@ name: CD Combinator (Argo Rollout)
 # Witness: 8925 → 8926 — UNBROKEN
 # cryptography: python -m pip + .github/scripts/verify_ledger.py
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
+# NOTE (audit 2026-10-19): CI no longer writes or commits ledger entries.
+#   ledger/8926.yaml has never existed (8925 and 8927 are sealed; 8927
+#   declares "8926 → 8927"), so the old step would have back-filled a gap
+#   behind sealed entries without approval. Ledger entries are append-only
+#   and approval-gated; this workflow uploads a CI run record as an artifact.
+#   The 8925 check is the verifier's default soft mode (warns, never fails).
 
 on:
   workflow_run:
@@ -17,8 +23,7 @@ on:
         default: false
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: cd-combinator
@@ -45,12 +50,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet cryptography pyyaml
 
-      - name: Verify ledger entry 8925 (soft-skip if missing)
+      - name: Verify ledger entry 8925 (soft — mismatch warns, does not fail)
         run: |
           set -euo pipefail
           if [ -f "ledger/8925.yaml" ]; then
             if [ -f .github/scripts/verify_ledger.py ]; then
-              python .github/scripts/verify_ledger.py ledger/8925.yaml
+              python .github/scripts/verify_ledger.py --soft ledger/8925.yaml
             else
               echo "verify_ledger.py absent — soft skip 8925 verification"
             fi
@@ -84,7 +89,7 @@ jobs:
           if missing:
               print(f"Missing headers: {missing}")
               sys.exit(1)
-          print("All security headers present")
+          print("All security header names present in source (string match; not a live check)")
           PY
 
   trigger-rollout:
@@ -209,60 +214,82 @@ jobs:
             --auth-token "$ARGOCD_AUTH_TOKEN" \
             --grpc-web --health --timeout 300
 
-      - name: Seal ledger entry 8926 (SHA3-256)
+      # Run record — ARTIFACT ONLY, never written to ledger/ or ledger.v2/.
+      # No entry_index: CI does not pick ledger indices (append-only, approval-gated).
+      - name: Write rollout run record (SHA3-256, artifact only)
         if: success()
+        env:
+          RECORD_DIR: ci-out
+          ARGOCD_SYNC_CONFIGURED: ${{ secrets.ARGOCD_AUTH_TOKEN != '' && secrets.ARGOCD_SERVER != '' }}
         run: |
           set -euo pipefail
-          mkdir -p ledger
+          mkdir -p "${RECORD_DIR}"
           python - <<'PY'
-          import hashlib, json, yaml
-          from pathlib import Path
+          import hashlib, json, os, yaml
           from datetime import datetime, timezone
+          from pathlib import Path
 
           HASH_ALGO = "sha3_256"
-          path = Path("ledger/8926.yaml")
+          path = Path(os.environ["RECORD_DIR"]) / "cd_combinator_argo_rollout.yml"
+          synced = os.environ.get("ARGOCD_SYNC_CONFIGURED") == "true"
 
           entry = {
-              "entry_index": 8926,
+              "document_kind": "ci-run-record (not a ledger entry; no entry_index)",
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "event": "/cd_combinator_argo_rollout",
               "status": "SUCCESS",
               "workflow": "CD Combinator (Argo Rollout)",
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "commit": os.environ.get("GITHUB_SHA", ""),
+              "trigger": os.environ.get("GITHUB_EVENT_NAME", ""),
               "deployment": "sovereign-garden",
+              "rollout_manifest_applied": "kubectl apply exited 0",
+              "argocd_sync": "SYNCED_AND_HEALTHY" if synced else "SKIPPED (secrets not set)",
+              "ledger_8925_check": "SOFT (verifier default; mismatch does not fail)",
+              "security_headers_source": "PRESENT_IN_SOURCE",
               "hash_algo": HASH_ALGO,
-              "witness": "8925 -> 8926 -- UNBROKEN",
-              "seal": "∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED",
+              "seal": "∀∞φ² · CD_COMBINATOR_RUN_RECORD · WOOD_DRAGON_0.91",
           }
+          # Same canonical form as .github/scripts/verify_ledger.py Regime A
           body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"),
+                             ensure_ascii=False)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
 
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
-                                    allow_unicode=True))
-          print("Ledger entry 8926 written.")
-          print(f"Sealed 8926 · {HASH_ALGO}:{h[:16]}...")
+                                    allow_unicode=True), encoding="utf-8")
+          print(f"Run record written to {path} (artifact only).")
+          print(f"{HASH_ALGO}:{h[:16]}...")
           PY
 
-      - name: Verify ledger entry 8926 (SHA3-256)
+      - name: Verify run record (SHA3-256, hard)
         if: success()
         run: |
           set -euo pipefail
-          if [ -f .github/scripts/verify_ledger.py ]; then
-            python .github/scripts/verify_ledger.py ledger/8926.yaml
-          else
-            echo "verify_ledger.py absent — soft skip"
-          fi
+          python .github/scripts/verify_ledger.py --hard ci-out/cd_combinator_argo_rollout.yml
 
-      - name: Commit ledger entry if changed
-        if: success()
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Confirm sealed ledger untouched
+        if: always()
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- ledger ledger.v2
+          if [ -n "$(git status --porcelain --untracked-files=all -- ledger ledger.v2)" ]; then
+            git status --porcelain --untracked-files=all -- ledger ledger.v2
+            echo "::error::untracked files appeared under ledger/ or ledger.v2/"
+            exit 1
+          fi
+          echo "ledger/ and ledger.v2/ unchanged by this run"
+
+      - name: Upload run record
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          commit_message: "chore: seal CD Combinator entry 8926 (sha3_256)"
-          file_pattern: ledger/8926.yaml
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          name: cd-combinator-run-record
+          path: ci-out/cd_combinator_argo_rollout.yml
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: Final summary
         if: always()
@@ -270,8 +297,8 @@ jobs:
           {
             echo "### CD Combinator"
             echo ""
-            echo "- status: completed"
-            echo "- seal: \`∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED\`"
+            echo "- job status: ${{ job.status }}"
             echo "- hash_algo: sha3_256"
-            echo "- witness: 8925 -> 8926 -- UNBROKEN"
+            echo "- run record: artifact cd-combinator-run-record (not written to the ledger)"
+            echo "- ledger: no entry written or committed by CI"
           } >> "$GITHUB_STEP_SUMMARY"
