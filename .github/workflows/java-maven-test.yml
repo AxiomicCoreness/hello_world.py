@@ -1,0 +1,60 @@
+# Runs the Java/JUnit suite (ConnectomeLoader, ConnectomeSchema, KaTeX macro
+# set, SovereignAutomaton propagation) so schema/loader drift fails CI.
+# Read-only: no secrets, no ledger writes, no commits.
+name: "Java · Maven Test"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "pom.xml"
+      - "docs/katex_macros.yaml"
+      - "docs/katex_macros.tex"
+      - ".github/workflows/java-maven-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "pom.xml"
+      - "docs/katex_macros.yaml"
+      - "docs/katex_macros.tex"
+      - ".github/workflows/java-maven-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-maven-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mvn-test:
+    name: mvn -B test (JDK 17)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B -ntp test
+
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
