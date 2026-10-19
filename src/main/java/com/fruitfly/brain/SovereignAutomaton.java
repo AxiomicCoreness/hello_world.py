@@ -39,13 +39,17 @@ public final class SovereignAutomaton {
             throw new IllegalStateException("dark-state gate refused");
         }
         int n = swarm.size();
+        // Gather every presynaptic neuron's delayed output first, indexed by
+        // postsynaptic target, so all neurons see the same pre-step voltages.
+        double[] incoming = new double[n];
         for (int i = 0; i < n; i++) {
             double[] currents = connectome.currentsFrom(i, swarm.get(i).v(), dt);
-            double sum = 0.0;
-            for (double c : currents) {
-                sum += c;
+            for (int j = 0; j < n; j++) {
+                incoming[j] += currents[j];
             }
-            swarm.get(i).stepTick(sum + drive);
+        }
+        for (int j = 0; j < n; j++) {
+            swarm.get(j).stepTick(incoming[j] + drive);
         }
         time += dt;
         if (!state.isAbsorbing()) {
