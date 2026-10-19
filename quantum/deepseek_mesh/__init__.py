@@ -38,8 +38,11 @@ from .client import (
 def __getattr__(name: str):
     """Lazy import for endpoint (requires fastapi)."""
     if name == "endpoint":
-        from . import endpoint
-        return endpoint
+        # importlib, not "from . import endpoint": the latter calls back into
+        # this __getattr__ via _handle_fromlist and recurses without bound.
+        import importlib
+
+        return importlib.import_module(__name__ + ".endpoint")
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
