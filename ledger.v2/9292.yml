@@ -1,0 +1,64 @@
+entry_index: 9292
+timestamp: '2026-10-19T02:38:08Z'
+event: /port380_handover_pulse
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 'bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1'
+witness_chain: 9291 -> 9292
+note: |
+  Records the Port-380 handover state as observed in CI after round 6, and
+  that no historical ledger entry was modified. No pulse or handover reached
+  an MCP server: MCP_URL is unset, so both MCP steps were skipped. The
+  Handover via Port-380 workflow regenerated ledger/8988.yaml on the runner
+  and committed it locally; the push was rejected (non-fast-forward), so
+  ledger/8988.yaml on main is unchanged. No existing ledger file is edited,
+  renamed, or deleted by this entry. Ledger spec affirmed by directive of
+  Clarke Yoursa Tee.
+measured_at_commit: 41272b65
+payload:
+  source: quantum_reality_engine_510510
+  target: MCP_URL/pulse
+  mcp_url: unset
+  action: handover_signal_skipped
+  auth_verified: false
+  pulse_step: 'MCP pulse (if MCP_URL set): skipped (run 39178232787, job 117825461052)'
+  append_only_check: 'Historical entries unmodified.'
+handover_workflow:
+  file: .github/workflows/handover-via-380.yml
+  name: 'Handover via Port-380'
+  run_id: '39178213794'
+  head_sha: 'b9842f2a313482e1e9a6c2d33418ed97b0262172'
+  trigger: 'push to main (paths: port380_mcp.py)'
+  handover_step: 'skipped: MCP_URL unset (local-first, soft-skip handover)'
+  handover_status: skipped
+  ledger_write: 'Seal ledger entry 8988 step rewrote ledger/8988.yaml on the runner'
+  self_verify: 'seal mismatch on its own 8988 write (soft mode, step passed)'
+  local_commit: 'a6a4806d chore: seal handover-via-380 entry 8988 (sha3_256), 1 file changed, 2 insertions(+), 3 deletions(-)'
+  push: 'rejected (non-fast-forward): origin/main had advanced to 02e143bb'
+  conclusion: failure
+pulse_510510:
+  file: .github/workflows/quantum_reality_engine_510510.yml
+  run_id: '39178232787'
+  head_sha: '3a77bef86647f5865b2b3d9a062045f6e42b0ac3'
+  job: 'Quantum Reality Engine · Hamiltonian evolution'
+  step: 'MCP pulse (if MCP_URL set)'
+  step_conclusion: skipped
+  writes_ledger: false
+append_only_check:
+  path: ledger/8988.yaml
+  git_blob_on_main: '5588d5107516ad30e1dff52e5033ca6eeba12518'
+  git_blob_at_6ea3b5aa: '5588d5107516ad30e1dff52e5033ca6eeba12518'
+  file_sha3_256: '46daa88ce50c48ef14e4ae52a83a06d2ef7681c66144b34d4886a3444dff2934'
+  modified: false
+  result: 'Historical entries unmodified.'
+remediation:
+  patch: handover_append_only.patch
+  state: 'drafted, not landed'
+  effect: 'Handover via Port-380 fails with ::error:: before its commit step if any existing file under ledger/ or ledger.v2/ is modified, deleted or renamed'
+terminal_hex: '73116ae42c802165a2a2195d3690a4ccae1dc4c68ee22414accf94e5dc62c279'
+seal: "∀∞φ² · PORT380_HANDOVER_PULSE_9292 · WOOD_DRAGON_GATE · SEALED · 73116ae42c802165a2a2195d3690a4ccae1dc4c68ee22414accf94e5dc62c279"
+seal_sha3_256: '73116ae42c802165a2a2195d3690a4ccae1dc4c68ee22414accf94e5dc62c279'
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9292|/port380_handover_pulse|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 73116ae42c802165a2a2195d3690a4ccae1dc4c68ee22414accf94e5dc62c279
