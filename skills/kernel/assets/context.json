@@ -1,0 +1,55 @@
+{
+  "originator": "Clarke Yoursa Tee",
+  "repo": "AxiomicCoreness/hello_world.py",
+  "subject_dir": "kernel/",
+  "head_commit_measured": "1e449302",
+  "kernel_commits": ["23faeb07", "fab538dc", "47b9d1eb", "a4a2fe19", "905b10c4"],
+  "files": [
+    "kernel/METHOD_QUANTUM_CYBERNETIC.md",
+    "kernel/README.md",
+    "kernel/closure_kernel.ts",
+    "kernel/closure_kernel.test.ts",
+    "kernel/exactness.ts",
+    "kernel/exactness.test.ts",
+    "kernel/math_origin_audit.py"
+  ],
+  "constants": {
+    "PHI": "(1 + sqrt(5)) / 2",
+    "PHI_INV": "1 / PHI",
+    "ATOM_NORM": 1,
+    "band": "PHI_INV < n < PHI (open)",
+    "compose_norm": "(a.n + b.n) * PHI_INV",
+    "closure_cap": 200,
+    "admit_depth_K": 2,
+    "lex0_atoms": 13,
+    "phi_gate_eps": 1e-15,
+    "C4_hz": 261.63,
+    "LAYER_MAP": {"base": 244, "e8_target": 248,
+                  "special": {"mcai": 716, "FlasomParrel112": 112, "REAL10924": 10924}}
+  },
+  "computed": {
+    "phi_2_5": 3.330191,
+    "c4_phi_2_5_hz": 871.28,
+    "deep_norm_500": 1.6180339887498942
+  },
+  "audit": {
+    "exit": 0,
+    "defects": 11,
+    "fixed_landed": 8,
+    "open_unfixed": ["D9_REAL10924_signature_check"],
+    "open_documentation": ["D6_frequency_box_741Hz"],
+    "open_pending_math_origin": ["D11_hypersurface_pending_constants"]
+  },
+  "ts_assertions": {"closure_kernel.test.ts": 15, "exactness.test.ts": 5},
+  "discrepancies": [
+    "kernel/README.md:6 says 19 assertions; closure_kernel.test.ts has 15 (15 since 23faeb07)",
+    "kernel/README.md:29 says 261.63 Hz x phi^2.5 ~ 871.6 Hz; computed 871.28 Hz",
+    "kernel/README.md:29 and closure_kernel.test.ts:12 say phi^2.5 ~ 3.331; computed 3.33019 (test tolerance 0.001 hides it)",
+    "kernel/exactness.test.ts has no process.exit; FAIL lines still exit 0",
+    "kernel/math_origin_audit.py:62,75 D1 (E0) and D5 (trace) use the same actual_value expression; whether intended is unverified",
+    "kernel/math_origin_audit.py:130-131 'pending: D11 | open_doc: D6' is a hardcoded string, not computed"
+  ],
+  "next_free_ledger_v2": 9294,
+  "timestamp_format": "%Y-%m-%dT%H:%M:%SZ",
+  "hash": "SHA3-256"
+}
