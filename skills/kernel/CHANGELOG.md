@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2] - 2026-10-19
+### Fixed
+- `kernel_scripts/run_endpoint.sh` refuses to start (exit 1) when 127.0.0.1:8025 is already
+  taken by a process that is not the one in `/tmp/endpoint.pid`. After the health loop it
+  checks `kill -0` on the new pid and exits 1 with the log if the endpoint died, instead of
+  reporting success because some other server answered `/healthz`.
+
 ## [1.1.1] - 2026-10-19
 ### Changed
 - Renamed the skill package `scripts/` to `kernel_scripts/` (`__init__.py`,

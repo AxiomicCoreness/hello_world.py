@@ -380,7 +380,7 @@ async def mcp_tool(
 # ENTRYPOINT
 # ============================================================================
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 380))
+    port = int(os.environ.get("PORT") or os.environ.get("MCP_PORT") or 380)
     uvicorn.run(
         app,
         host=os.environ.get("BIND_HOST", "127.0.0.1"),
