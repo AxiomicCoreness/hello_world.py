@@ -1,0 +1,67 @@
+entry_index: 9294
+timestamp: '2026-10-19T22:58:01Z'
+event: /pentad_expansion_and_port380_hardening
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 'aa0415d1fa55babade32b6ac052eeeab6a7159d67d2ae998024e2715231abea3'
+witness_chain: 9293 -> 9294
+measured_at_commit: 0fbbea56
+note: |
+  Records commits landed on main between 1dfeaec1 and 0fbbea56 on
+  2026-10-19: the connectome loader, Port-380 binding and secret hardening,
+  the pentad rank expansion of the Port-380 gate, and the docs that go with
+  them. Each fact below is checkable against the named commit. No CI result,
+  running process or server state is recorded. No existing ledger file is
+  edited, renamed, or deleted by this entry. Ledger spec affirmed by
+  directive of Clarke Yoursa Tee.
+commits:
+  - sha: 1dfeaec189b16fc2e330466afc8dd50e24d89e16
+    subject: 'feat(brain): load connectome from HHMIJaneliaMap.xml via --connectome-file'
+  - sha: e89cd3d7657796aef0bfb7424cddfb857901346c
+    subject: 'docs(skills/hhmi): loader now applied in src/'
+  - sha: 69e62b9f2d3896322e7155dae2c88205ec91b6f8
+    subject: 'docs(skills/hhmi): correct port380_mcp.py relationship'
+  - sha: db4652a4a806106e24d4a9c7a33c734f278b871f
+    subject: 'fix(bindings): correct compose, mcp and port380 ports; harden run_endpoint.sh'
+  - sha: 7af275e6949300b90a71a381f97e7894c2eee3ab
+    subject: 'fix(bindings): mcp deps, require GARDEN_SECRET, k8s 380->8380 remap, correct bind comments'
+  - sha: d6dbc55941235a94b8b30084cf785a77618826d0
+    subject: 'fix(port380): --check-config, /healthz, constant-time secret check; repair CI workflows'
+  - sha: 9187eeda7a886500b2d95917cd2636fd62c5deba
+    subject: 'fix(port380): --check-config prints OK/FAIL (JSON via --json), never binds; CI secret length step'
+  - sha: fe9fc386988bd9a6eb874ffc013b98fb89bdf09e
+    subject: 'feat(port380): pentad rank {-2..2} in Port-380 gate with tests'
+  - sha: 1567795b78c03a5d911882a9c2aebb3c3e7aeb60
+    subject: 'docs: deterministic wording and pentad rank note'
+  - sha: e35e989c2a85b53f5c36fa4707cc3341164eb89c
+    subject: 'docs: record prebuild notes in requirements.txt'
+  - sha: 0fbbea56e4eff36603316119b0be3fa411e24a1c
+    subject: 'docs(canvases): add port380-prebuild canvas'
+pentad_rank:
+  commit: fe9fc386988bd9a6eb874ffc013b98fb89bdf09e
+  values: [-2, -1, 0, 1, 2]
+  previous_values: [-1, 0, 1]
+  change: 'additive; -1, 0 and +1 behave as before, +2 and -2 give twice the +1 and -1 result'
+  files:
+    - quantum/radar_lindblad/port_380_gate.py
+    - quantum/deepseek_mesh/endpoint.py
+    - quantum/cdp_convergence/cdp_schema.py
+  tests: 'tests/test_port380_pentad.py, 65 tests'
+  docs_commit: 1567795b78c03a5d911882a9c2aebb3c3e7aeb60
+  docs_note: docs/pentad_rank.md
+port380_hardening:
+  check_config: 'port380_mcp.py --check-config validates config and exits 0 or 1 without binding a port; --json gives structured output (d6dbc559, 9187eeda)'
+  healthz: 'GET /healthz route in port380_mcp.py (d6dbc559)'
+  secret_check: 'X-Garden-Secret compared with hmac.compare_digest (d6dbc559)'
+  garden_secret_fail_fast: 'startup prints FATAL and exits when GARDEN_SECRET is unset, empty or whitespace (7af275e6)'
+  k8s_port_remap: 'k8s/service-port-380.yaml port 380 -> targetPort 8380; k8s/deployment-port-380.yaml containerPort 8380 (7af275e6)'
+canvas:
+  path: canvases/port380-prebuild/CANVAS.md
+  commit: 0fbbea56e4eff36603316119b0be3fa411e24a1c
+terminal_hex: 'eb07a6bb5ed505ab76fc7ab7a890f25029b3293d274c5ab0c0f32290f9f87583'
+seal: "∀∞φ² · PENTAD_EXPANSION_PORT380_HARDENING_9294 · WOOD_DRAGON_GATE · SEALED · eb07a6bb5ed505ab76fc7ab7a890f25029b3293d274c5ab0c0f32290f9f87583"
+seal_sha3_256: 'eb07a6bb5ed505ab76fc7ab7a890f25029b3293d274c5ab0c0f32290f9f87583'
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9294|/pentad_expansion_and_port380_hardening|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = eb07a6bb5ed505ab76fc7ab7a890f25029b3293d274c5ab0c0f32290f9f87583
