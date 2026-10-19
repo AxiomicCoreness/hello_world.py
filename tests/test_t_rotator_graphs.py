@@ -124,3 +124,76 @@ def test_matplotlib_fallback_without_seaborn(ledger, tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, "seaborn", None)  # import seaborn -> ImportError
     trg.run(ledger, tmp_path / "nosns", plots=True)
     assert (tmp_path / "nosns" / "drift.png").stat().st_size > 0
+
+
+# ── timestamp forms and skip reporting ───────────────────────────────────
+
+@pytest.fixture
+def mixed(tmp_path):
+    d = tmp_path / "mixed"
+    d.mkdir()
+    _write(d, "0009.yml", "entry_index: 9\ntimestamp: 2026-09-30 10:00:00\nevent: /n\n")  # YAML-native naive
+    _write(d, "0010.yml", "entry_index: 0010\ntimestamp: 2026-10-02T01:00:00Z\nevent: /a\n")  # YAML-native aware
+    _write(d, "0011.yml", "entry_index: 11\ntimestamp: 2026-10-01\nevent: /d\n")  # YAML-native date
+    _write(d, "0012.yaml", "entry_index: 12\ntimestamp: '2026-10-03T05:00:00'\nevent: /y\n")  # .yaml, naive str
+    _write(d, "0013.yml", "entry_index: 13\ntimestamp: ETERNAL_NOW_ANCHORED_TO_2026-10-04Z\nevent: /e\n")
+    _write(d, "orphan.yml", "event: /no_index\n")
+    (d / "binary.yml").write_bytes(b"\xff\xfe\x00entry_index: 99\n")
+    return d
+
+
+def test_yaml_native_and_naive_timestamps_read_as_utc(mixed):
+    by = {e.index: e for e in trg.load_entries(mixed)}
+    assert by[9].timestamp_kind == "lenient" and by[9].noon_offset_s == -2 * 3600
+    assert by[10].timestamp_kind == "strict" and by[10].noon_offset_s == -11 * 3600
+    assert by[12].timestamp_iso == "2026-10-03T05:00:00Z" and by[12].noon_offset_s == -7 * 3600
+    assert by[10].index == 10  # 0010, not octal 8
+
+
+def test_anchored_and_native_dates_are_date_only_not_dropped(mixed):
+    by = {e.index: e for e in trg.load_entries(mixed)}
+    assert by[11].timestamp_kind == "date_only" and by[11].timestamp_iso == "2026-10-01"
+    assert by[13].timestamp_kind == "date_only" and by[13].timestamp_iso == "2026-10-04"
+    assert by[11].noon_offset_s is None and by[13].noon_offset_s is None
+
+
+def test_yaml_extension_is_loaded(mixed):
+    assert 12 in {e.index for e in trg.load_entries(mixed)}
+
+
+def test_skipped_files_reported_with_reason(mixed, tmp_path, capsys):
+    skipped = []
+    entries = trg.load_entries(mixed, skipped)
+    assert sorted(e.index for e in entries) == [9, 10, 11, 12, 13]
+    assert {s["file"]: s["reason"] for s in skipped} == {
+        "binary.yml": "unreadable: UnicodeDecodeError",
+        "orphan.yml": "no top-level entry_index",
+    }
+    summary = trg.run(mixed, tmp_path / "o", plots=False)
+    assert [s["file"] for s in summary["skipped_files"]] == ["binary.yml", "orphan.yml"]
+    assert "skipped orphan.yml: no top-level entry_index" in capsys.readouterr().err
+
+
+def test_empty_ledger_dir_exits_cleanly(tmp_path, capsys):
+    d = tmp_path / "empty"
+    d.mkdir()
+    rc = trg.main(["--ledger-dir", str(d), "--out-dir", str(tmp_path / "o")])
+    assert rc == 0
+    s = json.loads(capsys.readouterr().out)
+    assert s["entries"] == 0 and s["range"] is None and s["skipped_files"] == []
+    assert (tmp_path / "o" / "timeline.png").stat().st_size > 0
+
+
+def test_timeline_date_only_markers_hollow_and_off_the_line(mixed, tmp_path, monkeypatch):
+    plt = pytest.importorskip("matplotlib.pyplot")
+    from matplotlib.colors import to_rgba
+    figs = []
+    monkeypatch.setattr(plt, "close", lambda fig=None: figs.append(fig))
+    trg.plot_timeline(trg.load_entries(mixed), tmp_path / "t.png")
+    ax = figs[-1].axes[0]
+    (line,) = ax.lines
+    assert len(line.get_xdata()) == 3          # 9, 10, 12 have a time of day
+    (pts,) = ax.collections
+    assert len(pts.get_offsets()) == 2         # 11, 13 date only
+    assert all(fc[3] == 0 for fc in pts.get_facecolors())      # hollow
+    assert tuple(pts.get_edgecolors()[0]) == to_rgba("#d62728")  # visible red edge

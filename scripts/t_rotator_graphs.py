@@ -157,12 +157,23 @@ def parse_timestamp(raw: Optional[str]) -> Dict[str, object]:
     return out
 
 
-def load_entries(ledger_dir: Path) -> List[Entry]:
+def load_entries(ledger_dir: Path,
+                 skipped: Optional[List[Dict[str, str]]] = None) -> List[Entry]:
+    """Load every *.yml / *.yaml entry. Files that cannot be read or carry no
+    top-level entry_index are not entries; each is appended to `skipped`
+    (when given) as {"file", "reason"} instead of being dropped silently."""
     entries: List[Entry] = []
     for path in sorted(ledger_dir.glob("*.y*ml")):
-        raw = path.read_text(encoding="utf-8")
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            if skipped is not None:
+                skipped.append({"file": path.name, "reason": f"unreadable: {exc.__class__.__name__}"})
+            continue
         m = INDEX_RE.search(raw)
         if not m:
+            if skipped is not None:
+                skipped.append({"file": path.name, "reason": "no top-level entry_index"})
             continue  # README-style or non-entry YAML
         idx = int(m.group(1))
         try:
@@ -344,7 +355,10 @@ def run(ledger_dir: Path, out_dir: Path, plots: bool = True) -> Dict[str, object
     out_dir = out_dir.resolve()
     if out_dir == ledger_dir or ledger_dir in out_dir.parents:
         raise SystemExit("refusing: --out-dir is inside --ledger-dir (no ledger writes)")
-    entries = load_entries(ledger_dir)
+    skipped: List[Dict[str, str]] = []
+    entries = load_entries(ledger_dir, skipped)
+    for sk in skipped:
+        print(f"skipped {sk['file']}: {sk['reason']}", file=sys.stderr)
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     p = out_dir / "chain.mmd"
@@ -367,6 +381,7 @@ def run(ledger_dir: Path, out_dir: Path, plots: bool = True) -> Dict[str, object
         "strict_timestamps": sum(e.timestamp_strict for e in entries),
         "date_only_timestamps": [e.index for e in entries if e.timestamp_kind == "date_only"],
         "unparsed_timestamps": [e.index for e in entries if e.timestamp_kind == "unparsed"],
+        "skipped_files": skipped,
         "written": [str(w) for w in written],
     }
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
