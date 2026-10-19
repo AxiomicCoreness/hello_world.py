@@ -136,7 +136,9 @@ jobs:
             export GARDEN_SECRET
             echo "::notice::secrets.GARDEN_SECRET is empty; using an ephemeral value for the check-config contract only"
           fi
-          plan=$(python mcp/port380_mcp.py --check-config)
+          echo "GARDEN_SECRET length: ${#GARDEN_SECRET}"
+          test "$(python mcp/port380_mcp.py --check-config)" = "OK: config valid"
+          plan=$(python mcp/port380_mcp.py --check-config --json)
           echo "$plan" | tee mcp_plan.json
           # The heredoc is python's stdin, so read the plan from the file.
           python - <<'PY'

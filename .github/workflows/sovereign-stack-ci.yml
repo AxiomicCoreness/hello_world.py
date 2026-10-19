@@ -107,8 +107,12 @@ jobs:
         run: |
           set -euo pipefail
           s="$(openssl rand -hex 16)"
-          echo "::add-mask::${s}"
-          echo "GARDEN_SECRET=${s}" >> "$GITHUB_ENV"
+          echo "::add-mask::$s"
+          echo "GARDEN_SECRET=$s" >> "$GITHUB_ENV"
+
+      - name: GARDEN_SECRET length only (value never printed)
+        run: |
+          echo "GARDEN_SECRET length: ${#GARDEN_SECRET}"
 
       - name: Compile check
         run: |
@@ -126,7 +130,8 @@ jobs:
             echo "soft skip check-config"
             exit 0
           fi
-          plan=$(python mcp/port380_mcp.py --check-config)
+          test "$(python mcp/port380_mcp.py --check-config)" = "OK: config valid"
+          plan=$(python mcp/port380_mcp.py --check-config --json)
           echo "$plan" | tee mcp_plan.json
           python - <<'PY'
           import json

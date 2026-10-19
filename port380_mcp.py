@@ -468,11 +468,17 @@ def check_config() -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    if "--check-config" in sys.argv[1:]:
+    _argv = sys.argv[1:]
+    if "--check-config" in _argv:
+        # Validation only: never binds a socket or starts uvicorn.
         plan = check_config()
-        print(json.dumps(plan, sort_keys=True))
+        if "--json" in _argv:
+            # Machine-readable contract for CI; the secret is never included.
+            print(json.dumps(plan, sort_keys=True))
+        elif plan["ok"]:
+            print("OK: config valid")
         for err in plan["errors"]:
-            print(f"check-config: {err}", file=sys.stderr)
+            print(f"FAIL: {err}", file=sys.stderr)
         raise SystemExit(0 if plan["ok"] else 1)
     require_garden_secret()
     plan = check_config()

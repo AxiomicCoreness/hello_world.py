@@ -105,13 +105,17 @@ jobs:
         run: |
           set -euo pipefail
           s="$(openssl rand -hex 16)"
-          echo "::add-mask::${s}"
-          echo "GARDEN_SECRET=${s}" >> "$GITHUB_ENV"
+          echo "::add-mask::$s"
+          echo "GARDEN_SECRET=$s" >> "$GITHUB_ENV"
+      - name: GARDEN_SECRET length only (value never printed)
+        run: |
+          echo "GARDEN_SECRET length: ${#GARDEN_SECRET}"
       - name: 7-key MCP contract
         run: |
           set -euo pipefail
           python -m py_compile mcp/port380_mcp.py
-          plan=$(python mcp/port380_mcp.py --check-config)
+          test "$(python mcp/port380_mcp.py --check-config)" = "OK: config valid"
+          plan=$(python mcp/port380_mcp.py --check-config --json)
           echo "$plan" | python -c '
           import json,sys,os
           d=json.load(sys.stdin)
