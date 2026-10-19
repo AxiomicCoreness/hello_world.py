@@ -212,6 +212,15 @@ if [[ "$LOCAL_ONLY" == "false" ]]; then
     fi
 fi
 
+# ─── Preflight (before stopping anything) ─────────────────────────────
+# port380_mcp.py refuses to start without GARDEN_SECRET, so don't kill a
+# running server only to fail the respawn.
+if [[ -z "${GARDEN_SECRET//[[:space:]]/}" ]]; then
+    echo -e "${RED}  ❌ GARDEN_SECRET not set; port380_mcp.py would exit FATAL. Not stopping the running server.${NC}"
+    exit 1
+fi
+export GARDEN_SECRET
+
 # ─── Local restart ──────────────────────────────────────────────────
 echo -e "${BLUE}🔷 Local process restart...${NC}"
 echo "─────────────────────────────────────────────────────────────"

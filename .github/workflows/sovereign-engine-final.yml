@@ -96,6 +96,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install MCP deps
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet \
+            fastapi==0.115.0 "uvicorn[standard]==0.32.0" pydantic==2.9.2
+      - name: Ephemeral CI-only GARDEN_SECRET (generated per run, masked, never committed)
+        run: |
+          set -euo pipefail
+          s="$(openssl rand -hex 16)"
+          echo "::add-mask::${s}"
+          echo "GARDEN_SECRET=${s}" >> "$GITHUB_ENV"
       - name: 7-key MCP contract
         run: |
           set -euo pipefail
@@ -112,13 +123,18 @@ jobs:
       - name: Live /healthz (MCP only)
         run: |
           set -euo pipefail
-          python mcp/port380_mcp.py &
+          python mcp/port380_mcp.py > /tmp/mcp.log 2>&1 &
           pid=$!
           trap 'kill $pid 2>/dev/null || true' EXIT
-          sleep 2
-          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/healthz)" = "200"
-          code_h=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/health || true)
-          code_p=$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:${MCP_PORT}/pulse || true)
+          ready=0
+          for _ in $(seq 1 40); do
+            kill -0 "$pid" 2>/dev/null || { echo "mcp exited early"; cat /tmp/mcp.log; exit 1; }
+            if curl -sf -o /dev/null "http://127.0.0.1:${MCP_PORT}/healthz"; then ready=1; break; fi
+            sleep 0.25
+          done
+          [ "$ready" = 1 ] || { echo "healthz did not become ready"; cat /tmp/mcp.log; exit 1; }
+          code_h=$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${MCP_PORT}/health" || true)
+          code_p=$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${MCP_PORT}/pulse" || true)
           echo "MCP legacy /health=${code_h} /pulse=${code_p}"
           if [ "${MCP_LEGACY_404_HARD}" = "1" ]; then
             test "${code_h}" = "404"

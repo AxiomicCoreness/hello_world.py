@@ -129,11 +129,19 @@ jobs:
             echo "contract_ok=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          if [ -z "${GARDEN_SECRET:-}" ]; then
+            # Repo secret not configured: ephemeral per-run value, this step only.
+            GARDEN_SECRET="$(openssl rand -hex 16)"
+            echo "::add-mask::${GARDEN_SECRET}"
+            export GARDEN_SECRET
+            echo "::notice::secrets.GARDEN_SECRET is empty; using an ephemeral value for the check-config contract only"
+          fi
           plan=$(python mcp/port380_mcp.py --check-config)
           echo "$plan" | tee mcp_plan.json
-          echo "$plan" | python - <<'PY'
+          # The heredoc is python's stdin, so read the plan from the file.
+          python - <<'PY'
           import json, sys, os
-          d = json.load(sys.stdin)
+          d = json.load(open("mcp_plan.json"))
           for k in ("MCP_BIND_HOST", "MCP_PORT", "MCP_NAMESPACE"):
               assert k in os.environ, "{} not set in dispatch env".format(k)
           required = {

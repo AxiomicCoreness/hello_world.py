@@ -26,6 +26,8 @@ Security posture:
 import os
 import sys
 import hashlib
+import hmac
+import ipaddress
 from contextlib import asynccontextmanager
 import json
 import time
@@ -211,7 +213,8 @@ SLOT_BIND_PROPOSED = "127.0.0.1:8024"
 def verify_secret(x_garden_secret: Optional[str]) -> bool:
     if not GARDEN_SECRET.strip():
         raise HTTPException(status_code=503, detail="GARDEN_SECRET not configured")
-    if x_garden_secret != GARDEN_SECRET:
+    # Constant-time comparison on bytes.
+    if not hmac.compare_digest((x_garden_secret or "").encode("utf-8"), GARDEN_SECRET.encode("utf-8")):
         raise HTTPException(status_code=403, detail="Invalid GARDEN_SECRET")
     return True
 
@@ -226,10 +229,22 @@ def _full_sha3(body: Any) -> str:
     return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
 
 
+async def _read_json(request: Request, require_object: bool = False) -> Any:
+    """Parse the request body as JSON; malformed input is a 400, not a 500."""
+    try:
+        body = await request.json()
+    except ValueError:  # json.JSONDecodeError and UnicodeDecodeError are ValueErrors
+        raise HTTPException(status_code=400, detail="request body must be valid JSON")
+    if require_object and not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="request body must be a JSON object")
+    return body
+
+
 # ============================================================================
 # ROUTES
 # ============================================================================
 @app.get("/health")
+@app.get("/healthz")
 async def health():
     return JSONResponse(
         content={
@@ -291,7 +306,7 @@ async def quantum_chessboard_health():
 
 @app.post("/gate")
 async def gate(request: Request):
-    body = await request.json()
+    body = await _read_json(request)
     digest = _full_sha3(body)  # full-length, no truncation
     return JSONResponse(
         content={
@@ -312,7 +327,7 @@ async def pulse(
     x_garden_secret: Optional[str] = Header(None),
 ):
     verify_secret(x_garden_secret)
-    body = await request.json()
+    body = await _read_json(request, require_object=True)
     pulse_id = body.get("pulse_id", body.get("source", "manual"))
     pulse_data = {
         "pulse_id": pulse_id,
@@ -366,7 +381,7 @@ async def mcp_tool(
     x_garden_secret: Optional[str] = Header(None),
 ):
     verify_secret(x_garden_secret)
-    body = await request.json()
+    body = await _read_json(request, require_object=True)
     tool_name = body.get("tool", "unknown")
     arguments = body.get("arguments", {})
     reply = None
@@ -412,12 +427,61 @@ async def mcp_tool(
 # ============================================================================
 # ENTRYPOINT
 # ============================================================================
+HEALTHZ_PATH = "/healthz"
+
+
+def check_config() -> Dict[str, Any]:
+    """Validate the runtime env without starting the server. Never includes the secret."""
+    errors = []
+    host = (os.environ.get("BIND_HOST") or os.environ.get("MCP_BIND_HOST", "127.0.0.1")).strip()
+    if host != "localhost":
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            errors.append(f"bind host {host!r} is not an IP address or 'localhost'")
+    raw_port = os.environ.get("PORT") or os.environ.get("MCP_PORT") or "380"
+    port: Optional[int]
+    try:
+        port = int(raw_port)
+        if not 1 <= port <= 65535:
+            errors.append(f"port {port} is outside 1-65535")
+    except ValueError:
+        port = None
+        errors.append(f"PORT/MCP_PORT {raw_port!r} is not an integer")
+    if garden_secret_missing():
+        errors.append("GARDEN_SECRET is unset or empty")
+    url_host = f"[{host}]" if ":" in host else host
+    return {
+        "ok": not errors,
+        "host": host,
+        "bind_host": host,
+        "bind": f"{url_host}:{port}",
+        "port": port,
+        "url": f"http://{url_host}:{port}{HEALTHZ_PATH}",
+        "surface": [HEALTHZ_PATH],
+        "legacy_out_of_surface": ["/health", "/pulse"],
+        "namespace": os.environ.get("MCP_NAMESPACE", "default"),
+        "legacy_404_hard": os.environ.get("MCP_LEGACY_404_HARD", "0") == "1",
+        "garden_secret": "missing" if garden_secret_missing() else "set",
+        "errors": errors,
+    }
+
+
 if __name__ == "__main__":
+    if "--check-config" in sys.argv[1:]:
+        plan = check_config()
+        print(json.dumps(plan, sort_keys=True))
+        for err in plan["errors"]:
+            print(f"check-config: {err}", file=sys.stderr)
+        raise SystemExit(0 if plan["ok"] else 1)
     require_garden_secret()
-    port = int(os.environ.get("PORT") or os.environ.get("MCP_PORT") or 380)
+    plan = check_config()
+    if not plan["ok"]:
+        print("FATAL: " + "; ".join(plan["errors"]), file=sys.stderr, flush=True)
+        raise SystemExit(1)
     uvicorn.run(
         app,
-        host=os.environ.get("BIND_HOST") or os.environ.get("MCP_BIND_HOST", "127.0.0.1"),
-        port=port,
+        host=plan["host"],
+        port=plan["port"],
         log_level="info",
     )
