@@ -1,13 +1,13 @@
 entry_index: 8818
 event: /docker_build_main
 status: SUCCESS
-timestamp: '2026-10-19T21:37:48Z'
+timestamp: '2026-10-19T21:56:48Z'
 hash_algo: sha3_256
 image: axiomic/sovereign-engine:latest
-image_digest: sha256:bedc42bc8513285c991482c31ebb6f49bc720e912f4382bcb25c9ecb59c474c8
+image_digest: sha256:c1e78297953d2a95db7aa965db17d93b927730318a5fcfb5ce895b86094633cc
 pushed: false
 source: main
-commit: 7af275e6949300b90a71a381f97e7894c2eee3ab
+commit: 9187eeda7a886500b2d95917cd2636fd62c5deba
 security_headers: VERIFIED
 witness: 8817 → 8818 — UNBROKEN
-seal: ∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED · 61fe5066c01489f2de4b8ebfbcd6da5af55c05e89f75f20b6ae88f5bbfd924ac
+seal: ∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED · a9e7200d06c5a05fa580a613860f7bcde3a096a4b91bfaa9d0b19f26d0c6afb6
