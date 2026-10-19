@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0] - 2026-10-19
+### Added
+- Demo Java endpoint `scripts/java/com/fruitfly/brain/Endpoint.java` (JDK 17 stdlib:
+  `HttpServer`, `ImageIO`, headless AWT) on 127.0.0.1:8025 with `/healthz`, `/schema`,
+  `/render` (PNG with pHYs set from dpi; 400 on bad input).
+- `scripts/install_jdk.sh` (idempotent JDK 17; Temurin fallback) and `scripts/run_endpoint.sh`.
+- `assets/render_schema.json` (JSON Schema 2020-12, iPhone 12 / A14 Bionic) and
+  `assets/sample_300dpi.png` (600×900 px, 11811 px/m = 300 dpi).
+- `templates/RenderClient.swift` (URLSession client) and `evals/test_endpoint.py`.
+
 ## [1.0.0] - 2026-10-19
 ### Added
 - `SKILL.md` with frontmatter (name, tagged description, tags) and steps, built

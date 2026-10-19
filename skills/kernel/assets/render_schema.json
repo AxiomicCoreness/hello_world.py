@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fruitfly:brain:render:v1",
+  "title": "Render endpoint (iPhone client)",
+  "description": "Request/response for GET /render. Reference device: iPhone 12 (A14 Bionic SoC), 390x844 pt logical, @3x scale = 1170x2532 px, 460 ppi screen. Print output is rendered at dpi (default 300), independent of screen ppi.",
+  "$defs": {
+    "RenderRequest": {
+      "type": "object",
+      "properties": {
+        "device": {"type": "string", "default": "iPhone12,A14 Bionic", "description": "Client device label. A14 Bionic ships in iPhone 12, 12 mini, 12 Pro, 12 Pro Max."},
+        "widthPt": {"type": "number", "exclusiveMinimum": 0, "default": 390, "description": "Logical width in points (iPhone 12: 390)."},
+        "heightPt": {"type": "number", "exclusiveMinimum": 0, "default": 844, "description": "Logical height in points (iPhone 12: 844)."},
+        "scale": {"type": "integer", "enum": [1, 2, 3], "default": 3, "description": "UIScreen.scale; iPhone 12 is @3x (390x844 pt -> 1170x2532 px)."},
+        "screenPpi": {"type": "integer", "default": 460, "description": "Physical screen density of iPhone 12 (informational)."},
+        "widthIn": {"type": "number", "exclusiveMinimum": 0, "maximum": 20, "default": 2, "description": "Print width in inches (query param)."},
+        "heightIn": {"type": "number", "exclusiveMinimum": 0, "maximum": 20, "default": 3, "description": "Print height in inches (query param)."},
+        "dpi": {"type": "integer", "minimum": 1, "maximum": 1200, "default": 300, "description": "Output resolution; written to PNG pHYs as round(dpi/0.0254) px/m (300 -> 11811)."}
+      },
+      "additionalProperties": false
+    },
+    "RenderResponse": {
+      "type": "object",
+      "description": "Body is image/png; these values are also returned in X-Render-* headers.",
+      "properties": {
+        "pixelWidth": {"type": "integer", "description": "round(widthIn*dpi); default 600"},
+        "pixelHeight": {"type": "integer", "description": "round(heightIn*dpi); default 900"},
+        "dpi": {"type": "integer"},
+        "pixelsPerMeter": {"type": "integer", "description": "pHYs value, default 11811"},
+        "contentType": {"const": "image/png"}
+      },
+      "required": ["pixelWidth", "pixelHeight", "dpi", "contentType"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "request": {"$ref": "#/$defs/RenderRequest"},
+    "response": {"$ref": "#/$defs/RenderResponse"}
+  }
+}

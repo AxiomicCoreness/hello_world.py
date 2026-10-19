@@ -111,3 +111,17 @@ D7, D8, D10 are FIXED_LANDED (`:79-99`); D7 is recomputed via `_verifier7_detect
    `ledger.v2/9294.yml` (append-only; never edit or replace an existing entry).
    Timestamps use `%Y-%m-%dT%H:%M:%SZ`, hashes use SHA3-256.
 7. Cite with `templates/CITATION.cff` (concept DOI 10.5281/zenodo.23378305).
+
+## Java endpoint (demo, JDK 17 standard library only)
+- `scripts/install_jdk.sh` installs JDK 17 idempotently (apt `openjdk-17-jdk-headless`
+  if available; Debian 13 lacks it, so Temurin 17 goes to `/opt/jdk-17`).
+- `scripts/run_endpoint.sh` compiles `scripts/java/com/fruitfly/brain/Endpoint.java` to
+  `/tmp/endpoint_classes` and starts it on `127.0.0.1:8025` (pid `/tmp/endpoint.pid`,
+  log `/tmp/endpoint.log`).
+- Routes: `GET /healthz` → `{"status":"ok"}`; `GET /schema` → `assets/render_schema.json`
+  (draft 2020-12; iPhone 12 / A14 Bionic, 390×844 pt @3x = 1170×2532 px, 460 ppi);
+  `GET /render?widthIn=2&heightIn=3&dpi=300` → PNG of widthIn·dpi × heightIn·dpi px with
+  pHYs = round(dpi/0.0254) px/m (11811 for 300). dpi ≤ 1200, sides ≤ 20 in, ≤ 40 Mpx; else 400.
+- Sample output: `assets/sample_300dpi.png` (600×900, 11811 ppm). iPhone client:
+  `templates/RenderClient.swift` (the phone must reach the server over the network, not 127.0.0.1).
+- `evals/test_endpoint.py` checks the live server and skips if it is not running.
