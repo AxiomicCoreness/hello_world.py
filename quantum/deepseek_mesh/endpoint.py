@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756+
-mTLS + OAuth2 CDP + FAL ternary + VOID-QCH + Prometheus /metrics.
+mTLS + OAuth2 CDP + FAL pentad rank (−2..+2) + VOID-QCH + Prometheus /metrics.
 Endpoints:
   GET  /health, /status, /380, /cdp/status, /metrics
   POST /gate, /pulse, /oidc_handover, /cdp/handshake, /reset
@@ -66,22 +66,58 @@ except ImportError:
     except ImportError:
         chemical_precision_feasibility = None  # type: ignore
 
-# ─── FAL ternary Port-380 gate ────────────────────────────────────────
+# ─── FAL pentad Port-380 gate ─────────────────────────────────────────
+# Local copy of the gate rules, used when the gate module cannot be
+# imported. It must accept and scale exactly the same set as
+# quantum/radar_lindblad/port_380_gate.py (tests/test_port380_pentad.py).
+_FALLBACK_PENTAD_VALUES = (-2, -1, 0, 1, 2)
+_FALLBACK_PENTAD_MODES = {
+    -2: "strong_invert",
+    -1: "invert",
+    0: "nullify",
+    1: "identity",
+    2: "strong_identity",
+}
+
+
+def _fallback_apply_pentad_scaling(harmony: float, rank: int) -> float:
+    if rank == 1:
+        return float(harmony)
+    if rank == 0:
+        return 0.0
+    if rank == -1:
+        return -float(harmony)
+    if rank == 2:
+        return 2.0 * float(harmony)
+    if rank == -2:
+        return -2.0 * float(harmony)
+    raise ValueError("Pentad rank must be -2, -1, 0, 1, or 2")
+
+
 try:
     from quantum.radar_lindblad.port_380_gate import (
         apply_ternary_scaling,
+        apply_pentad_scaling,
         evaluate_gate,
         DEFAULT_HARMONY,
+        PENTAD_VALUES,
+        PENTAD_MODES,
     )
 except ImportError:
     try:
         from radar_lindblad.port_380_gate import (  # type: ignore
             apply_ternary_scaling,
+            apply_pentad_scaling,
             evaluate_gate,
             DEFAULT_HARMONY,
+            PENTAD_VALUES,
+            PENTAD_MODES,
         )
     except ImportError:
         DEFAULT_HARMONY = 0.7337473231
+        PENTAD_VALUES = _FALLBACK_PENTAD_VALUES
+        PENTAD_MODES = dict(_FALLBACK_PENTAD_MODES)
+        apply_pentad_scaling = _fallback_apply_pentad_scaling
 
         def apply_ternary_scaling(harmony: float, ternary: int) -> float:
             if ternary == 1:
@@ -96,8 +132,8 @@ except ImportError:
             return {
                 "harmony_in": harmony,
                 "ternary": ternary,
-                "harmony_out": apply_ternary_scaling(harmony, ternary),
-                "mode": {1: "identity", 0: "nullify", -1: "invert"}.get(ternary, "?"),
+                "harmony_out": apply_pentad_scaling(harmony, ternary),
+                "mode": PENTAD_MODES.get(ternary, "?"),
             }
 
 # ─── Layer 314 Invariants ─────────────────────────────────────────────
@@ -150,7 +186,8 @@ class GateBody(BaseModel):
     harmony: float = DEFAULT_HARMONY
     override: bool = False
     ternary: Optional[int] = Field(
-        default=None, description="FAL ternary −1|0|+1; if omitted, derived from CDP/OAuth"
+        default=None,
+        description="FAL pentad rank −2|−1|0|+1|+2; if omitted, derived from CDP/OAuth (−1|0|+1 only)",
     )
     websocket_ready: Optional[bool] = None
     oauth_validated: bool = False
@@ -244,6 +281,7 @@ async def status():
         "phi": PHI,
         "seal": SEAL,
         "fal": "ternary_scaling",
+        "fal_allowed": list(PENTAD_VALUES),
         "metrics": "/metrics",
         "http_500_total": _http_500,
         "timestamp": time.time(),
@@ -253,8 +291,8 @@ async def status():
 @app.post("/gate")
 async def gate(body: GateBody):
     if body.ternary is not None:
-        if body.ternary not in (-1, 0, 1):
-            raise HTTPException(status_code=400, detail="ternary must be -1, 0, or 1")
+        if body.ternary not in PENTAD_VALUES:
+            raise HTTPException(status_code=400, detail="ternary must be one of -2, -1, 0, 1, 2")
         fal = evaluate_gate(body.harmony, ternary=body.ternary)
     elif body.websocket_ready is not None:
         fal = evaluate_gate(
@@ -408,7 +446,8 @@ async def root():
             "/reset",
         ],
         "prometheus": "GET /metrics — curl -s $MCP_URL/metrics | grep 500",
-        "fal": "ternary −1|0|+1 merged into /gate and /cdp/status",
+        "fal": "pentad −2|−1|0|+1|+2 on /gate (±2 explicit only); /cdp/status derives −1|0|+1",
+        "fal_allowed": list(PENTAD_VALUES),
         "void_qch": "GET /cdp/status?chemical_precision=true",
         "seal": SEAL,
     }

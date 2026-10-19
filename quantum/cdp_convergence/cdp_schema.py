@@ -5,6 +5,8 @@ CDP Schema — quantum/cdp_convergence
 
 websocket_ready defaults False until OAuth 2.0 bearer validation succeeds.
 FAL ternary (−1/0/+1) is derived from websocket/oauth/foreign-trace state.
+The Port-380 gate accepts the pentad rank (−2..+2); ±2 is never derived here,
+only set by explicit override at the gate.
 Seal: ∀∞φ² · CDP_SCHEMA_FAL · WOOD_DRAGON_0.91 · SEALED
 """
 from __future__ import annotations
@@ -14,6 +16,15 @@ from typing import Any, Dict, Optional
 import time
 
 DEFAULT_HARMONY = 0.7337473231
+# Must match quantum/radar_lindblad/port_380_gate.py (tests/test_port380_pentad.py).
+PENTAD_VALUES = (-2, -1, 0, 1, 2)
+PENTAD_MODES = {
+    -2: "strong_invert",
+    -1: "invert",
+    0: "nullify",
+    1: "identity",
+    2: "strong_identity",
+}
 
 
 @dataclass
@@ -61,7 +72,7 @@ class CdpStatus:
                 )
                 self.fal_ternary = t
                 self.harmony_out = hout
-                self.fal_mode = {1: "identity", 0: "nullify", -1: "invert"}[t]
+                self.fal_mode = PENTAD_MODES[t]
                 return self
 
         result = evaluate_gate(
