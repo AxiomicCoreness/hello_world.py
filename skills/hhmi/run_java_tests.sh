@@ -4,6 +4,7 @@
 #   bash run_java_tests.sh            reuse /workspace/connectome_loader as the base tree
 #   bash run_java_tests.sh --fresh    download main of AxiomicCoreness/hello_world.py
 #                                     (codeload tarball, read-only), apply SovereignMain.diff
+#                                     unless main already has it (applied in src/ at 1dfeaec)
 #   BASE=/path bash run_java_tests.sh use another checkout (needs src/main/java, docs/katex_macros.yaml)
 #
 # Env: JAVA_HOME (default /opt/jdk-17), JUNIT_JAR (default the connectome_loader copy,
@@ -25,9 +26,13 @@ if [ "${1:-}" = "--fresh" ]; then
   curl -fsSL -o "$WORK/main.tgz" https://codeload.github.com/AxiomicCoreness/hello_world.py/tar.gz/refs/heads/main
   tar xzf "$WORK/main.tgz" -C "$WORK"
   BASE="$WORK/hello_world.py-main"
-  (cd "$BASE" && patch -p1 --forward < "$SKILL/java/SovereignMain.diff" >/dev/null) \
-    || { echo "[!] SovereignMain.diff no longer applies to main"; exit 1; }
-  echo "[+] fresh main downloaded, SovereignMain.diff applied"
+  if grep -q connectomeFile "$BASE/src/main/java/com/fruitfly/brain/SovereignMain.java"; then
+    echo "[+] fresh main downloaded, SovereignMain.diff already applied in src/"
+  else
+    (cd "$BASE" && patch -p1 --forward < "$SKILL/java/SovereignMain.diff" >/dev/null) \
+      || { echo "[!] SovereignMain.diff no longer applies to main"; exit 1; }
+    echo "[+] fresh main downloaded, SovereignMain.diff applied"
+  fi
 fi
 [ -d "$BASE/src/main/java/com/fruitfly/brain" ] || { echo "[!] no src tree at $BASE"; exit 1; }
 if [ ! -f "$JUNIT_JAR" ]; then

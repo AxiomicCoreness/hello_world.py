@@ -11,8 +11,10 @@ tags:
 Packaging of the connectome-loader work for `com.fruitfly.brain` in
 `AxiomicCoreness/hello_world.py`, built against main at `fd76685`
 (`SovereignMain.java` there is byte-identical to `java/SovereignMain.diff`'s base).
-This skill lives in `skills/hhmi/` on GitHub main. `ConnectomeLoader.java` and
-`SovereignMain.diff` are not applied to `src/` there, and nothing is on either GitCode mirror.
+This skill lives in `skills/hhmi/` on GitHub main. The loader is now applied in `src/` on main
+at `1dfeaec` (`feat(brain): load connectome from HHMIJaneliaMap.xml via --connectome-file`):
+`ConnectomeLoader.java`, `ConnectomeLoaderTest.java`, `src/main/resources/HHMIJaneliaMap.xml`
+and `SovereignMain.diff`. Nothing is on either GitCode mirror.
 
 ## Context (checked against main's sources)
 - `Connectome` is compressed sparse rows: `new Connectome(n, rowPtr, colIdx, weight, delayMs)`.
@@ -55,7 +57,8 @@ This skill lives in `skills/hhmi/` on GitHub main. `ConnectomeLoader.java` and
    `--neurons` and `--connections` override the CSV paths. Exit 0 ok, 1 on bad input.
 4. Validate: `python -P hhmi_scripts/check_hhmi.py top.xml`. It prints counts and
    `[+] OK`, or `[!]` lines plus `[!] INVALID`. Exit 0 valid, 1 invalid.
-5. Wire the Java side into a checkout: copy `java/src/main/java/.../ConnectomeLoader.java`,
+5. Main at `1dfeaec` or later already has this; skip to step 6. For an older checkout,
+   copy `java/src/main/java/.../ConnectomeLoader.java`,
    `java/src/test/java/.../ConnectomeLoaderTest.java` and
    `java/src/main/resources/HHMIJaneliaMap.xml`, then run `patch -p1 < java/SovereignMain.diff`.
    `pom.xml` needs no change.
@@ -86,7 +89,8 @@ This skill lives in `skills/hhmi/` on GitHub main. `ConnectomeLoader.java` and
   root first on `sys.path` cannot shadow the repo's top-level `scripts/` package.
 - `bash run_java_tests.sh` reuses `/workspace/connectome_loader` as the base tree.
   `bash run_java_tests.sh --fresh` downloads main's tarball and applies
-  `java/SovereignMain.diff`. Both compile in `/tmp/hhmi_java` with `/opt/jdk-17`, run
+  `java/SovereignMain.diff` unless main already has it (it does from `1dfeaec`).
+  Both compile in `/tmp/hhmi_java` with `/opt/jdk-17`, run
   JUnit 5 (console standalone 1.10.2), and expect every test to pass: 21 against main after the step fix (8
   `KaTeXMacroSetTest` + 11 `ConnectomeLoaderTest` + 2 `SovereignAutomatonPropagationTest`),
   or 19 against a base tree from before it. Then they smoke-run `--chat hi --connectome-file

@@ -1,11 +1,12 @@
 {
   "skill": "hhmi",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repo": "AxiomicCoreness/hello_world.py",
   "base_commit_measured": "fd76685",
   "package": "com.fruitfly.brain",
   "committed": true,
-  "applied_to_src": false,
+  "applied_to_src": true,
+  "applied_to_src_commit": "1dfeaec",
   "api_facts": {
     "connectome_storage": "CSR: Connectome(n, rowPtr, colIdx, weight, delayMs)",
     "neuron": "interface (no constructor, no connectTo)",

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2] - 2026-10-19
+### Changed
+- The loader is now applied in `src/` on main at `1dfeaec`
+  (`feat(brain): load connectome from HHMIJaneliaMap.xml via --connectome-file`):
+  `ConnectomeLoader.java`, `ConnectomeLoaderTest.java`, `src/main/resources/HHMIJaneliaMap.xml`
+  and `SovereignMain.diff`, byte-identical to this skill's `java/` copies
+  (SKILL.md, `assets/context.json` `applied_to_src`).
+- `run_java_tests.sh --fresh` skips `SovereignMain.diff` when main already has it.
+
 ## [1.0.1] - 2026-10-19
 ### Changed
 - Known limits: the `SovereignAutomaton.step` self-feedback is fixed in main by `4b6d07d`
