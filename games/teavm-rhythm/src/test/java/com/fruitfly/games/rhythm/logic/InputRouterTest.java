@@ -96,4 +96,39 @@ class InputRouterTest {
         assertTrue(ControlMode.buttonTitle(true).startsWith("Locked"));
         assertTrue(ControlMode.LOCK_HINT_MS >= 1000);
     }
+
+    @Test
+    void songPickerKeysCycleBetweenSongsAndLockDuringOne() {
+        assertEquals(InputRouter.CYCLE_RHYTHM, InputRouter.key("e", "KeyE", false, false));
+        assertEquals(InputRouter.CYCLE_BPM, InputRouter.key("t", "KeyT", false, false));
+        assertEquals(InputRouter.LOCKED, InputRouter.key("e", "KeyE", false, true));
+        assertEquals(InputRouter.LOCKED, InputRouter.key("t", "KeyT", false, true));
+        assertEquals(InputRouter.NONE, InputRouter.key("e", "KeyE", true, false));
+    }
+
+    @Test
+    void pickerRowIsATapTargetRowUnderTheAutoplayButton() {
+        for (StageLayout l : new StageLayout[] {StageLayout.of(390, 844), StageLayout.of(510, 960), StageLayout.of(400, 600)}) {
+            double[] a = l.autoplayButton();
+            for (double[][] row : new double[][][] {l.pickerRow(0.7, 0.3), l.pickerRow(0.24, 0.5, 0.26)}) {
+                assertEquals(a[0], row[0][0], 1e-9);
+                assertEquals(a[0] + a[2], row[row.length - 1][0] + row[row.length - 1][2], 1e-9, "same span as AUTOPLAY");
+                for (int i = 0; i < row.length; i++) {
+                    assertTrue(row[i][2] >= StageLayout.BUTTON_MIN_TAP && row[i][3] >= StageLayout.BUTTON_MIN_TAP, "44 px tap target");
+                    assertTrue(row[i][1] >= a[1] + a[3], "below AUTOPLAY");
+                    assertTrue(row[i][1] + row[i][3] < l.centerTextTopBelowPickers(), "above the centre text");
+                    if (i > 0) {
+                        assertTrue(row[i][0] >= row[i - 1][0] + row[i - 1][2] + StageLayout.PICKER_GAP - 1e-9, "no overlap");
+                    }
+                }
+            }
+            assertTrue(l.centerTextTopBelowPickers() < l.horizonY, "centre text starts above the horizon");
+            // The longest rhythm label fits the 0.7 share at the picker font.
+            int longest = 0;
+            for (EuclidSong.Preset p : EuclidSong.PRESETS) {
+                longest = Math.max(longest, p.label.length());
+            }
+            assertTrue(longest * 0.62 * StageLayout.PICKER_FONT_PX + 12 <= l.pickerRow(0.7, 0.3)[0][2], "label fits");
+        }
+    }
 }
