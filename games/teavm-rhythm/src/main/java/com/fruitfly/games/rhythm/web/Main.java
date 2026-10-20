@@ -194,6 +194,7 @@ public final class Main {
                 Dom.blur(autoplayBtn);
                 // detail 0 = keyboard-synthesised click: ignored, so Space / Enter only start the song.
                 applyModeAction(InputRouter.buttonClick(Dom.clickDetail(evt), running), false);
+                refreshNow(); // label + HUD show the new mode now, not on the next animation frame
             });
         }
         rhythmBtn = (HTMLElement) doc.getElementById("rhythm-btn");
@@ -274,7 +275,10 @@ public final class Main {
         if (connectomeUrl != null) {
             loadConnectome(connectomeUrl);
         }
-        doc.addEventListener("keydown", evt -> onKey((KeyboardEvent) evt));
+        doc.addEventListener("keydown", evt -> {
+            onKey((KeyboardEvent) evt);
+            refreshNow();
+        });
         Window.requestAnimationFrame(Main::frame);
     }
 
@@ -377,7 +381,22 @@ public final class Main {
             } else if (a == InputRouter.CYCLE_MODE) {
                 onTap.run();
             }
+            refreshNow();
         });
+    }
+
+    /**
+     * Render the HUD and button labels right away, from the state the input
+     * just changed. Before this, the DOM text was only written by draw() in
+     * the requestAnimationFrame loop, so after a click or key the label kept
+     * the previous mode until the next frame ran; with frames throttled or
+     * paused (background / occluded window, a screenshot racing the frame)
+     * it read one step behind the real mode.
+     */
+    private static void refreshNow() {
+        if (ctx != null && game != null) {
+            draw(lastStamp);
+        }
     }
 
     private static void showLockHint(String text) {
@@ -428,11 +447,13 @@ public final class Main {
             status = "";
         } catch (IllegalArgumentException e) {
             status = "Bad MIDI: " + e.getMessage();
+            refreshNow();
             return;
         }
         if (!running && source == SongSource.MIDI) {
             applyRhythm();
         }
+        refreshNow();
     }
 
     /** E / the rhythm button: next Euclidean preset, then the seed / ?chart chart, then wrap (between songs only). */
@@ -856,7 +877,8 @@ public final class Main {
         line(hl, "Score " + game.score());
         line(hl, "Combo " + game.combo() + "  x" + RhythmGame.multiplierFor(game.combo()));
         line(hl, "Miss " + game.missCount());
-        line(hl, "blocks cut " + NoteBlocks.cutCount(game.chart(), songTime()));
+        // Counted at the judged press, like score / combo; the split animation follows at blade contact (+41 ms).
+        line(hl, "blocks cut " + NoteBlocks.hitCount(game.chart(), songTime()));
         if (loaded != null || audio != null) {
             boolean audioClock = running ? clock.isAudioMode() : audio != null && audio.isOk();
             line(hl, audioClock ? "clock audio" : "clock frame");

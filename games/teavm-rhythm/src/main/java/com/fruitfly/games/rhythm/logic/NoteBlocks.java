@@ -158,7 +158,23 @@ public final class NoteBlocks {
         return out;
     }
 
-    /** Blocks sliced by song time t: judged hits whose blade contact has happened. */
+    /**
+     * The HUD's "blocks cut": judged hits pressed at or before song time t.
+     * It moves on the same press as RhythmGame's score / combo / hit count,
+     * so the counters never disagree. The block's split animation starts
+     * later, at blade contact ({@link #cutCount}).
+     */
+    public static int hitCount(NoteChart chart, double t) {
+        int c = 0;
+        for (Note n : chart.notes()) {
+            if (isHit(n) && n.judgedAtMs() <= t) {
+                c++;
+            }
+        }
+        return c;
+    }
+
+    /** Blocks visibly split by song time t: judged hits whose blade contact has happened (animation only). */
     public static int cutCount(NoteChart chart, double t) {
         int c = 0;
         for (Note n : chart.notes()) {
