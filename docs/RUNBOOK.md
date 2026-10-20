@@ -33,7 +33,7 @@ Exit 1 if the dark-state gate fails. Exit 0 otherwise.
 
 ## SovereignMain
 
-Two modes.
+Four modes. `--chat`, `--sim` and `--repl` are mutually exclusive (combining them exits 2 with usage); with none of them the demo runs.
 
 ```bash
 java -cp out com.fruitfly.brain.SovereignMain --chat "hello" --q 1.13 --p 25.96
@@ -46,6 +46,21 @@ java -cp out com.fruitfly.brain.SovereignMain --steps 3
 ```
 
 Prints connectome size, dark-state verify, simulation completion, gradient sync. Exit 0.
+
+```bash
+java -cp out com.fruitfly.brain.SovereignMain --sim --steps 100 --dt 1e-4
+```
+
+Headless. Runs `--steps` steps of `--dt` with drive 0.5 per step (the same drive the demo loop and `respond()` use) and prints one deterministic line:
+`sim steps=100 dt=0.0001 t=0.010000 state=DARK_STATE neurons=8 synapses=13 mean_v=-52.426569`. Exit 0. `--steps`/`--dt` must be > 0, otherwise exit 2.
+
+```bash
+java -cp out com.fruitfly.brain.SovereignMain --repl
+```
+
+Reads commands from stdin, one per line: `chat <text>` (uses `--q`/`--p`; advances one 1e-4 step like `--chat`), `step [n]` (n steps of `--dt`, default 1), `state`, `help`, `exit` / `quit`. An unknown command prints a message and the loop continues. EOF exits 0. One automaton lives for the whole session.
+
+All modes take `--connectome-file PATH` (else `Connectome.random(8, 0.25, 20260720)`); load progress goes to stderr. Exit codes: 0 ok, 2 bad argument / conflicting modes / unloadable connectome, 3 empty reply, 4 internal error. `--no-demo` with no mode exits 0 without running anything.
 
 `--q` and `--p` are passthrough. They are not computed by the class.
 

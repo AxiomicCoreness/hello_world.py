@@ -39,7 +39,11 @@ Exit 0 on gate pass. Exit 1 on gate fail.
 ```bash
 java -cp out com.fruitfly.brain.SovereignMain --chat "hello" --q 1.13 --p 25.96
 java -cp out com.fruitfly.brain.SovereignMain --steps 3
+java -cp out com.fruitfly.brain.SovereignMain --sim --steps 100
+java -cp out com.fruitfly.brain.SovereignMain --repl
 ```
+
+`--chat`, `--sim` and `--repl` are mutually exclusive; no mode flag runs the demo.
 
 `--q` and `--p` are passthrough. They are not computed by the class.
 
