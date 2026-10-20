@@ -4,6 +4,7 @@ import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
+import org.teavm.jso.dom.html.HTMLElement;
 
 /**
  * Small guarded JS helpers for the stage: viewport size, device pixel ratio,
@@ -61,4 +62,18 @@ final class Dom {
 
     @JSBody(params = {"v"}, script = "return v && v.cameraError ? v.cameraError : null;")
     static native String cameraError(JSObject v);
+
+    /** Absolutely position an overlay element (CSS px, relative to .stage). */
+    @JSBody(params = {"el", "x", "y", "w", "h"}, script = "if (el && el.style) { el.style.left = x + 'px';"
+            + " el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px'; }")
+    static native void place(HTMLElement el, double x, double y, double w, double h);
+
+    @JSBody(params = {"el", "y"}, script = "if (el && el.style) { el.style.top = y + 'px'; }")
+    static native void top(HTMLElement el, double y);
+
+    @JSBody(params = {"el", "cls"}, script = "if (el && el.className !== cls) { el.className = cls; }")
+    static native void setClass(HTMLElement el, String cls);
+
+    @JSBody(params = {"el"}, script = "if (el && typeof el.blur === 'function') { el.blur(); }")
+    static native void blur(HTMLElement el);
 }

@@ -55,6 +55,41 @@ public final class StageLayout {
         return new Scene3D(0, 0, CAMERA_DISTANCE, f, width / 2.0, horizonY, eyeY);
     }
 
+    /** HUD overlay text (#hud-l / #hud-r): top offset, font px and line height (index.html), and its most lines (left column). */
+    public static final double HUD_TOP = 8;
+    public static final double HUD_FONT_PX = 16;
+    public static final double HUD_LINE = 1.4;
+    public static final int HUD_MAX_LINES = 5;
+    /** On-screen AUTOPLAY button: at least the 44 CSS px touch-target size; label font px (monospace, ~0.6 em per char). */
+    public static final double BUTTON_MIN_TAP = 44;
+    public static final double BUTTON_FONT_PX = 13;
+    public static final double BUTTON_GAP = 4;
+    /** Gap between the button and the centre text block (#hud-c) below it. */
+    public static final double CENTER_GAP = 6;
+
+    /** Bottom of the corner HUD text at its tallest (5 lines). */
+    public double hudBottom() {
+        return HUD_TOP + HUD_MAX_LINES * HUD_FONT_PX * HUD_LINE;
+    }
+
+    /**
+     * The AUTOPLAY button rectangle {x, y, w, h} in CSS px: a centred strip
+     * just under the corner HUD, above the centre text (title prompt / judgement
+     * banner) and far above the horizon, lanes, hit line, key labels and caption.
+     */
+    public double[] autoplayButton() {
+        double h = BUTTON_MIN_TAP;
+        double fit = ControlMode.longestButtonLabel() * 0.62 * BUTTON_FONT_PX + 24;
+        double w = Math.floor(Math.min(width - 20, Math.max(fit, 220)));
+        return new double[] {Math.round((width - w) / 2.0), hudBottom() + BUTTON_GAP, w, h};
+    }
+
+    /** Top of the centre text block (#hud-c), just under the AUTOPLAY button. */
+    public double centerTextTop() {
+        double[] b = autoplayButton();
+        return b[1] + b[3] + CENTER_GAP;
+    }
+
     /** Baseline of the TOY caption: the bottom strip, below the key labels, clear of the HUD title text. */
     public double captionY() {
         return height - 8 * uiScale;
