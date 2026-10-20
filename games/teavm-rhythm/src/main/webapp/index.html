@@ -26,6 +26,16 @@
     #hud-l { left: 10px; top: 8px; }
     #hud-r { right: 10px; top: 8px; text-align: right; }
     #hud-c { left: 0; right: 0; top: 21%; text-align: center; font-size: 17px; font-weight: bold; }
+    /* On-screen AUTOPLAY button: same action as key C. Main.java sets its box from StageLayout.autoplayButton()
+       (under the corner HUD, above the centre text) and its label every frame. */
+    #autoplay-btn { position: absolute; left: 50px; top: 124px; width: 290px; height: 44px; box-sizing: border-box;
+           margin: 0; padding: 0 8px; border: 2px solid #1f5fc4; border-radius: 10px; background: rgba(255,255,255,0.92);
+           color: #11307a; font: bold 13px/1 monospace; letter-spacing: 0; white-space: nowrap; overflow: hidden;
+           cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none;
+           -webkit-user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,0.15); line-height: 40px; }
+    #autoplay-btn:hover { background: #eef4ff; }
+    #autoplay-btn.locked { opacity: 0.55; cursor: default; border-style: dashed; }
+    body.theme-ar #autoplay-btn { background: rgba(10,14,28,0.85); color: #cfe0ff; border-color: #8fb3ff; }
     @media (max-width: 599px) {
       body { padding: 0; gap: 0; }
       canvas { border: 0; }
@@ -50,6 +60,8 @@
     <div id="hud-l" class="hud"></div>
     <div id="hud-r" class="hud"></div>
     <div id="hud-c" class="hud"></div>
+    <button id="autoplay-btn" type="button" tabindex="-1"
+            title="Autoplay mode (same as key C; changes between songs only)">AUTOPLAY: OFF</button>
   </div>
   <div class="side">
     <h2>Scoring</h2>
@@ -71,7 +83,7 @@
     <p class="note">Lane names (antennal lobe, mushroom body, lateral horn, lobula) are display labels only.
       The lanes aren't wired to those brain regions.</p>
     <h2>Connectome autoplayer &amp; assist (C)</h2>
-    <p class="note">C cycles: off &rarr; LIF autoplay &rarr; connectome autoplay &rarr; assist (LIF fly) &rarr;
+    <p class="note">C, or the <b>AUTOPLAY</b> button on the stage (tap / click), cycles: off &rarr; LIF autoplay &rarr; connectome autoplay &rarr; assist (LIF fly) &rarr;
       assist (connectome fly), between songs only. In connectome mode each lane's cue drives
       <code>laneN.in</code>, spikes travel through weighted, delayed synapses to <code>laneN.out</code>,
       and an output spike is the key press. In assist modes you play; the fly only presses for a note you

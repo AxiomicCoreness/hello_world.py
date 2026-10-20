@@ -6,6 +6,7 @@ import com.fruitfly.games.rhythm.logic.Circuit;
 import com.fruitfly.games.rhythm.logic.CircuitSim;
 import com.fruitfly.games.rhythm.logic.ConnectomeAutoplayer;
 import com.fruitfly.games.rhythm.logic.ConnectomeXml;
+import com.fruitfly.games.rhythm.logic.ControlMode;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
 import com.fruitfly.games.rhythm.logic.Judgement;
 import com.fruitfly.games.rhythm.logic.LifAutoplayer;
@@ -36,6 +37,8 @@ import org.teavm.jso.dom.html.HTMLElement;
  * Controls: Space/Enter start, D F J K hit lanes, B toggle the LIF
  * autoplayer, C cycle the control mode (between songs only): off, LIF
  * autoplay, connectome autoplay, assist (LIF fly), assist (connectome fly).
+ * The on-screen AUTOPLAY button (#autoplay-btn) runs the same cycle as C
+ * and always shows the current mode; it never takes key focus.
  * In assist modes the human plays and the fly only covers notes about to be
  * missed (AssistArbiter). R restart, N new seed.
  *
@@ -61,12 +64,11 @@ import org.teavm.jso.dom.html.HTMLElement;
  */
 public final class Main {
     static final String BG_URL = "assets/ar_brain_bg.jpg";
-    static final int MODE_OFF = 0;
-    static final int MODE_LIF = 1;
-    static final int MODE_CONNECTOME = 2;
-    static final int MODE_ASSIST_LIF = 3;
-    static final int MODE_ASSIST_CONNECTOME = 4;
-    static final int MODES = 5;
+    static final int MODE_OFF = ControlMode.OFF;
+    static final int MODE_LIF = ControlMode.LIF;
+    static final int MODE_CONNECTOME = ControlMode.CONNECTOME;
+    static final int MODE_ASSIST_LIF = ControlMode.ASSIST_LIF;
+    static final int MODE_ASSIST_CONNECTOME = ControlMode.ASSIST_CONNECTOME;
     static final double SHAKE_MS = 60;
     static final double SHAKE_PX = 4;
     static final int NOTE_COUNT = 64;
@@ -89,6 +91,8 @@ public final class Main {
     private static HTMLElement hudL;
     private static HTMLElement hudR;
     private static HTMLElement hudC;
+    /** On-screen AUTOPLAY button (#autoplay-btn); null on pages without it. Same code path as key C. */
+    private static HTMLElement autoplayBtn;
     private static final StringBuilder hl = new StringBuilder();
     private static final StringBuilder hr = new StringBuilder();
     private static final StringBuilder hc = new StringBuilder();
@@ -133,6 +137,23 @@ public final class Main {
         hudL = (HTMLElement) doc.getElementById("hud-l");
         hudR = (HTMLElement) doc.getElementById("hud-r");
         hudC = (HTMLElement) doc.getElementById("hud-c");
+        autoplayBtn = (HTMLElement) doc.getElementById("autoplay-btn");
+        if (autoplayBtn != null) {
+            double[] r = layout.autoplayButton();
+            Dom.place(autoplayBtn, r[0], r[1], r[2], r[3]);
+            // Never take focus (so Space / Enter / D F J K keep going to the game), never reach the canvas.
+            autoplayBtn.addEventListener("pointerdown", evt -> evt.preventDefault());
+            autoplayBtn.addEventListener("mousedown", evt -> evt.preventDefault());
+            autoplayBtn.addEventListener("click", evt -> {
+                evt.preventDefault();
+                evt.stopPropagation();
+                Dom.blur(autoplayBtn);
+                cycleMode();
+            });
+        }
+        if (hudC != null && autoplayBtn != null) {
+            Dom.top(hudC, layout.centerTextTop()); // centre text starts under the button
+        }
         boolean camParam = "1".equals(param(q, "camera"));
         // Default: light stage with a procedural floor. ?bg=ar (or ?camera=1, which falls back to it) uses the AR photo.
         theme = "ar".equals(param(q, "bg")) || camParam ? Theme.AR : Theme.LIGHT;
@@ -326,7 +347,13 @@ public final class Main {
     }
 
     private static boolean assist() {
-        return mode == MODE_ASSIST_LIF || mode == MODE_ASSIST_CONNECTOME;
+        return ControlMode.isAssist(mode);
+    }
+
+    /** Key C and the AUTOPLAY button: off -> LIF -> connectome -> assist LIF -> assist connectome (between songs only). */
+    private static void cycleMode() {
+        mode = ControlMode.cycle(mode, running);
+        attachFly();
     }
 
     /** The arbiter advances the selected fly brain before each human press. */
@@ -365,17 +392,12 @@ public final class Main {
         String code = e.getCode();
         if ("b".equalsIgnoreCase(key) || "KeyB".equals(code)) {
             // Only switchable between songs, so a score is all-brain or all-human.
-            if (!running) {
-                mode = mode == MODE_LIF ? MODE_OFF : MODE_LIF;
-                attachFly();
-            }
+            mode = ControlMode.toggleLif(mode, running);
+            attachFly();
             return;
         }
         if ("c".equalsIgnoreCase(key) || "KeyC".equals(code)) {
-            if (!running) {
-                mode = (mode + 1) % MODES; // off -> LIF -> connectome -> assist LIF -> assist connectome
-                attachFly();
-            }
+            cycleMode();
             return;
         }
         if (!running) {
@@ -399,7 +421,7 @@ public final class Main {
             reset();
             return;
         }
-        if (e.isRepeat() || mode == MODE_LIF || mode == MODE_CONNECTOME) {
+        if (e.isRepeat() || ControlMode.isFullAutoplay(mode)) {
             return;
         }
         int lane = RhythmGame.laneForKey(code != null && !code.isEmpty() ? code : key);
@@ -550,9 +572,7 @@ public final class Main {
             line(hl, audioClock ? "clock audio" : "clock frame");
         }
         line(hr, loaded != null ? loaded.title() : "seed " + seed);
-        String[] modeText = {"autoplay off", "LIF autoplay ON", "connectome autoplay ON",
-            "assist ON (LIF fly)", "assist ON (connectome fly)"};
-        line(hr, modeText[mode]);
+        line(hr, ControlMode.hudText(mode));
         if (mode == MODE_LIF) {
             line(hr, "spikes " + brain.spikeCount());
         } else if (mode == MODE_CONNECTOME) {
@@ -583,8 +603,12 @@ public final class Main {
                 line(hc, "Press Space to start");
                 line(hc, loaded != null ? "D F J K hit \u00b7 R restart" : "D F J K hit \u00b7 R restart \u00b7 N new seed");
                 line(hc, "B toggles the LIF autoplayer");
-                line(hc, "C cycles off / LIF / connectome / assist");
+                line(hc, autoplayBtn != null ? "C or AUTOPLAY button: change mode" : "C cycles off / LIF / connectome / assist");
             }
+        }
+        if (autoplayBtn != null) {
+            setText(autoplayBtn, ControlMode.buttonLabel(mode));
+            Dom.setClass(autoplayBtn, running ? "locked" : "");
         }
         if (hudL != null && hudR != null && hudC != null) {
             setText(hudL, hl.toString());

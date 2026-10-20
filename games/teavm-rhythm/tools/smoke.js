@@ -6,7 +6,8 @@
 // check the JSON chart loader, the audio clock and the frame-clock fallback.
 // Part 3 boots with the HTML HUD overlay, an iPhone 12 viewport (390x844 at
 // devicePixelRatio 3) and an Image stub, then checks the stage layers, the
-// connectome autoplayer (key C), assist mode and ?camera / ?connectome.
+// connectome autoplayer (key C), assist mode and ?camera / ?connectome, and
+// the on-screen AUTOPLAY button (same cycle as C, never a lane press).
 // Usage: node tools/smoke.js [path/to/classes.js]
 'use strict';
 const fs = require('fs');
@@ -111,8 +112,24 @@ function boot(search, opts) {
   });
   const cv = { width: 0, height: 0, style: {}, getContext: (kind) => (kind === '2d' ? c2d : null) };
   const huds = {};
-  if (opts.hud) { for (const id of ['hud-l', 'hud-r', 'hud-c']) huds[id] = { id, textContent: '' }; }
+  if (opts.hud) {
+    for (const id of ['hud-l', 'hud-r', 'hud-c']) huds[id] = { id, textContent: '', style: {} };
+    // #autoplay-btn: records listeners, focus/blur and default-prevented pointer events.
+    const btn = { id: 'autoplay-btn', textContent: 'AUTOPLAY: OFF', className: '', style: {}, handlers: {}, blurs: 0, prevented: 0 };
+    btn.addEventListener = (type, fn) => { (btn.handlers[type] = btn.handlers[type] || []).push(fn); };
+    btn.blur = () => { btn.blurs++; };
+    btn.fire = (type) => {
+      const ev = { type, defaultPrevented: false, stopped: false,
+        preventDefault() { this.defaultPrevented = true; }, stopPropagation() { this.stopped = true; } };
+      (btn.handlers[type] || []).forEach((fn) => fn(ev));
+      if (ev.defaultPrevented) btn.prevented++;
+      return ev;
+    };
+    btn.tap = () => { const d = btn.fire('pointerdown'); btn.fire('mousedown'); const c = btn.fire('click'); return d.defaultPrevented && c.stopped; };
+    huds['autoplay-btn'] = btn;
+  }
   b.huds = huds;
+  b.btn = huds['autoplay-btn'];
   class FakeXHR {
     constructor() { this.readyState = 0; this.status = 0; this.responseText = ''; this.listeners = {}; b.xhrs.push(this); }
     open(m, url) { this.method = m; this.url = url; this.readyState = 1; }
@@ -352,6 +369,43 @@ const CHART = '?chart=charts/sample_chart.json';
   p = boot('?seed=2026', { hud: true, image: true, vw: 1920, vh: 1080, dpr: 2 });
   p.frame(0);
   expect('desktop: 510x960 CSS at DPR 2 -> 1020x1920 backing', p.cv.width === 1020 && p.cv.height === 1920 && p.cv.style.width === '510px', p.cv.width + 'x' + p.cv.height);
+
+  // N: on-screen AUTOPLAY button (iPhone layout): rendered, cycles like C, stays in sync, never presses a lane.
+  p = boot('?seed=2026', IPHONE);
+  p.frame(0);
+  const btn = p.btn;
+  const px = (v) => parseFloat(v);
+  expect('button: rendered with label AUTOPLAY: OFF', btn.textContent === 'AUTOPLAY: OFF', btn.textContent);
+  expect('button: placed >= 44x44 CSS px, inside the 390 px stage', px(btn.style.width) >= 44 && px(btn.style.height) >= 44
+    && px(btn.style.left) >= 0 && px(btn.style.left) + px(btn.style.width) <= 390, [btn.style.left, btn.style.top, btn.style.width, btn.style.height].join(' '));
+  expect('button: below the corner HUD (5 lines), title text moved under it', px(btn.style.top) >= 120
+    && px(p.huds['hud-c'].style.top) >= px(btn.style.top) + px(btn.style.height), btn.style.top + ' / hud-c ' + p.huds['hud-c'].style.top);
+  expect('button: click + touch (pointer) listeners', !!(btn.handlers.click && btn.handlers.pointerdown));
+  expect('button: title prompt mentions it', p.has('C or AUTOPLAY button: change mode'));
+  const tapOk = btn.tap(); p.frame(16);
+  expect('button: tap -> LIF fly (HUD + label)', p.has('LIF autoplay ON') && btn.textContent === 'AUTOPLAY: LIF FLY', btn.textContent);
+  expect('button: no focus steal (pointerdown default prevented, blurred, click not propagated)', tapOk && btn.blurs >= 1);
+  btn.tap(); p.frame(32);
+  expect('button: tap -> connectome fly', p.has('connectome autoplay ON') && btn.textContent === 'AUTOPLAY: CONNECTOME FLY', btn.textContent);
+  p.press('c', 'KeyC'); p.frame(48);
+  expect('button: label follows key C (assist LIF fly)', p.has('assist ON (LIF fly)') && btn.textContent === 'AUTOPLAY: ASSIST \u00b7 LIF FLY', btn.textContent);
+  btn.tap(); p.frame(64);
+  expect('button: tap -> assist connectome fly', btn.textContent === 'AUTOPLAY: ASSIST \u00b7 CONNECTOME FLY' && p.has('assist ON (connectome fly)'), btn.textContent);
+  btn.tap(); p.frame(80);
+  expect('button: wraps to off', btn.textContent === 'AUTOPLAY: OFF' && p.has('autoplay off'), btn.textContent);
+  p.press('b', 'KeyB'); p.frame(96);
+  expect('button: label follows key B', btn.textContent === 'AUTOPLAY: LIF FLY', btn.textContent);
+  p.press('b', 'KeyB'); p.frame(112);
+  p.press(' ');                              // human play, mode off, frame clock starts at stamp 112
+  p.frame(112 + 2000); btn.tap(); p.frame(112 + 2016);   // note 2@2000: a tap must not hit it
+  expect('button: locked mid-song (mode unchanged, dimmed)', btn.textContent === 'AUTOPLAY: OFF' && btn.className === 'locked' && p.has('autoplay off'), btn.className);
+  p.frame(112 + 2200);
+  expect('button: tap never presses a lane (note missed, score 0)', p.hud('Score ') === 'Score 0' && p.hud('Miss ') === 'Miss 1', p.hud('Score ') + ' ' + p.hud('Miss '));
+  // desktop: same rules
+  p = boot('?seed=2026', { hud: true, image: true, vw: 1920, vh: 1080, dpr: 1 });
+  p.frame(0); p.btn.tap(); p.btn.tap(); p.frame(16);
+  expect('button (desktop 1920x1080): placed, two taps -> connectome fly', px(p.btn.style.height) >= 44 && px(p.btn.style.left) + px(p.btn.style.width) <= 510
+    && p.btn.textContent === 'AUTOPLAY: CONNECTOME FLY' && p.has('connectome autoplay ON'), p.btn.textContent);
 
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
