@@ -1,6 +1,7 @@
 // Headless smoke test for the TeaVM output: stubs just enough DOM (canvas 2D
 // context, keydown listener, requestAnimationFrame, location.search) to boot
-// classes.js under Node, play the first notes of seed 2026 and read the HUD.
+// classes.js under Node, play the first notes of seed 2026 and read the HUD,
+// then let the LIF autoplayer (key B) play the whole song.
 // Usage: node tools/smoke.js [path/to/classes.js]
 'use strict';
 const fs = require('fs');
@@ -48,6 +49,8 @@ expect('rAF registered', typeof rafCb === 'function');
 frame(0);
 expect('title screen', texts.includes('Press Space to start'));
 expect('seed from URL', hud('seed ') === 'seed 2026', hud('seed '));
+expect('region lane labels drawn', ['antennal lobe', 'mushroom body', 'lateral horn', 'lobula'].every((l) => texts.includes(l)));
+expect('autoplay off by default', texts.includes('autoplay off'));
 key(' ');                       // start at stamp 0 -> song time = stamp
 // seed 2026 chart starts 2@2000, 2@2500, 0@3000 (lanes J, J, D)
 frame(2000); key('j', 'KeyJ');  // PERFECT
@@ -62,5 +65,24 @@ expect('combo reset', (hud('Combo ') || '').startsWith('Combo 0'), hud('Combo ')
 expect('notes drawn', rects > 10, rects);
 frame(60000);                   // let the rest of the song lapse
 expect('song complete screen', texts.includes('Song complete'));
+
+// LIF autoplayer: toggle with B between songs, then play seed 2026 at ~60 fps.
+key('b', 'KeyB');
+frame(60016);
+expect('autoplay toggled on', texts.includes('LIF autoplay ON'));
+key(' ');                       // finished -> reset, start a new run at stamp 60016
+let t = 60016;
+let done = false;
+let lastScore = '';
+for (let i = 0; i < 4000 && !done; i++) {
+  t += 16;
+  frame(t);
+  lastScore = hud('Score ') || lastScore;
+  done = texts.includes('Song complete');
+}
+expect('autoplay finished the song', done);
+expect('autoplay score 58800 (64/64 PERFECT)', hud('Score ') === 'Score 58800', hud('Score '));
+expect('autoplay no misses', hud('Miss ') === 'Miss 0', hud('Miss '));
+expect('autoplay spikes 64', hud('spikes ') === 'spikes 64', hud('spikes '));
 console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
 process.exit(fail === 0 ? 0 : 1);
