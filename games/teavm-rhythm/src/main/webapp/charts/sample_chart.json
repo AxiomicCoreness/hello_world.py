@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "title": "Fruit Fly Heartbeat",
+    "artist": "LIF Autoplayer",
+    "bpm": 120,
+    "offset_ms": 0
+  },
+  "notes": [
+    { "time_ms": 1000, "lane": 0 },
+    { "time_ms": 1500, "lane": 0 },
+    { "time_ms": 2000, "lane": 2 },
+    { "time_ms": 2000, "lane": 3 },
+    { "time_ms": 2500, "lane": 1 },
+    { "time_ms": 3000, "lane": 1 }
+  ]
+}
