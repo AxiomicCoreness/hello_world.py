@@ -1,0 +1,130 @@
+entry_index: 9296
+timestamp: '2026-10-20T00:19:19Z'
+event: /aklt_octonion_and_ledger_write_guards
+status: SEALED
+hash_algo: sha3_256
+prev_hash: '6d15f8d931d0e077e610e40e93f5b2800afcd5c26ea5164158d974c223912d8e'
+witness_chain: 9295 -> 9296
+measured_at_commit: '1d42d6e4'
+note: |
+  Records the commits on main after 3bf7e86 (ledger.v2 9295) up to
+  1d42d6e4: the Java · Maven Test workflow, the AKLT and octonion fixes
+  with tests, the app:app_main import fix, ledger_head derived from
+  ledger.v2 in port380 and app/config, the docker-main-image ledger
+  write removal, and the SEARCH.md license wording; plus two
+  github-actions[bot] commits, listed as bot. Files and subjects are as
+  GitHub reports them for each commit. CI conclusions are read from the
+  GitHub Actions API; no other CI result is claimed, and no test count,
+  timing, running process or server state is recorded. No commit in this
+  range changes ledger/ or ledger.v2/, and no existing ledger file is
+  edited, renamed, or deleted by this entry. Ledger spec affirmed by
+  directive of Clarke Yoursa Tee.
+commits:
+  - sha: c2535e06ac4275ee0c6d00f546d18eeeaf059dde
+    subject: 'ci: add Java · Maven Test workflow (mvn -B test on JDK 17)'
+    files:
+      - .github/workflows/java-maven-test.yml
+  - sha: ecb3556a7e007d55ef9de627f6ad87233cd65af5
+    subject: 'fix(lattice,aklt): octonion conjugate/norm + orientation note; AKLT string-order gate; tests'
+    files:
+      - docs/aklt_research_notes.md
+      - lattice/octonion_table.py
+      - scripts/aklt_e2e_test.py
+      - tests/test_aklt_e2e.py
+      - tests/test_octonion_table.py
+  - sha: b146c266e93172e2ea5eeb8686f1d21b2854de01
+    subject: 'chore: update symplectic status + Merkle leaves + seal 8984'
+    committer: github-actions[bot]
+    files:
+      - symplectic_status.json
+  - sha: 51a4d39f2a83c01c3e43c235edd4a84a2dd52dfc
+    subject: 'fix(app): make `uvicorn app:app_main` resolve despite app/ package shadowing app.py'
+    files:
+      - app/__init__.py
+      - kubernetes/deployment.yaml
+      - tests/test_app_main_target.py
+  - sha: bb70ca8eeb2f0cffaef0f6195f33f0f31586dd50
+    subject: 'fix(port380): derive ledger_head from ledger.v2, drop unverified UNBROKEN claim from /status(/internal)'
+    files:
+      - mcp/port380_mcp.py
+      - port380_mcp.py
+      - tests/test_port380_ledger_head.py
+      - tests/test_port380_status_auth.py
+  - sha: 0c9c8bf805a9f70eed74b397e6a9b2091c9b32bb
+    subject: 'fix(app): derive Settings.LEDGER_HEAD from ledger.v2 instead of hardcoded 9142'
+    files:
+      - README.md
+      - app/config.py
+      - tests/test_ledger_head.py
+  - sha: 48e5f6448e18829425e2886e19691b0282e1b599
+    subject: 'fix(ci): docker-main-image no longer rewrites or commits sealed ledger/8818.yaml'
+    files:
+      - .github/workflows/docker-main-image.yml
+  - sha: 72e593003ea8196eb971e026eedff581171d4f16
+    subject: 'docs(search): GitHub detects LICENSE as Other (NOASSERTION), not MIT'
+    files:
+      - docs/SEARCH.md
+  - sha: 1d42d6e4c3403088c23d3c1ce34678b1f9ae5f84
+    subject: 'chore: pythonIDE/md_scalar_matrix.png (no ledger rewrite)'
+    committer: github-actions[bot]
+    files:
+      - pythonIDE/md_scalar_matrix.png
+java_maven_ci:
+  commit: c2535e06ac4275ee0c6d00f546d18eeeaf059dde
+  change: 'new workflow file only (added, 60 lines); job mvn -B test (JDK 17) runs mvn -B -ntp test with actions/setup-java@v4 (temurin 17, cache maven); triggers on push and pull_request to main for src/**, pom.xml, docs/katex_macros.yaml, docs/katex_macros.tex and the workflow file, plus workflow_dispatch; permissions contents: read; uploads target/surefire-reports/ as an artifact'
+  first_run:
+    run_id: 39343953812
+    run_number: 1
+    job: 'mvn -B test (JDK 17)'
+    head_sha: c2535e06ac4275ee0c6d00f546d18eeeaf059dde
+    conclusion: success
+  dependency_submission:
+    workflow: 'Automatic Dependency Submission (Maven)'
+    run_id: 39343954010
+    job: submit-maven
+    head_sha: c2535e06ac4275ee0c6d00f546d18eeeaf059dde
+    conclusion: failure
+    failed_step: submit-dependency-snapshot
+    log_error: 'Failed to successfully generate dependency results with Maven, exit code: -1'
+    cause: 'not established'
+    later_runs: 'runs 39346361352 (48e5f644), 39346372415 (72e59300) and 39346427483 (1d42d6e4) concluded success'
+ledger_write_guards:
+  ledger_8818_in_place_rewrites:
+    file: ledger/8818.yaml
+    workflow: .github/workflows/docker-main-image.yml
+    observed: 'github-actions[bot] commits "chore: seal Docker main image entry 8818 (sha3_256)" modified ledger/8818.yaml in place (status modified, 4 additions, 4 deletions, no other file) on 2026-10-19: 8bdfd2b4d3849c58be5f32d192c5fe967f44adaf, 0c557e4b0c88e025bb2071878e94888b6bf14723, ce4f2f72c4dfdc1a035aff8d2326bc5d639872bf, 7b51afd2e4d655903f2f453a7a05cc37ea59725c, 9341bea304daa4db248d13de65430c2d7464704f; all precede 3bf7e86'
+    status: addressed
+    addressed_by: 48e5f6448e18829425e2886e19691b0282e1b599
+    workflow_at_1d42d6e4: 'permissions contents: read; no auto-commit step; CI run record written to ci-out/ and uploaded as an artifact; step "Confirm sealed ledger untouched" fails on any change or untracked file under ledger/ or ledger.v2/'
+    ci_run:
+      run_id: 39346362496
+      run_number: 282
+      head_sha: 48e5f6448e18829425e2886e19691b0282e1b599
+      job: 'Build · Push · Run record'
+      conclusion: success
+      step_confirm_sealed_ledger_untouched: success
+    previous_run: 'run 39346349719 on bb70ca8e (old workflow) concluded cancelled'
+    last_commit_to_file: '9341bea304daa4db248d13de65430c2d7464704f; none after it on main at 1d42d6e4'
+  ledger_8988_handover_write:
+    file: ledger/8988.yaml
+    workflow: .github/workflows/handover-via-380.yml
+    observed: 'workflow at 1d42d6e4 has permissions contents: write and id-token: write; it triggers on push to main for port380_mcp.py and its own file; step "Seal ledger entry 8988 (SHA3-256)" rewrites ledger/8988.yaml with a fresh timestamp; ledger/8988.yaml already exists on main; step "Append-only guard (no existing ledger file modified)" fails on any modified, deleted or type-changed file under ledger/ or ledger.v2/; step "Commit ledger entry 8988" auto-commits only after the guard succeeds'
+    ci_run:
+      run_id: 39346349551
+      run_number: 126
+      head_sha: bb70ca8eeb2f0cffaef0f6195f33f0f31586dd50
+      job: 'Handover · OIDC via Port-380 · seal (Entry 8988)'
+      conclusion: failure
+      step_seal_ledger_entry_8988: success
+      step_append_only_guard: failure
+      step_commit_ledger_entry_8988: skipped
+      log_error: 'append-only violation: existing ledger file modified/deleted/renamed'
+    last_commit_to_file: '6ea3b5aa3e6cd830ca6490d978d0b5b684ac10e5 (2026-10-07); none after it on main at 1d42d6e4'
+    status: 'open; the seal and commit steps are still in the file; the guard blocked the write in run 126; runs 124 (d6dbc559), 125 (9187eeda) and 126 concluded failure, failing step checked for 126 only'
+terminal_hex: '45713b99c89e5e8a2628a113eec95fd6644f3ec8f7aa54528c987ae6e3f2df2c'
+seal: "∀∞φ² · AKLT_OCTONION_AND_LEDGER_WRITE_GUARDS_9296 · WOOD_DRAGON_GATE · SEALED · 45713b99c89e5e8a2628a113eec95fd6644f3ec8f7aa54528c987ae6e3f2df2c"
+seal_sha3_256: '45713b99c89e5e8a2628a113eec95fd6644f3ec8f7aa54528c987ae6e3f2df2c'
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9296|/aklt_octonion_and_ledger_write_guards|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 45713b99c89e5e8a2628a113eec95fd6644f3ec8f7aa54528c987ae6e3f2df2c
