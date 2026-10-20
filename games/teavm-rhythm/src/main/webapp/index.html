@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TeaVM Rhythm</title>
   <!-- KaTeX 0.16.11, pinned with SRI. If it fails to load, the plain-text formulas below stay visible. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
@@ -11,18 +12,44 @@
           integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
           crossorigin="anonymous"></script>
   <style>
-    html, body { margin: 0; min-height: 100%; background: #05070d; color: #ccd; font-family: monospace; }
+    /* Default: light stage (off-white backdrop, dark text). body.theme-ar: dark AR-photo / camera look. */
+    html, body { margin: 0; min-height: 100%; background: #f7f6f3; color: #2a2f3a; font-family: monospace; }
+    body.theme-ar { background: #05070d; color: #ccd; }
     body { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 24px; padding: 16px; box-sizing: border-box; }
-    canvas { border: 1px solid #334; }
+    canvas { border: 1px solid #dddad3; display: block; }
+    body.theme-ar canvas { border-color: #334; }
+    /* Stage: canvas (background, 3D fly-brain stage, lanes) with the HUD as an HTML overlay on top. */
+    .stage { position: relative; line-height: 0; }
+    .hud { position: absolute; color: #1d2230; font: 16px/1.4 monospace; white-space: pre; pointer-events: none;
+           text-shadow: 0 0 3px #f7f6f3, 0 0 2px #f7f6f3; }
+    body.theme-ar .hud { color: #fff; text-shadow: 0 1px 3px #000, 0 0 2px #000; }
+    #hud-l { left: 10px; top: 8px; }
+    #hud-r { right: 10px; top: 8px; text-align: right; }
+    #hud-c { left: 0; right: 0; top: 40%; text-align: center; font-size: 17px; font-weight: bold; }
+    @media (max-width: 599px) {
+      body { padding: 0; gap: 0; }
+      canvas { border: 0; }
+      .hud { font-size: 15px; }
+    }
     .side { max-width: 380px; font-size: 13px; line-height: 1.45; }
-    .side h2 { font-size: 15px; color: #fff; margin: 4px 0 8px; }
-    .tex { margin: 10px 0; color: #e8e8f0; }
-    .note { color: #8890a8; }
+    .side h2 { font-size: 15px; color: #11141c; margin: 4px 0 8px; }
+    .tex { margin: 10px 0; color: #1d2230; }
+    .note { color: #555c70; }
+    .side a { color: #1f5fc4; }
+    body.theme-ar .side h2 { color: #fff; }
+    body.theme-ar .tex { color: #e8e8f0; }
+    body.theme-ar .note { color: #8890a8; }
+    body.theme-ar .side a { color: #8fb3ff; }
   </style>
   <script type="text/javascript" charset="utf-8" src="classes.js"></script>
 </head>
 <body onload="main()">
-  <canvas id="game" width="400" height="600"></canvas>
+  <div class="stage">
+    <canvas id="game" width="400" height="600"></canvas>
+    <div id="hud-l" class="hud"></div>
+    <div id="hud-r" class="hud"></div>
+    <div id="hud-c" class="hud"></div>
+  </div>
   <div class="side">
     <h2>Scoring</h2>
     <!-- data-tex is rendered by KaTeX. Built-in commands only: none of the
@@ -41,10 +68,23 @@
       <code>src/main/java/com/fruitfly/brain/LIFRK4.java</code> (RK4, 50 &times; 1 ms substeps per 50 ms tick).
       Each lane's next note sends its neuron one conductance pulse, and a spike is that lane's key press.</p>
     <p class="note">Lane names (antennal lobe, mushroom body, lateral horn, lobula) are display labels only.
-      The lanes aren't wired to those brain regions or to the connectome.</p>
-    <p class="note">Space start &middot; D F J K hit &middot; B autoplay &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
+      The lanes aren't wired to those brain regions.</p>
+    <h2>Connectome autoplayer &amp; assist (C)</h2>
+    <p class="note">C cycles: off &rarr; LIF autoplay &rarr; connectome autoplay &rarr; assist (LIF fly) &rarr;
+      assist (connectome fly), between songs only. In connectome mode each lane's cue drives
+      <code>laneN.in</code>, spikes travel through weighted, delayed synapses to <code>laneN.out</code>,
+      and an output spike is the key press. In assist modes you play; the fly only presses for a note you
+      haven't hit once it is 75&ndash;150 ms late, and the HUD counts hits by you vs by the fly.</p>
+    <p class="note"><b>The circuit is a TOY</b> (<a href="connectomes/toy_lane_circuit.xml">toy_lane_circuit.xml</a>,
+      12 neurons, 20 synapses, hand-written), not the Drosophila connectome. The 3D brain on the stage is a
+      display-only toy layout echoing the AR screenshot's labels, not anatomy. <code>?connectome=URL</code> loads
+      another file in the same format.</p>
+    <p class="note">Stage: a light backdrop with a procedural perspective floor (default). <code>?bg=ar</code> uses the
+      AR fly-brain screenshot (dimmed) instead; <code>?camera=1</code> tries a live camera backdrop and falls back to
+      the screenshot. <code>?device=iphone12</code> forces the 390&times;844 layout.</p>
+    <p class="note">Space start &middot; D F J K hit &middot; B LIF autoplay &middot; C mode &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
     <h2>Charts &amp; audio</h2>
-    <p class="note"><a href="?chart=charts/sample_chart.json" style="color:#8fb3ff">Play the sample JSON chart</a>
+    <p class="note"><a href="?chart=charts/sample_chart.json">Play the sample JSON chart</a>
       (<code>?chart=charts/sample_chart.json</code>). With a chart, song time is the audio position plus
       <code>offset_ms</code>, read every frame. Audio is <code>?audio=URL</code>, else the chart's
       <code>metadata.audio</code>, else a click track the page synthesises at the chart's bpm.
