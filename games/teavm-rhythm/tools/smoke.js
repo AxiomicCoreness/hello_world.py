@@ -15,10 +15,12 @@ const path = process.argv[2] || 'target/webapp/classes.js';
 
 const texts = [];
 let rects = 0;
+let pathFills = 0;
 const ctx = new Proxy({}, {
   get(t, k) {
     if (k === 'fillText') return (s) => texts.push(String(s));
     if (k === 'fillRect') return () => { rects++; };
+    if (k === 'fill') return () => { pathFills++; };
     if (k in t) return t[k];
     return () => {};
   },
@@ -67,7 +69,7 @@ expect('GREAT banner', texts.includes('GREAT'));
 frame(3200);                    // note @3000 passes the 150 ms window unhit
 expect('miss counted', hud('Miss ') === 'Miss 1', hud('Miss '));
 expect('combo reset', (hud('Combo ') || '').startsWith('Combo 0'), hud('Combo '));
-expect('notes drawn', rects > 10, rects);
+expect('note blocks drawn (3D faces filled)', pathFills > 10, pathFills);
 frame(60000);                   // let the rest of the song lapse
 expect('song complete screen', texts.includes('Song complete'));
 
@@ -283,11 +285,16 @@ const CHART = '?chart=charts/sample_chart.json';
   p.press(' ');
   st = 48; done = false;
   let flashSeen = false;
-  for (let i = 0; i < 5000 && !done; i++) { st += 16; p.frame(st); done = p.has('Song complete'); }
+  let sliceLabel = false;
+  for (let i = 0; i < 5000 && !done; i++) {
+    st += 16; p.frame(st); done = p.has('Song complete');
+    sliceLabel = sliceLabel || p.canvasTexts.includes('PERFECT'); // judgement drawn over the sliced block
+  }
   expect('connectome: seed 2026 finished', done);
+  expect('stage: judgement text drawn over sliced blocks (canvas)', sliceLabel);
   expect('connectome: 64/64 PERFECT = 58800', p.hud('Score ') === 'Score 58800' && p.has('P 64  Gr 0  Go 0  M 0'), p.hud('Score '));
   expect('connectome: spikes 192 (in+inter+out) and 64 key presses', p.hud('spikes ') === 'spikes 192 \u00b7 keys 64', p.hud('spikes '));
-  expect('stage: sabers cut phantom blocks during the song (HUD)', /^blocks cut [1-9]\d*$/.test(p.hud('blocks cut ') || ''), p.hud('blocks cut '));
+  expect('stage: blocks cut = judged hits (64)', p.hud('blocks cut ') === 'blocks cut 64', p.hud('blocks cut '));
   expect('stage: blocks never touch the rhythm score', p.hud('Score ') === 'Score 58800');
   p.press('c', 'KeyC'); p.frame(st + 16);
   expect('mode C#3: assist (LIF fly)', p.has('assist ON (LIF fly)'));
