@@ -76,7 +76,7 @@ public final class RhythmGame {
             if (j == null) {
                 continue;
             }
-            n.resolve(j);
+            n.resolve(j, nowMs);
             score += (long) j.baseScore() * multiplierFor(combo);
             combo++;
             maxCombo = Math.max(maxCombo, combo);

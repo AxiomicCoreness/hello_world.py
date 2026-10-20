@@ -5,6 +5,7 @@ public final class Note {
     private final int lane;
     private final long timeMs;
     private Judgement result;
+    private long judgedAtMs = Long.MIN_VALUE;
 
     public Note(int lane, long timeMs) {
         if (lane < 0 || lane >= RhythmGame.LANES) {
@@ -35,9 +36,19 @@ public final class Note {
     }
 
     void resolve(Judgement j) {
+        resolve(j, Long.MIN_VALUE);
+    }
+
+    void resolve(Judgement j, long atMs) {
         if (result != null) {
             throw new IllegalStateException("note already resolved");
         }
         result = j;
+        judgedAtMs = atMs;
+    }
+
+    /** Song time of the press that judged this note (Long.MIN_VALUE for a MISS or while live). Display use only. */
+    public long judgedAtMs() {
+        return judgedAtMs;
     }
 }
