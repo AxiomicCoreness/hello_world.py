@@ -7,7 +7,9 @@
 // Part 3 boots with the HTML HUD overlay, an iPhone 12 viewport (390x844 at
 // devicePixelRatio 3) and an Image stub, then checks the stage layers, the
 // connectome autoplayer (key C), assist mode and ?camera / ?connectome, and
-// the on-screen AUTOPLAY button (same cycle as C, never a lane press).
+// the on-screen AUTOPLAY button (same cycle as C, never a lane press), its
+// visible mid-song lock, the Euclidean songs and the music-source picker
+// (Euclidean / MIDI file built in-test / TTS voice with a speechSynthesis stub).
 // Usage: node tools/smoke.js [path/to/classes.js]
 'use strict';
 const fs = require('fs');
@@ -133,12 +135,24 @@ function boot(search, opts) {
     if (!opts.noPickers) {
       huds['rhythm-btn'] = makeBtn('rhythm-btn', 'LAYERED x4');
       huds['bpm-btn'] = makeBtn('bpm-btn', '120 BPM');
+      if (!opts.noSource) {
+        huds['source-btn'] = makeBtn('source-btn', 'EUCLID');
+        // #midi-file: a file input; click() is counted, the test sets .files and fires 'change'.
+        const fi = { id: 'midi-file', files: [], value: '', clicks: 0, handlers: {}, style: {} };
+        fi.addEventListener = (type, fn) => { (fi.handlers[type] = fi.handlers[type] || []).push(fn); };
+        fi.click = () => { fi.clicks++; };
+        fi.pick = (name, bytes) => { fi.files = [{ name, bytes }]; (fi.handlers.change || []).forEach((fn) => fn({ type: 'change' })); };
+        huds['midi-file'] = fi;
+      }
     }
   }
   b.huds = huds;
   b.btn = huds['autoplay-btn'];
   b.rhythmBtn = huds['rhythm-btn'];
   b.bpmBtn = huds['bpm-btn'];
+  b.sourceBtn = huds['source-btn'];
+  b.midiInput = huds['midi-file'];
+  b.spoken = [];
   class FakeXHR {
     constructor() { this.readyState = 0; this.status = 0; this.responseText = ''; this.listeners = {}; b.xhrs.push(this); }
     open(m, url) { this.method = m; this.url = url; this.readyState = 1; }
@@ -175,6 +189,12 @@ function boot(search, opts) {
   if (opts.vw) { sb.innerWidth = opts.vw; sb.innerHeight = opts.vh; sb.devicePixelRatio = opts.dpr || 1; }
   if (opts.image) { sb.Image = class { constructor() { this.src = ''; this.naturalWidth = 0; this.naturalHeight = 0; b.images.push(this); } }; }
   if (opts.navigator) sb.navigator = opts.navigator;
+  // FileReader: reads the stub file's bytes synchronously-ish (next tick), like a local file.
+  sb.FileReader = class { readAsArrayBuffer(f) { setImmediate(() => { const u = Uint8Array.from(f.bytes); this.result = u.buffer; this.onload(); }); } };
+  if (opts.speech) {
+    sb.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } };
+    sb.speechSynthesis = { speak: (u) => { b.spoken.push([u.text, b.lastSong]); }, cancel: () => { b.cancels = (b.cancels || 0) + 1; } };
+  }
   b.cv = cv;
   b.doc = doc;
   sb.window = sb; sb.self = sb;
@@ -490,9 +510,9 @@ const CHART = '?chart=charts/sample_chart.json';
   p.press(' '); p.frame(144);
   expect('P: Space starts the synthesised audio; pickers locked', la.plays === 1 && rr.className === 'picker locked' && br.className === 'picker locked', rr.className);
   rr.tap(); p.frame(160);
-  expect('P: rhythm tap mid-song -> picker lock hint, song unchanged', p.has('Song picker locked during song - press R to restart') && rr.textContent === 'LAYERED x4');
+  expect('P: rhythm tap mid-song -> picker lock hint, song unchanged', p.has('Picker locked during song - press R to restart') && rr.textContent === 'LAYERED x4');
   p.press('t', 'KeyT'); p.frame(176);
-  expect('P: T mid-song -> locked, tempo unchanged', br.textContent === '90 BPM' && p.has('Song picker locked during song - press R to restart'), br.textContent);
+  expect('P: T mid-song -> locked, tempo unchanged', br.textContent === '90 BPM' && p.has('Picker locked during song - press R to restart'), br.textContent);
   st = 176; done = false;
   for (let i = 0; i < 4000 && !done; i++) { la.currentTime += 0.016; st += 16; p.frame(st); done = p.has('Song complete'); }
   expect('P: connectome fly: layered @90 all 152 PERFECT', done && p.has('P 152  Gr 0  Go 0  M 0'), p.texts.find((t) => t.startsWith('P ')));
@@ -506,6 +526,76 @@ const CHART = '?chart=charts/sample_chart.json';
     for (let i = 0; i < 4000 && !done; i++) { st += 16; p.frame(st); done = p.has('Song complete'); }
     expect('P: ?rhythm=cinquillo&bpm=140, ' + label + ' fly: 40 notes, no miss', p.rhythmBtn.textContent === 'CINQUILLO E(5,8)' && p.bpmBtn.textContent === '140 BPM'
       && done && / M 0$/.test(p.texts.find((t) => t.startsWith('P ')) || '') && p.hud('Miss ') === 'Miss 0', p.texts.find((t) => t.startsWith('P ')));
+  }
+
+  // Q: music-source picker: Euclidean (default) / MIDI file / TTS voice.
+  const vlq = (v) => { const o = [v & 0x7f]; while ((v >>= 7) > 0) o.unshift((v & 0x7f) | 0x80); return o; };
+  const smf = (format, division, tracks) => {
+    const out = [0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, format, 0, tracks.length, division >> 8, division & 0xff];
+    for (const t of tracks) out.push(0x4d, 0x54, 0x72, 0x6b, (t.length >>> 24) & 0xff, (t.length >> 16) & 0xff, (t.length >> 8) & 0xff, t.length & 0xff, ...t);
+    return out;
+  };
+  // C-major scale up and down, quarters at 100 BPM (tempo 600000 us), format 0, 480 PPQN; built here, no .mid committed.
+  const scaleTrack = [0, 0xff, 0x51, 3, 0x09, 0x27, 0xc0];
+  for (const x of [60, 62, 64, 65, 67, 69, 71, 72, 72, 71, 69, 67, 65, 64, 62, 60]) scaleTrack.push(0, 0x90, x, 100, ...vlq(480), 0x80, x, 0);
+  scaleTrack.push(0, 0xff, 0x2f, 0);
+  const SCALE = smf(0, 480, [scaleTrack]);
+  p = boot('', IPHONE);
+  p.frame(0);
+  const sb3 = p.sourceBtn;
+  const row3 = [sb3, p.rhythmBtn, p.bpmBtn].map((x) => [rx(x.style.left), rx(x.style.top), rx(x.style.width), rx(x.style.height)]);
+  expect('Q: three picker buttons, 44 px, in order, inside 390 px', row3.every((r) => r[2] >= 44 && r[3] >= 44 && r[1] === row3[0][1])
+    && row3[0][0] + row3[0][2] <= row3[1][0] && row3[1][0] + row3[1][2] <= row3[2][0] && row3[2][0] + row3[2][2] <= 390, JSON.stringify(row3));
+  expect('Q: default source EUCLID / LAYERED x4 / 120 BPM', sb3.textContent === 'EUCLID' && p.rhythmBtn.textContent === 'LAYERED x4' && p.bpmBtn.textContent === '120 BPM');
+  sb3.tap(); p.frame(16);
+  expect('Q: tap source -> MIDI, PICK .MID, FILE BPM, prompt', sb3.textContent === 'MIDI' && p.rhythmBtn.textContent === 'PICK .MID' && p.bpmBtn.textContent === 'FILE BPM'
+    && p.has('No MIDI file yet: tap PICK .MID (seed chart for now)'), p.rhythmBtn.textContent);
+  p.rhythmBtn.tap(); p.frame(32);
+  expect('Q: tap PICK .MID opens the file input (in the gesture)', p.midiInput.clicks === 1);
+  p.midiInput.pick('notmidi.mid', [0x52, 0x49, 0x46, 0x46, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); await tick(); p.frame(48);
+  expect('Q: non-MIDI file -> parser error shown, nothing loaded', p.has('Bad MIDI: not a MIDI file: no MThd header') && p.rhythmBtn.textContent === 'PICK .MID');
+  p.midiInput.pick('scale.mid', SCALE); await tick(); p.frame(64);
+  expect('Q: scale.mid parsed: title, tempo, 16 notes', p.rhythmBtn.textContent === 'scale' && p.hud('MIDI') === 'MIDI \u00b7 scale'
+    && p.has('format 0 \u00b7 1 track \u00b7 100 BPM \u00b7 16 notes') && !p.has('Bad MIDI: not a MIDI file: no MThd header'), p.hud('MIDI'));
+  const ma = p.audios[p.audios.length - 1];
+  const mw = Buffer.from(ma.src.replace('data:audio/wav;base64,', ''), 'base64');
+  expect('Q: MIDI audio synthesised in-page (11025 Hz WAV)', ma.src.startsWith('data:audio/wav;base64,') && mw.readUInt32LE(24) === 11025, mw.length);
+  p.press('c', 'KeyC'); p.press('c', 'KeyC'); p.frame(80); p.press(' '); p.frame(96);
+  sb3.tap(); p.frame(112);
+  expect('Q: source tap mid-song -> locked hint, source kept', sb3.textContent === 'MIDI' && sb3.className === 'picker locked' && p.has('Picker locked during song - press R to restart'));
+  p.press('s', 'KeyS'); p.frame(120);
+  expect('Q: key S mid-song -> locked', sb3.textContent === 'MIDI');
+  st = 120; done = false;
+  for (let i = 0; i < 4000 && !done; i++) { ma.currentTime += 0.016; st += 16; p.frame(st); done = p.has('Song complete'); }
+  expect('Q: connectome fly plays the MIDI chart: 16/16 PERFECT', done && p.has('P 16  Gr 0  Go 0  M 0'), p.texts.find((t) => t.startsWith('P ')));
+  p.press('s', 'KeyS'); p.frame(st + 16);
+  expect('Q: key S -> VOICE; no speechSynthesis -> graceful text-only notice', sb3.textContent === 'VOICE' && p.rhythmBtn.textContent === 'FRUIT FLY'
+    && p.has('speechSynthesis unavailable: syllables shown on stage only') && p.has('\u266a fruit fly brain keeps the beat'), p.rhythmBtn.textContent);
+  expect('Q: voice chart on the beat grid: 24 notes, click-track clock', p.has('speechSynthesis \u00b7 120 BPM \u00b7 24 notes') && p.audios[p.audios.length - 1].src.startsWith('data:audio/wav;base64,'));
+  p.rhythmBtn.tap(); p.frame(st + 32);
+  expect('Q: item tap cycles the line (COUNT 1-4)', p.rhythmBtn.textContent === 'COUNT 1-4' && p.has('\u266a one and two and three and four and'));
+  p.press('e', 'KeyE'); p.press('e', 'KeyE'); p.frame(st + 48);
+  expect('Q: back to FRUIT FLY', p.rhythmBtn.textContent === 'FRUIT FLY');
+  p.press(' ');
+  const va = p.audios[p.audios.length - 1];
+  let t0 = st + 48; done = false; let sawSyl = false;
+  for (let i = 0; i < 4000 && !done; i++) { va.currentTime += 0.016; t0 += 16; p.frame(t0); sawSyl = sawSyl || p.has('\u266a brain'); done = p.has('Song complete'); }
+  expect('Q: connectome fly plays the voice chart (no speech): 24 notes, no miss; current syllable on stage', done && / M 0$/.test(p.texts.find((t) => t.startsWith('P ')) || '') && sawSyl, p.texts.find((t) => t.startsWith('P ')));
+  p.press('s', 'KeyS'); p.frame(t0 + 16);
+  expect('Q: S wraps to EUCLID (LAYERED x4 again)', sb3.textContent === 'EUCLID' && p.rhythmBtn.textContent === 'LAYERED x4' && p.has('D E(4,16) x...x...x...x...'));
+  // With speechSynthesis: each syllable spoken once, in order, ~60 ms before its note; LIF and assist flies play it.
+  for (const [label, keys] of [['LIF', ['b']], ['assist LIF', ['c', 'c', 'c']]]) {
+    p = boot('?source=voice&voice=solfege&audio=none', Object.assign({ speech: true }, IPHONE));
+    p.frame(0);
+    for (const k of keys) p.press(k, 'Key' + k.toUpperCase());
+    p.frame(16); p.press(' ');
+    st = 16; done = false;
+    for (let i = 0; i < 4000 && !done; i++) { st += 16; p.lastSong = st - 16; p.frame(st); done = p.has('Song complete'); }
+    const words = p.spoken.map((w) => w[0]);
+    const firstAt = p.spoken.length ? p.spoken[0][1] : -1;
+    expect('Q: ?source=voice&voice=solfege, ' + label + ' fly: 32 notes, no miss, 32 syllables spoken in order', p.rhythmBtn.textContent === 'DO RE MI'
+      && done && / M 0$/.test(p.texts.find((t) => t.startsWith('P ')) || '') && words.length === 32 && words.slice(0, 8).join(' ') === 'do re mi fa sol la ti do'
+      && firstAt >= 2000 - 60 - 16 && firstAt <= 2000, words.length + ' first@' + firstAt + ' ' + p.texts.find((t) => t.startsWith('P ')));
   }
 
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');

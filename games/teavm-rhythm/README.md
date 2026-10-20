@@ -20,6 +20,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `logic/AssistArbiter`, `PressSink` | DRAFT: assist mode, where you play and the fly covers notes you'd miss. |
 | `logic/ControlMode` | DRAFT: the control modes (off, LIF fly, connectome fly, assist LIF, assist connectome), their cycle and labels. Key C and the on-screen **AUTOPLAY** button (`#autoplay-btn`, placed by `StageLayout.autoplayButton()`) both call `ControlMode.cycle`; the button shows the current mode, never takes key focus and is locked (dimmed) while a song runs. While locked it reads `LOCKED: <mode>` and C, B or a tap shows "Autoplay locked during song - press R to restart" for ~2 s. |
 | `logic/Euclid`, `EuclidSong`, `EuclidTrack` | Bjorklund's E(k,n), the Euclidean presets (lanes D/F/J/K), their charts and synthesised audio. See "Euclidean rhythm songs" below. |
+| `logic/SongSource`, `Midi`, `MidiSong`, `VoiceSong` | The music-source picker (Euclidean / MIDI file / TTS voice), the Standard MIDI File reader, MIDI -> chart + synthesised audio, and the spoken-line beat grid. See "Music sources" below. |
 | `logic/InputRouter` | Pure key / click routing: Space and Enter only start a song (never step the mode), held C / B step once, a keyboard-synthesised button click (`detail == 0`) is ignored, and mid-song mode inputs return `LOCKED` for the hint. |
 | `logic/Scene3D`, `StageLayout`, `BrainStage` | DRAFT: pseudo-3D math (lookAt orbit camera, near-plane culling and clipping), the iPhone 12 / desktop layout, and the toy positions of the brain-object nodes. |
 | `web/StageRenderer.java`, `web/Dom.java` | DRAFT: draws the stage (grid, origin anchor, brain object, synapse flashes) and guards JS access (DPR, viewport, image, camera). |
@@ -28,7 +29,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
-| `src/test/java/.../logic/` | JUnit 5 tests (150: the original 74, 55 for the draft, 9 for `InputRouter` / the picker row, 12 for the Euclidean songs and their docs) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, the autoplayer, the JSON loader, the song clock and the click track. |
+| `src/test/java/.../logic/` | JUnit 5 tests (162: the original 74, 55 for the draft, 9 for `InputRouter` / the picker row, 12 for the Euclidean songs and their docs, 12 for the MIDI parser and the music sources) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, the autoplayer, the JSON loader, the song clock and the click track. |
 | `tools/gen_click_track.py` | Writes the same click track as a `.wav` (and `.ogg` with `--ogg`, via ffmpeg) for use outside the page. |
 | `src/test/resources/lif_rk4_golden_traces.txt` | Golden v / g / refractory / spike traces generated from the real root `LIFRK4`. Do not hand-edit. |
 | `tools/LifGoldenTraceGen.java`, `tools/regen-lif-traces.sh` | Trace generator. It compiles against the root `src/` LIFRK4 and isn't part of the Maven build. |
@@ -334,10 +335,50 @@ the audio position still drives `SongClock`; no binary audio is committed.
 The stage's centre HUD shows each active layer as `<lane> E(k,n) <x/. string>`.
 
 **How hits reach the fly.** With the connectome fly (`C`), each chart note
-is a cue that injects a conductance pulse into its lane's input (sensory-role)
+(Euclidean, MIDI or voice chart alike) is a cue that injects a conductance pulse into its lane's input (sensory-role)
 neuron `laneN.in` of the 12-neuron, 20-synapse TOY circuit; the key press,
 and with it the block cut and the saber swing, happens only when the
 downstream output (motor-role) neuron `laneN.out` crosses threshold and
 spikes. With a human player or the LIF fly, the swing follows that press
 instead. The circuit is a toy, not the fly connectome. `EuclidSongTest`
 plays every preset at every tempo with all four fly modes (no misses).
+
+## Music sources (key S): Euclidean, MIDI file, TTS voice
+
+The picker row under AUTOPLAY is `[source] [item] [tempo]` (`#source-btn`,
+`#rhythm-btn`, `#bpm-btn`; 44 CSS px tap targets that fit the iPhone 12
+layout). All three, and keys S / E / T, are locked during a song with
+"Picker locked during song - press R to restart". `?source=euclid|midi|voice`
+and `?voice=fly|count|solfege` pick from the URL.
+
+- **EUCLID** (default): the Euclidean presets above.
+- **MIDI**: the item button (or E) opens a file picker (`#midi-file`, a
+  visually hidden `<input type=file>`, so iOS Safari opens it). The file is
+  read locally with `FileReader`; nothing is uploaded. `logic/Midi` parses
+  Standard MIDI Files: format 0 and 1, PPQN or SMPTE division, VLQ deltas,
+  running status, sysex / meta skipping, unknown chunks skipped, the merged
+  tempo map (meta 0x51 from any track; 120 BPM until the first one), and
+  note-on / note-off pairing (velocity-0 note-on = note-off). Malformed files
+  show "Bad MIDI: ..." and keep the current song. `logic/MidiSong` maps notes
+  to lanes by pitch quartile (cut at the 25 / 50 / 75 % ranks of all pitches:
+  low -> D, high -> K), shifts the first note to 2000 ms, caps songs at 180 s,
+  and skips a chart note closer than 180 ms to the previous one in its lane
+  (it still sounds). Every note is rendered as an oscillator voice (sine +
+  1/3 third harmonic, 5 ms attack, exponential release) at its pitch into
+  11025 Hz PCM and played through the same `<audio>` element as the click
+  track, so the audio position drives `SongClock`. This is offline oscillator
+  synthesis rather than a live WebAudio node graph: a live graph would run on
+  `AudioContext.currentTime`, a second clock the chart would have to be
+  re-synced to. No `.mid` is committed; tests build MIDI bytes in code
+  (`MidiBytes`, and a JS builder in `tools/smoke.js`).
+- **VOICE**: a short line (`fruit fly brain keeps the beat`,
+  `one and two and three and four and`, `do re mi fa sol la ti do`), one
+  syllable per beat on a fixed grid, the line looped 4 times, lanes D F J K in
+  turn. The clock is a synthesised click track at the chosen tempo; each
+  syllable is handed to `speechSynthesis` 60 ms before its note. Speech
+  latency varies by browser and voice, so the chart never waits for it. If
+  `speechSynthesis` is missing (or `speak` throws), the page says so and shows
+  the current syllable on the stage only.
+
+`MusicSourceTest` plays a MIDI scale, a two-channel MIDI riff with octave
+doubling and all three voice lines with each of the four fly modes (no misses).
