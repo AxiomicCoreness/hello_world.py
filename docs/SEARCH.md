@@ -1,6 +1,6 @@
 # Public search — AxiomicCoreness/hello_world.py
 
-**License:** MIT (`LICENSE` at repo root). GitHub classifies this repo as MIT.
+**License:** MIT (`LICENSE` at repo root). GitHub does not currently detect it as MIT: the license API reports `Other` (`spdx_id: NOASSERTION`), because `LICENSE` contains extra text alongside the MIT terms, so license detection does not match it to the standard MIT template.
 
 **Canonical URL:** https://github.com/AxiomicCoreness/hello_world.py
 
@@ -28,7 +28,7 @@ repo:AxiomicCoreness/hello_world.py reward_protocol
 repo:AxiomicCoreness/hello_world.py fiduciary_node_rewards
 ```
 
-Web search engines lag. Direct URL and GitHub `license:MIT` / code search work now.
+Web search engines lag. Direct URL and code search work now. `license:MIT` filters will not match this repo while GitHub detects the license as `Other` (NOASSERTION).
 
 ---
 
