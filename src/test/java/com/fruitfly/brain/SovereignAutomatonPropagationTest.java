@@ -74,4 +74,68 @@ class SovereignAutomatonPropagationTest {
         assertTrue(reply.matches("phase=[A-Z_]+ q=\\S+ p=\\S+ t=\\S+"), reply);
         assertTrue(a.gate());
     }
+    // ---- per-substep delivery: a delay of d ms lands at substep ceil(d / dt) ----
+
+    private static final double SUB_MS = LIFRK4.BRAIN_TICK_MS / LIFRK4.SUBSTEPS;
+
+    private static Connectome edge(double w, double delayMs) {
+        return new Connectome(2,
+                new int[] {0, 1, 1},
+                new int[] {1},
+                new double[] {w},
+                new double[] {delayMs});
+    }
+
+    /** Closed form of LIFRK4 from rest with g = g0 at t = 0 (ms). */
+    private static double exactFromRest(double g0, double t) {
+        double a = g0 * LIFRK4.TAU_G / (LIFRK4.TAU_G - LIFRK4.TAU_V);
+        return LIFRK4.V_REST - a * Math.exp(-t / LIFRK4.TAU_V) + a * Math.exp(-t / LIFRK4.TAU_G);
+    }
+
+    @Test
+    void delayLandsAtCeilSubstep() {
+        double w = 0.1;
+        double q = w * LIFRK4.V_REST; // neuron 0 sits at rest, so it sends w * V_REST
+        double[][] cases = {{0.25, 1}, {1.0, 1}, {2.5, 3}, {3.0, 3}, {17.2, 18}};
+        for (double[] c : cases) {
+            assertEquals((int) c[1], SovereignAutomaton.delaySubsteps(c[0]), "ceil for d=" + c[0]);
+            SovereignAutomaton a = new SovereignAutomaton(edge(w, c[0]), 2);
+            a.step(DT, 0.0);
+            double t = LIFRK4.BRAIN_TICK_MS - c[1] * SUB_MS;
+            assertEquals(exactFromRest(q, t), a.swarm().get(1).v(), 1e-5, "delay " + c[0] + " ms");
+            assertEquals(LIFRK4.V_REST, a.swarm().get(0).v(), 0.0);
+        }
+    }
+
+    @Test
+    void delayLongerThanTickCarriesIntoNextTick() {
+        double w = 0.1;
+        double q = w * LIFRK4.V_REST;
+        SovereignAutomaton a = new SovereignAutomaton(edge(w, 60.0), 2); // substep 60 = tick 1, substep 10
+        a.step(DT, 0.0);
+        assertEquals(LIFRK4.V_REST, a.swarm().get(1).v(), 0.0, "nothing arrives in the first tick");
+        a.step(DT, 0.0);
+        assertEquals(exactFromRest(q, LIFRK4.BRAIN_TICK_MS - 10 * SUB_MS), a.swarm().get(1).v(), 1e-5);
+    }
+
+    /** Drive lands at substep 0; per-tick charge into g is drive + sum(w * vPre), as before. */
+    @Test
+    void driveAtSubstepZeroAndChargeConserved() {
+        SovereignAutomaton a = new SovereignAutomaton(noEdges(), 2);
+        a.step(DT, 20.0);
+        assertEquals(exactFromRest(20.0, LIFRK4.BRAIN_TICK_MS), a.swarm().get(0).v(), 1e-5);
+
+        double w = 0.1;
+        double drive = 5.0;
+        SovereignAutomaton b = new SovereignAutomaton(edge(w, 2.5), 2);
+        b.step(DT, drive);
+        LIFRK4 ref = new LIFRK4();
+        double[] in = new double[LIFRK4.SUBSTEPS];
+        in[0] = drive;
+        in[3] = w * LIFRK4.V_REST;
+        ref.stepTick(in);
+        assertEquals(ref.v(), b.swarm().get(1).v(), 0.0);
+        assertEquals(ref.g(), b.swarm().get(1).g(), 0.0);
+        assertEquals(drive + w * LIFRK4.V_REST, in[0] + in[3], 0.0);
+    }
 }

@@ -27,21 +27,43 @@ public final class LIFRK4 {
     public double voltage() { return v; }
     public double g() { return g; }
 
-    /** Seconds of remaining refractory period; > 0 right after a spike. */
+    /** Milliseconds of remaining refractory period; > 0 right after a spike. */
     public double refractoryRemaining() { return refractoryRemaining; }
 
     public void stepTick(double gDelta) {
         double dt = BRAIN_TICK_MS / SUBSTEPS;
         for (int i = 0; i < SUBSTEPS; i++) {
-            stepRK4(dt);
-            if (refractoryRemaining > 0.0) {
-                refractoryRemaining -= dt;
-                if (refractoryRemaining < 0.0) {
-                    refractoryRemaining = 0.0;
-                }
-            }
+            substep(dt);
         }
         g += gDelta;
+    }
+
+    /**
+     * Per-substep input. gDeltaPerSubstep[s] is added to g at the start of
+     * substep s (t = s * BRAIN_TICK_MS / SUBSTEPS ms into the tick), so it
+     * first affects v during substep s. Length must be SUBSTEPS. The total
+     * added to g over the tick is the sum of the array.
+     */
+    public void stepTick(double[] gDeltaPerSubstep) {
+        if (gDeltaPerSubstep == null || gDeltaPerSubstep.length != SUBSTEPS) {
+            throw new IllegalArgumentException(
+                    "gDeltaPerSubstep must have length SUBSTEPS = " + SUBSTEPS);
+        }
+        double dt = BRAIN_TICK_MS / SUBSTEPS;
+        for (int i = 0; i < SUBSTEPS; i++) {
+            g += gDeltaPerSubstep[i];
+            substep(dt);
+        }
+    }
+
+    private void substep(double dt) {
+        stepRK4(dt);
+        if (refractoryRemaining > 0.0) {
+            refractoryRemaining -= dt;
+            if (refractoryRemaining < 0.0) {
+                refractoryRemaining = 0.0;
+            }
+        }
         if (v >= V_THRESH && refractoryRemaining == 0.0) {
             v = V_RESET;
             refractoryRemaining = REFRAC;
