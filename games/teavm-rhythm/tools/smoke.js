@@ -114,8 +114,9 @@ function boot(search, opts) {
   const huds = {};
   if (opts.hud) {
     for (const id of ['hud-l', 'hud-r', 'hud-c']) huds[id] = { id, textContent: '', style: {} };
-    // #autoplay-btn: records listeners, focus/blur and default-prevented pointer events.
-    const btn = { id: 'autoplay-btn', textContent: 'AUTOPLAY: OFF', className: '', style: {}, handlers: {}, blurs: 0, prevented: 0 };
+    // #autoplay-btn (and the picker buttons): records listeners, focus/blur and default-prevented pointer events.
+    const makeBtn = (bid, label) => {
+    const btn = { id: bid, textContent: label, className: '', title: '', style: {}, handlers: {}, blurs: 0, prevented: 0 };
     btn.addEventListener = (type, fn) => { (btn.handlers[type] = btn.handlers[type] || []).push(fn); };
     btn.blur = () => { btn.blurs++; };
     btn.fire = (type, extra) => {
@@ -126,10 +127,18 @@ function boot(search, opts) {
       return ev;
     };
     btn.tap = () => { const d = btn.fire('pointerdown'); btn.fire('mousedown'); const c = btn.fire('click'); return d.defaultPrevented && c.stopped; };
-    huds['autoplay-btn'] = btn;
+    return btn;
+    };
+    huds['autoplay-btn'] = makeBtn('autoplay-btn', 'AUTOPLAY: OFF');
+    if (!opts.noPickers) {
+      huds['rhythm-btn'] = makeBtn('rhythm-btn', 'LAYERED x4');
+      huds['bpm-btn'] = makeBtn('bpm-btn', '120 BPM');
+    }
   }
   b.huds = huds;
   b.btn = huds['autoplay-btn'];
+  b.rhythmBtn = huds['rhythm-btn'];
+  b.bpmBtn = huds['bpm-btn'];
   class FakeXHR {
     constructor() { this.readyState = 0; this.status = 0; this.responseText = ''; this.listeners = {}; b.xhrs.push(this); }
     open(m, url) { this.method = m; this.url = url; this.readyState = 1; }
@@ -441,6 +450,63 @@ const CHART = '?chart=charts/sample_chart.json';
   p.key({ key: 'c', code: 'KeyC', repeat: true, preventDefault() {} });
   p.key({ key: 'c', code: 'KeyC', repeat: true, preventDefault() {} }); p.frame(64 + 2364);
   expect('O: held C (auto-repeat) steps once', p.has('assist ON (LIF fly)') && p.btn.textContent === 'AUTOPLAY: ASSIST \u00b7 LIF FLY', p.btn.textContent);
+
+  // P: Euclidean rhythm songs (default song), picker buttons, lock, HUD patterns, synthesised audio, fly modes.
+  p = boot('', IPHONE);
+  p.frame(0);
+  expect('P: default song is Euclidean LAYERED x4 @ 120 BPM', p.rhythmBtn.textContent === 'LAYERED x4' && p.bpmBtn.textContent === '120 BPM'
+    && p.hud('Euclid') === 'Euclid \u00b7 LAYERED x4', p.hud('Euclid'));
+  expect('P: HUD shows each layer as an x/. string', ['D E(4,16) x...x...x...x...', 'F E(3,8) x..x..x.', 'J E(5,8) x.xx.xx.', 'K E(7,12) x.xx.x.xx.x.'].every((l) => p.has(l)));
+  expect('P: 152 notes (19 per bar x 8)', p.has('Bjorklund \u00b7 120 BPM \u00b7 152 notes'));
+  const eu = p.audios[p.audios.length - 1];
+  const ew = Buffer.from(eu ? eu.src.replace('data:audio/wav;base64,', '') : '', 'base64');
+  expect('P: synthesised WAV (16 kHz mono 16-bit), no file fetched', !!eu && eu.src.startsWith('data:audio/wav;base64,') && ew.readUInt32LE(24) === 16000 && ew.readUInt16LE(22) === 1 && p.xhrs.length === 0, ew.length);
+  const ePcm = (ms) => ew.readInt16LE(44 + 2 * Math.round(ms * 16));
+  let quiet = true; for (let ms = 0; ms < 1990; ms += 5) quiet = quiet && ePcm(ms) === 0;
+  let loud = 0; for (let ms = 2000; ms < 2020; ms += 0.0625) loud = Math.max(loud, Math.abs(ePcm(ms)));
+  expect('P: silent lead-in, onset at the first note (2000 ms)', quiet && loud > 3000, loud);
+  const rr = p.rhythmBtn, br = p.bpmBtn;
+  const rx = (v) => parseFloat(v);
+  expect('P: picker row: 44 px tap targets inside 390 px, under AUTOPLAY, centre text below', rx(rr.style.height) >= 44 && rx(br.style.height) >= 44
+    && rx(br.style.left) + rx(br.style.width) <= 390 && rx(rr.style.top) >= rx(p.btn.style.top) + rx(p.btn.style.height)
+    && rx(p.huds['hud-c'].style.top) >= rx(rr.style.top) + rx(rr.style.height), [rr.style.left, rr.style.top, rr.style.width, br.style.width, p.huds['hud-c'].style.top].join(' '));
+  rr.tap(); p.frame(16);
+  expect('P: tap rhythm -> TRESILLO, F x..x..x.', rr.textContent === 'TRESILLO E(3,8)' && p.has('F E(3,8) x..x..x.') && p.has('Bjorklund \u00b7 120 BPM \u00b7 24 notes'), rr.textContent);
+  br.tap(); p.frame(32);
+  expect('P: tap BPM -> 140', br.textContent === '140 BPM' && p.has('Bjorklund \u00b7 140 BPM \u00b7 24 notes'), br.textContent);
+  p.press('t', 'KeyT'); p.frame(48);
+  expect('P: key T -> 90 BPM', br.textContent === '90 BPM', br.textContent);
+  p.press('e', 'KeyE'); p.press('e', 'KeyE'); p.frame(64);
+  expect('P: key E x2 -> BEMBE E(7,12)', rr.textContent === 'BEMBE E(7,12)' && p.has('K E(7,12) x.xx.x.xx.x.'), rr.textContent);
+  rr.fire('click', { detail: 0 }); p.frame(80);
+  expect('P: keyboard-synthesised click on a picker ignored', rr.textContent === 'BEMBE E(7,12)');
+  p.press('e', 'KeyE'); p.press('e', 'KeyE'); p.frame(96);
+  expect('P: E reaches the seed chart slot (legacy chart, BPM n/a)', rr.textContent === 'SEED CHART' && p.hud('seed ') === 'seed 2026' && br.className === 'picker locked', rr.textContent);
+  p.press('e', 'KeyE'); p.frame(112);
+  expect('P: and wraps to LAYERED', rr.textContent === 'LAYERED x4');
+  // connectome fly plays the layered chart through the audio clock
+  p.press('c', 'KeyC'); p.press('c', 'KeyC'); p.frame(128);
+  const la = p.audios[p.audios.length - 1];
+  p.press(' '); p.frame(144);
+  expect('P: Space starts the synthesised audio; pickers locked', la.plays === 1 && rr.className === 'picker locked' && br.className === 'picker locked', rr.className);
+  rr.tap(); p.frame(160);
+  expect('P: rhythm tap mid-song -> picker lock hint, song unchanged', p.has('Song picker locked during song - press R to restart') && rr.textContent === 'LAYERED x4');
+  p.press('t', 'KeyT'); p.frame(176);
+  expect('P: T mid-song -> locked, tempo unchanged', br.textContent === '90 BPM' && p.has('Song picker locked during song - press R to restart'), br.textContent);
+  st = 176; done = false;
+  for (let i = 0; i < 4000 && !done; i++) { la.currentTime += 0.016; st += 16; p.frame(st); done = p.has('Song complete'); }
+  expect('P: connectome fly: layered @90 all 152 PERFECT', done && p.has('P 152  Gr 0  Go 0  M 0'), p.texts.find((t) => t.startsWith('P ')));
+  // LIF fly + assist fly on a single-layer preset via the URL
+  for (const [presses, label, key] of [[0, 'LIF', 'b'], [3, 'assist LIF', 'c'], [4, 'assist connectome', 'c']]) {
+    p = boot('?rhythm=cinquillo&bpm=140&audio=none', IPHONE);
+    p.frame(0);
+    if (key === 'b') p.press('b', 'KeyB'); else for (let k = 0; k < presses; k++) p.press('c', 'KeyC');
+    p.frame(16); p.press(' ');
+    st = 16; done = false;
+    for (let i = 0; i < 4000 && !done; i++) { st += 16; p.frame(st); done = p.has('Song complete'); }
+    expect('P: ?rhythm=cinquillo&bpm=140, ' + label + ' fly: 40 notes, no miss', p.rhythmBtn.textContent === 'CINQUILLO E(5,8)' && p.bpmBtn.textContent === '140 BPM'
+      && done && / M 0$/.test(p.texts.find((t) => t.startsWith('P ')) || '') && p.hud('Miss ') === 'Miss 0', p.texts.find((t) => t.startsWith('P ')));
+  }
 
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
