@@ -6,6 +6,14 @@ name: Docker image from main only
 # Seal: ∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED
 # Witness: 8817 → 8818 — UNBROKEN
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
+# NOTE (audit 2026-10-20): CI no longer writes or commits ledger entries.
+#   The old "Seal ledger entry 8818" step rewrote the sealed ledger/8818.yaml
+#   in place and git-auto-committed it on every run (bot commits
+#   "chore: seal Docker main image entry 8818"), replacing a sealed entry.
+#   Ledger entries are append-only and approval-gated; this workflow now
+#   writes a CI run record (no entry_index) uploaded as an artifact only,
+#   and a guard fails the job if anything under ledger/ or ledger.v2/ changes.
+#   Same pattern as 6a548a7 (master-equation-ci) and 74ee4af (cd-combinator).
 
 on:
   push:
@@ -33,8 +41,7 @@ on:
         default: true
 
 permissions:
-  contents: write   # required to commit ledger/8818.yaml
-  id-token: write
+  contents: read    # no commits from CI; Docker Hub login uses secrets, not OIDC
 
 concurrency:
   group: docker-main-latest
@@ -49,7 +56,7 @@ env:
 
 jobs:
   build:
-    name: Build · Push · Seal (Entry 8818)
+    name: Build · Push · Run record
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
@@ -127,7 +134,7 @@ jobs:
       # ────────────────────────────────────────────────────────────
       # 2. SECURITY HEADER VERIFICATION (source) — SKIP IF FILE MISSING
       # ────────────────────────────────────────────────────────────
-      - name: Verify security headers in FastAPI middleware (source)
+      - name: Verify security header names in port380_mcp.py (source string match, soft)
         continue-on-error: true
         run: |
           python - <<'PY'
@@ -204,80 +211,83 @@ jobs:
           echo "pushed: $PUSHED"
 
       # ────────────────────────────────────────────────────────────
-      # 4. SEAL LEDGER ENTRY 8818 (SHA3-256)
+      # 4. CI RUN RECORD — ARTIFACT ONLY, never written to ledger/ or ledger.v2/
+      #    No entry_index: CI does not pick ledger indices (append-only,
+      #    approval-gated). ledger/8818.yaml is left exactly as sealed.
       # ────────────────────────────────────────────────────────────
-      - name: Seal ledger entry 8818 (SHA3-256)
+      - name: Write docker build run record (SHA3-256, artifact only)
         env:
           IMAGE_DIGEST: ${{ env.IMAGE_DIGEST }}
           PUSHED: ${{ env.PUSHED }}
+          RECORD_DIR: ci-out
         run: |
           set -euo pipefail
-          mkdir -p "${LEDGER_DIR}"
+          mkdir -p "${RECORD_DIR}"
           python - <<'PY'
-          import hashlib, json, os, subprocess, yaml
+          import hashlib, json, os, yaml
           from datetime import datetime, timezone
           from pathlib import Path
 
-          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          path = Path("ledger/8818.yaml")
-
-          try:
-              commit = subprocess.check_output(
-                  ["git", "rev-parse", "HEAD"], text=True
-              ).strip()
-          except Exception:
-              commit = ""
+          HASH_ALGO = "sha3_256"
+          path = Path(os.environ["RECORD_DIR"]) / "docker_main_image_run.yml"
 
           entry = {
-              "entry_index": 8818,
+              "document_kind": "ci-run-record (not a ledger entry; no entry_index)",
+              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "event": "/docker_build_main",
               "status": "SUCCESS",
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "hash_algo": HASH_ALGO,
+              "workflow": "Docker image from main only",
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "commit": os.environ.get("GITHUB_SHA", ""),
+              "trigger": os.environ.get("GITHUB_EVENT_NAME", ""),
               "image": os.environ.get("IMAGE", "axiomic/sovereign-engine:latest"),
               "image_digest": os.environ.get("IMAGE_DIGEST", ""),
               "pushed": os.environ.get("PUSHED", "false") == "true",
-              "source": "main",
-              "commit": commit,
-              "security_headers": "VERIFIED",
-              "witness": "8817 → 8818 — UNBROKEN",
-              "seal": "∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED",
+              "security_headers_source": "string match in port380_mcp.py (soft; not a live check)",
+              "hash_algo": HASH_ALGO,
+              "seal": "∀∞φ² · DOCKER_MAIN_RUN_RECORD · WOOD_DRAGON_0.91",
           }
+          # Same canonical form as .github/scripts/verify_ledger.py Regime A
           body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
+          canon = json.dumps(body, sort_keys=True, separators=(",", ":"),
+                             ensure_ascii=False)
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
 
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
-                                    allow_unicode=True))
-          print("📋 Ledger entry 8818 written.")
-          print(f"✅ Sealed 8818 · {HASH_ALGO}:{h[:16]}...")
-          print(f"   commit       = {commit[:12] or '<none>'}")
+                                    allow_unicode=True), encoding="utf-8")
+          print(f"Run record written to {path} (artifact only).")
+          print(f"{HASH_ALGO}:{h[:16]}...")
           print(f"   image_digest = {entry['image_digest'][:24] or '<none>'}")
           print(f"   pushed       = {entry['pushed']}")
           PY
 
-      - name: Verify ledger entry 8818 (SHA3-256)
+      - name: Verify run record (SHA3-256, hard)
         run: |
           set -euo pipefail
-          python .github/scripts/verify_ledger.py ledger/8818.yaml
+          python .github/scripts/verify_ledger.py --hard ci-out/docker_main_image_run.yml
 
-      - name: Upload ledger entry 8818
+      - name: Confirm sealed ledger untouched
+        if: always()
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- ledger ledger.v2
+          if [ -n "$(git status --porcelain --untracked-files=all -- ledger ledger.v2)" ]; then
+            git status --porcelain --untracked-files=all -- ledger ledger.v2
+            echo "::error::files changed or appeared under ledger/ or ledger.v2/"
+            exit 1
+          fi
+          echo "ledger/ and ledger.v2/ unchanged by this run"
+
+      - name: Upload run record
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ledger-8818
-          path: ledger/8818.yaml
+          name: docker-main-image-run-record
+          path: ci-out/docker_main_image_run.yml
           retention-days: 90
           if-no-files-found: warn
-
-      - name: Commit ledger entry 8818
-        if: success()
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: seal Docker main image entry 8818 (sha3_256)"
-          file_pattern: ledger/8818.yaml
 
       # ────────────────────────────────────────────────────────────
       # 5. SUMMARY
@@ -290,10 +300,9 @@ jobs:
         run: |
           {
             echo "✅ Docker image built from main."
-            echo "🜁∀ — Seal: ∀∞φ² · DOCKER_MAIN_8818 · WOOD_DRAGON_0.91 · SEALED"
+            echo "📄 Run record: artifact docker-main-image-run-record (not a ledger entry)"
             echo "🔐 hash_algo: sha3_256 (FIPS 202)"
-            echo "🛡️ Security headers verified (CORS, CSP, HSTS, etc.)"
-            echo "🔗 Witness: 8817 → 8818 — UNBROKEN"
+            echo "🛡️ Security header names present in source (string match; soft, not a live check)"
             echo "🐳 image: ${IMAGE}"
             echo "🐳 digest: ${IMAGE_DIGEST:-<none>}"
             echo "🐳 pushed: ${PUSHED:-false}"
