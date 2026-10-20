@@ -598,6 +598,36 @@ const CHART = '?chart=charts/sample_chart.json';
       && firstAt >= 2000 - 60 - 16 && firstAt <= 2000, words.length + ' first@' + firstAt + ' ' + p.texts.find((t) => t.startsWith('P ')));
   }
 
+  // R: label / HUD written on the input itself, not on the next animation frame (no p.frame() between input and read).
+  p = boot('?rhythm=bembe&bpm=90&audio=none', IPHONE);
+  p.frame(0);
+  const seqR = ['AUTOPLAY: LIF FLY', 'AUTOPLAY: CONNECTOME FLY', 'AUTOPLAY: ASSIST \u00b7 LIF FLY', 'AUTOPLAY: ASSIST \u00b7 CONNECTOME FLY', 'AUTOPLAY: OFF'];
+  const hudR = ['LIF autoplay ON', 'connectome autoplay ON', 'assist ON (LIF fly)', 'assist ON (connectome fly)', 'autoplay off'];
+  let seqOk = true; const seen = [];
+  for (let k = 0; k < 8; k++) {
+    p.btn.tap();                                   // no frame: the rAF loop is "paused"
+    const mline = p.huds['hud-r'].textContent.split('\n')[1];
+    seen.push(p.btn.textContent);
+    seqOk = seqOk && p.btn.textContent === seqR[k % 5] && mline === hudR[k % 5];
+  }
+  expect('R: label + HUD mode right after each of 8 taps (no frame in between)', seqOk, seen.join(' / '));
+  p.press('c', 'KeyC');
+  expect('R: key C updates label + HUD immediately', p.btn.textContent === seqR[3] && p.huds['hud-r'].textContent.split('\n')[1] === hudR[3], p.btn.textContent);
+  p.press(' ');
+  expect('R: Space: label LOCKED with the same mode the HUD shows', p.btn.textContent === 'LOCKED: ASSIST \u00b7 CONNECTOME FLY'
+    && p.huds['hud-r'].textContent.split('\n')[1] === 'assist ON (connectome fly)' && p.rhythmBtn.className === 'picker locked', p.btn.textContent);
+  p.btn.tap();
+  expect('R: mid-song tap -> hint shown at once', p.huds['hud-c'].textContent.includes('Autoplay locked during song - press R to restart'));
+  // blocks cut == hits on the press itself (bembe @90: first notes K at 2000 and 2444 ms; frame clock from stamp 0)
+  p = boot('?rhythm=bembe&bpm=90&audio=none', IPHONE);
+  p.frame(0); p.press(' ');
+  const first2 = [2000, 2000 + Math.round(2 * 240000 / 90 / 12)];
+  p.frame(first2[0]); p.press('k', 'KeyK');
+  const hl1 = p.huds['hud-l'].textContent;
+  p.frame(first2[1]); p.press('k', 'KeyK');
+  const hl2 = p.huds['hud-l'].textContent;
+  expect('R: blocks cut moves with combo on the press (1/1 then 2/2)', /Combo 1 /.test(hl1) && /blocks cut 1/.test(hl1) && /Combo 2 /.test(hl2) && /blocks cut 2/.test(hl2), JSON.stringify([hl1, hl2]));
+
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
 })().catch((e) => { console.log('FAIL exception ' + (e && e.stack || e)); process.exit(1); });
