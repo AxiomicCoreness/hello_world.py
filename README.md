@@ -25,7 +25,7 @@ AxiomicCoreness/
 ├── quantum/cordis_bridge/ ← Cordis bridge package
 │
 ├── app/ ← FastAPI service (app.main:app, port 8000)
-├── port380_mcp.py ← FastAPI gate: /health(z), /gate, X-Garden-Secret /pulse + /mcp/tool (Python only; PORT default 380, host 127.0.0.1)
+├── port380_mcp.py ← FastAPI gate: /health(z), /status (minimal), /gate, X-Garden-Secret /pulse + /mcp/tool + /status/internal (Python only; PORT default 380, host 127.0.0.1)
 ├── .container/ ← stdlib container app + supervisor (port 380)
 │
 ├── src/main/java/com/fruitfly/brain/ ← Java 17 simulation sidecar
