@@ -33,6 +33,8 @@ public final class InputRouter {
     /** E: next song preset (Euclidean rhythm); T: next tempo. Between songs only. */
     public static final int CYCLE_RHYTHM = 9;
     public static final int CYCLE_BPM = 10;
+    /** S: next music source (Euclidean / MIDI / voice). Between songs only. */
+    public static final int CYCLE_SOURCE = 11;
 
     private InputRouter() {
     }
@@ -61,14 +63,14 @@ public final class InputRouter {
             }
             return is(key, code, 'c') ? CYCLE_MODE : TOGGLE_LIF;
         }
-        if (is(key, code, 'e') || is(key, code, 't')) {
+        if (is(key, code, 'e') || is(key, code, 't') || is(key, code, 's')) {
             if (repeat) {
                 return NONE;
             }
             if (running) {
                 return LOCKED;
             }
-            return is(key, code, 'e') ? CYCLE_RHYTHM : CYCLE_BPM;
+            return is(key, code, 'e') ? CYCLE_RHYTHM : is(key, code, 't') ? CYCLE_BPM : CYCLE_SOURCE;
         }
         if (!running) {
             return is(key, code, 'n') && !repeat ? NEW_SEED : NONE;

@@ -83,4 +83,43 @@ final class Dom {
     /** UIEvent.detail of a click: 0 for keyboard-synthesised activation; a missing detail counts as a pointer click (1). */
     @JSBody(params = {"e"}, script = "return (e && typeof e.detail === 'number') ? e.detail|0 : 1;")
     static native int clickDetail(org.teavm.jso.dom.events.Event e);
+
+    @org.teavm.jso.JSFunctor
+    interface FileCallback extends JSObject {
+        void picked(String name, String binary);
+    }
+
+    @org.teavm.jso.JSFunctor
+    interface ErrorCallback extends JSObject {
+        void failed(String why);
+    }
+
+    /** On a file input's change: read the first file as bytes and hand them over as a binary (latin-1) string. */
+    @JSBody(params = {"input", "ok", "bad"}, script = "if (!input || !input.addEventListener) return;"
+            + "input.addEventListener('change', function () {"
+            + "  var f = input.files && input.files[0]; if (!f) return;"
+            + "  if (typeof FileReader === 'undefined') { bad('FileReader unavailable'); return; }"
+            + "  var r = new FileReader();"
+            + "  r.onload = function () { var u = new Uint8Array(r.result), s = '';"
+            + "    for (var i = 0; i < u.length; i += 8192) { s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); }"
+            + "    ok(String(f.name || ''), s); };"
+            + "  r.onerror = function () { bad(String(r.error && r.error.name || 'read error')); };"
+            + "  r.readAsArrayBuffer(f);"
+            + "});")
+    static native void onFilePicked(HTMLElement input, FileCallback ok, ErrorCallback bad);
+
+    @JSBody(params = {"input"}, script = "if (input) { try { input.value = ''; } catch (e) {} if (input.click) input.click(); }")
+    static native void openFilePicker(HTMLElement input);
+
+    @JSBody(script = "return typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined';")
+    static native boolean hasSpeech();
+
+    /** Speak one syllable now (short, fast); false if speech is unavailable or throws. */
+    @JSBody(params = {"text"}, script = "try { if (typeof speechSynthesis === 'undefined' || typeof SpeechSynthesisUtterance === 'undefined') return false;"
+            + " var u = new SpeechSynthesisUtterance(text); u.rate = 1.5; u.pitch = 1.1; u.volume = 1;"
+            + " speechSynthesis.speak(u); return true; } catch (e) { return false; }")
+    static native boolean speak(String text);
+
+    @JSBody(script = "try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}")
+    static native void cancelSpeech();
 }

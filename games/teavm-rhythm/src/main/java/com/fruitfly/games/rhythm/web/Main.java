@@ -9,6 +9,10 @@ import com.fruitfly.games.rhythm.logic.ConnectomeXml;
 import com.fruitfly.games.rhythm.logic.ControlMode;
 import com.fruitfly.games.rhythm.logic.EuclidSong;
 import com.fruitfly.games.rhythm.logic.EuclidTrack;
+import com.fruitfly.games.rhythm.logic.Midi;
+import com.fruitfly.games.rhythm.logic.MidiSong;
+import com.fruitfly.games.rhythm.logic.SongSource;
+import com.fruitfly.games.rhythm.logic.VoiceSong;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
 import com.fruitfly.games.rhythm.logic.InputRouter;
 import com.fruitfly.games.rhythm.logic.Judgement;
@@ -126,12 +130,23 @@ public final class Main {
     /** Song picker: Euclidean presets 0..P-1, P = the seed / ?chart chart (legacy). */
     private static HTMLElement rhythmBtn;
     private static HTMLElement bpmBtn;
+    /** Music-source picker (#source-btn) and the hidden MIDI file input (#midi-file). */
+    private static HTMLElement sourceBtn;
+    private static HTMLElement midiInput;
+    private static int source = SongSource.EUCLID;
+    private static LoadedChart midiChart;
+    private static String midiUri;
+    private static String midiName;
+    private static int voiceLine;
+    /** Index of the last syllable handed to speechSynthesis this run (-1 = none). */
+    private static int voiceSpoken = -1;
+    private static boolean speechOk;
     private static int rhythmIdx = EuclidSong.PRESETS.length;
     private static int bpmIdx = EuclidSong.DEFAULT_BPM_INDEX;
     /** The seed / ?chart chart and its audio, restored when the picker returns to that slot. */
     private static LoadedChart baseLoaded;
     private static AudioSync baseAudio;
-    static final String PICKER_LOCK_HINT = "Song picker locked during song - press R to restart";
+    static final String PICKER_LOCK_HINT = SongSource.LOCK_HINT;
 
     private Main() {
     }
@@ -183,13 +198,24 @@ public final class Main {
         }
         rhythmBtn = (HTMLElement) doc.getElementById("rhythm-btn");
         bpmBtn = (HTMLElement) doc.getElementById("bpm-btn");
+        sourceBtn = (HTMLElement) doc.getElementById("source-btn");
+        midiInput = (HTMLElement) doc.getElementById("midi-file");
         boolean pickers = rhythmBtn != null && bpmBtn != null;
         if (pickers) {
-            double[][] row = layout.pickerRow(0.7, 0.3);
-            Dom.place(rhythmBtn, row[0][0], row[0][1], row[0][2], row[0][3]);
-            Dom.place(bpmBtn, row[1][0], row[1][1], row[1][2], row[1][3]);
-            wirePicker(rhythmBtn, Main::cycleRhythm);
+            double[][] row = sourceBtn != null ? layout.pickerRow(0.26, 0.48, 0.26) : layout.pickerRow(0.7, 0.3);
+            int at = 0;
+            if (sourceBtn != null) {
+                Dom.place(sourceBtn, row[at][0], row[at][1], row[at][2], row[at][3]);
+                wirePicker(sourceBtn, Main::cycleSource);
+                at++;
+            }
+            Dom.place(rhythmBtn, row[at][0], row[at][1], row[at][2], row[at][3]);
+            Dom.place(bpmBtn, row[at + 1][0], row[at + 1][1], row[at + 1][2], row[at + 1][3]);
+            wirePicker(rhythmBtn, Main::itemTap);
             wirePicker(bpmBtn, Main::cycleBpm);
+        }
+        if (midiInput != null) {
+            Dom.onFilePicked(midiInput, Main::midiPicked, why -> status = "MIDI read failed: " + why);
         }
         if (hudC != null && autoplayBtn != null) {
             // centre text starts under the button (and under the picker row when present)
@@ -231,6 +257,15 @@ public final class Main {
             rhythmIdx = fromRhythm;
         } else if (fromUrl == null && chartUrl == null && pickers) {
             rhythmIdx = 0;
+        }
+        int fromSource = SongSource.indexOf(param(q, "source"));
+        if (fromSource >= 0 && sourceBtn != null) {
+            source = fromSource;
+        }
+        for (int i = 0; i < VoiceSong.LINES.length; i++) {
+            if (VoiceSong.LINES[i][0].equals(param(q, "voice"))) {
+                voiceLine = i;
+            }
         }
         applyRhythm();
         if (chartUrl != null) {
@@ -350,6 +385,56 @@ public final class Main {
         lockHintUntil = lastStamp + ControlMode.LOCK_HINT_MS;
     }
 
+    /** S / the source button: Euclidean -> MIDI -> voice (between songs only). */
+    private static void cycleSource() {
+        if (running) {
+            return;
+        }
+        source = SongSource.next(source, false);
+        applyRhythm();
+    }
+
+    /** E / the middle button: Euclidean preset, MIDI file picker, or the voice line, by source. */
+    private static void itemTap() {
+        if (running) {
+            return;
+        }
+        if (source == SongSource.MIDI) {
+            if (midiInput != null) {
+                Dom.openFilePicker(midiInput); // inside the tap / key gesture, as browsers require
+            } else {
+                status = "No MIDI file input on this page";
+            }
+        } else if (source == SongSource.VOICE) {
+            voiceLine = (voiceLine + 1) % VoiceSong.LINES.length;
+            applyRhythm();
+        } else {
+            cycleRhythm();
+        }
+    }
+
+    /** A local .mid was read: parse it (format 0/1, tempo map), build its chart and synthesised audio. */
+    private static void midiPicked(String name, String binary) {
+        byte[] bytes = new byte[binary.length()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) binary.charAt(i);
+        }
+        try {
+            Midi.Song song = Midi.parse(bytes);
+            LoadedChart c = MidiSong.chart(song, SongSource.midiLabel(name));
+            midiUri = "none".equals(audioParam) ? null : MidiSong.dataUri(song);
+            midiChart = c;
+            midiName = name;
+            status = "";
+        } catch (IllegalArgumentException e) {
+            status = "Bad MIDI: " + e.getMessage();
+            return;
+        }
+        if (!running && source == SongSource.MIDI) {
+            applyRhythm();
+        }
+    }
+
     /** E / the rhythm button: next Euclidean preset, then the seed / ?chart chart, then wrap (between songs only). */
     private static void cycleRhythm() {
         if (running) {
@@ -364,12 +449,15 @@ public final class Main {
         if (running) {
             return;
         }
+        if (source == SongSource.MIDI) {
+            return; // a MIDI file keeps its own tempo map
+        }
         bpmIdx = (bpmIdx + 1) % EuclidSong.BPMS.length;
         applyRhythm();
     }
 
     private static boolean euclidActive() {
-        return rhythmIdx < EuclidSong.PRESETS.length;
+        return source == SongSource.EUCLID && rhythmIdx < EuclidSong.PRESETS.length;
     }
 
     /** Load the picked song: a Euclidean preset with its synthesised track, or the base chart and audio. */
@@ -377,9 +465,27 @@ public final class Main {
         if (audio != null) {
             audio.stop();
         }
-        if (euclidActive()) {
+        Dom.cancelSpeech();
+        if (status.startsWith("No MIDI") || status.startsWith("speechSynthesis")) {
+            status = "";
+        }
+        int bpm = EuclidSong.BPMS[bpmIdx];
+        if (source == SongSource.MIDI && midiChart != null) {
+            loaded = midiChart;
+            audio = midiUri == null ? null : new AudioSync(midiUri);
+        } else if (source == SongSource.MIDI) {
+            loaded = baseLoaded;
+            audio = baseAudio;
+            status = "No MIDI file yet: tap PICK .MID (seed chart for now)";
+        } else if (source == SongSource.VOICE) {
+            loaded = VoiceSong.chart(voiceLine, bpm);
+            // Clock = a synthesised click track; the syllables are spoken over it as their notes come up.
+            audio = "none".equals(audioParam) ? null
+                    : new AudioSync(ClickTrack.dataUri(bpm, VoiceSong.durationMs(voiceLine, bpm)));
+            speechOk = Dom.hasSpeech();
+            status = speechOk ? "" : "speechSynthesis unavailable: syllables shown on stage only";
+        } else if (euclidActive()) {
             EuclidSong.Preset p = EuclidSong.PRESETS[rhythmIdx];
-            int bpm = EuclidSong.BPMS[bpmIdx];
             loaded = EuclidSong.chart(p, bpm);
             audio = "none".equals(audioParam) ? null : new AudioSync(EuclidTrack.dataUri(p, bpm));
         } else {
@@ -390,6 +496,12 @@ public final class Main {
     }
 
     private static String rhythmLabel() {
+        if (source == SongSource.MIDI) {
+            return SongSource.midiLabel(midiName);
+        }
+        if (source == SongSource.VOICE) {
+            return VoiceSong.LINES[voiceLine][1];
+        }
         if (euclidActive()) {
             return EuclidSong.PRESETS[rhythmIdx].label;
         }
@@ -476,6 +588,7 @@ public final class Main {
         sabers = new SaberRig();
         running = false;
         lockHintUntil = 0;
+        voiceSpoken = -1;
         if (audio != null) {
             audio.stop();
         }
@@ -546,12 +659,15 @@ public final class Main {
                 applyModeAction(action, true);
                 return;
             case InputRouter.LOCKED:
-                boolean songKey = "KeyE".equals(code) || "KeyT".equals(code)
-                        || "e".equalsIgnoreCase(key) || "t".equalsIgnoreCase(key);
+                boolean songKey = "KeyE".equals(code) || "KeyT".equals(code) || "KeyS".equals(code)
+                        || "e".equalsIgnoreCase(key) || "t".equalsIgnoreCase(key) || "s".equalsIgnoreCase(key);
                 showLockHint(songKey ? PICKER_LOCK_HINT : ControlMode.LOCK_HINT);
                 return;
             case InputRouter.CYCLE_RHYTHM:
-                cycleRhythm();
+                itemTap();
+                return;
+            case InputRouter.CYCLE_SOURCE:
+                cycleSource();
                 return;
             case InputRouter.CYCLE_BPM:
                 cycleBpm();
@@ -616,6 +732,16 @@ public final class Main {
                 }
             }
             game.update(songTime());
+            if (source == SongSource.VOICE && speechOk) {
+                int idx = VoiceSong.currentIndex(voiceLine, EuclidSong.BPMS[bpmIdx], songTime() + VoiceSong.SPEAK_LEAD_MS);
+                if (idx > voiceSpoken) {
+                    voiceSpoken = idx;
+                    speechOk = Dom.speak(VoiceSong.syllableAt(voiceLine, idx)); // false -> degrade to text only
+                    if (!speechOk) {
+                        status = "speechSynthesis failed: syllables shown on stage only";
+                    }
+                }
+            }
             if (game.missCount() != missesBefore) {
                 banner = "MISS";
                 bannerUntil = stamp + 400;
@@ -761,6 +887,10 @@ public final class Main {
                 line(hc, s); // the active pattern(s) as x/. strings, one per lane
             }
         }
+        if (source == SongSource.VOICE) {
+            int at = running ? VoiceSong.currentIndex(voiceLine, EuclidSong.BPMS[bpmIdx], songTime()) : -1;
+            line(hc, at >= 0 ? "\u266a " + VoiceSong.syllableAt(voiceLine, at) : "\u266a " + VoiceSong.LINES[voiceLine][2]);
+        }
         if (!running) {
             if (game.isFinished()) {
                 line(hc, "Song complete");
@@ -774,7 +904,7 @@ public final class Main {
                 }
                 line(hc, "Press Space to start");
                 line(hc, loaded != null ? "D F J K hit \u00b7 R restart" : "D F J K hit \u00b7 R restart \u00b7 N new seed");
-                if (!euclidActive()) {
+                if (!euclidActive() && source == SongSource.EUCLID) {
                     line(hc, "B toggles the LIF autoplayer");
                 }
                 line(hc, autoplayBtn != null ? "C or AUTOPLAY button: change mode" : "C cycles off / LIF / connectome / assist");
@@ -786,12 +916,19 @@ public final class Main {
             Dom.setTitle(autoplayBtn, ControlMode.buttonTitle(running));
         }
         if (rhythmBtn != null && bpmBtn != null) {
+            boolean ownTempo = euclidActive() || source == SongSource.VOICE;
             setText(rhythmBtn, rhythmLabel());
-            setText(bpmBtn, euclidActive() ? EuclidSong.bpmLabel(EuclidSong.BPMS[bpmIdx]) : "-- BPM");
+            setText(bpmBtn, ownTempo ? EuclidSong.bpmLabel(EuclidSong.BPMS[bpmIdx]) : source == SongSource.MIDI ? "FILE BPM" : "-- BPM");
             Dom.setClass(rhythmBtn, running ? "picker locked" : "picker");
-            Dom.setClass(bpmBtn, running || !euclidActive() ? "picker locked" : "picker");
-            Dom.setTitle(rhythmBtn, running ? PICKER_LOCK_HINT : "Song: Euclidean rhythm preset (key E)");
-            Dom.setTitle(bpmBtn, running ? PICKER_LOCK_HINT : "Tempo for Euclidean songs (key T)");
+            Dom.setClass(bpmBtn, running || !ownTempo ? "picker locked" : "picker");
+            Dom.setTitle(rhythmBtn, running ? PICKER_LOCK_HINT : source == SongSource.MIDI ? "Pick a local .mid file (key E)"
+                    : source == SongSource.VOICE ? "Spoken line (key E)" : "Song: Euclidean rhythm preset (key E)");
+            Dom.setTitle(bpmBtn, running ? PICKER_LOCK_HINT : "Tempo for Euclidean and voice songs (key T)");
+        }
+        if (sourceBtn != null) {
+            setText(sourceBtn, SongSource.label(source));
+            Dom.setClass(sourceBtn, running ? "picker locked" : "picker");
+            Dom.setTitle(sourceBtn, running ? PICKER_LOCK_HINT : "Music source: Euclidean / MIDI file / TTS voice (key S)");
         }
         if (hudL != null && hudR != null && hudC != null) {
             setText(hudL, hl.toString());

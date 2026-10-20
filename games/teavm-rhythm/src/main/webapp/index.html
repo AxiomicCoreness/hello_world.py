@@ -71,8 +71,12 @@
     <button id="autoplay-btn" type="button" tabindex="-1"
             title="Autoplay mode (same as key C; changes between songs only)"
             aria-label="AUTOPLAY: OFF">AUTOPLAY: OFF</button>
+    <button id="source-btn" class="picker" type="button" tabindex="-1" title="Music source: Euclidean / MIDI file / TTS voice (key S)">EUCLID</button>
     <button id="rhythm-btn" class="picker" type="button" tabindex="-1" title="Song: Euclidean rhythm preset (key E)">LAYERED x4</button>
     <button id="bpm-btn" class="picker" type="button" tabindex="-1" title="Tempo for Euclidean songs (key T)">120 BPM</button>
+    <!-- Opened by the middle button when the source is MIDI. Visually hidden, not display:none, so iOS Safari opens it. -->
+    <input id="midi-file" type="file" accept=".mid,.midi,audio/midi,audio/x-midi" tabindex="-1" aria-hidden="true"
+           style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;">
   </div>
   <div class="side">
     <h2>Scoring</h2>
@@ -108,6 +112,16 @@
       (sensory-role) neuron <code>laneN.in</code> of the 12-neuron, 20-synapse TOY circuit; the key press, and with it
       the block cut and the saber swing, happens only when the downstream output (motor-role) neuron <code>laneN.out</code>
       crosses threshold and spikes. With a human player or the LIF fly, the swing follows that press instead.</p>
+    <h2 id="sources">Music source (S): Euclidean &middot; MIDI &middot; voice</h2>
+    <p class="note">The left button of the picker row (or S) switches the music source between songs; all three are locked
+      during a song. <b>EUCLID</b> (default) is above. <b>MIDI</b>: the middle button opens a file picker for a local
+      <code>.mid</code> (Standard MIDI File, format 0 or 1, PPQN or SMPTE time, tempo map); nothing is uploaded. Notes
+      go to lanes by pitch quartile (low &rarr; D, high &rarr; K); a note closer than 180 ms to the previous one in its
+      lane still sounds but isn&rsquo;t a block. Every note is rendered as an oscillator voice (sine + third harmonic) at
+      its pitch and played through the audio clock. <b>VOICE</b>: a short line, one syllable per beat on a fixed grid
+      (lanes D F J K in turn), spoken by the browser&rsquo;s <code>speechSynthesis</code> as each note comes up, over a
+      synthesised click track that keeps time. Without speech support the syllables are shown on the stage only.
+      Every fly mode plays every source.</p>
     <h2>LIF autoplayer (B)</h2>
     <p class="note">Four leaky integrate-and-fire neurons, one per lane, using math ported from
       <code>src/main/java/com/fruitfly/brain/LIFRK4.java</code> (RK4, 50 &times; 1 ms substeps per 50 ms tick).
@@ -128,7 +142,7 @@
     <p class="note">Stage: a light backdrop with a procedural perspective floor (default). <code>?bg=ar</code> uses the
       AR fly-brain screenshot (dimmed) instead; <code>?camera=1</code> tries a live camera backdrop and falls back to
       the screenshot. <code>?device=iphone12</code> forces the 390&times;844 layout.</p>
-    <p class="note">Space start &middot; D F J K hit &middot; B LIF autoplay &middot; C mode &middot; E rhythm &middot; T tempo &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
+    <p class="note">Space start &middot; D F J K hit &middot; B LIF autoplay &middot; C mode &middot; S source &middot; E rhythm / MIDI file / line &middot; T tempo &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
     <h2>Charts &amp; audio</h2>
     <p class="note"><a href="?chart=charts/sample_chart.json">Play the sample JSON chart</a>
       (<code>?chart=charts/sample_chart.json</code>). With a chart, song time is the audio position plus
