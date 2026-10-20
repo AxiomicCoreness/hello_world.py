@@ -18,6 +18,11 @@ spec:
       - name: api
         image: axiomic/sovereign-engine:latest
         imagePullPolicy: IfNotPresent
+        # app:app_main resolves via app/__init__.py, which re-exports app_main
+        # from the repo-root app.py (the app/ package shadows app.py).
+        # The image must contain app/, app.py and garden_surgery/.
+        # --host 0.0.0.0 is normal inside a container (pod network only);
+        # local runs use 127.0.0.1 (scripts/uvicorn_restart.py).
         command: ["uvicorn"]
         args: ["app:app_main", "--host", "0.0.0.0", "--port", "8024"]
         ports:
