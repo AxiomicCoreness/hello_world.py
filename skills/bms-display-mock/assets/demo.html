@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BMS display mock: demo fixture</title>
+<style>
+  body { font: 15px/1.4 sans-serif; margin: 3em 2em; }
+  .panel { border: 1px solid #999; padding: 1em; max-width: 28em; }
+  .row { display: flex; justify-content: space-between; }
+  .decoys { color: #666; margin-top: 2em; }
+</style>
+</head>
+<body>
+<header id="site-header">Demo header (hidden only when hideChrome is on)</header>
+<nav id="site-nav">Demo nav</nav>
+<div class="toast" id="toast">Demo toast</div>
+<aside id="side">Demo sidebar</aside>
+
+<main>
+  <p><strong>Fixture page for the BMS DISPLAY MOCK skill.</strong> Every number here is
+  made up; nothing on this page is connected to a battery.</p>
+
+  <div class="panel" id="bms-panel">
+    <div class="row">Pack voltage <span data-bms="voltage">3.<b>9</b>8</span> V</div>
+    <div class="row">Cell voltage <span id="bms-voltage">3.97</span> V</div>
+    <div class="row">Current <span class="bms-current">1.20</span> A</div>
+    <div class="row">Temperature <span data-bms="temp">31.5</span> &deg;C</div>
+    <div class="row">State of charge <span id="bms-soc">62%</span></div>
+    <div class="row">SOC (class hook) <span class="bms-soc" title="original title">62%</span></div>
+  </div>
+
+  <!-- Decoys: the old bookmarklet's substring selectors overwrote all of these. -->
+  <div class="decoys" id="decoys">
+    <span class="template-card" id="decoy-template">template text</span>
+    <span class="current-page" id="decoy-current">page 2 of 5</span>
+    <span class="temperature" id="decoy-temperature">outdoor 12 &deg;C</span>
+    <span id="voltage-help" class="hint">voltage help text</span>
+    <span class="associate" id="decoy-soc">associate</span>
+  </div>
+
+  <div class="leaderboard" id="leaderboard">Unrelated betting-site panel (hidden only with hideBettingChrome)</div>
+
+  <p><button id="run-mock" type="button"
+     onclick="var s=document.createElement('script');s.src='../bms_scripts/bms_display_mock.js?'+Date.now();document.body.appendChild(s);">
+     Run / revert display mock</button></p>
+</main>
+<footer id="site-footer">Demo footer</footer>
+</body>
+</html>

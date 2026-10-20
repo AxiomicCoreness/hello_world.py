@@ -1,0 +1,74 @@
+{
+  "skill": "bms-display-mock",
+  "version": "1.0.0",
+  "label": "DISPLAY MOCK: demos and screenshots only. Local page DOM only; reads no battery; changes no real data; never represent these as real readings.",
+  "built_against": {
+    "repo": "AxiomicCoreness/hello_world.py",
+    "branch": "main",
+    "head": "b8e5e659"
+  },
+  "default_selectors": {
+    "voltage": "[data-bms=\"voltage\"], #bms-voltage, .bms-voltage",
+    "current": "[data-bms=\"current\"], #bms-current, .bms-current",
+    "temp": "[data-bms=\"temp\"], #bms-temp, .bms-temp",
+    "soc": "[data-bms=\"soc\"], #bms-soc, .bms-soc"
+  },
+  "fields": [
+    {
+      "key": "voltage",
+      "prompt_default": "4.2",
+      "min": 0,
+      "max": 1000,
+      "unit": "V",
+      "suffix": ""
+    },
+    {
+      "key": "current",
+      "prompt_default": "0.5",
+      "min": -1000,
+      "max": 1000,
+      "unit": "A",
+      "suffix": ""
+    },
+    {
+      "key": "temp",
+      "prompt_default": "25.0",
+      "min": -40,
+      "max": 125,
+      "unit": "°C",
+      "suffix": ""
+    },
+    {
+      "key": "soc",
+      "prompt_default": "95",
+      "min": 0,
+      "max": 100,
+      "unit": "%",
+      "suffix": "%"
+    }
+  ],
+  "input_rule": "plain decimal: optional sign, digits, at most one dot; no hex, exponent, NaN or Infinity",
+  "config": {
+    "global": "window.BMS_MOCK_CONFIG",
+    "selectors": "per-key override",
+    "hideChrome": "boolean, else confirm()",
+    "hideBettingChrome": "boolean, default false"
+  },
+  "state": "window.__bmsDisplayMock (active, changed, errors, revert())",
+  "banner_id": "bms-display-mock-banner",
+  "style_id": "bms-display-mock-style",
+  "replaced_loose_selectors": [
+    "[class*=voltage]",
+    "[id*=voltage]",
+    "[class*=current]",
+    "[id*=current]",
+    "[class*=temp]",
+    "[id*=temp]",
+    "[class*=soc]",
+    "[id*=soc]",
+    ".temperature",
+    ".state-of-charge"
+  ],
+  "betting_selectors_note": "Unrelated to a BMS; kept only behind hideBettingChrome.",
+  "bookmarklet_length_chars": 6963
+}
