@@ -3,16 +3,56 @@
 <head>
   <meta charset="utf-8">
   <title>TeaVM Rhythm</title>
+  <!-- KaTeX 0.16.11, pinned with SRI. If it fails to load, the plain-text formulas below stay visible. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+        integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+"
+        crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+          integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
+          crossorigin="anonymous"></script>
   <style>
-    html, body { margin: 0; height: 100%; background: #05070d; color: #ccd; font-family: monospace; }
-    body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    html, body { margin: 0; min-height: 100%; background: #05070d; color: #ccd; font-family: monospace; }
+    body { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 24px; padding: 16px; box-sizing: border-box; }
     canvas { border: 1px solid #334; }
-    p { margin: 8px; font-size: 13px; }
+    .side { max-width: 380px; font-size: 13px; line-height: 1.45; }
+    .side h2 { font-size: 15px; color: #fff; margin: 4px 0 8px; }
+    .tex { margin: 10px 0; color: #e8e8f0; }
+    .note { color: #8890a8; }
   </style>
   <script type="text/javascript" charset="utf-8" src="classes.js"></script>
 </head>
 <body onload="main()">
   <canvas id="game" width="400" height="600"></canvas>
-  <p>Space start · D F J K hit · R restart · N new seed · <code>?seed=123</code> fixes the chart</p>
+  <div class="side">
+    <h2>Scoring</h2>
+    <!-- data-tex is rendered by KaTeX. Built-in commands only: none of the
+         docs/katex_macros.yaml macros fits these formulas (\Disc there means
+         a discriminant, so it isn't used for a time offset). -->
+    <div class="tex" data-tex="\Delta t = t_{\text{press}} - t_{\text{note}}">&Delta;t = t_press &minus; t_note</div>
+    <div class="tex" data-tex="b(\Delta t) = \begin{cases} 300 & |\Delta t| \le 50\ \text{ms} \quad \text{PERFECT} \\ 200 & 50 < |\Delta t| \le 100\ \text{ms} \quad \text{GREAT} \\ 100 & 100 < |\Delta t| \le 150\ \text{ms} \quad \text{GOOD} \\ 0 & \text{no press by } t_{\text{note}} + 150\ \text{ms} \quad \text{MISS} \end{cases}">
+      b = 300 if |&Delta;t| &le; 50 ms, 200 if &le; 100 ms, 100 if &le; 150 ms, 0 if missed</div>
+    <div class="tex" data-tex="\text{score} \mathrel{+}= b \times \min\!\left(4,\; 1 + \left\lfloor \frac{\text{combo}}{10} \right\rfloor\right)">
+      score += base &times; min(4, 1 + &lfloor;combo / 10&rfloor;)</div>
+    <div class="tex" data-tex="\text{combo} \leftarrow \begin{cases} \text{combo} + 1 & \text{hit} \\ 0 & \text{miss} \end{cases}">
+      combo &larr; combo + 1 on a hit, 0 on a miss</div>
+    <p class="note">The multiplier uses the combo before the hit. combo/10 is integer division.</p>
+    <h2>LIF autoplayer (B)</h2>
+    <p class="note">Four leaky integrate-and-fire neurons, one per lane, using math ported from
+      <code>src/main/java/com/fruitfly/brain/LIFRK4.java</code> (RK4, 50 &times; 1 ms substeps per 50 ms tick).
+      Each lane's next note sends its neuron one conductance pulse, and a spike is that lane's key press.</p>
+    <p class="note">Lane names (antennal lobe, mushroom body, lateral horn, lobula) are display labels only.
+      The lanes aren't wired to those brain regions or to the connectome.</p>
+    <p class="note">Space start &middot; D F J K hit &middot; B autoplay &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
+  </div>
+  <script>
+    window.addEventListener('load', function () {
+      if (typeof katex === 'undefined') { return; }
+      document.querySelectorAll('.tex[data-tex]').forEach(function (el) {
+        try {
+          katex.render(el.getAttribute('data-tex'), el, { displayMode: true, throwOnError: false });
+        } catch (e) { /* keep the plain-text fallback */ }
+      });
+    });
+  </script>
 </body>
 </html>

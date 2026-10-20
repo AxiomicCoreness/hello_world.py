@@ -1,6 +1,7 @@
 package com.fruitfly.games.rhythm.web;
 
 import com.fruitfly.games.rhythm.logic.Judgement;
+import com.fruitfly.games.rhythm.logic.LifAutoplayer;
 import com.fruitfly.games.rhythm.logic.Note;
 import com.fruitfly.games.rhythm.logic.NoteChart;
 import com.fruitfly.games.rhythm.logic.RhythmGame;
@@ -14,7 +15,12 @@ import org.teavm.jso.dom.html.HTMLDocument;
  * Browser layer only: canvas drawing, keyboard input and the
  * requestAnimationFrame loop. All rules live in the logic package.
  *
- * Controls: Space/Enter start, D F J K hit lanes, R restart, N new seed.
+ * Controls: Space/Enter start, D F J K hit lanes, B toggle the LIF
+ * autoplayer, R restart, N new seed.
+ *
+ * The lane names (antennal lobe, mushroom body, lateral horn, lobula) are
+ * display labels only. The lanes aren't wired to those regions or to the
+ * connectome; the autoplayer is four independent LIF neurons.
  */
 public final class Main {
     static final int WIDTH = 400;
@@ -25,10 +31,14 @@ public final class Main {
     static final int BPM = 120;
     static final long LEAD_IN_MS = 2000;
     static final long FLASH_MS = 120;
+    /** Display-only lane labels, left to right. Not anatomical wiring. */
+    static final String[] REGION_LABELS = {"antennal lobe", "mushroom body", "lateral horn", "lobula"};
 
     private static CanvasRenderingContext2D ctx;
     private static long seed = 2026L;
     private static RhythmGame game;
+    private static LifAutoplayer brain;
+    private static boolean autoplay;
     private static boolean running;
     private static double startStamp = -1;
     private static double lastStamp;
@@ -81,6 +91,7 @@ public final class Main {
 
     private static void reset() {
         game = new RhythmGame(NoteChart.generate(seed, NOTE_COUNT, BPM, LEAD_IN_MS));
+        brain = new LifAutoplayer(game);
         running = false;
         startStamp = -1;
     }
@@ -92,6 +103,13 @@ public final class Main {
     private static void onKey(KeyboardEvent e) {
         String key = e.getKey();
         String code = e.getCode();
+        if ("b".equalsIgnoreCase(key) || "KeyB".equals(code)) {
+            // Only switchable between songs, so a score is all-brain or all-human.
+            if (!running) {
+                autoplay = !autoplay;
+            }
+            return;
+        }
         if (!running) {
             if (" ".equals(key) || "Enter".equals(key)) {
                 if (game.isFinished()) {
@@ -110,7 +128,7 @@ public final class Main {
             reset();
             return;
         }
-        if (e.isRepeat()) {
+        if (e.isRepeat() || autoplay) {
             return;
         }
         int lane = RhythmGame.laneForKey(code != null && !code.isEmpty() ? code : key);
@@ -130,6 +148,14 @@ public final class Main {
         lastStamp = stamp;
         if (running) {
             int missesBefore = game.missCount();
+            if (autoplay) {
+                int hitsBefore = game.perfectCount() + game.greatCount() + game.goodCount();
+                brain.advanceTo(songTime()); // spikes become presses at their substep times
+                if (game.perfectCount() + game.greatCount() + game.goodCount() != hitsBefore) {
+                    banner = game.lastJudgement().name();
+                    bannerUntil = stamp + 400;
+                }
+            }
             game.update(songTime());
             if (game.missCount() != missesBefore) {
                 banner = "MISS";
@@ -175,7 +201,12 @@ public final class Main {
         ctx.setTextAlign("center");
         for (int l = 0; l < RhythmGame.LANES; l++) {
             ctx.setFillStyle("#8890a8");
-            ctx.fillText(RhythmGame.LANE_KEYS[l], l * laneW + laneW / 2.0, HIT_Y + 45);
+            ctx.fillText(RhythmGame.LANE_KEYS[l], l * laneW + laneW / 2.0, HIT_Y + 40);
+        }
+        ctx.setFont("11px monospace");
+        for (int l = 0; l < RhythmGame.LANES; l++) {
+            ctx.setFillStyle("#6f7896");
+            ctx.fillText(REGION_LABELS[l], l * laneW + laneW / 2.0, HIT_Y + 62);
         }
 
         ctx.setTextAlign("left");
@@ -186,6 +217,10 @@ public final class Main {
         ctx.fillText("Miss " + game.missCount(), 10, 68);
         ctx.setTextAlign("right");
         ctx.fillText("seed " + seed, WIDTH - 10, 24);
+        ctx.fillText(autoplay ? "LIF autoplay ON" : "autoplay off", WIDTH - 10, 46);
+        if (autoplay) {
+            ctx.fillText("spikes " + brain.spikeCount(), WIDTH - 10, 68);
+        }
 
         ctx.setTextAlign("center");
         if (bannerUntil > stamp && running) {
@@ -208,6 +243,7 @@ public final class Main {
                 ctx.fillText("Press Space to start", WIDTH / 2.0, 250);
                 ctx.setFont("16px monospace");
                 ctx.fillText("D F J K hit · R restart · N new seed", WIDTH / 2.0, 280);
+                ctx.fillText("B toggles the LIF autoplayer", WIDTH / 2.0, 305);
             }
         }
     }
