@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TOY CIRCUIT. This is NOT the Drosophila connectome and NOT FlyEM /
+  hemibrain / FlyWire data. It is a hand-written 12-neuron, 20-synapse
+  example for the teavm-rhythm "connectome" autoplayer, in the
+  project-local format of src/main/resources/connectome.xsd (with the
+  DRAFT optional region attribute).
+
+  Per lane L (0..3): laneL.in -> laneL.inter -> laneL.out, excitatory,
+  weight 60 (conductance kick per presynaptic spike, same units as
+  LifAutoplayer.DRIVE_G), delayMs 2. Lateral inhibition: every laneL.out
+  -> laneM.inter for M != L, weight -15, delayMs 2.
+
+  region values are lane DISPLAY LABELS chosen for the game. They are not
+  anatomical claims: the real antennal lobe, mushroom body, lateral horn
+  and lobula are not wired like this.
+
+  Game convention: the chart cue for lane L drives laneL.in; a spike of
+  laneL.out is a key press in lane L. A real export can be swapped in
+  with ?connectome=URL if it names those eight neurons (README).
+-->
+<hemibrain>
+  <neuron id="lane0.in" region="antennal lobe"/>
+  <neuron id="lane0.inter" region="antennal lobe"/>
+  <neuron id="lane0.out" region="antennal lobe"/>
+  <neuron id="lane1.in" region="mushroom body"/>
+  <neuron id="lane1.inter" region="mushroom body"/>
+  <neuron id="lane1.out" region="mushroom body"/>
+  <neuron id="lane2.in" region="lateral horn"/>
+  <neuron id="lane2.inter" region="lateral horn"/>
+  <neuron id="lane2.out" region="lateral horn"/>
+  <neuron id="lane3.in" region="lobula"/>
+  <neuron id="lane3.inter" region="lobula"/>
+  <neuron id="lane3.out" region="lobula"/>
+
+  <connection from="lane0.in" to="lane0.inter" weight="60" delayMs="2"/>
+  <connection from="lane0.inter" to="lane0.out" weight="60" delayMs="2"/>
+  <connection from="lane1.in" to="lane1.inter" weight="60" delayMs="2"/>
+  <connection from="lane1.inter" to="lane1.out" weight="60" delayMs="2"/>
+  <connection from="lane2.in" to="lane2.inter" weight="60" delayMs="2"/>
+  <connection from="lane2.inter" to="lane2.out" weight="60" delayMs="2"/>
+  <connection from="lane3.in" to="lane3.inter" weight="60" delayMs="2"/>
+  <connection from="lane3.inter" to="lane3.out" weight="60" delayMs="2"/>
+
+  <connection from="lane0.out" to="lane1.inter" weight="-15" delayMs="2"/>
+  <connection from="lane0.out" to="lane2.inter" weight="-15" delayMs="2"/>
+  <connection from="lane0.out" to="lane3.inter" weight="-15" delayMs="2"/>
+  <connection from="lane1.out" to="lane0.inter" weight="-15" delayMs="2"/>
+  <connection from="lane1.out" to="lane2.inter" weight="-15" delayMs="2"/>
+  <connection from="lane1.out" to="lane3.inter" weight="-15" delayMs="2"/>
+  <connection from="lane2.out" to="lane0.inter" weight="-15" delayMs="2"/>
+  <connection from="lane2.out" to="lane1.inter" weight="-15" delayMs="2"/>
+  <connection from="lane2.out" to="lane3.inter" weight="-15" delayMs="2"/>
+  <connection from="lane3.out" to="lane0.inter" weight="-15" delayMs="2"/>
+  <connection from="lane3.out" to="lane1.inter" weight="-15" delayMs="2"/>
+  <connection from="lane3.out" to="lane2.inter" weight="-15" delayMs="2"/>
+</hemibrain>
