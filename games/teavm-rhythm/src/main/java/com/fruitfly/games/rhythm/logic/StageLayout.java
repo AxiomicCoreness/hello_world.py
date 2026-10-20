@@ -90,6 +90,38 @@ public final class StageLayout {
         return b[1] + b[3] + CENTER_GAP;
     }
 
+    /** Song picker row: label font px and the gap between its buttons. */
+    public static final double PICKER_FONT_PX = 12;
+    public static final double PICKER_GAP = 6;
+
+    /**
+     * The song-picker row under the AUTOPLAY button: same horizontal span,
+     * one 44 px tall tap target per weight (widths proportional to the
+     * weights, {@link #PICKER_GAP} apart). Returns {x, y, w, h} per button.
+     */
+    public double[][] pickerRow(double... weights) {
+        double[] a = autoplayButton();
+        double sum = 0;
+        for (double w : weights) {
+            sum += w;
+        }
+        double free = a[2] - PICKER_GAP * (weights.length - 1);
+        double[][] out = new double[weights.length][];
+        double x = a[0];
+        for (int i = 0; i < weights.length; i++) {
+            double w = i == weights.length - 1 ? a[0] + a[2] - x : Math.floor(free * weights[i] / sum);
+            out[i] = new double[] {x, a[1] + a[3] + BUTTON_GAP, w, BUTTON_MIN_TAP};
+            x += w + PICKER_GAP;
+        }
+        return out;
+    }
+
+    /** Top of the centre text when the picker row is shown. */
+    public double centerTextTopBelowPickers() {
+        double[] a = autoplayButton();
+        return a[1] + a[3] + BUTTON_GAP + BUTTON_MIN_TAP + CENTER_GAP;
+    }
+
     /** Baseline of the TOY caption: the bottom strip, below the key labels, clear of the HUD title text. */
     public double captionY() {
         return height - 8 * uiScale;

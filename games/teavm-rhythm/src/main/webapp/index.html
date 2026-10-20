@@ -35,6 +35,14 @@
            -webkit-user-select: none; box-shadow: 0 1px 3px rgba(0,0,0,0.15); line-height: 40px; }
     #autoplay-btn:hover { background: #eef4ff; }
     #autoplay-btn.locked { opacity: 0.55; cursor: default; border-style: dashed; }
+    /* Song picker row (Euclidean rhythm preset + tempo): same tap-target rules as AUTOPLAY. */
+    .picker { position: absolute; left: 50px; top: 172px; width: 140px; height: 44px; box-sizing: border-box; margin: 0;
+           padding: 0 6px; border: 2px solid #b0632a; border-radius: 10px; background: rgba(255,255,255,0.92); color: #6a3410;
+           font: bold 12px/40px monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+           touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+           box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .picker.locked { opacity: 0.55; cursor: default; border-style: dashed; }
+    body.theme-ar .picker { background: rgba(10,14,28,0.85); color: #ffd9b8; border-color: #e0995e; }
     body.theme-ar #autoplay-btn { background: rgba(10,14,28,0.85); color: #cfe0ff; border-color: #8fb3ff; }
     @media (max-width: 599px) {
       body { padding: 0; gap: 0; }
@@ -63,6 +71,8 @@
     <button id="autoplay-btn" type="button" tabindex="-1"
             title="Autoplay mode (same as key C; changes between songs only)"
             aria-label="AUTOPLAY: OFF">AUTOPLAY: OFF</button>
+    <button id="rhythm-btn" class="picker" type="button" tabindex="-1" title="Song: Euclidean rhythm preset (key E)">LAYERED x4</button>
+    <button id="bpm-btn" class="picker" type="button" tabindex="-1" title="Tempo for Euclidean songs (key T)">120 BPM</button>
   </div>
   <div class="side">
     <h2>Scoring</h2>
@@ -77,6 +87,27 @@
     <div class="tex" data-tex="\text{combo} \leftarrow \begin{cases} \text{combo} + 1 & \text{hit} \\ 0 & \text{miss} \end{cases}">
       combo &larr; combo + 1 on a hit, 0 on a miss</div>
     <p class="note">The multiplier uses the combo before the hit. combo/10 is integer division.</p>
+    <h2 id="euclid">Euclidean rhythm (E / T)</h2>
+    <p class="note">The default song. E, or the rhythm button under AUTOPLAY, picks a preset (layered &middot; tresillo &middot;
+      cinquillo &middot; bembe &middot; kick &middot; the seed / JSON chart); T or the BPM button picks 90 / 100 / 120 / 140 BPM.
+      Both are locked during a song. Every pulse is one note; the stage shows each pattern as an x/. string.</p>
+    <div class="tex" data-tex="E(k,n):\ k \text{ onsets in } n \text{ steps},\quad P_i = \left\lfloor \frac{i\,n}{k} \right\rfloor,\ i = 0,\dots,k-1">
+      E(k,n): k onsets in n steps, P_i = floor(i&middot;n / k), i = 0..k&minus;1</div>
+    <p class="note">The floor formula gives the same pattern as Bjorklund&rsquo;s algorithm up to rotation. The game uses
+      Bjorklund: start with k groups [1] and n&minus;k groups [0], then repeatedly append one remainder group onto each
+      leading group, until at most one remainder group is left; concatenate.</p>
+    <div class="tex" data-tex="E(3,8):\ [1,0][1,0][1,0][0][0] \to [1,0,0][1,0,0][1,0] \to 10010010">
+      E(3,8): [1,0][1,0][1,0][0][0] &rarr; [1,0,0][1,0,0][1,0] &rarr; 10010010</div>
+    <div class="tex" data-tex="E(7,12) = 101101011010,\quad \text{gaps } 2,2,1,2,2,2,1 \ (\text{major-scale steps, up to rotation})">
+      E(7,12) = 101101011010, gaps 2,2,1,2,2,2,1 (major-scale steps, up to rotation)</div>
+    <p class="note">Presets (canonical Bjorklund rotation, starting on a pulse): D kick E(4,16) <code>x...x...x...x...</code>,
+      F tresillo E(3,8) <code>x..x..x.</code>, J cinquillo E(5,8) <code>x.xx.xx.</code>, K bembe bell E(7,12)
+      <code>x.xx.x.xx.x.</code>. Each pattern spans one 4/4 bar (8 steps = eighths, 16 = sixteenths, 12 = triplet eighths), 8 bars,
+      with its own synthesised timbre (kick sweep, clave, conga, bell) rendered in the page; nothing is downloaded.</p>
+    <p class="note">With the connectome fly, each note is a cue that injects a pulse into the lane&rsquo;s input
+      (sensory-role) neuron <code>laneN.in</code> of the 12-neuron, 20-synapse TOY circuit; the key press, and with it
+      the block cut and the saber swing, happens only when the downstream output (motor-role) neuron <code>laneN.out</code>
+      crosses threshold and spikes. With a human player or the LIF fly, the swing follows that press instead.</p>
     <h2>LIF autoplayer (B)</h2>
     <p class="note">Four leaky integrate-and-fire neurons, one per lane, using math ported from
       <code>src/main/java/com/fruitfly/brain/LIFRK4.java</code> (RK4, 50 &times; 1 ms substeps per 50 ms tick).
@@ -97,7 +128,7 @@
     <p class="note">Stage: a light backdrop with a procedural perspective floor (default). <code>?bg=ar</code> uses the
       AR fly-brain screenshot (dimmed) instead; <code>?camera=1</code> tries a live camera backdrop and falls back to
       the screenshot. <code>?device=iphone12</code> forces the 390&times;844 layout.</p>
-    <p class="note">Space start &middot; D F J K hit &middot; B LIF autoplay &middot; C mode &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
+    <p class="note">Space start &middot; D F J K hit &middot; B LIF autoplay &middot; C mode &middot; E rhythm &middot; T tempo &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
     <h2>Charts &amp; audio</h2>
     <p class="note"><a href="?chart=charts/sample_chart.json">Play the sample JSON chart</a>
       (<code>?chart=charts/sample_chart.json</code>). With a chart, song time is the audio position plus

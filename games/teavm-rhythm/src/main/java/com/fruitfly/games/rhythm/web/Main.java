@@ -7,6 +7,8 @@ import com.fruitfly.games.rhythm.logic.CircuitSim;
 import com.fruitfly.games.rhythm.logic.ConnectomeAutoplayer;
 import com.fruitfly.games.rhythm.logic.ConnectomeXml;
 import com.fruitfly.games.rhythm.logic.ControlMode;
+import com.fruitfly.games.rhythm.logic.EuclidSong;
+import com.fruitfly.games.rhythm.logic.EuclidTrack;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
 import com.fruitfly.games.rhythm.logic.InputRouter;
 import com.fruitfly.games.rhythm.logic.Judgement;
@@ -120,6 +122,16 @@ public final class Main {
     private static double bannerUntil;
     /** Page time until which the "Autoplay locked during song" hint shows (C / B / button used mid-song). */
     private static double lockHintUntil;
+    private static String lockHint = ControlMode.LOCK_HINT;
+    /** Song picker: Euclidean presets 0..P-1, P = the seed / ?chart chart (legacy). */
+    private static HTMLElement rhythmBtn;
+    private static HTMLElement bpmBtn;
+    private static int rhythmIdx = EuclidSong.PRESETS.length;
+    private static int bpmIdx = EuclidSong.DEFAULT_BPM_INDEX;
+    /** The seed / ?chart chart and its audio, restored when the picker returns to that slot. */
+    private static LoadedChart baseLoaded;
+    private static AudioSync baseAudio;
+    static final String PICKER_LOCK_HINT = "Song picker locked during song - press R to restart";
 
     private Main() {
     }
@@ -169,8 +181,19 @@ public final class Main {
                 applyModeAction(InputRouter.buttonClick(Dom.clickDetail(evt), running), false);
             });
         }
+        rhythmBtn = (HTMLElement) doc.getElementById("rhythm-btn");
+        bpmBtn = (HTMLElement) doc.getElementById("bpm-btn");
+        boolean pickers = rhythmBtn != null && bpmBtn != null;
+        if (pickers) {
+            double[][] row = layout.pickerRow(0.7, 0.3);
+            Dom.place(rhythmBtn, row[0][0], row[0][1], row[0][2], row[0][3]);
+            Dom.place(bpmBtn, row[1][0], row[1][1], row[1][2], row[1][3]);
+            wirePicker(rhythmBtn, Main::cycleRhythm);
+            wirePicker(bpmBtn, Main::cycleBpm);
+        }
         if (hudC != null && autoplayBtn != null) {
-            Dom.top(hudC, layout.centerTextTop()); // centre text starts under the button
+            // centre text starts under the button (and under the picker row when present)
+            Dom.top(hudC, pickers ? layout.centerTextTopBelowPickers() : layout.centerTextTop());
         }
         boolean camParam = "1".equals(param(q, "camera"));
         // Default: light stage with a procedural floor. ?bg=ar (or ?camera=1, which falls back to it) uses the AR photo.
@@ -195,7 +218,21 @@ public final class Main {
         if (chartUrl == null && audioParam != null && !"none".equals(audioParam)) {
             audio = new AudioSync(audioParam); // generated chart, audio clock, offset 0
         }
-        reset();
+        baseAudio = audio;
+        // Euclidean rhythm is the default song; ?seed= / ?chart= keep the legacy charts; ?rhythm=<id> / ?bpm=N pick one.
+        int fromRhythm = EuclidSong.indexOf(param(q, "rhythm"));
+        String bpmParam = param(q, "bpm");
+        for (int i = 0; i < EuclidSong.BPMS.length; i++) {
+            if (String.valueOf(EuclidSong.BPMS[i]).equals(bpmParam)) {
+                bpmIdx = i;
+            }
+        }
+        if (fromRhythm >= 0) {
+            rhythmIdx = fromRhythm;
+        } else if (fromUrl == null && chartUrl == null && pickers) {
+            rhythmIdx = 0;
+        }
+        applyRhythm();
         if (chartUrl != null) {
             loadChart(chartUrl);
         }
@@ -263,7 +300,6 @@ public final class Main {
         if (audio != null) {
             audio.stop();
         }
-        loaded = c;
         String src;
         if ("none".equals(audioParam)) {
             src = null;
@@ -274,9 +310,90 @@ public final class Main {
         } else {
             src = ClickTrack.dataUri(c.bpm(), ClickTrack.durationFor(c));
         }
-        audio = src == null ? null : new AudioSync(src);
+        baseLoaded = c;
+        baseAudio = src == null ? null : new AudioSync(src);
         status = "";
+        applyRhythm();
+    }
+
+    /** Same no-focus rules as the AUTOPLAY button; a tap runs {@code onTap} between songs, shows the lock hint mid-song. */
+    private static void wirePicker(HTMLElement btn, Runnable onTap) {
+        btn.addEventListener("pointerdown", evt -> evt.preventDefault());
+        btn.addEventListener("mousedown", evt -> evt.preventDefault());
+        btn.addEventListener("keydown", evt -> {
+            KeyboardEvent k = (KeyboardEvent) evt;
+            if (InputRouter.isStartKey(k.getKey(), k.getCode())) {
+                evt.preventDefault();
+            }
+        });
+        btn.addEventListener("keyup", evt -> {
+            KeyboardEvent k = (KeyboardEvent) evt;
+            if (InputRouter.isStartKey(k.getKey(), k.getCode())) {
+                evt.preventDefault();
+            }
+        });
+        btn.addEventListener("click", evt -> {
+            evt.preventDefault();
+            evt.stopPropagation();
+            Dom.blur(btn);
+            int a = InputRouter.buttonClick(Dom.clickDetail(evt), running);
+            if (a == InputRouter.LOCKED) {
+                showLockHint(PICKER_LOCK_HINT);
+            } else if (a == InputRouter.CYCLE_MODE) {
+                onTap.run();
+            }
+        });
+    }
+
+    private static void showLockHint(String text) {
+        lockHint = text;
+        lockHintUntil = lastStamp + ControlMode.LOCK_HINT_MS;
+    }
+
+    /** E / the rhythm button: next Euclidean preset, then the seed / ?chart chart, then wrap (between songs only). */
+    private static void cycleRhythm() {
+        if (running) {
+            return;
+        }
+        rhythmIdx = (rhythmIdx + 1) % (EuclidSong.PRESETS.length + 1);
+        applyRhythm();
+    }
+
+    /** T / the BPM button: next tempo for the Euclidean songs (between songs only). */
+    private static void cycleBpm() {
+        if (running) {
+            return;
+        }
+        bpmIdx = (bpmIdx + 1) % EuclidSong.BPMS.length;
+        applyRhythm();
+    }
+
+    private static boolean euclidActive() {
+        return rhythmIdx < EuclidSong.PRESETS.length;
+    }
+
+    /** Load the picked song: a Euclidean preset with its synthesised track, or the base chart and audio. */
+    private static void applyRhythm() {
+        if (audio != null) {
+            audio.stop();
+        }
+        if (euclidActive()) {
+            EuclidSong.Preset p = EuclidSong.PRESETS[rhythmIdx];
+            int bpm = EuclidSong.BPMS[bpmIdx];
+            loaded = EuclidSong.chart(p, bpm);
+            audio = "none".equals(audioParam) ? null : new AudioSync(EuclidTrack.dataUri(p, bpm));
+        } else {
+            loaded = baseLoaded;
+            audio = baseAudio;
+        }
         reset();
+    }
+
+    private static String rhythmLabel() {
+        if (euclidActive()) {
+            return EuclidSong.PRESETS[rhythmIdx].label;
+        }
+        return baseLoaded != null ? "JSON CHART" : "SEED CHART";
     }
 
     /** metadata.audio is relative to the chart file unless it's absolute. */
@@ -378,7 +495,7 @@ public final class Main {
     /** CYCLE_MODE / TOGGLE_LIF / LOCKED from InputRouter; anything else is ignored. */
     private static void applyModeAction(int action, boolean lifToggle) {
         if (action == InputRouter.LOCKED) {
-            lockHintUntil = lastStamp + ControlMode.LOCK_HINT_MS; // the lock stays; now it says so
+            showLockHint(ControlMode.LOCK_HINT); // the lock stays; now it says so
         } else if (action == InputRouter.CYCLE_MODE) {
             cycleMode();
         } else if (action == InputRouter.TOGGLE_LIF && lifToggle) {
@@ -425,9 +542,19 @@ public final class Main {
         switch (action) {
             case InputRouter.CYCLE_MODE:
             case InputRouter.TOGGLE_LIF:
-            case InputRouter.LOCKED:
                 // Only switchable between songs, so a score is all-brain or all-human.
                 applyModeAction(action, true);
+                return;
+            case InputRouter.LOCKED:
+                boolean songKey = "KeyE".equals(code) || "KeyT".equals(code)
+                        || "e".equalsIgnoreCase(key) || "t".equalsIgnoreCase(key);
+                showLockHint(songKey ? PICKER_LOCK_HINT : ControlMode.LOCK_HINT);
+                return;
+            case InputRouter.CYCLE_RHYTHM:
+                cycleRhythm();
+                return;
+            case InputRouter.CYCLE_BPM:
+                cycleBpm();
                 return;
             case InputRouter.START:
                 if (game.isFinished()) {
@@ -624,10 +751,15 @@ public final class Main {
             line(hc, status.length() > 60 ? status.substring(0, 57) + "..." : status);
         }
         if (lockHintUntil > stamp && running) {
-            line(hc, ControlMode.LOCK_HINT);
+            line(hc, lockHint);
         }
         if (bannerUntil > stamp && running) {
             line(hc, banner);
+        }
+        if (euclidActive()) {
+            for (String s : EuclidSong.hudLines(EuclidSong.PRESETS[rhythmIdx])) {
+                line(hc, s); // the active pattern(s) as x/. strings, one per lane
+            }
         }
         if (!running) {
             if (game.isFinished()) {
@@ -642,7 +774,9 @@ public final class Main {
                 }
                 line(hc, "Press Space to start");
                 line(hc, loaded != null ? "D F J K hit \u00b7 R restart" : "D F J K hit \u00b7 R restart \u00b7 N new seed");
-                line(hc, "B toggles the LIF autoplayer");
+                if (!euclidActive()) {
+                    line(hc, "B toggles the LIF autoplayer");
+                }
                 line(hc, autoplayBtn != null ? "C or AUTOPLAY button: change mode" : "C cycles off / LIF / connectome / assist");
             }
         }
@@ -650,6 +784,14 @@ public final class Main {
             setText(autoplayBtn, ControlMode.buttonLabel(mode, running));
             Dom.setClass(autoplayBtn, running ? "locked" : "");
             Dom.setTitle(autoplayBtn, ControlMode.buttonTitle(running));
+        }
+        if (rhythmBtn != null && bpmBtn != null) {
+            setText(rhythmBtn, rhythmLabel());
+            setText(bpmBtn, euclidActive() ? EuclidSong.bpmLabel(EuclidSong.BPMS[bpmIdx]) : "-- BPM");
+            Dom.setClass(rhythmBtn, running ? "picker locked" : "picker");
+            Dom.setClass(bpmBtn, running || !euclidActive() ? "picker locked" : "picker");
+            Dom.setTitle(rhythmBtn, running ? PICKER_LOCK_HINT : "Song: Euclidean rhythm preset (key E)");
+            Dom.setTitle(bpmBtn, running ? PICKER_LOCK_HINT : "Tempo for Euclidean songs (key T)");
         }
         if (hudL != null && hudR != null && hudC != null) {
             setText(hudL, hl.toString());

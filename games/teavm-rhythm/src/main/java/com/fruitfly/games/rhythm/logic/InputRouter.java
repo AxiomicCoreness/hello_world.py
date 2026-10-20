@@ -30,6 +30,9 @@ public final class InputRouter {
     public static final int LANE = 7;
     /** Space / Enter mid-song: no action, but preventDefault (no page scroll, no button activation). */
     public static final int CONSUME = 8;
+    /** E: next song preset (Euclidean rhythm); T: next tempo. Between songs only. */
+    public static final int CYCLE_RHYTHM = 9;
+    public static final int CYCLE_BPM = 10;
 
     private InputRouter() {
     }
@@ -57,6 +60,15 @@ public final class InputRouter {
                 return LOCKED;
             }
             return is(key, code, 'c') ? CYCLE_MODE : TOGGLE_LIF;
+        }
+        if (is(key, code, 'e') || is(key, code, 't')) {
+            if (repeat) {
+                return NONE;
+            }
+            if (running) {
+                return LOCKED;
+            }
+            return is(key, code, 'e') ? CYCLE_RHYTHM : CYCLE_BPM;
         }
         if (!running) {
             return is(key, code, 'n') && !repeat ? NEW_SEED : NONE;
