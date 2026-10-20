@@ -1,27 +1,42 @@
 package com.fruitfly.games.rhythm.web;
 
+import com.fruitfly.games.rhythm.logic.AssistArbiter;
 import com.fruitfly.games.rhythm.logic.ChartJson;
+import com.fruitfly.games.rhythm.logic.Circuit;
+import com.fruitfly.games.rhythm.logic.CircuitSim;
+import com.fruitfly.games.rhythm.logic.ConnectomeAutoplayer;
+import com.fruitfly.games.rhythm.logic.ConnectomeXml;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
 import com.fruitfly.games.rhythm.logic.Judgement;
 import com.fruitfly.games.rhythm.logic.LifAutoplayer;
 import com.fruitfly.games.rhythm.logic.LoadedChart;
 import com.fruitfly.games.rhythm.logic.Note;
 import com.fruitfly.games.rhythm.logic.NoteChart;
+import com.fruitfly.games.rhythm.logic.PhantomBlocks;
+import com.fruitfly.games.rhythm.logic.SaberRig;
 import com.fruitfly.games.rhythm.logic.RhythmGame;
 import com.fruitfly.games.rhythm.logic.SongClock;
+import com.fruitfly.games.rhythm.logic.StageLayout;
+import com.fruitfly.games.rhythm.logic.ToyCircuitXml;
+import org.teavm.jso.JSBody;
+import org.teavm.jso.JSObject;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.browser.Window;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 import org.teavm.jso.dom.events.KeyboardEvent;
 import org.teavm.jso.dom.html.HTMLCanvasElement;
 import org.teavm.jso.dom.html.HTMLDocument;
+import org.teavm.jso.dom.html.HTMLElement;
 
 /**
  * Browser layer only: canvas drawing, keyboard input and the
  * requestAnimationFrame loop. All rules live in the logic package.
  *
  * Controls: Space/Enter start, D F J K hit lanes, B toggle the LIF
- * autoplayer, R restart, N new seed.
+ * autoplayer, C cycle the control mode (between songs only): off, LIF
+ * autoplay, connectome autoplay, assist (LIF fly), assist (connectome fly).
+ * In assist modes the human plays and the fly only covers notes about to be
+ * missed (AssistArbiter). R restart, N new seed.
  *
  * URL options: ?seed=N picks a generated chart. ?chart=URL loads a JSON
  * chart (see ChartJson); its audio is ?audio=URL, else metadata.audio, else
@@ -30,13 +45,29 @@ import org.teavm.jso.dom.html.HTMLDocument;
  * frame; without it (or if it fails) the original frame clock is used.
  *
  * The lane names (antennal lobe, mushroom body, lateral horn, lobula) are
- * display labels only. The lanes aren't wired to those regions or to the
- * connectome; the autoplayer is four independent LIF neurons.
+ * display labels only. With the toy circuit they're read from the region
+ * attribute of laneN.out (connectomes/toy_lane_circuit.xml, a TOY circuit,
+ * not the real fly connectome); ?connectome=URL loads another file.
+ *
+ * Layers, back to front: background (default: light #f7f6f3 stage with a
+ * procedural perspective floor; ?bg=ar: the AR screenshot
+ * assets/ar_brain_bg.jpg, dimmed; ?camera=1: live camera, else the AR shot), the 3D stage (StageRenderer:
+ * grid, origin anchor, fly-brain object), lanes and notes, then the HUD as
+ * an HTML overlay (#hud-l, #hud-r, #hud-c; canvas text if those are absent).
+ * The canvas is sized by StageLayout (iPhone 12: 390x844 CSS px;
+ * ?device=iphone12 forces it) with a devicePixelRatio backing store
+ * (1170x2532 at DPR 3).
  */
 public final class Main {
-    static final int WIDTH = 400;
-    static final int HEIGHT = 600;
-    static final int HIT_Y = 520;
+    static final String BG_URL = "assets/ar_brain_bg.jpg";
+    static final int MODE_OFF = 0;
+    static final int MODE_LIF = 1;
+    static final int MODE_CONNECTOME = 2;
+    static final int MODE_ASSIST_LIF = 3;
+    static final int MODE_ASSIST_CONNECTOME = 4;
+    static final int MODES = 5;
+    static final double SHAKE_MS = 60;
+    static final double SHAKE_PX = 4;
     static final double PX_PER_MS = 0.35;
     static final int NOTE_COUNT = 64;
     static final int BPM = 120;
@@ -46,10 +77,33 @@ public final class Main {
     static final String[] REGION_LABELS = {"antennal lobe", "mushroom body", "lateral horn", "lobula"};
 
     private static CanvasRenderingContext2D ctx;
+    private static StageLayout layout;
+    private static double dpr = 1;
+    private static int width;
+    private static int height;
+    private static int hitY;
+    private static JSObject background;
+    private static JSObject camera;
+    private static Theme theme = Theme.LIGHT;
+    private static boolean cameraReported;
+    private static HTMLElement hudL;
+    private static HTMLElement hudR;
+    private static HTMLElement hudC;
+    private static final StringBuilder hl = new StringBuilder();
+    private static final StringBuilder hr = new StringBuilder();
+    private static final StringBuilder hc = new StringBuilder();
+    private static Circuit circuit = ConnectomeXml.parse(ToyCircuitXml.XML);
+    private static String circuitName = "toy";
+    private static ConnectomeAutoplayer wired;
+    private static AssistArbiter arbiter;
+    private static LifAutoplayer flyLif;
+    private static ConnectomeAutoplayer flyWired;
+    private static int mode = MODE_OFF;
+    private static PhantomBlocks blocks;
+    private static SaberRig sabers;
     private static long seed = 2026L;
     private static RhythmGame game;
     private static LifAutoplayer brain;
-    private static boolean autoplay;
     private static boolean running;
     private static double lastStamp;
     private static SongClock clock = new SongClock(0);
@@ -67,10 +121,33 @@ public final class Main {
     public static void main(String[] args) {
         HTMLDocument doc = HTMLDocument.current();
         HTMLCanvasElement canvas = (HTMLCanvasElement) doc.getElementById("game");
-        canvas.setWidth(WIDTH);
-        canvas.setHeight(HEIGHT);
-        ctx = (CanvasRenderingContext2D) canvas.getContext("2d");
         String q = Window.current().getLocation().getSearch();
+        layout = StageLayout.choose(param(q, "device"), Dom.innerWidth(), Dom.innerHeight());
+        width = layout.width;
+        height = layout.height;
+        hitY = layout.hitY;
+        canvas.setWidth(StageLayout.backing(width, Dom.devicePixelRatio()));
+        canvas.setHeight(StageLayout.backing(height, Dom.devicePixelRatio()));
+        dpr = canvas.getWidth() / (double) width; // backing scale = devicePixelRatio (3 on iPhone 12)
+        Dom.cssSize(canvas, width, height);
+        ctx = (CanvasRenderingContext2D) canvas.getContext("2d");
+        hudL = (HTMLElement) doc.getElementById("hud-l");
+        hudR = (HTMLElement) doc.getElementById("hud-r");
+        hudC = (HTMLElement) doc.getElementById("hud-c");
+        boolean camParam = "1".equals(param(q, "camera"));
+        // Default: light stage with a procedural floor. ?bg=ar (or ?camera=1, which falls back to it) uses the AR photo.
+        theme = "ar".equals(param(q, "bg")) || camParam ? Theme.AR : Theme.LIGHT;
+        Dom.bodyClass(theme.bodyClass);
+        if (!theme.light) {
+            background = Dom.loadImage(BG_URL);
+        }
+        if (camParam) {
+            camera = Dom.startCamera();
+            if (camera == null) {
+                status = "camera unavailable: using screenshot";
+            }
+        }
+        String connectomeUrl = param(q, "connectome");
         Long fromUrl = parseSeed(q);
         if (fromUrl != null) {
             seed = fromUrl;
@@ -83,6 +160,9 @@ public final class Main {
         reset();
         if (chartUrl != null) {
             loadChart(chartUrl);
+        }
+        if (connectomeUrl != null) {
+            loadConnectome(connectomeUrl);
         }
         doc.addEventListener("keydown", evt -> onKey((KeyboardEvent) evt));
         Window.requestAnimationFrame(Main::frame);
@@ -105,6 +185,34 @@ public final class Main {
                 applyChart(ChartJson.parse(text), url);
             } catch (IllegalArgumentException e) {
                 status = "Bad chart: " + e.getMessage();
+            }
+        });
+        xhr.send();
+    }
+
+    /** Fetch a connectome XML (connectome.xsd format). On failure the toy circuit stays. */
+    private static void loadConnectome(String url) {
+        XMLHttpRequest xhr = XMLHttpRequest.create();
+        xhr.open("GET", url);
+        xhr.onComplete(() -> {
+            int code = xhr.getStatus();
+            String text = xhr.getResponseText();
+            if (code != 200 && !(code == 0 && text != null && !text.isEmpty())) {
+                status = "Connectome load failed (HTTP " + code + ")";
+                return;
+            }
+            try {
+                Circuit c = ConnectomeXml.parse(text);
+                for (int l = 0; l < RhythmGame.LANES; l++) {
+                    ConnectomeAutoplayer.measureLatencyMs(c, l); // lane neurons present and reachable
+                }
+                circuit = c;
+                circuitName = url;
+                if (!running) {
+                    reset();
+                }
+            } catch (IllegalArgumentException e) {
+                status = "Bad connectome: " + e.getMessage();
             }
         });
         xhr.send();
@@ -205,11 +313,42 @@ public final class Main {
                 : NoteChart.generate(seed, NOTE_COUNT, BPM, LEAD_IN_MS);
         game = new RhythmGame(chart);
         brain = new LifAutoplayer(game);
+        wired = new ConnectomeAutoplayer(game, circuit);
+        arbiter = new AssistArbiter(game);
+        flyLif = new LifAutoplayer(game, AssistArbiter.FLY_AIM_MS, arbiter);
+        flyWired = new ConnectomeAutoplayer(game, circuit, AssistArbiter.FLY_AIM_MS, arbiter);
+        attachFly();
+        blocks = new PhantomBlocks(2026);
+        sabers = new SaberRig();
         running = false;
         if (audio != null) {
             audio.stop();
         }
         clock = new SongClock(loaded != null ? loaded.offsetMs() : 0);
+    }
+
+    private static boolean assist() {
+        return mode == MODE_ASSIST_LIF || mode == MODE_ASSIST_CONNECTOME;
+    }
+
+    /** The arbiter advances the selected fly brain before each human press. */
+    private static void attachFly() {
+        if (mode == MODE_ASSIST_CONNECTOME) {
+            arbiter.attachBrain(flyWired::advanceTo);
+        } else {
+            arbiter.attachBrain(flyLif::advanceTo);
+        }
+    }
+
+    /** Advance whichever brain the mode uses to song time; its spikes become presses. */
+    private static void advanceBrain(long t) {
+        switch (mode) {
+            case MODE_LIF: brain.advanceTo(t); break;
+            case MODE_CONNECTOME: wired.advanceTo(t); break;
+            case MODE_ASSIST_LIF: flyLif.advanceTo(t); break;
+            case MODE_ASSIST_CONNECTOME: flyWired.advanceTo(t); break;
+            default: break;
+        }
     }
 
     /** Re-read the clock at frame time {@code stamp}: audio position when audio is live, else the frame clock. */
@@ -229,7 +368,15 @@ public final class Main {
         if ("b".equalsIgnoreCase(key) || "KeyB".equals(code)) {
             // Only switchable between songs, so a score is all-brain or all-human.
             if (!running) {
-                autoplay = !autoplay;
+                mode = mode == MODE_LIF ? MODE_OFF : MODE_LIF;
+                attachFly();
+            }
+            return;
+        }
+        if ("c".equalsIgnoreCase(key) || "KeyC".equals(code)) {
+            if (!running) {
+                mode = (mode + 1) % MODES; // off -> LIF -> connectome -> assist LIF -> assist connectome
+                attachFly();
             }
             return;
         }
@@ -254,7 +401,7 @@ public final class Main {
             reset();
             return;
         }
-        if (e.isRepeat() || autoplay) {
+        if (e.isRepeat() || mode == MODE_LIF || mode == MODE_CONNECTOME) {
             return;
         }
         int lane = RhythmGame.laneForKey(code != null && !code.isEmpty() ? code : key);
@@ -263,7 +410,8 @@ public final class Main {
         }
         e.preventDefault();
         laneFlashUntil[lane] = lastStamp + FLASH_MS;
-        Judgement j = game.press(lane, sampleSongTime(lastStamp)); // fresh audio position at the key press
+        long pressMs = sampleSongTime(lastStamp); // fresh audio position at the key press
+        Judgement j = assist() ? arbiter.human(lane, pressMs) : game.press(lane, pressMs);
         if (j != null) {
             banner = j.name();
             bannerUntil = lastStamp + 400;
@@ -275,9 +423,9 @@ public final class Main {
         if (running) {
             sampleSongTime(stamp);
             int missesBefore = game.missCount();
-            if (autoplay) {
+            if (mode != MODE_OFF) {
                 int hitsBefore = game.perfectCount() + game.greatCount() + game.goodCount();
-                brain.advanceTo(songTime()); // spikes become presses at their substep times
+                advanceBrain(songTime()); // spikes become presses at their substep times
                 if (game.perfectCount() + game.greatCount() + game.goodCount() != hitsBefore) {
                     banner = game.lastJudgement().name();
                     bannerUntil = stamp + 400;
@@ -299,98 +447,179 @@ public final class Main {
         Window.requestAnimationFrame(Main::frame);
     }
 
-    private static void draw(double stamp) {
-        int laneW = WIDTH / RhythmGame.LANES;
-        ctx.setFillStyle("#0b0f1a");
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        String[] colors = {"#ff3b6b", "#3bb3ff", "#ff3b6b", "#3bb3ff"};
-        for (int l = 0; l < RhythmGame.LANES; l++) {
-            ctx.setFillStyle(laneFlashUntil[l] > stamp ? "#26304d" : (l % 2 == 0 ? "#121829" : "#0f1422"));
-            ctx.fillRect(l * laneW, 0, laneW, HEIGHT);
+    private static String laneLabel(int l) {
+        String r = ConnectomeAutoplayer.laneLabel(circuit, l);
+        return r != null ? r : REGION_LABELS[l];
+    }
+
+    /** ms since each neuron's last spike in the connectome autoplayer (-1 = never); null unless that mode is on. */
+    private static double[] msSinceSpike() {
+        if (mode != MODE_CONNECTOME && mode != MODE_ASSIST_CONNECTOME) {
+            return null;
         }
-        ctx.setFillStyle("#e8e8f0");
-        ctx.fillRect(0, HIT_Y - 2, WIDTH, 4);
+        CircuitSim sim = (mode == MODE_CONNECTOME ? wired : flyWired).sim();
+        double[] out = new double[circuit.neuronCount()];
+        long now = songTime();
+        for (int i = 0; i < out.length; i++) {
+            long last = sim.lastSpikeSubstep(i);
+            out[i] = last == Long.MIN_VALUE ? -1 : now - last * 1.0;
+        }
+        return out;
+    }
+
+    private static void line(StringBuilder b, String s) {
+        if (b.length() > 0) {
+            b.append('\n');
+        }
+        b.append(s);
+    }
+
+    @JSBody(params = {"el", "s"}, script = "if (el.textContent !== s) { el.textContent = s; }")
+    private static native void setText(HTMLElement el, String s);
+
+    private static void draw(double stamp) {
+        // Reset to the DPR transform every frame, then draw in logical CSS px.
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.setGlobalAlpha(1);
+        double ui = layout.uiScale;
+        double laneW = layout.laneWidth;
+
+        // 1. Background: live camera (?camera=1), else the AR screenshot, dimmed; else flat.
+        if (camera != null && !cameraReported) {
+            String err = Dom.cameraError(camera);
+            if (err != null) {
+                status = "camera unavailable (" + err + "): using screenshot";
+                cameraReported = true;
+            }
+        }
+        boolean bg = camera != null && Dom.drawCover(ctx, camera, width, height);
+        if (!bg && background != null) {
+            bg = Dom.drawCover(ctx, background, width, height);
+        }
+        ctx.setFillStyle(bg && theme.dim != null ? theme.dim : theme.backdrop);
+        ctx.fillRect(0, 0, width, height);
+        // 2. The 3D stage (display only). Song time drives everything; frozen on the title screen.
+        sabers.sync(game.chart());
+        blocks.advance(songTime(), sabers);
+        double sinceCut = songTime() - blocks.lastCutAt();
+        if (sinceCut >= 0 && sinceCut < SHAKE_MS) { // tiny screen shake on a cut: <= 4 CSS px, 60 ms
+            double a = SHAKE_PX * (1 - sinceCut / SHAKE_MS);
+            ctx.translate(a * Math.sin(sinceCut * 0.9), 0.6 * a * Math.cos(sinceCut * 1.3));
+        }
+        StageRenderer.draw(ctx, layout, theme, songTime(), circuit, msSinceSpike(), blocks, sabers);
+
+        // 3. Lanes in front, translucent so the stage shows through.
+        String[] colors = theme.notes;
+        for (int l = 0; l < RhythmGame.LANES; l++) {
+            ctx.setFillStyle(laneFlashUntil[l] > stamp ? theme.laneFlash : (l % 2 == 0 ? theme.laneEven : theme.laneOdd));
+            ctx.fillRect(l * laneW, 0, laneW, height);
+        }
+        ctx.setFillStyle(theme.hitLine);
+        ctx.fillRect(0, hitY - 2, width, 4);
 
         long now = songTime();
         for (Note n : game.chart().notes()) {
             if (n.isResolved()) {
                 continue;
             }
-            double y = HIT_Y - (n.timeMs() - now) * PX_PER_MS;
+            double y = hitY - (n.timeMs() - now) * PX_PER_MS;
             if (y < -20) {
                 break;
             }
-            if (y > HEIGHT + 20) {
+            if (y > height + 20) {
                 continue;
             }
             ctx.setFillStyle(colors[n.lane()]);
             ctx.fillRect(n.lane() * laneW + 8, y - 10, laneW - 16, 20);
         }
 
-        ctx.setFont("bold 20px monospace");
+        ctx.setFont("bold " + Math.round(20 * ui) + "px monospace");
         ctx.setTextAlign("center");
         for (int l = 0; l < RhythmGame.LANES; l++) {
-            ctx.setFillStyle("#8890a8");
-            ctx.fillText(RhythmGame.LANE_KEYS[l], l * laneW + laneW / 2.0, HIT_Y + 40);
+            ctx.setFillStyle(theme.laneKey);
+            ctx.fillText(RhythmGame.LANE_KEYS[l], l * laneW + laneW / 2.0, hitY + 34 * ui);
         }
-        ctx.setFont("11px monospace");
+        ctx.setFont(Math.round(11 * ui) + "px monospace");
         for (int l = 0; l < RhythmGame.LANES; l++) {
-            ctx.setFillStyle("#6f7896");
-            ctx.fillText(REGION_LABELS[l], l * laneW + laneW / 2.0, HIT_Y + 62);
+            ctx.setFillStyle(theme.laneLabel);
+            ctx.fillText(laneLabel(l), l * laneW + laneW / 2.0, hitY + 54 * ui);
         }
 
-        ctx.setTextAlign("left");
-        ctx.setFont("16px monospace");
-        ctx.setFillStyle("#ffffff");
-        ctx.fillText("Score " + game.score(), 10, 24);
-        ctx.fillText("Combo " + game.combo() + "  x" + RhythmGame.multiplierFor(game.combo()), 10, 46);
-        ctx.fillText("Miss " + game.missCount(), 10, 68);
-        ctx.setTextAlign("right");
-        ctx.fillText(loaded != null ? loaded.title() : "seed " + seed, WIDTH - 10, 24);
-        ctx.fillText(autoplay ? "LIF autoplay ON" : "autoplay off", WIDTH - 10, 46);
-        if (autoplay) {
-            ctx.fillText("spikes " + brain.spikeCount(), WIDTH - 10, 68);
-        }
+        // 4. HUD (HTML overlay when present).
+        hl.setLength(0);
+        hr.setLength(0);
+        hc.setLength(0);
+        line(hl, "Score " + game.score());
+        line(hl, "Combo " + game.combo() + "  x" + RhythmGame.multiplierFor(game.combo()));
+        line(hl, "Miss " + game.missCount());
+        line(hl, "blocks cut " + blocks.destroyedCount());
         if (loaded != null || audio != null) {
-            ctx.setTextAlign("left");
             boolean audioClock = running ? clock.isAudioMode() : audio != null && audio.isOk();
-            ctx.fillText(audioClock ? "clock audio" : "clock frame", 10, 90);
+            line(hl, audioClock ? "clock audio" : "clock frame");
+        }
+        line(hr, loaded != null ? loaded.title() : "seed " + seed);
+        String[] modeText = {"autoplay off", "LIF autoplay ON", "connectome autoplay ON",
+            "assist ON (LIF fly)", "assist ON (connectome fly)"};
+        line(hr, modeText[mode]);
+        if (mode == MODE_LIF) {
+            line(hr, "spikes " + brain.spikeCount());
+        } else if (mode == MODE_CONNECTOME) {
+            line(hr, "spikes " + wired.spikeCount() + " \u00b7 keys " + wired.pressCount());
+        } else if (assist()) {
+            line(hr, "you " + arbiter.humanHits() + " \u00b7 fly " + arbiter.flyHits());
+        }
+        if (mode == MODE_CONNECTOME || mode == MODE_ASSIST_CONNECTOME) {
+            line(hr, "circuit " + circuitName + " (" + circuit.neuronCount() + " neurons)");
         }
         if (!status.isEmpty()) {
-            ctx.setTextAlign("center");
-            ctx.setFont("12px monospace");
-            ctx.setFillStyle("#ffb86b");
-            ctx.fillText(status.length() > 60 ? status.substring(0, 57) + "..." : status, WIDTH / 2.0, 140);
-            ctx.setFont("16px monospace");
-            ctx.setFillStyle("#ffffff");
+            line(hc, status.length() > 60 ? status.substring(0, 57) + "..." : status);
         }
-
-        ctx.setTextAlign("center");
         if (bannerUntil > stamp && running) {
-            ctx.setFont("bold 28px monospace");
-            ctx.setFillStyle("MISS".equals(banner) ? "#ff5555" : "#ffe066");
-            ctx.fillText(banner, WIDTH / 2.0, HIT_Y - 80);
+            line(hc, banner);
         }
         if (!running) {
-            ctx.setFont("bold 22px monospace");
-            ctx.setFillStyle("#ffffff");
             if (game.isFinished()) {
-                ctx.fillText("Song complete", WIDTH / 2.0, 220);
-                ctx.setFont("16px monospace");
-                ctx.fillText("P " + game.perfectCount() + "  Gr " + game.greatCount()
-                        + "  Go " + game.goodCount() + "  M " + game.missCount(), WIDTH / 2.0, 250);
-                ctx.fillText("Max combo " + game.maxCombo() + "  Acc "
-                        + Math.round(game.accuracy() * 1000) / 10.0 + "%", WIDTH / 2.0, 275);
-                ctx.fillText("Space to play again", WIDTH / 2.0, 310);
+                line(hc, "Song complete");
+                line(hc, "P " + game.perfectCount() + "  Gr " + game.greatCount()
+                        + "  Go " + game.goodCount() + "  M " + game.missCount());
+                line(hc, "Max combo " + game.maxCombo() + "  Acc " + Math.round(game.accuracy() * 1000) / 10.0 + "%");
+                line(hc, "Space to play again");
             } else {
-                ctx.fillText("Press Space to start", WIDTH / 2.0, 250);
-                ctx.setFont("16px monospace");
                 if (loaded != null) {
-                    ctx.fillText(loaded.artist() + " · " + game.chart().notes().size() + " notes", WIDTH / 2.0, 200);
+                    line(hc, loaded.artist() + " \u00b7 " + game.chart().notes().size() + " notes");
                 }
-                ctx.fillText(loaded != null ? "D F J K hit · R restart" : "D F J K hit · R restart · N new seed",
-                        WIDTH / 2.0, 280);
-                ctx.fillText("B toggles the LIF autoplayer", WIDTH / 2.0, 305);
+                line(hc, "Press Space to start");
+                line(hc, loaded != null ? "D F J K hit \u00b7 R restart" : "D F J K hit \u00b7 R restart \u00b7 N new seed");
+                line(hc, "B toggles the LIF autoplayer");
+                line(hc, "C cycles off / LIF / connectome / assist");
+            }
+        }
+        if (hudL != null && hudR != null && hudC != null) {
+            setText(hudL, hl.toString());
+            setText(hudR, hr.toString());
+            setText(hudC, hc.toString());
+        } else {
+            canvasHud(ui);
+        }
+    }
+
+    /** Fallback when the page has no HUD overlay elements. */
+    private static void canvasHud(double ui) {
+        ctx.setFont(Math.round(16 * ui) + "px monospace");
+        ctx.setFillStyle(theme.hudText);
+        String[][] cols = {hl.toString().split("\n"), hr.toString().split("\n"), hc.toString().split("\n")};
+        ctx.setTextAlign("left");
+        for (int i = 0; i < cols[0].length; i++) {
+            ctx.fillText(cols[0][i], 10, (24 + 22 * i) * ui);
+        }
+        ctx.setTextAlign("right");
+        for (int i = 0; i < cols[1].length; i++) {
+            ctx.fillText(cols[1][i], width - 10, (24 + 22 * i) * ui);
+        }
+        ctx.setTextAlign("center");
+        for (int i = 0; i < cols[2].length; i++) {
+            if (!cols[2][i].isEmpty()) {
+                ctx.fillText(cols[2][i], width / 2.0, height * 0.42 + 26 * ui * i);
             }
         }
     }
