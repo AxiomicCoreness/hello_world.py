@@ -61,7 +61,8 @@
     <div id="hud-r" class="hud"></div>
     <div id="hud-c" class="hud"></div>
     <button id="autoplay-btn" type="button" tabindex="-1"
-            title="Autoplay mode (same as key C; changes between songs only)">AUTOPLAY: OFF</button>
+            title="Autoplay mode (same as key C; changes between songs only)"
+            aria-label="AUTOPLAY: OFF">AUTOPLAY: OFF</button>
   </div>
   <div class="side">
     <h2>Scoring</h2>
@@ -84,7 +85,8 @@
       The lanes aren't wired to those brain regions.</p>
     <h2>Connectome autoplayer &amp; assist (C)</h2>
     <p class="note">C, or the <b>AUTOPLAY</b> button on the stage (tap / click), cycles: off &rarr; LIF autoplay &rarr; connectome autoplay &rarr; assist (LIF fly) &rarr;
-      assist (connectome fly), between songs only. In connectome mode each lane's cue drives
+      assist (connectome fly), between songs only. During a song the button reads <b>LOCKED</b> and C, B or a tap
+      shows &ldquo;Autoplay locked during song - press R to restart&rdquo;; Space and Enter only ever start a song. In connectome mode each lane's cue drives
       <code>laneN.in</code>, spikes travel through weighted, delayed synapses to <code>laneN.out</code>,
       and an output spike is the key press. In assist modes you play; the fly only presses for a note you
       haven't hit once it is 75&ndash;150 ms late, and the HUD counts hits by you vs by the fly.</p>

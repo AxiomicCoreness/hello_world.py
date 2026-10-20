@@ -118,8 +118,8 @@ function boot(search, opts) {
     const btn = { id: 'autoplay-btn', textContent: 'AUTOPLAY: OFF', className: '', style: {}, handlers: {}, blurs: 0, prevented: 0 };
     btn.addEventListener = (type, fn) => { (btn.handlers[type] = btn.handlers[type] || []).push(fn); };
     btn.blur = () => { btn.blurs++; };
-    btn.fire = (type) => {
-      const ev = { type, defaultPrevented: false, stopped: false,
+    btn.fire = (type, extra) => {
+      const ev = { type, detail: 1, defaultPrevented: false, stopped: false, ...(extra || {}),
         preventDefault() { this.defaultPrevented = true; }, stopPropagation() { this.stopped = true; } };
       (btn.handlers[type] || []).forEach((fn) => fn(ev));
       if (ev.defaultPrevented) btn.prevented++;
@@ -398,7 +398,9 @@ const CHART = '?chart=charts/sample_chart.json';
   p.press('b', 'KeyB'); p.frame(112);
   p.press(' ');                              // human play, mode off, frame clock starts at stamp 112
   p.frame(112 + 2000); btn.tap(); p.frame(112 + 2016);   // note 2@2000: a tap must not hit it
-  expect('button: locked mid-song (mode unchanged, dimmed)', btn.textContent === 'AUTOPLAY: OFF' && btn.className === 'locked' && p.has('autoplay off'), btn.className);
+  expect('button: locked mid-song (mode unchanged, dimmed, LOCKED label)', btn.textContent === 'LOCKED: OFF' && btn.className === 'locked' && p.has('autoplay off'), btn.textContent + ' ' + btn.className);
+  expect('lock: tap mid-song shows the lock hint', p.has('Autoplay locked during song - press R to restart'));
+  expect('lock: tooltip says locked', /^Locked during song/.test(btn.title), btn.title);
   p.frame(112 + 2200);
   expect('button: tap never presses a lane (note missed, score 0)', p.hud('Score ') === 'Score 0' && p.hud('Miss ') === 'Miss 1', p.hud('Score ') + ' ' + p.hud('Miss '));
   // desktop: same rules
@@ -406,6 +408,39 @@ const CHART = '?chart=charts/sample_chart.json';
   p.frame(0); p.btn.tap(); p.btn.tap(); p.frame(16);
   expect('button (desktop 1920x1080): placed, two taps -> connectome fly', px(p.btn.style.height) >= 44 && px(p.btn.style.left) + px(p.btn.style.width) <= 510
     && p.btn.textContent === 'AUTOPLAY: CONNECTOME FLY' && p.has('connectome autoplay ON'), p.btn.textContent);
+
+  // O: lock feedback for key C, and Space never steps the mode (fix for the live-site report).
+  p = boot('?seed=2026', IPHONE);
+  p.frame(0); p.btn.tap(); p.btn.tap(); p.frame(16);
+  expect('O: two taps -> CONNECTOME FLY, idle tooltip', p.btn.textContent === 'AUTOPLAY: CONNECTOME FLY' && /^Autoplay mode/.test(p.btn.title), p.btn.textContent);
+  const kd = p.btn.fire('keydown', { key: ' ', code: 'Space' });
+  const ku = p.btn.fire('keyup', { key: ' ', code: 'Space' });
+  expect('O: Space on the button: its default (activation) cancelled', kd.defaultPrevented && ku.defaultPrevented);
+  const ke = p.btn.fire('keydown', { key: 'Enter', code: 'Enter' });
+  expect('O: Enter on the button: default cancelled', ke.defaultPrevented);
+  const kx = p.btn.fire('keydown', { key: 'd', code: 'KeyD' });
+  expect('O: other keys on the button untouched', !kx.defaultPrevented);
+  p.btn.fire('click', { detail: 0 }); p.frame(32);   // keyboard-synthesised click while idle
+  expect('O: keyboard-synthesised click (detail 0) ignored', p.btn.textContent === 'AUTOPLAY: CONNECTOME FLY' && p.has('connectome autoplay ON'), p.btn.textContent);
+  let spaceEv = { key: ' ', code: 'Space', repeat: false, prevented: false, preventDefault() { this.prevented = true; } };
+  p.key(spaceEv); p.btn.fire('click', { detail: 0 }); p.frame(48);
+  expect('O: Space starts the song with the chosen mode (CONNECTOME FLY, not ASSIST)', p.has('connectome autoplay ON') && p.btn.textContent === 'LOCKED: CONNECTOME FLY' && spaceEv.prevented, p.btn.textContent);
+  expect('O: no lock hint until a mode input', !p.has('Autoplay locked during song - press R to restart'));
+  p.press('c', 'KeyC'); p.frame(64);
+  expect('O: C mid-song -> hint shown, mode kept', p.has('Autoplay locked during song - press R to restart') && p.has('connectome autoplay ON'));
+  p.frame(64 + 2300);
+  expect('O: hint is transient (gone after ~2.2 s)', !p.has('Autoplay locked during song - press R to restart'));
+  p.press('b', 'KeyB'); p.frame(64 + 2316);
+  expect('O: B mid-song -> hint too, mode kept', p.has('Autoplay locked during song - press R to restart') && p.has('connectome autoplay ON'));
+  spaceEv = { key: ' ', code: 'Space', repeat: false, prevented: false, preventDefault() { this.prevented = true; } };
+  p.key(spaceEv); p.frame(64 + 2332);
+  expect('O: Space mid-song consumed, mode kept', spaceEv.prevented && p.has('connectome autoplay ON'));
+  p.press('r', 'KeyR'); p.frame(64 + 2348);
+  expect('O: R restarts: unlocked, hint cleared', p.btn.textContent === 'AUTOPLAY: CONNECTOME FLY' && p.btn.className === '' && !p.has('Autoplay locked during song - press R to restart') && p.has('Press Space to start'), p.btn.textContent);
+  p.key({ key: 'c', code: 'KeyC', repeat: false, preventDefault() {} });
+  p.key({ key: 'c', code: 'KeyC', repeat: true, preventDefault() {} });
+  p.key({ key: 'c', code: 'KeyC', repeat: true, preventDefault() {} }); p.frame(64 + 2364);
+  expect('O: held C (auto-repeat) steps once', p.has('assist ON (LIF fly)') && p.btn.textContent === 'AUTOPLAY: ASSIST \u00b7 LIF FLY', p.btn.textContent);
 
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
