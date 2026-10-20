@@ -7,7 +7,8 @@
   Mirrors the loader's rules:
     - root element <hemibrain>, no namespace (loader is namespace-unaware
       and compares the tag name to "hemibrain");
-    - <neuron id="..."/>: id required, non-blank, unique (xs:key);
+    - <neuron id="..." [region="..."]/>: id required, non-blank, unique
+      (xs:key); region optional label, ignored by the loader;
     - <connection from="..." to="..." weight="..." [delayMs="..."]/>:
       from/to required and must name a declared neuron (xs:keyref),
       weight required and finite, delayMs optional (default 1.0 =
@@ -50,8 +51,14 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <!-- region (optional, DRAFT PROPOSAL): a free-text brain-region label
+       such as "mushroom body". Label only: ConnectomeLoader ignores it and
+       it carries no wiring, so a file with region="..." loads to the same
+       Connectome as one without. Same lexical rule as ids (non-blank, no
+       surrounding whitespace). No region vocabulary is enforced. -->
   <xs:complexType name="Neuron">
     <xs:attribute name="id" type="NeuronId" use="required"/>
+    <xs:attribute name="region" type="NeuronId" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="Connection">

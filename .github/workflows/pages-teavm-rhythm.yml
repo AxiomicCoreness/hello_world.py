@@ -1,0 +1,53 @@
+# DRAFT: build games/teavm-rhythm (TeaVM 0.10.2, JDK 17) and publish
+# target/webapp to GitHub Pages. Runs only for the draft branch or by hand.
+name: pages-teavm-rhythm
+
+on:
+  push:
+    branches: [draft/connectome-autoplayer]
+    paths:
+      - "games/teavm-rhythm/**"
+      - ".github/workflows/pages-teavm-rhythm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-teavm-rhythm
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: games/teavm-rhythm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: games/teavm-rhythm/pom.xml
+      - name: Test and compile to JS
+        run: mvn -B package
+      - name: List webapp
+        run: ls -la target/webapp
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: games/teavm-rhythm/target/webapp
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
