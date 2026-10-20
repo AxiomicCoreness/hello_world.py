@@ -226,6 +226,30 @@ class ConnectomeSchemaTest {
                 + " xsi:noNamespaceSchemaLocation='connectome.xsd'/>");
     }
 
+    /** Draft: optional region label on neurons. Loader ignores it; the wiring is unchanged. */
+    @Test
+    void regionAttributeIsOptionalLabel() throws IOException {
+        String with = AB.replace("id='A'", "id='A' region='mushroom body'")
+                + "<connection from='A' to='B' weight='0.5' delayMs='2'/></hemibrain>";
+        String without = AB + "<connection from='A' to='B' weight='0.5' delayMs='2'/></hemibrain>";
+        assertBothAccept(with);
+        Connectome a = ConnectomeLoader.load(new ByteArrayInputStream(with.getBytes(StandardCharsets.UTF_8)), "w");
+        Connectome b = ConnectomeLoader.load(new ByteArrayInputStream(without.getBytes(StandardCharsets.UTF_8)), "wo");
+        assertEquals(b.neuronCount(), a.neuronCount());
+        assertEquals(b.synapseCount(), a.synapseCount());
+        assertArrayEquals(b.postsynaptic(0), a.postsynaptic(0));
+        assertArrayEquals(b.weightsOf(0), a.weightsOf(0));
+        assertArrayEquals(b.delaysOf(0), a.delaysOf(0));
+        // Schema-only rejections (the loader ignores the attribute entirely).
+        for (String bad : new String[] {"", " ", " lobula", "lobula "}) {
+            String xml = "<hemibrain><neuron id='A' region='" + bad + "'/></hemibrain>";
+            assertTrue(loaderAccepts(xml), "loader ignores region: '" + bad + "'");
+            assertFalse(schemaValid(xml), "schema should reject region '" + bad + "'");
+        }
+        assertFalse(schemaValid("<hemibrain><connection from='A' to='A' weight='1' region='x'/>"
+                + "<neuron id='A'/></hemibrain>"), "region is a neuron attribute only");
+    }
+
     /**
      * Cases where the schema is stricter than the loader. The loader
      * uses a namespace-unaware DOM (line 195), getElementsByTagName
