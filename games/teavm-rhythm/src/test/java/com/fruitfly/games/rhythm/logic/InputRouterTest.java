@@ -129,6 +129,19 @@ class InputRouterTest {
                 longest = Math.max(longest, p.label.length());
             }
             assertTrue(longest * 0.62 * StageLayout.PICKER_FONT_PX + 12 <= l.pickerRow(0.7, 0.3)[0][2], "label fits");
+            // Three-button row (source / item / tempo) as on the page: every label fits its button.
+            double[][] row3 = l.pickerRow(0.26, 0.48, 0.26);
+            for (String[] v : VoiceSong.LINES) {
+                longest = Math.max(longest, v[1].length());
+            }
+            longest = Math.max(longest, SongSource.midiLabel("abcdefghijklmnopqrstuvwxyz.mid").length());
+            assertTrue(longest * 0.62 * StageLayout.PICKER_FONT_PX + 12 <= row3[1][2], "item label fits " + row3[1][2]);
+            for (int s = 0; s < SongSource.COUNT; s++) {
+                assertTrue(SongSource.label(s).length() * 0.62 * StageLayout.PICKER_FONT_PX + 12 <= row3[0][2], "source label fits");
+            }
+            for (String b : new String[] {"FILE BPM", "140 BPM", "-- BPM"}) {
+                assertTrue(b.length() * 0.62 * StageLayout.PICKER_FONT_PX + 12 <= row3[2][2], b + " fits " + row3[2][2]);
+            }
         }
     }
 }
