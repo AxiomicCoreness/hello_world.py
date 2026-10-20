@@ -60,7 +60,16 @@ public final class ClickTrack {
 
     /** The samples wrapped in a 44-byte RIFF/WAVE header (PCM, mono, 16-bit, little-endian). */
     public static byte[] wav(double bpm, long durationMs, int rate) {
-        short[] pcm = samples(bpm, durationMs, rate);
+        return wav(samples(bpm, durationMs, rate), rate);
+    }
+
+    /** Any mono 16-bit PCM as a WAV data URI (used by the synthesised song tracks). */
+    public static String wavDataUri(short[] pcm, int rate) {
+        return "data:audio/wav;base64," + base64(wav(pcm, rate));
+    }
+
+    /** 44-byte RIFF/WAVE header + the samples (PCM, mono, 16-bit, little-endian). */
+    public static byte[] wav(short[] pcm, int rate) {
         int dataLen = pcm.length * 2;
         byte[] b = new byte[44 + dataLen];
         ascii(b, 0, "RIFF");
