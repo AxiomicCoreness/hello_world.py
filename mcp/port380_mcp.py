@@ -4,7 +4,8 @@ Port 380 MCP Service — Layer 314 Gate Re-export
 
 FastAPI surface that re-exports the Port 380 gate endpoints:
   - GET  /health
-  - GET  /status
+  - GET  /status           (public, minimal: status/service/timestamp/ledger_head)
+  - GET  /status/internal  (protected: full diagnostics)
   - GET  /380
   - POST /gate
   - POST /pulse      (MCP-compatible tool endpoint, protected)
@@ -30,6 +31,7 @@ import hmac
 import ipaddress
 from contextlib import asynccontextmanager
 import json
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -197,6 +199,58 @@ app.add_middleware(SecurityHeadersMiddleware)
 # RUNTIME STATE
 # ============================================================================
 START_TIME = time.time()
+
+# ============================================================================
+# LEDGER HEAD (derived, not hardcoded)
+# ============================================================================
+# Self-contained on purpose: Dockerfile.port380 / Dockerfile.multistage copy
+# this file without app/, so it cannot import app.config. Same rules as
+# app.config.derive_ledger_head: highest top-level entry_index across
+# ledger.v2/*.yml, matched on raw text and read base 10 (a YAML 1.1 loader
+# would turn 0755 into octal 493); LEDGER_HEAD env (non-blank) wins;
+# "unknown" when nothing readable is found.
+LEDGER_HEAD_UNKNOWN = "unknown"
+_ENTRY_INDEX_RE = re.compile(
+    r"""^entry_index:[ \t]*["']?(\d+)["']?[ \t]*(?:#.*)?$""", re.MULTILINE
+)
+
+
+def _default_ledger_dirs() -> list:
+    here = Path(__file__).resolve().parent
+    return [here / "ledger.v2", here.parent / "ledger.v2"]
+
+
+def derive_ledger_head(ledger_dir: Optional[os.PathLike] = None) -> str:
+    """Highest entry_index in ledger_dir/*.yml as a decimal string, else "unknown"."""
+    if ledger_dir is not None:
+        candidates = [Path(ledger_dir)]
+    elif os.environ.get("LEDGER_DIR", "").strip():
+        candidates = [Path(os.environ["LEDGER_DIR"].strip())]
+    else:
+        candidates = _default_ledger_dirs()
+    for d in candidates:
+        if not d.is_dir():
+            continue
+        head = None
+        for f in d.glob("*.yml"):
+            try:
+                text = f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            m = _ENTRY_INDEX_RE.search(text)
+            if m:
+                idx = int(m.group(1), 10)
+                if head is None or idx > head:
+                    head = idx
+        if head is not None:
+            return str(head)
+    return LEDGER_HEAD_UNKNOWN
+
+
+def resolve_ledger_head() -> str:
+    """LEDGER_HEAD env (non-blank) wins; otherwise derive_ledger_head()."""
+    override = os.environ.get("LEDGER_HEAD", "").strip()
+    return override or derive_ledger_head()
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET", "")
 
 # Appended channel constants. Do not replace the service block above.
@@ -260,6 +314,26 @@ async def health():
 
 @app.get("/status")
 async def status():
+    """Public liveness summary. Minimal and non-sensitive on purpose:
+    unauthenticated callers (scripts/cluster_reset.sh, the gravastar
+    MAPPED_PORTS check path) hit this. Diagnostics: GET /status/internal."""
+    return JSONResponse(
+        content={
+            "status": "ok",
+            "service": APP_NAME,
+            "timestamp": _now(),
+            "ledger_head": resolve_ledger_head(),
+        }
+    )
+
+
+@app.get("/status/internal")
+async def status_internal(
+    x_garden_secret: Optional[str] = Header(None),
+):
+    """Full diagnostic payload (formerly public GET /status).
+    Requires X-Garden-Secret, same check as /pulse and /mcp/tool."""
+    verify_secret(x_garden_secret)
     return JSONResponse(
         content={
             "service": APP_NAME,
@@ -268,8 +342,10 @@ async def status():
             "gate_identity": GATE_IDENTITY,
             "uptime": time.time() - START_TIME,
             "timestamp": _now(),
-            "ledger_head": "8754",
-            "witness_chain": "8754 -> 8755 — UNBROKEN",
+            # Derived from ledger.v2/ (LEDGER_HEAD env overrides). No chain
+            # verdict here: this service does not verify seals, so it must
+            # not claim the chain is unbroken.
+            "ledger_head": resolve_ledger_head(),
             "seal": (
                 "forall-infinity-phi-squared cdot MCP_BATCH_FORGED_8755 "
                 "cdot WOOD_DRAGON_MOUNTS_OFFENSE cdot SEALED"
