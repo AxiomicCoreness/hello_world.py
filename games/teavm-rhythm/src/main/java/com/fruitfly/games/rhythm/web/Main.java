@@ -12,8 +12,9 @@ import com.fruitfly.games.rhythm.logic.LifAutoplayer;
 import com.fruitfly.games.rhythm.logic.LoadedChart;
 import com.fruitfly.games.rhythm.logic.Note;
 import com.fruitfly.games.rhythm.logic.NoteChart;
-import com.fruitfly.games.rhythm.logic.PhantomBlocks;
+import com.fruitfly.games.rhythm.logic.NoteBlocks;
 import com.fruitfly.games.rhythm.logic.SaberRig;
+import com.fruitfly.games.rhythm.logic.Scene3D;
 import com.fruitfly.games.rhythm.logic.RhythmGame;
 import com.fruitfly.games.rhythm.logic.SongClock;
 import com.fruitfly.games.rhythm.logic.StageLayout;
@@ -68,7 +69,6 @@ public final class Main {
     static final int MODES = 5;
     static final double SHAKE_MS = 60;
     static final double SHAKE_PX = 4;
-    static final double PX_PER_MS = 0.35;
     static final int NOTE_COUNT = 64;
     static final int BPM = 120;
     static final long LEAD_IN_MS = 2000;
@@ -99,7 +99,6 @@ public final class Main {
     private static LifAutoplayer flyLif;
     private static ConnectomeAutoplayer flyWired;
     private static int mode = MODE_OFF;
-    private static PhantomBlocks blocks;
     private static SaberRig sabers;
     private static long seed = 2026L;
     private static RhythmGame game;
@@ -318,7 +317,6 @@ public final class Main {
         flyLif = new LifAutoplayer(game, AssistArbiter.FLY_AIM_MS, arbiter);
         flyWired = new ConnectomeAutoplayer(game, circuit, AssistArbiter.FLY_AIM_MS, arbiter);
         attachFly();
-        blocks = new PhantomBlocks(2026);
         sabers = new SaberRig();
         running = false;
         if (audio != null) {
@@ -500,49 +498,43 @@ public final class Main {
         ctx.fillRect(0, 0, width, height);
         // 2. The 3D stage (display only). Song time drives everything; frozen on the title screen.
         sabers.sync(game.chart());
-        blocks.advance(songTime(), sabers);
-        double sinceCut = songTime() - blocks.lastCutAt();
-        if (sinceCut >= 0 && sinceCut < SHAKE_MS) { // tiny screen shake on a cut: <= 4 CSS px, 60 ms
+        double sinceCut = songTime() - NoteBlocks.lastCutAt(game.chart(), songTime());
+        if (sinceCut >= 0 && sinceCut < SHAKE_MS) { // tiny screen shake on a slice: <= 4 CSS px, 60 ms
             double a = SHAKE_PX * (1 - sinceCut / SHAKE_MS);
             ctx.translate(a * Math.sin(sinceCut * 0.9), 0.6 * a * Math.cos(sinceCut * 1.3));
         }
-        StageRenderer.draw(ctx, layout, theme, songTime(), circuit, msSinceSpike(), blocks, sabers);
-
-        // 3. Lanes in front, translucent so the stage shows through.
-        String[] colors = theme.notes;
+        boolean[] flashing = new boolean[RhythmGame.LANES];
         for (int l = 0; l < RhythmGame.LANES; l++) {
-            ctx.setFillStyle(laneFlashUntil[l] > stamp ? theme.laneFlash : (l % 2 == 0 ? theme.laneEven : theme.laneOdd));
-            ctx.fillRect(l * laneW, 0, laneW, height);
+            flashing[l] = laneFlashUntil[l] > stamp;
         }
-        ctx.setFillStyle(theme.hitLine);
-        ctx.fillRect(0, hitY - 2, width, 4);
+        StageRenderer.draw(ctx, layout, theme, songTime(), circuit, msSinceSpike(), game.chart(), sabers, flashing);
 
-        long now = songTime();
-        for (Note n : game.chart().notes()) {
-            if (n.isResolved()) {
-                continue;
-            }
-            double y = hitY - (n.timeMs() - now) * PX_PER_MS;
-            if (y < -20) {
-                break;
-            }
-            if (y > height + 20) {
-                continue;
-            }
-            ctx.setFillStyle(colors[n.lane()]);
-            ctx.fillRect(n.lane() * laneW + 8, y - 10, laneW - 16, 20);
+        // 3. Key bar: the notes themselves are the 3D blocks; keys sit under their lanes' hit-plane x.
+        ctx.setFillStyle(theme.hitLine);
+        ctx.fillRect(0, hitY - 1, width, 2);
+        Scene3D cam = layout.camera();
+        double[] keyX = new double[RhythmGame.LANES];
+        for (int l = 0; l < RhythmGame.LANES; l++) {
+            double[] p = cam.project(NoteBlocks.LANE_X[l], 0, NoteBlocks.Z_HIT);
+            keyX[l] = p != null ? p[0] : l * laneW + laneW / 2.0;
         }
 
         ctx.setFont("bold " + Math.round(20 * ui) + "px monospace");
         ctx.setTextAlign("center");
         for (int l = 0; l < RhythmGame.LANES; l++) {
             ctx.setFillStyle(theme.laneKey);
-            ctx.fillText(RhythmGame.LANE_KEYS[l], l * laneW + laneW / 2.0, hitY + 34 * ui);
+            ctx.fillText(RhythmGame.LANE_KEYS[l], keyX[l], hitY + 34 * ui);
         }
-        ctx.setFont(Math.round(11 * ui) + "px monospace");
+        // Labels sit under the projected lanes; shrink the font so the longest fits the lane spacing.
+        int longest = 1;
+        for (int l = 0; l < RhythmGame.LANES; l++) {
+            longest = Math.max(longest, laneLabel(l).length());
+        }
+        double spacing = (keyX[RhythmGame.LANES - 1] - keyX[0]) / (RhythmGame.LANES - 1);
+        ctx.setFont(Math.round(Math.min(11 * ui, 0.92 * spacing / (0.6 * longest))) + "px monospace");
         for (int l = 0; l < RhythmGame.LANES; l++) {
             ctx.setFillStyle(theme.laneLabel);
-            ctx.fillText(laneLabel(l), l * laneW + laneW / 2.0, hitY + 54 * ui);
+            ctx.fillText(laneLabel(l), keyX[l], hitY + 54 * ui);
         }
 
         // 4. HUD (HTML overlay when present).
@@ -552,7 +544,7 @@ public final class Main {
         line(hl, "Score " + game.score());
         line(hl, "Combo " + game.combo() + "  x" + RhythmGame.multiplierFor(game.combo()));
         line(hl, "Miss " + game.missCount());
-        line(hl, "blocks cut " + blocks.destroyedCount());
+        line(hl, "blocks cut " + NoteBlocks.cutCount(game.chart(), songTime()));
         if (loaded != null || audio != null) {
             boolean audioClock = running ? clock.isAudioMode() : audio != null && audio.isOk();
             line(hl, audioClock ? "clock audio" : "clock frame");
@@ -619,7 +611,7 @@ public final class Main {
         ctx.setTextAlign("center");
         for (int i = 0; i < cols[2].length; i++) {
             if (!cols[2][i].isEmpty()) {
-                ctx.fillText(cols[2][i], width / 2.0, height * 0.42 + 26 * ui * i);
+                ctx.fillText(cols[2][i], width / 2.0, height * 0.21 + 26 * ui * i);
             }
         }
     }

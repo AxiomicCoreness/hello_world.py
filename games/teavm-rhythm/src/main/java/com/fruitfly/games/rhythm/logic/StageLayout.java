@@ -23,12 +23,14 @@ public final class StageLayout {
     public final int hitY;
     public final double laneWidth;
     /** Stage camera: fixed, level (pitch 0), so the floor's vanishing point sits at mid-height. */
-    public static final double CAMERA_DISTANCE = 8.0;
+    public static final double CAMERA_DISTANCE = 6.0;
     public static final double FOV_Y = Math.toRadians(45);
     /** Screen height fraction where the centre tile's middle (the origin) lands. */
     public static final double TILE_SCREEN_Y = 0.74;
     public final double horizonY;
     public final double tileY;
+    /** Centre tile half-size (world units): the fly stands on [-TILE_HALF, TILE_HALF]^2. */
+    public static final double TILE_HALF = 0.6;
     /** Font scale for HUD text: 1 at 400 px wide. */
     public final double uiScale;
 
@@ -51,6 +53,11 @@ public final class StageLayout {
         double f = Scene3D.focalForFov(FOV_Y, height);
         double eyeY = (tileY - horizonY) * CAMERA_DISTANCE / f;
         return new Scene3D(0, 0, CAMERA_DISTANCE, f, width / 2.0, horizonY, eyeY);
+    }
+
+    /** Baseline of the TOY caption: the bottom strip, below the key labels, clear of the HUD title text. */
+    public double captionY() {
+        return height - 8 * uiScale;
     }
 
     public static StageLayout of(int width, int height) {

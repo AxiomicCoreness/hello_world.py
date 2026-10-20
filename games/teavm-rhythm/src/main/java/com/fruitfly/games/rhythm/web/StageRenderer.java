@@ -2,22 +2,26 @@ package com.fruitfly.games.rhythm.web;
 
 import com.fruitfly.games.rhythm.logic.BrainStage;
 import com.fruitfly.games.rhythm.logic.Circuit;
-import com.fruitfly.games.rhythm.logic.PhantomBlocks;
+import com.fruitfly.games.rhythm.logic.Judgement;
+import com.fruitfly.games.rhythm.logic.Note;
+import com.fruitfly.games.rhythm.logic.NoteBlocks;
+import com.fruitfly.games.rhythm.logic.NoteChart;
 import com.fruitfly.games.rhythm.logic.SaberRig;
 import com.fruitfly.games.rhythm.logic.Scene3D;
+import com.fruitfly.games.rhythm.logic.StageGeometry;
 import com.fruitfly.games.rhythm.logic.StageLayout;
 import org.teavm.jso.canvas.CanvasRenderingContext2D;
 
 /**
- * Draws the environment that holds the 3D objects, all through the fixed
- * stage camera (StageLayout.camera(): level, vanishing point at mid-height):
- * a perspective floor grid, the highlighted centre tile at the bottom
- * middle, the toy fly standing on it with the shrunk fly-brain object above
- * it (spinning about its own vertical axis), the two sabers, and the phantom
- * blocks, painter-sorted by depth. Display only.
+ * Draws the Beat-Saber-style stage through the fixed, level stage camera
+ * (StageLayout.camera(): no orbit, horizontal horizon, one central vanishing
+ * point at mid-height): a perspective floor grid converging to that point,
+ * the four lane strips, the hit plane, the centre tile with the toy fly and
+ * its shrunk fly-brain object, the two sabers, and the chart's note blocks
+ * (NoteBlocks), painter-sorted by depth. Display only.
  *
- * Decoupled from RhythmGame: the only inputs are song time, the circuit and
- * spike recency (brain flashes), and the PhantomBlocks / SaberRig state.
+ * Decoupled from RhythmGame's scoring: the inputs are song time, the chart's
+ * notes (read only), the SaberRig, the circuit and spike recency.
  * All coordinates are logical CSS px (the caller applied the DPR transform).
  */
 final class StageRenderer {
@@ -27,55 +31,120 @@ final class StageRenderer {
     private StageRenderer() {
     }
 
-    static void draw(CanvasRenderingContext2D ctx, StageLayout l, Theme th, double songTimeMs, Circuit circuit,
-                     double[] msSinceSpike, PhantomBlocks blocks, SaberRig rig) {
+    static void draw(CanvasRenderingContext2D ctx, StageLayout l, Theme th, double t, Circuit circuit,
+                     double[] msSinceSpike, NoteChart chart, SaberRig rig, boolean[] laneFlash) {
         Scene3D cam = l.camera();
         double ui = l.uiScale;
         floor(ctx, cam, th);
+        lanes(ctx, cam, th, laneFlash);
         tile(ctx, cam, th, ui);
 
-        // Painter's order: blocks farther than the fly, then fly + brain + sabers, then nearer blocks.
+        // Visible blocks, sorted far -> near by camera depth (insertion sort; a few dozen at most).
+        java.util.List<Note> notes = chart.notes();
+        int[] vis = new int[notes.size()];
+        double[] dep = new double[notes.size()];
+        int nv = 0;
+        for (int i = 0; i < notes.size(); i++) {
+            Note n = notes.get(i);
+            int st = NoteBlocks.state(n, t);
+            if (st == NoteBlocks.HIDDEN) {
+                if (n.timeMs() - NoteBlocks.APPROACH_MS > t) {
+                    break; // sorted by time: the rest are not spawned yet
+                }
+                continue;
+            }
+            double[] c = NoteBlocks.centre(n, t);
+            double d = cam.toCamera(c[0], c[1], c[2])[2];
+            int j = nv++;
+            while (j > 0 && dep[j - 1] < d) {
+                vis[j] = vis[j - 1];
+                dep[j] = dep[j - 1];
+                j--;
+            }
+            vis[j] = i;
+            dep[j] = d;
+        }
         double flyDepth = cam.toCamera(0, 0.6, 0)[2];
-        int[] order = blocks == null ? new int[0] : blocks.depthOrder(cam, songTimeMs);
         int k = 0;
-        while (k < order.length && depth(cam, blocks.view(order[k], songTimeMs)) > flyDepth) {
-            block(ctx, cam, th, blocks.view(order[k], songTimeMs));
+        while (k < nv && dep[k] > flyDepth) {
+            noteBlock(ctx, cam, th, notes.get(vis[k]), t);
             k++;
         }
+        // Fly + brain are see-through so the centre lanes' blocks behind them stay readable.
+        ctx.setGlobalAlpha(0.6);
         fly(ctx, cam, th);
-        brain(ctx, cam, th, ui, songTimeMs, circuit, msSinceSpike);
+        brain(ctx, cam, th, ui, t, circuit, msSinceSpike);
+        ctx.setGlobalAlpha(1);
         if (rig != null) {
             for (int side = 0; side < 2; side++) {
-                saber(ctx, cam, th, side, rig.segment(side, songTimeMs));
+                saber(ctx, cam, th, side, rig.segment(side, t));
             }
         }
-        for (; k < order.length; k++) {
-            block(ctx, cam, th, blocks.view(order[k], songTimeMs));
+        for (; k < nv; k++) {
+            noteBlock(ctx, cam, th, notes.get(vis[k]), t);
         }
+        // Judgement text over each slicing block.
         ctx.setTextAlign("center");
+        ctx.setFont("bold " + Math.round(11 * ui) + "px monospace");
+        for (int q = 0; q < nv; q++) {
+            Note n = notes.get(vis[q]);
+            int st = NoteBlocks.state(n, t);
+            if (st == NoteBlocks.SLICED || st == NoteBlocks.HELD) {
+                double[] h = NoteBlocks.hitCentre(n.lane());
+                double[] p = cam.project(h[0], h[1] + NoteBlocks.SIZE * 0.9, h[2]);
+                if (p != null) {
+                    ctx.setFillStyle("rgba(" + th.judgeRgb + "," + Math.max(0, NoteBlocks.alpha(n, t)) + ")");
+                    ctx.fillText(n.result().name(), p[0], p[1]);
+                }
+            }
+        }
         ctx.setFont(Math.round(10 * ui) + "px monospace");
         ctx.setFillStyle(th.caption);
-        ctx.fillText(TOY_CAPTION, l.width / 2.0, l.horizonY - 10 * ui);
+        ctx.fillText(TOY_CAPTION, l.width / 2.0, l.captionY());
     }
 
-    private static double depth(Scene3D cam, double[] v) {
-        return cam.toCamera(v[0], v[1], v[2])[2];
-    }
-
-    /** Ground grid y = 0 on odd coordinates, so the centre tile [-1, 1]^2 is exactly one cell. */
+    /** Ground grid y = 0: lines along z on the lane boundaries (every LANE_WIDTH), cross lines every 2 lanes. */
     private static void floor(CanvasRenderingContext2D ctx, Scene3D cam, Theme th) {
         ctx.setStrokeStyle(th.light ? th.floorLine : th.gridMinor);
         ctx.setLineWidth(th.light ? 0.75 : 1);
-        for (int i = -41; i <= 41; i += 2) {
-            line(ctx, cam, new double[] {i, 0, 3.9}, new double[] {i, 0, -400});
+        double w = NoteBlocks.LANE_WIDTH;
+        for (int i = -36; i <= 36; i++) {
+            line(ctx, cam, new double[] {i * w, 0, 4.5}, new double[] {i * w, 0, -400});
         }
-        for (int z = 3; z >= -121; z -= 2) {
-            line(ctx, cam, new double[] {-60, 0, z}, new double[] {60, 0, z});
+        for (double z = 4.2; z >= -120; z -= 2 * w) {
+            line(ctx, cam, new double[] {-40, 0, z}, new double[] {40, 0, z});
         }
     }
 
+    /** Four lane strips down the floor to the vanishing point, the hit plane frame across them. */
+    private static void lanes(CanvasRenderingContext2D ctx, Scene3D cam, Theme th, boolean[] flash) {
+        double hw = NoteBlocks.LANE_WIDTH / 2;
+        double zNear = NoteBlocks.Z_HIT + 0.35;
+        for (int l = 0; l < NoteBlocks.LANE_X.length; l++) {
+            double x = NoteBlocks.LANE_X[l];
+            double[][] q = {{x - hw, 0, zNear}, {x + hw, 0, zNear}, {x + hw, 0, -200}, {x - hw, 0, -200}};
+            if (poly(ctx, cam, q)) {
+                boolean on = flash != null && l < flash.length && flash[l];
+                ctx.setFillStyle(on ? th.laneFlash : (l % 2 == 0 ? th.laneEven : th.laneOdd));
+                ctx.fill();
+            }
+        }
+        double x0 = NoteBlocks.LANE_X[0] - hw;
+        double x1 = NoteBlocks.LANE_X[NoteBlocks.LANE_X.length - 1] + hw;
+        double zh = NoteBlocks.Z_HIT;
+        double top = NoteBlocks.Y + NoteBlocks.SIZE * 0.5 + 0.12;
+        ctx.setStrokeStyle(th.hitFrame);
+        ctx.setLineWidth(1.4);
+        line(ctx, cam, new double[] {x0, 0, zh}, new double[] {x1, 0, zh});
+        ctx.setLineWidth(0.8);
+        line(ctx, cam, new double[] {x0, 0, zh}, new double[] {x0, top, zh});
+        line(ctx, cam, new double[] {x1, 0, zh}, new double[] {x1, top, zh});
+        line(ctx, cam, new double[] {x0, top, zh}, new double[] {x1, top, zh});
+    }
+
     private static void tile(CanvasRenderingContext2D ctx, Scene3D cam, Theme th, double ui) {
-        double[][] c = {{-1, 0, -1}, {1, 0, -1}, {1, 0, 1}, {-1, 0, 1}};
+        double h = StageLayout.TILE_HALF;
+        double[][] c = {{-h, 0, -h}, {h, 0, -h}, {h, 0, h}, {-h, 0, h}};
         if (!poly(ctx, cam, c)) {
             return;
         }
@@ -84,7 +153,7 @@ final class StageRenderer {
         ctx.setStrokeStyle(th.tileEdge);
         ctx.setLineWidth(1.5);
         ctx.stroke();
-        double[] front = cam.project(0, 0, 1);
+        double[] front = cam.project(0, 0, h);
         if (front != null) {
             ctx.setFillStyle(th.origin);
             ctx.setFont(Math.round(9 * ui) + "px monospace");
@@ -112,13 +181,13 @@ final class StageRenderer {
         for (int s = -1; s <= 1; s += 2) {
             line(ctx, cam, thorax, new double[] {0.28 * s, 0, 0.18});
             line(ctx, cam, thorax, new double[] {0.30 * s, 0, -0.08});
-            line(ctx, cam, new double[] {0, 0.32, -0.14}, new double[] {0.26 * s, 0, -0.32});
+            line(ctx, cam, new double[] {0, 0.32, 0.18}, new double[] {0.26 * s, 0, 0.36});
             line(ctx, cam, thorax, SaberRig.HANDS[s < 0 ? 0 : 1]);
         }
         ctx.setFillStyle(th.flyBody);
-        ball(ctx, cam, new double[] {0, 0.32, -0.14}, 0.17);
-        ball(ctx, cam, thorax, 0.12);
-        ball(ctx, cam, new double[] {0, 0.6, 0.1}, 0.085);
+        ball(ctx, cam, new double[] {0, 0.30, 0.18}, 0.11);
+        ball(ctx, cam, thorax, 0.08);
+        ball(ctx, cam, new double[] {0, 0.58, -0.04}, 0.06);
     }
 
     private static void ball(CanvasRenderingContext2D ctx, Scene3D cam, double[] c, double r) {
@@ -214,42 +283,72 @@ final class StageRenderer {
         ball(ctx, cam, seg[0], 0.035);
     }
 
-    /** One phantom block: faces far-to-near with a low-alpha fill, thin edges; cut effect flashes and expands. */
-    private static void block(CanvasRenderingContext2D ctx, Scene3D cam, Theme th, double[] v) {
-        double alpha = Math.max(0, Math.min(1, v[5]));
+    /** One chart note's block: whole (approach / held / passed) or its two sliced halves. */
+    private static void noteBlock(CanvasRenderingContext2D ctx, Scene3D cam, Theme th, Note n, double t) {
+        double alpha = Math.max(0, Math.min(1, NoteBlocks.alpha(n, t)));
         if (alpha <= 0.002) {
             return;
         }
-        double fx = v[6];
-        double[][] c = PhantomBlocks.corners(new double[] {v[0], v[1], v[2]}, v[3], v[4]);
-        int[][] faces = PhantomBlocks.FACES;
+        int st = NoteBlocks.state(n, t);
+        int side = SaberRig.sideFor(n.lane());
+        boolean miss = n.result() == Judgement.MISS;
+        String rgb = miss ? th.missRgb : th.noteRgb[side];
+        if (st == NoteBlocks.SLICED) {
+            double since = t - NoteBlocks.contactMs(n);
+            boolean flash = since < NoteBlocks.FLASH_MS;
+            if (flash) { // flash at the cut: a bright burst at the block centre
+                double[] h = NoteBlocks.hitCentre(n.lane());
+                double[] p = cam.project(h[0], h[1], h[2]);
+                if (p != null) {
+                    double f = 1 - since / NoteBlocks.FLASH_MS;
+                    ctx.setFillStyle("rgba(" + th.flashRgb + "," + (0.55 * f) + ")");
+                    ctx.beginPath();
+                    ctx.arc(p[0], p[1], NoteBlocks.SIZE * (0.6 + 0.6 * (1 - f)) * p[3], 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            double[][][] halves = NoteBlocks.halves(n.lane(), since);
+            for (double[][] h : halves) {
+                box(ctx, cam, h, flash ? th.flashRgb : rgb, alpha, flash ? 0.6 : 0.42);
+            }
+            return;
+        }
+        box(ctx, cam, NoteBlocks.corners(n, t), rgb, alpha, miss ? 0.12 : 0.42);
+    }
+
+    /** A box from 8 corners: faces far to near with a fill, then the edges. */
+    private static void box(CanvasRenderingContext2D ctx, Scene3D cam, double[][] c, String rgb, double alpha,
+                            double fillA) {
+        int[][] faces = StageGeometry.FACES;
         double[] fd = new double[faces.length];
-        Integer[] idx = new Integer[faces.length];
+        int[] idx = new int[faces.length];
         for (int f = 0; f < faces.length; f++) {
-            idx[f] = f;
             double d = 0;
             for (int q : faces[f]) {
                 d += cam.toCamera(c[q][0], c[q][1], c[q][2])[2];
             }
-            fd[f] = d;
+            int j = f;
+            while (j > 0 && fd[j - 1] < d) {
+                fd[j] = fd[j - 1];
+                idx[j] = idx[j - 1];
+                j--;
+            }
+            fd[j] = d;
+            idx[j] = f;
         }
-        java.util.Arrays.sort(idx, (a, b) -> Double.compare(fd[b], fd[a]));
-        boolean flash = fx >= 0 && fx < 0.3;
-        String rgb = fx >= 0 ? th.flashRgb : th.blockRgb;
-        double fillA = (flash ? 0.45 : 0.08) * alpha;
+        ctx.setFillStyle("rgba(" + rgb + "," + (fillA * alpha) + ")");
         for (int f : idx) {
             double[][] quad = new double[4][];
             for (int q = 0; q < 4; q++) {
                 quad[q] = c[faces[f][q]];
             }
             if (poly(ctx, cam, quad)) {
-                ctx.setFillStyle("rgba(" + rgb + "," + fillA + ")");
                 ctx.fill();
             }
         }
-        ctx.setStrokeStyle("rgba(" + rgb + "," + (0.55 * alpha) + ")");
-        ctx.setLineWidth(flash ? 1.6 : 0.9);
-        for (int[] e : PhantomBlocks.EDGES) {
+        ctx.setStrokeStyle("rgba(" + rgb + "," + (0.9 * alpha) + ")");
+        ctx.setLineWidth(1.1);
+        for (int[] e : StageGeometry.EDGES) {
             line(ctx, cam, c[e[0]], c[e[1]]);
         }
     }

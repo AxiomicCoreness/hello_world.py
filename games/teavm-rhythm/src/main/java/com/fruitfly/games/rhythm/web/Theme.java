@@ -41,7 +41,10 @@ final class Theme {
     final String flyLine;
     final String[] saberCore;
     final String[] saberGlow;
-    final String blockRgb;
+    final String[] noteRgb;
+    final String missRgb;
+    final String judgeRgb;
+    final String hitFrame;
     final String flashRgb;
     final String leader;
 
@@ -81,7 +84,10 @@ final class Theme {
             flyLine = "rgba(40,44,58,0.7)";
             saberCore = new String[] {"#c2153f", "#1a5fc0"};
             saberGlow = new String[] {"rgba(216,27,79,0.22)", "rgba(31,111,209,0.22)"};
-            blockRgb = "60,80,140";
+            noteRgb = new String[] {"216,27,79", "31,111,209"};
+            missRgb = "120,124,136";
+            judgeRgb = "29,34,48";
+            hitFrame = "rgba(43,47,58,0.55)";
             flashRgb = "255,190,40";
             leader = "rgba(40,44,58,0.25)";
         } else {
@@ -118,7 +124,10 @@ final class Theme {
             flyLine = "rgba(210,220,240,0.7)";
             saberCore = new String[] {"#ff5c85", "#5cc4ff"};
             saberGlow = new String[] {"rgba(255,59,107,0.3)", "rgba(59,179,255,0.3)"};
-            blockRgb = "170,200,255";
+            noteRgb = new String[] {"255,59,107", "59,179,255"};
+            missRgb = "150,155,170";
+            judgeRgb = "255,255,255";
+            hitFrame = "rgba(232,232,240,0.6)";
             flashRgb = "255,240,150";
             leader = "rgba(210,220,240,0.3)";
         }
