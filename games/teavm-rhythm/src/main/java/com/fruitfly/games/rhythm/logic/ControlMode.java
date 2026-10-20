@@ -25,6 +25,14 @@ public final class ControlMode {
         "assist ON (LIF fly)", "assist ON (connectome fly)",
     };
 
+    /** Shown on the stage when C / B / the AUTOPLAY button is used mid-song. */
+    public static final String LOCK_HINT = "Autoplay locked during song - press R to restart";
+    /** How long the lock hint stays up, ms (page frame time). */
+    public static final double LOCK_HINT_MS = 2200;
+    /** Button tooltip between songs and while locked. */
+    public static final String TITLE_IDLE = "Autoplay mode (same as key C; changes between songs only)";
+    public static final String TITLE_LOCKED = "Locked during song - press R to restart, then change mode";
+
     private ControlMode() {
     }
 
@@ -56,6 +64,20 @@ public final class ControlMode {
     public static String buttonLabel(int mode) {
         check(mode);
         return BUTTON[mode];
+    }
+
+    /**
+     * Button text for a mode, with the lock shown while a song runs:
+     * "AUTOPLAY: X" becomes "LOCKED: X" (never longer than the idle label,
+     * so the button size is unchanged).
+     */
+    public static String buttonLabel(int mode, boolean running) {
+        String s = buttonLabel(mode);
+        return running ? "LOCKED: " + s.substring("AUTOPLAY: ".length()) : s;
+    }
+
+    public static String buttonTitle(boolean running) {
+        return running ? TITLE_LOCKED : TITLE_IDLE;
     }
 
     /** Mode line in the right-hand HUD. */

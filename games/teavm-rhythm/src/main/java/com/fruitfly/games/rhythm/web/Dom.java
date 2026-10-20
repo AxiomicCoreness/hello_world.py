@@ -76,4 +76,11 @@ final class Dom {
 
     @JSBody(params = {"el"}, script = "if (el && typeof el.blur === 'function') { el.blur(); }")
     static native void blur(HTMLElement el);
+
+    @JSBody(params = {"el", "t"}, script = "if (el && el.title !== t) { el.title = t; if (el.setAttribute) { el.setAttribute('aria-label', el.textContent || t); } }")
+    static native void setTitle(HTMLElement el, String t);
+
+    /** UIEvent.detail of a click: 0 for keyboard-synthesised activation; a missing detail counts as a pointer click (1). */
+    @JSBody(params = {"e"}, script = "return (e && typeof e.detail === 'number') ? e.detail|0 : 1;")
+    static native int clickDetail(org.teavm.jso.dom.events.Event e);
 }

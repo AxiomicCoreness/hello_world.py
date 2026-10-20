@@ -8,6 +8,7 @@ import com.fruitfly.games.rhythm.logic.ConnectomeAutoplayer;
 import com.fruitfly.games.rhythm.logic.ConnectomeXml;
 import com.fruitfly.games.rhythm.logic.ControlMode;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
+import com.fruitfly.games.rhythm.logic.InputRouter;
 import com.fruitfly.games.rhythm.logic.Judgement;
 import com.fruitfly.games.rhythm.logic.LifAutoplayer;
 import com.fruitfly.games.rhythm.logic.LoadedChart;
@@ -117,6 +118,8 @@ public final class Main {
     private static final double[] laneFlashUntil = new double[RhythmGame.LANES];
     private static String banner = "";
     private static double bannerUntil;
+    /** Page time until which the "Autoplay locked during song" hint shows (C / B / button used mid-song). */
+    private static double lockHintUntil;
 
     private Main() {
     }
@@ -144,11 +147,26 @@ public final class Main {
             // Never take focus (so Space / Enter / D F J K keep going to the game), never reach the canvas.
             autoplayBtn.addEventListener("pointerdown", evt -> evt.preventDefault());
             autoplayBtn.addEventListener("mousedown", evt -> evt.preventDefault());
+            // If it ever does get focus (assistive tech, programmatic focus), Space / Enter must not
+            // activate it: cancel the button's own default; the document keydown handler still sees the key.
+            autoplayBtn.addEventListener("keydown", evt -> {
+                KeyboardEvent k = (KeyboardEvent) evt;
+                if (InputRouter.isStartKey(k.getKey(), k.getCode())) {
+                    evt.preventDefault();
+                }
+            });
+            autoplayBtn.addEventListener("keyup", evt -> {
+                KeyboardEvent k = (KeyboardEvent) evt;
+                if (InputRouter.isStartKey(k.getKey(), k.getCode())) {
+                    evt.preventDefault();
+                }
+            });
             autoplayBtn.addEventListener("click", evt -> {
                 evt.preventDefault();
                 evt.stopPropagation();
                 Dom.blur(autoplayBtn);
-                cycleMode();
+                // detail 0 = keyboard-synthesised click: ignored, so Space / Enter only start the song.
+                applyModeAction(InputRouter.buttonClick(Dom.clickDetail(evt), running), false);
             });
         }
         if (hudC != null && autoplayBtn != null) {
@@ -340,6 +358,7 @@ public final class Main {
         attachFly();
         sabers = new SaberRig();
         running = false;
+        lockHintUntil = 0;
         if (audio != null) {
             audio.stop();
         }
@@ -354,6 +373,18 @@ public final class Main {
     private static void cycleMode() {
         mode = ControlMode.cycle(mode, running);
         attachFly();
+    }
+
+    /** CYCLE_MODE / TOGGLE_LIF / LOCKED from InputRouter; anything else is ignored. */
+    private static void applyModeAction(int action, boolean lifToggle) {
+        if (action == InputRouter.LOCKED) {
+            lockHintUntil = lastStamp + ControlMode.LOCK_HINT_MS; // the lock stays; now it says so
+        } else if (action == InputRouter.CYCLE_MODE) {
+            cycleMode();
+        } else if (action == InputRouter.TOGGLE_LIF && lifToggle) {
+            mode = ControlMode.toggleLif(mode, running);
+            attachFly();
+        }
     }
 
     /** The arbiter advances the selected fly brain before each human press. */
@@ -390,38 +421,44 @@ public final class Main {
     private static void onKey(KeyboardEvent e) {
         String key = e.getKey();
         String code = e.getCode();
-        if ("b".equalsIgnoreCase(key) || "KeyB".equals(code)) {
-            // Only switchable between songs, so a score is all-brain or all-human.
-            mode = ControlMode.toggleLif(mode, running);
-            attachFly();
-            return;
-        }
-        if ("c".equalsIgnoreCase(key) || "KeyC".equals(code)) {
-            cycleMode();
-            return;
-        }
-        if (!running) {
-            if (" ".equals(key) || "Enter".equals(key)) {
+        int action = InputRouter.key(key, code, e.isRepeat(), running);
+        switch (action) {
+            case InputRouter.CYCLE_MODE:
+            case InputRouter.TOGGLE_LIF:
+            case InputRouter.LOCKED:
+                // Only switchable between songs, so a score is all-brain or all-human.
+                applyModeAction(action, true);
+                return;
+            case InputRouter.START:
                 if (game.isFinished()) {
                     reset();
                 }
                 running = true;
+                lockHintUntil = 0;
                 clock.start(lastStamp, audio != null && audio.isOk());
                 if (audio != null) {
                     audio.play();
                 }
                 e.preventDefault();
-            } else if ("n".equalsIgnoreCase(key) && loaded == null) {
-                seed = seed * 31 + 7;
+                return;
+            case InputRouter.CONSUME:
+                e.preventDefault();
+                return;
+            case InputRouter.NEW_SEED:
+                if (loaded == null) {
+                    seed = seed * 31 + 7;
+                    reset();
+                }
+                return;
+            case InputRouter.RESTART:
                 reset();
-            }
-            return;
+                return;
+            case InputRouter.LANE:
+                break;
+            default:
+                return;
         }
-        if ("r".equalsIgnoreCase(key)) {
-            reset();
-            return;
-        }
-        if (e.isRepeat() || ControlMode.isFullAutoplay(mode)) {
+        if (ControlMode.isFullAutoplay(mode)) {
             return;
         }
         int lane = RhythmGame.laneForKey(code != null && !code.isEmpty() ? code : key);
@@ -586,6 +623,9 @@ public final class Main {
         if (!status.isEmpty()) {
             line(hc, status.length() > 60 ? status.substring(0, 57) + "..." : status);
         }
+        if (lockHintUntil > stamp && running) {
+            line(hc, ControlMode.LOCK_HINT);
+        }
         if (bannerUntil > stamp && running) {
             line(hc, banner);
         }
@@ -607,8 +647,9 @@ public final class Main {
             }
         }
         if (autoplayBtn != null) {
-            setText(autoplayBtn, ControlMode.buttonLabel(mode));
+            setText(autoplayBtn, ControlMode.buttonLabel(mode, running));
             Dom.setClass(autoplayBtn, running ? "locked" : "");
+            Dom.setTitle(autoplayBtn, ControlMode.buttonTitle(running));
         }
         if (hudL != null && hudR != null && hudC != null) {
             setText(hudL, hl.toString());
