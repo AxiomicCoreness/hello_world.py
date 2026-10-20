@@ -14,10 +14,13 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 
 | Path | What it is |
 |---|---|
-| `src/main/java/com/fruitfly/games/rhythm/logic/` | Pure game rules: `Note`, `Judgement`, `NoteChart`, `RhythmGame`, plus the autoplayer `LifNeuron` and `LifAutoplayer`. JDK only, with no TeaVM or JSO imports (`LogicPurityTest` enforces this). |
-| `src/main/java/com/fruitfly/games/rhythm/web/Main.java` | Browser layer: TeaVM JSO canvas drawing, `keydown` input and the `requestAnimationFrame` loop. |
+| `src/main/java/com/fruitfly/games/rhythm/logic/` | Pure game rules: `Note`, `Judgement`, `NoteChart`, `RhythmGame`, the autoplayer `LifNeuron` and `LifAutoplayer`, the JSON chart loader `ChartJson` / `LoadedChart` / `ChartFormatException`, the `SongClock` and the `ClickTrack` synthesiser. JDK only, with no TeaVM or JSO imports (`LogicPurityTest` enforces this). |
+| `src/main/java/com/fruitfly/games/rhythm/web/Main.java` | Browser layer: TeaVM JSO canvas drawing, `keydown` input, the `requestAnimationFrame` loop and chart fetching (`XMLHttpRequest`). |
+| `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
-| `src/test/java/.../logic/` | JUnit 5 tests (49) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, and the autoplayer. |
+| `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
+| `src/test/java/.../logic/` | JUnit 5 tests (74) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, the autoplayer, the JSON loader, the song clock and the click track. |
+| `tools/gen_click_track.py` | Writes the same click track as a `.wav` (and `.ogg` with `--ogg`, via ffmpeg) for use outside the page. |
 | `src/test/resources/lif_rk4_golden_traces.txt` | Golden v / g / refractory / spike traces generated from the real root `LIFRK4`. Do not hand-edit. |
 | `tools/LifGoldenTraceGen.java`, `tools/regen-lif-traces.sh` | Trace generator. It compiles against the root `src/` LIFRK4 and isn't part of the Maven build. |
 | `tools/smoke.js` | Headless Node smoke test for the compiled `classes.js`, using a stubbed DOM. |
@@ -96,6 +99,54 @@ temp directory. It writes the traces with a `source` line recording the commit
 and blob. If `LifRk4ParityTest` then fails, update `LifNeuron` to match. Commit
 the regenerated traces with the port change.
 
+## JSON charts and audio sync
+
+Open the page with `?chart=charts/sample_chart.json` (or any chart URL the
+page can fetch). The format is:
+
+```json
+{
+  "metadata": { "title": "Fruit Fly Heartbeat", "artist": "LIF Autoplayer", "bpm": 120, "offset_ms": 0 },
+  "notes": [ { "time_ms": 1000, "lane": 0 }, { "time_ms": 1500, "lane": 0 } ]
+}
+```
+
+`ChartJson.parse` is a small strict JSON parser in the logic package. It
+checks that `title` and `artist` are strings, `bpm` is in (0, 1000],
+`offset_ms` is an integer within ±600000, and every note has an integer
+`time_ms` in [0, 86400000] and an integer `lane` 0–3. Notes may be in any
+order; they're stably sorted by time. The same lane twice at the same time is
+rejected. Unknown keys are ignored. An optional `metadata.audio` names an
+audio file relative to the chart. Errors name the field, for example
+`notes[1].lane: must be an integer 0..3, got 4`. The page shows the error and
+keeps the generated chart.
+
+The chart becomes an ordinary `NoteChart` (`NoteChart.fromNotes`), so the same
+`RhythmGame` judges it with the same windows and scoring, and the B autoplayer
+works unchanged.
+
+**Clock.** With audio, song time is
+`audio.currentTime × 1000 + offset_ms`. It's read as a double on every frame
+and at every key press, and passed straight to `RhythmGame` (floored to whole
+ms, so a note is never judged early). No per-frame deltas are summed, so
+nothing drifts. A positive `offset_ms` makes notes due earlier against the
+audio. If there's no audio, play() is refused, the audio errors or it ends,
+`SongClock` falls back to the original frame clock, continuing from the last
+audio reading. With no audio at all the game behaves exactly as before.
+
+**Audio source**, in order: `?audio=URL`, then `metadata.audio`, then a click
+track synthesised in the page by `ClickTrack` (mono 16-bit 8 kHz WAV as a
+`data:` URI, at the chart's bpm, lasting until 1.5 s past the last note).
+`?audio=none` turns audio off. `?audio=URL` without a chart puts the
+generated seed chart on that audio's clock with offset 0.
+
+No audio binary is committed. To get a file, run
+`python3 tools/gen_click_track.py --ogg`. It writes `click_120bpm.wav`, which
+is byte-identical to the page's track, and converts it to `click_120bpm.ogg`
+(Vorbis) with ffmpeg. Put the file next to `index.html` and open
+`?chart=charts/sample_chart.json&audio=click_120bpm.ogg`. The sample chart's
+notes fall on beats 2–6 of the 120 bpm click.
+
 ## Lane labels
 
 The lanes are labelled *antennal lobe*, *mushroom body*, *lateral horn* and
@@ -108,10 +159,10 @@ JDK 17 and Maven 3.9 are needed. Run these from this directory
 (`games/teavm-rhythm/`):
 
 ```bash
-mvn -B test        # 49 JUnit tests for the logic, including LIFRK4 parity
+mvn -B test        # 74 JUnit tests for the logic, including LIFRK4 parity
 mvn -B package     # tests, then TeaVM compile -> target/webapp/{index.html,classes.js}
 node --check target/webapp/classes.js
-node tools/smoke.js   # boots classes.js headless, plays 3 notes, then a full B-autoplay song
+node tools/smoke.js   # boots classes.js headless: seed game + B-autoplay, then the JSON chart, audio clock and fallbacks
 ```
 
 ## Run
@@ -121,6 +172,7 @@ cd target/webapp
 python3 -m http.server 8000
 # open http://localhost:8000/            (default seed 2026)
 # open http://localhost:8000/?seed=123   (any other fixed chart)
+# open http://localhost:8000/?chart=charts/sample_chart.json   (JSON chart + synthesised click track)
 ```
 
 Press **Space** to start, **D F J K** to hit, **R** to restart. On the title

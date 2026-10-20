@@ -43,6 +43,12 @@
     <p class="note">Lane names (antennal lobe, mushroom body, lateral horn, lobula) are display labels only.
       The lanes aren't wired to those brain regions or to the connectome.</p>
     <p class="note">Space start &middot; D F J K hit &middot; B autoplay &middot; R restart &middot; N new seed &middot; <code>?seed=123</code> fixes the chart</p>
+    <h2>Charts &amp; audio</h2>
+    <p class="note"><a href="?chart=charts/sample_chart.json" style="color:#8fb3ff">Play the sample JSON chart</a>
+      (<code>?chart=charts/sample_chart.json</code>). With a chart, song time is the audio position plus
+      <code>offset_ms</code>, read every frame. Audio is <code>?audio=URL</code>, else the chart's
+      <code>metadata.audio</code>, else a click track the page synthesises at the chart's bpm.
+      <code>?audio=none</code> or an audio error falls back to the frame clock.</p>
   </div>
   <script>
     window.addEventListener('load', function () {
