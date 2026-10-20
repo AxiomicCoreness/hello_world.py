@@ -16,6 +16,7 @@ Verifies:
   G8  MPS transfer matrix        exactly one |λ| = 1, next |λ_2| = 1/3
   G9  correlation length         ξ = 1/ln(3) from λ_2
   G10 hidden Z2 × Z2             each R^α (α=x,y,z) has (R^α)^2 = 1 on spin-1
+  G11 string order               O^z = -4/9 from the MPS (r = 1..6)
 
 Exit 0 iff all gates pass. Exit 1 otherwise.
 """
@@ -181,6 +182,39 @@ def gate_G10():
     return ok, msg
 
 
+def aklt_mps():
+    """AKLT MPS matrices A^{+1}, A^0, A^{-1} (left-normalized: Σ A†A = I)."""
+    Ap = math.sqrt(2.0 / 3.0) * np.array([[0.0, 1.0], [0.0, 0.0]], dtype=complex)
+    A0 = (1.0 / math.sqrt(3.0)) * np.array([[-1.0, 0.0], [0.0, 1.0]], dtype=complex)
+    Am = math.sqrt(2.0 / 3.0) * np.array([[0.0, 0.0], [-1.0, 0.0]], dtype=complex)
+    return {1: Ap, 0: A0, -1: Am}
+
+
+def string_order(r):
+    """<S^z_0 exp(iπ Σ_{0<j<r} S^z_j) S^z_r> in the infinite AKLT MPS."""
+    A = aklt_mps()
+
+    def E(f):
+        return sum(f(m) * np.kron(A[m], A[m].conj()) for m in A)
+
+    T = E(lambda m: 1.0)
+    Esz = E(lambda m: float(m))
+    Eexp = E(lambda m: np.exp(1j * math.pi * m))
+    wr, Vr = np.linalg.eig(T)
+    wl, Vl = np.linalg.eig(T.T)
+    rv = Vr[:, np.argmax(np.abs(wr))]
+    lv = Vl[:, np.argmax(np.abs(wl))]
+    M = Esz @ np.linalg.matrix_power(Eexp, r - 1) @ Esz
+    return complex(lv @ M @ rv / (lv @ rv))
+
+
+def gate_G11():
+    vals = [string_order(r) for r in range(1, 7)]
+    err = max(abs(v - (-4.0 / 9.0)) for v in vals)
+    return err < 1e-12, (f"O^z(r=1..6) = {[round(v.real, 12) for v in vals]} "
+                         f"(expected -4/9), max err {err:.1e}")
+
+
 def main() -> int:
     print("AKLT e2e test — independent verification against published values")
     print("=" * 70)
@@ -193,6 +227,7 @@ def main() -> int:
         ("G7  OBC degeneracy (N=4)",       lambda: gate_G7(N=4)),
         ("G8/G9  MPS ξ = 1/ln(3)",         gate_G8_G9),
         ("G10 hidden Z2 × Z2",             gate_G10),
+        ("G11 string order -4/9",          gate_G11),
     ]
 
     all_ok = True
