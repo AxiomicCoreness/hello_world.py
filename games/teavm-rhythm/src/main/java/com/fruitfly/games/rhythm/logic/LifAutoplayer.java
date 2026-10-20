@@ -25,6 +25,8 @@ public final class LifAutoplayer {
     public static final double DRIVE_G = 60.0;
 
     private final RhythmGame game;
+    private final long aimMs;
+    private final PressSink sink;
     private final LifNeuron[] neurons = new LifNeuron[RhythmGame.LANES];
     private final int[] nextNoteIndex = new int[RhythmGame.LANES];
     private final long latencyMs;
@@ -32,7 +34,17 @@ public final class LifAutoplayer {
     private int spikes;
 
     public LifAutoplayer(RhythmGame game) {
+        this(game, 0, null);
+    }
+
+    /**
+     * @param aimMs offset from the note time the spike is aimed at (0 = on the note; assist mode aims late)
+     * @param sink  where spikes go as presses; null = straight to {@code game.press}
+     */
+    public LifAutoplayer(RhythmGame game, long aimMs, PressSink sink) {
         this.game = game;
+        this.aimMs = aimMs;
+        this.sink = sink;
         for (int l = 0; l < RhythmGame.LANES; l++) {
             neurons[l] = new LifNeuron();
             nextNoteIndex[l] = advanceIndex(l, 0);
@@ -83,13 +95,17 @@ public final class LifAutoplayer {
             for (int l = 0; l < RhythmGame.LANES; l++) {
                 double drive = 0.0;
                 int idx = nextNoteIndex[l];
-                if (idx < notes.size() && t >= notes.get(idx).timeMs() - latencyMs) {
+                if (idx < notes.size() && t >= notes.get(idx).timeMs() + aimMs - latencyMs) {
                     drive = DRIVE_G;
                     nextNoteIndex[l] = advanceIndex(l, idx + 1);
                 }
                 if (neurons[l].substep(drive, LifNeuron.DT_MS)) {
                     spikes++;
-                    game.press(l, t);
+                    if (sink == null) {
+                        game.press(l, t);
+                    } else {
+                        sink.press(l, t);
+                    }
                 }
             }
             substepsDone++;
