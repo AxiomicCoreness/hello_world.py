@@ -22,13 +22,11 @@ Selftest:
 import math
 import cmath
 import os
-import sys
 import json
-import time
 import hashlib
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass
 from enum import Enum
-from typing import Union, List, Tuple, Dict, Any, Optional
+from typing import List, Tuple, Dict, Any, Optional
 
 # Optional imports with fallbacks
 try:
@@ -38,49 +36,22 @@ except ImportError:
     HAS_NUMPY = False
     np = None
 
-try:
-    from scipy.special import gamma as gamma_func
-    HAS_SCIPY = True
-except ImportError:
-    HAS_SCIPY = False
-    gamma_func = math.gamma
-
-try:
-    import yaml
-    HAS_YAML = True
-except ImportError:
-    HAS_YAML = False
-    yaml = None
-
-try:
-    import matplotlib.pyplot as plt
-    HAS_MPL = True
-except ImportError:
-    HAS_MPL = False
-    plt = None
-
-try:
-    import requests
-except ImportError:
-    requests = None
-
 
 # ═════════════════════════════════════════════════════════════════════════
 # SECTION 1 — CELESTIAL CONSTANTS (canonical)
 # ═════════════════════════════════════════════════════════════════════════
-# φ‑power ladder
 phi             = (1 + math.sqrt(5)) / 2        # 1.618033988749895
-phi2            = phi ** 2                       # 2.618033988749895
-phi3            = phi ** 3                       # 4.23606797749979
-phi4            = phi ** 4                       # 6.854101966249685
-phi5            = phi ** 5                       # 11.090169943749474
-phi6            = phi ** 6                       # 17.94427190999916
-phi7            = phi ** 7                       # 29.034441853748633
-phi8            = phi ** 8                       # 46.97871376374779
-phi9            = phi ** 9                       # 76.01315561749642
-phi12           = phi ** 12                      # 321.9968943799849
-phi13           = phi ** 13                      # 521.0019193787255
-phi14           = phi ** 14                      # 842.9988137587105
+phi2            = phi ** 2
+phi3            = phi ** 3
+phi4            = phi ** 4
+phi5            = phi ** 5
+phi6            = phi ** 6
+phi7            = phi ** 7
+phi8            = phi ** 8
+phi9            = phi ** 9
+phi12           = phi ** 12
+phi13           = phi ** 13
+phi14           = phi ** 14
 phi21           = phi ** 21
 phi34           = phi ** 34
 phi709          = phi ** 709
@@ -90,7 +61,6 @@ phi_minus_1000  = phi ** (-1000)
 phi_minus_1418  = phi ** (-1418)
 phi_inv         = 1.0 / phi
 
-# Uppercase aliases (Garden convention)
 PHI             = phi
 PHI2            = phi2
 PHI3            = phi3
@@ -112,7 +82,6 @@ PHI_MINUS_1000  = phi_minus_1000
 PHI_NEG_1418    = phi_minus_1418
 PHI_INV         = phi_inv
 
-# Celestial anchors (Strike IX & X)
 NORTH_STAR_FREQ       = 71.975
 CHIRON_PHASE_LOCK     = 202.6
 PSI4_CARRIER_HZ       = 162.28e12
@@ -122,12 +91,10 @@ TRAPPIST_PERIODS = {
     "f": 9.20745, "g": 12.35245, "h": 18.77287,
 }
 
-# Physical constants
 BOSTON_HEARTBEAT = 42.36
 CUTOFF_MJY       = 7.5
 T_PHI            = 0.5983
 
-# Base directory
 BASE_DIR = os.path.join(os.path.expanduser("~"), "Documents", "Hyperian_Node")
 os.makedirs(BASE_DIR, exist_ok=True)
 
@@ -151,21 +118,14 @@ class QuadraticResult:
     kind: RootKind
     roots: List[complex]
     verification: List[float]   # |a x² + b x + c| for each root
-    phi_a: float                # φ·a — celestial decoration
-    phi_b: float                # φ·b
-    phi_c: float                # φ·c
+    phi_a: float
+    phi_b: float
+    phi_c: float
     seal: Optional[str] = None
 
 
 def solve_quadratic(a: float, b: float, c: float) -> QuadraticResult:
-    """
-    Solve ax² + bx + c = 0 rigorously.
-
-    Raises
-    ------
-    ValueError
-        If a == 0 (not a quadratic).
-    """
+    """Solve ax² + bx + c = 0 rigorously."""
     if a == 0:
         raise ValueError("a must be non-zero for a quadratic equation")
 
@@ -182,13 +142,12 @@ def solve_quadratic(a: float, b: float, c: float) -> QuadraticResult:
         kind = RootKind.REAL_REPEATED
         roots = [complex(x, 0.0), complex(x, 0.0)]
     else:
-        sqrtD = cmath.sqrt(complex(D, 0.0))   # = i·√|D|
+        sqrtD = cmath.sqrt(complex(D, 0.0))
         x1 = (-b + sqrtD) / (2.0 * a)
         x2 = (-b - sqrtD) / (2.0 * a)
         kind = RootKind.COMPLEX_PAIR
         roots = [x1, x2]
 
-    # Verify each root against the original polynomial
     verification = []
     for x in roots:
         val = a * x * x + b * x + c
@@ -210,15 +169,10 @@ def solve_quadratic(a: float, b: float, c: float) -> QuadraticResult:
 # SECTION 3 — CELESTIAL DECORATION
 # ═════════════════════════════════════════════════════════════════════════
 def celestial_fingerprint(res: QuadraticResult) -> Dict[str, Any]:
-    """
-    Return a celestial fingerprint for the quadratic solution.
-    Uses the discriminant D as a seed for Trappist voice frequencies and
-    the mean of roots as a φ‑harmonic phase.
-    """
+    """Return a celestial fingerprint for the quadratic solution."""
     root_sum = sum(res.roots).real
     root_prod = (res.roots[0] * res.roots[1]).real
 
-    # Map the discriminant magnitude to a Trappist voice
     D_abs = abs(res.discriminant)
     voice = "b"
     if D_abs > 100:
@@ -237,7 +191,7 @@ def celestial_fingerprint(res: QuadraticResult) -> Dict[str, Any]:
     period_days = TRAPPIST_PERIODS[voice]
     voice_freq  = NORTH_STAR_FREQ / period_days
 
-    fingerprint = {
+    return {
         "root_sum":       root_sum,
         "root_product":   root_prod,
         "phi_scaled_sum": phi_inv * root_sum,
@@ -248,7 +202,6 @@ def celestial_fingerprint(res: QuadraticResult) -> Dict[str, Any]:
         "north_star_hz":  NORTH_STAR_FREQ,
         "chiron_lock_deg": CHIRON_PHASE_LOCK,
     }
-    return fingerprint
 
 
 def seal_quadratic(res: QuadraticResult) -> str:
@@ -269,10 +222,7 @@ def seal_quadratic(res: QuadraticResult) -> str:
 # SECTION 4 — DAEMON CLASS
 # ═════════════════════════════════════════════════════════════════════════
 class QuadraticDaemon:
-    """
-    A stateful quadratic daemon. Each solve() call returns a QuadraticResult
-    with roots, discriminant, celestial fingerprint, and a computed seal.
-    """
+    """A stateful quadratic daemon."""
 
     def __init__(self):
         self.history: List[QuadraticResult] = []
