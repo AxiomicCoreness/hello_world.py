@@ -14,6 +14,7 @@ def next_interval(base: int = DEFAULT_CADENCE_SECONDS, jitter_ratio: float = JIT
     """Bounded-jitter interval around the cadence. Deterministic bounds, never exceeding the ratio."""
     if not 0 <= jitter_ratio <= 1:
         raise ValueError("jitter_ratio out of bounds")
+    
     span = int(base * jitter_ratio)
     return base + random.randint(-span, span)
 
@@ -21,8 +22,11 @@ def next_interval(base: int = DEFAULT_CADENCE_SECONDS, jitter_ratio: float = JIT
 def cron_for(base: int = DEFAULT_CADENCE_SECONDS) -> str:
     """Canonical cron for the base cadence (6h default -> '0 */6 * * *')."""
     hours = base // 3600
-    if base % 3600 or not 1 <= hours <= 23:
+    
+    # Ensure the cadence is a whole number of hours between 1 and 23
+    if base % 3600 or not (1 <= hours <= 23):
         raise ValueError("cadence must be whole hours, 1-23")
+    
     return f"0 */{hours} * * *"
 
 
