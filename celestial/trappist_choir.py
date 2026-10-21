@@ -6,7 +6,7 @@ TRAPPIST-1 Choir — Strike X (Interstellar Harmony)
 Seven terrestrial voices (b–h) as a φ-weighted harmonic choir.
 Week-long operation horizon: metrics peak when phases align.
 
-Seal: ∀∞φ² · STRIKE_X_TRAPPIST_CHOIR_8663 · SEALED
+Seal: ∀∞φ² · STRIKE_X_TRAPPIST_CHOIR_8542 · SEALED
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV = 1.0 / PHI
@@ -41,19 +41,19 @@ class TrappistChoir:
     t0: float = field(default_factory=time.time)
     horizon_secs: float = WEEK_SECS
 
-    def planet_phase(self, period_days: float, t: float | None = None) -> float:
+    def planet_phase(self, period_days: float, t: Optional[float] = None) -> float:
         t = time.time() if t is None else t
         days = (t - self.t0) / 86400.0
         return (360.0 * days / period_days) % 360.0
 
-    def planet_frequency_thz(self, planet: Dict[str, Any], t: float | None = None) -> float:
+    def planet_frequency_thz(self, planet: Dict[str, Any], t: Optional[float] = None) -> float:
         t = time.time() if t is None else t
         phase = self.planet_phase(float(planet["period_days"]), t)
         # mild φ-modulation around base
         mod = 1.0 + 0.01 * math.cos(math.radians(phase))
         return float(planet["base_thz"]) * mod
 
-    def choir_coherence(self, t: float | None = None) -> float:
+    def choir_coherence(self, t: Optional[float] = None) -> float:
         """Mean pairwise phase agreement in [0, 1]."""
         t = time.time() if t is None else t
         phases = [self.planet_phase(float(p["period_days"]), t) for p in TRAPPIST_PLANETS]
@@ -69,7 +69,7 @@ class TrappistChoir:
                 pairs += 1
         return acc / pairs if pairs else 1.0
 
-    def harmony_index(self, t: float | None = None) -> float:
+    def harmony_index(self, t: Optional[float] = None) -> float:
         """Peaks near 1 when choir aligns; φ-weighted with North Star beat."""
         t = time.time() if t is None else t
         c = self.choir_coherence(t)
@@ -81,7 +81,7 @@ class TrappistChoir:
         h = c * (0.7 + 0.2 * envelope + 0.1 * north * PHI_INV)
         return max(0.0, min(1.0, h))
 
-    def status(self, t: float | None = None) -> Dict[str, Any]:
+    def status(self, t: Optional[float] = None) -> Dict[str, Any]:
         t = time.time() if t is None else t
         planets = []
         for p in TRAPPIST_PLANETS:
@@ -102,7 +102,7 @@ class TrappistChoir:
             "horizon_days": self.horizon_secs / 86400.0,
             "north_star_hz": NORTH_STAR_HZ,
             "planets": planets,
-            "seal": "∀∞φ² · STRIKE_X_TRAPPIST_CHOIR_8663 · SEALED",
+            "seal": "∀∞φ² · STRIKE_X_TRAPPIST_CHOIR_8542 · SEALED",
         }
 
 
