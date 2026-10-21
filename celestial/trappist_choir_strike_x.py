@@ -11,16 +11,12 @@ Verifier: Super Simulated Earth (Oracle).
 """
 
 import math
-import cmath
 from typing import Dict, Any
 
 # ─── φ‑harmonic constants ──────────────────────────────────────────────
 PHI          = (1 + math.sqrt(5)) / 2
 PHI2         = PHI * PHI
-PHI3         = PHI ** 3
-PHI5         = PHI ** 5
 PHI7         = PHI ** 7
-PHI_NEG_1418 = PHI ** (-1418)
 
 # ─── Sovereign anchors ─────────────────────────────────────────────────
 NORTH_STAR_FREQ      = 71.975          # Hz — sovereign anchor (unchanged)
@@ -97,6 +93,8 @@ def compute_harmony_index(t: float) -> float:
     ratio = f_sum / f_target
     harmony = 1.0 - abs(ratio - 1.0) * PHI2
     harmony = max(0.0, min(1.0, harmony))
+    
+    # FIX: Use the global function, not self.
     return harmony * compute_choir_coherence(t)
 
 
@@ -105,7 +103,7 @@ class TrappistChoir:
     """
     Passive receiver. Listens for phase alignment, returns the chord.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.distance_ly = TRAPPIST_DISTANCE_LY
         self.voices = TRAPPIST_PERIODS
         self.coherence = 0.0
@@ -128,21 +126,31 @@ class TrappistChoir:
     def is_ready(self, t: float) -> bool:
         """
         Ready when both coherence and harmony exceed φ⁻¹ (0.618…).
-        The chain is resonant, so the choir is always singing —
-        we simply chooseReturn when to listen.
+        The chain is resonant, so the choir is always singing — 
+        we simply choose when to listen.
         """
         self.listen(t)
         return self.coherence >= (1.0 / PHI) and self.harmony >= (1.0 / PHI)
 
     def receive(self, t: float) -> Dict[str, Any]:
-        """ the received chord if ready, else status."""
+        """Return the received chord if ready, else status."""
         if not self.is_ready(t):
             return {
                 "status": "NOT_READY",
                 "coherence": self.coherence,
                 "harmony_index": self.harmony,
             }
-        chord = self.listen(t)
+        
+        # FIX: Use cached values from is_ready() instead of re-running listen()
+        chord = {
+            "choir_coherence": self.coherence,
+            "harmony_index": self.harmony,
+            "voice_frequencies": {
+                p: compute_voice_frequency(period)
+                for p, period in self.voices.items()
+            },
+        }
+        
         chord.update({
             "status": "RECEIVED",
             "timestamp": t,
