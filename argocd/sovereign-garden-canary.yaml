@@ -1,3 +1,7 @@
+# ==============================================================================
+# 1. SERVICE
+# Standardized to a single port. Exposes the canary pods to the Gateway.
+# ==============================================================================
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,37 +19,162 @@ spec:
     - name: http
       port: 8000
       targetPort: 8000
-    - name: http-fallback-1
-      port: 8001
-      targetPort: 8001
-    # Dockerfile binds BIND_PORT_START..BIND_PORT_END (8080-8089); Services take no ranges
-    - name: http-8080
-      port: 8080
-      targetPort: 8080
-    - name: http-8081
-      port: 8081
-      targetPort: 8081
-    - name: http-8082
-      port: 8082
-      targetPort: 8082
-    - name: http-8083
-      port: 8083
-      targetPort: 8083
-    - name: http-8084
-      port: 8084
-      targetPort: 8084
-    - name: http-8085
-      port: 8085
-      targetPort: 8085
-    - name: http-8086
-      port: 8086
-      targetPort: 8086
-    - name: http-8087
-      port: 8087
-      targetPort: 8087
-    - name: http-8088
-      port: 8088
-      targetPort: 8088
-    - name: http-8089
-      port: 8089
-      targetPort: 8089
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ==============================================================================
+# 2. STABLE SERVICE (Required by Argo Rollouts for the stable track)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-stable
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: stable
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app: sovereign-garden
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ==============================================================================
+# 3. ROLLOUT (Replaces Deployment for Canary logic)
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  strategy:
+    canary:
+      stableService: sovereign-garden-stable
+      canaryService: sovereign-garden-canary
+      # Gateway API routing integration
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: sovereign-garden-route
+            namespace: sovereign-garden
+      steps:
+        - setWeight: 20
+        - pause: { duration: 30s }
+        - setWeight: 50
+        - pause: { duration: 30s }
+        - setWeight: 100
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+        - name: api
+          # REPLACE with your actual image
+          image: ghcr.io/axiomiccoreness/hello-world:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            # CRITICAL FIX: Override config.py loopback default for K8s
+            - name: BIND_HOST
+              value: "0.0.0.0"
+            - name: BIND_PORT_START
+              value: "8000"
+            - name: BIND_PORT_END
+              value: "8000"
+          resources:
+            # Enforcing the anatomy/body.py resource limits
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# ==============================================================================
+# 4. HTTPROUTE (Gateway API)
+# ==============================================================================
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sovereign-garden-route
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  parentRefs:
+    # REPLACE with your actual Gateway name
+    - name: external-gateway
+      namespace: default
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      # By default, 100% of traffic goes to the stable service.
+      # Argo Rollouts will dynamically adjust these weights.
+      backendRefs:
+        - name: sovereign-garden-stable
+          port: 8000
+          weight: 100
+        - name: sovereign-garden-canary
+          port: 8000
+          weight: 0
+
+---
+# ==============================================================================
+# 5. ANALYSIS TEMPLATE (Canary Health Check)
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: sovereign-health-check
+  namespace: sovereign-garden
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: health-check
+      interval: 10s
+      count: 6
+      successCondition: result.status == "healthy"
+      failureCondition: result.status == "unhealthy" || result.status == "error"
+      failureLimit: 2
+      provider:
+        http:
+          url: "http://{{args.service-name}}:8000/health"
+          method: GET
+          timeoutSeconds: 5
+          headers:
+            - name: Accept
+              value: application/json
