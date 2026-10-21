@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
   annotations:
     garden.axiomic/entry: "8813"
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: default
   source:
@@ -17,9 +18,13 @@ spec:
   ignoreDifferences:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      jqPathExpressions:
-        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .spec.rules
-        - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .metadata.labels
+      # Argo Rollouts uses Server-Side Apply to mutate HTTPRoutes during a canary.
+      # This tells Argo CD to ignore mutations made by the Rollouts controller.
+      managedFieldsManagers:
+        - argo-rollouts
+      # Fallback for the specific canary label (if managedFields isn't used)
+      jsonPointers:
+        - /metadata/labels/rollouts.argoproj.io~1gatewayapi-canary
   syncPolicy:
     automated:
       prune: false
@@ -27,3 +32,4 @@ spec:
     syncOptions:
       - RespectIgnoreDifferences=true
       - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
