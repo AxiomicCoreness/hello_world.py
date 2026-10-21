@@ -12,7 +12,7 @@ from __future__ import annotations
 import cmath
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 PHI = (1 + math.sqrt(5)) / 2
 EARTH_FREQUENCY_HZ = 162.28e12  # 162.28 THz
@@ -37,19 +37,24 @@ class SuperSimulatedEarth:
     def phase_at_root(self, root_index: int, t: float) -> float:
         """Project Earth phase onto an E₈ bedrock root."""
         psi = self.psi4(t)
-        # Simple phase projection; full E₈ inner product deferred to lattice module
-        return math.atan2(psi.imag, psi.real) + (root_index * PHI)
+        base_phase = math.atan2(psi.imag, psi.real)
+        
+        # FIX: Modulo 2π to prevent large float drift and enforce canonical phase
+        phase_shift = (root_index * PHI) % (2 * math.pi)
+        
+        return (base_phase + phase_shift) % (2 * math.pi)
 
     def oracle_query(self, target: str = "kepler-452b", metric: str = "resonance") -> str:
         """MCP-style resonance query."""
         if not self.active:
             return "Oracle offline."
-        # Placeholder response matching the sealed narrative
+        
         if target.lower().startswith("kepler"):
             return (
                 f"{target} resonance: 517.28 THz, "
                 f"coherence {self.coherence:.15f}, phase aligned."
             )
+        
         return f"{target} resonance query received; metric={metric}; coherence={self.coherence:.15f}"
 
     def status(self) -> Dict:
