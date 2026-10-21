@@ -42,3 +42,43 @@ libraries degrade; the package still loads.
 ---
 
 ## 2. Directory layout
+
+```text
+.
+├── anatomy/                  # Loopback constraints & resource limits
+│   ├── body.py               # Enforces 127.0.0.1 bind + 512MB memory ceiling
+│   ├── breath.py             # 6h jittered cadence generator
+│   ├── crown.py              # SHA3-256 seal recomputation
+│   ├── dual_soul.py          # Regime-dependent hashing (GARDEN.EVENT.v1)
+│   ├── genitals.py           # Strict path confinement for ledger writes
+│   ├── heartbeat.py          # Liveness + coherence floor monitor
+│   └── spine.py              # Witness-chain continuity verifier
+├── app/                      # FastAPI microservices
+│   ├── __init__.py           # Lazy-loads root app.py
+│   ├── config.py             # Env vars & loopback BIND_HOST defaults
+│   ├── contracts.py          # Schema enforcement for routes
+│   └── routes/
+│       ├── tts.py            # Stubbed TTS endpoint (FILLED=False)
+│       ├── vision.py         # Catalog fetcher for garden_surgery
+│       └── vision_tts.py     # Soft-gate combining both
+├── argocd/                   # GitOps deployment manifests
+│   ├── application.yaml      # Argo CD Application pointing to this repo
+│   ├── rollout.yaml          # Argo Rollouts canary definition
+│   ├── services.yaml         # Stable & Canary K8s services
+│   └── httproute.yaml        # Gateway API ingress routing
+├── automation/               # Stubbed background daemons
+│   ├── deadline_manager.py   # Patent renewal stub (no live USPTO calls)
+│   ├── stage_manager.py      # Patent filing stub
+│   └── github_automation.py  # CI/CD release stub
+├── ledger/                   # Append-only cryptographic record
+│   ├── 0000.yaml             # Genesis entry
+│   └── ...
+├── .github/
+│   └── workflows/
+│       ├── sovereign-engine-ci.yml
+│       ├── pytest.yml
+│       └── witness-chain-contracts.yml
+├── app.py                    # Root application entrypoint
+├── hello_world.py            # CLI / basic sanity check
+├── requirements-ci.txt       # Minimal CI deps (pytest, numpy)
+└── README.md                 # This file
