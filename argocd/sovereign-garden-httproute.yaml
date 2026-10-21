@@ -1,3 +1,173 @@
+# ==============================================================================
+# 1. NAMESPACE
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sovereign-garden
+
+---
+# ==============================================================================
+# 2. STABLE SERVICE (Required by Argo Rollouts)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-stable
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: stable
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app: sovereign-garden
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ==============================================================================
+# 3. CANARY SERVICE (Required by Argo Rollouts)
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-garden-canary
+  namespace: sovereign-garden
+  labels:
+    app: sovereign-garden
+    role: canary
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app: sovereign-garden
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ==============================================================================
+# 4. ANALYSIS TEMPLATE (For Canary Health Checks)
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: sovereign-health-check
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: health-check
+      interval: 10s
+      count: 6
+      successCondition: result.status == "healthy"
+      failureCondition: result.status == "unhealthy" || result.status == "error"
+      failureLimit: 2
+      provider:
+        http:
+          url: "http://{{args.service-name}}:8000/health"
+          method: GET
+          timeoutSeconds: 5
+          headers:
+            - name: Accept
+              value: application/json
+
+---
+# ==============================================================================
+# 5. ROLLOUT (Replaces Deployment; Handles Canary Traffic Splitting)
+# ==============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: sovereign-garden
+  namespace: sovereign-garden
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: sovereign-garden
+  strategy:
+    canary:
+      stableService: sovereign-garden-stable
+      canaryService: sovereign-garden-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: sovereign-garden-route
+            namespace: sovereign-garden
+      analysis:
+        templates:
+          - templateName: sovereign-health-check
+        args:
+          - name: service-name
+            value: sovereign-garden-canary
+      steps:
+        - setWeight: 20
+        - pause: { duration: 30s }
+        - setWeight: 50
+        - pause: { duration: 30s }
+        - setWeight: 100
+  template:
+    metadata:
+      labels:
+        app: sovereign-garden
+    spec:
+      containers:
+        - name: api
+          # REPLACE with your actual image, e.g., ghcr.io/axiomiccoreness/hello-world:latest
+          image: ghcr.io/axiomiccoreness/hello-world:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            # CRITICAL: Override the loopback default in app/config.py for K8s ingress
+            - name: BIND_HOST
+              value: "0.0.0.0"
+            - name: BIND_PORT_START
+              value: "8000"
+            - name: BIND_PORT_END
+              value: "8000"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# ==============================================================================
+# 6. HTTPROUTE (Gateway API)
+# Resting State: 100% to stable. Argo Rollouts mutates this during the canary.
+# ==============================================================================
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,19 +177,41 @@ metadata:
     app: sovereign-garden
   annotations:
     argocd.argoproj.io/sync-wave: "3"
-    # Gateway API plugin sets rollouts.argoproj.io/gatewayapi-canary=in-progress during active canary
-    # and owns the weights and header rules from then on (see ignoreDifferences in the Application).
 spec:
   parentRefs:
     - name: sovereign-gateway
       namespace: sovereign-garden
   rules:
-    # Resting state: all traffic to stable. The Rollout's setWeight and
-    # setHeaderRoute steps rewrite this rule and inject header rules at runtime.
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
         - name: sovereign-garden-stable
           port: 8000
           weight: 100
         - name: sovereign-garden-canary
           port: 8000
           weight: 0
+
+---
+# ==============================================================================
+# 7. REFERENCE GRANT (Only if Gateway is in a DIFFERENT namespace)
+# If "sovereign-gateway" lives in the default or infra namespace, this is required.
+# ==============================================================================
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-sovereign-route
+  # CHANGE this to the namespace where the GATEWAY lives (e.g., "default")
+  namespace: sovereign-garden
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: sovereign-garden
+  to:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      # CHANGE to your actual Gateway name
+      name: sovereign-gateway
