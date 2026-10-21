@@ -1,4 +1,5 @@
 name: Witness-chain contracts present
+
 on:
   push:
     branches: [main]
@@ -13,17 +14,48 @@ on:
       - ".github/workflows/witness-chain-contracts.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: witness-chain-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   assert-count:
+    name: Verify Witness-Chain Contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PYTHONPATH: "."
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+
+      - name: Guard — required scripts present
+        run: |
+          set -euo pipefail
+          for f in pythonIDE/phi_pipeline.py pythonIDE/witness_chain_check.py; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Required file missing: $f"
+              exit 1
+            fi
+          done
+
       - name: Contracts present (run tree on main)
         run: |
           set -euo pipefail
-          PYTHONPATH=. python pythonIDE/phi_pipeline.py --self-test
-          PYTHONPATH=. python pythonIDE/witness_chain_check.py assert-count
-          # on main: expect exit 0 (WIRED / source-of-record)
+          echo "=== Running phi_pipeline self-test ==="
+          python pythonIDE/phi_pipeline.py --self-test
+          
+          echo "=== Asserting witness chain count ==="
+          python pythonIDE/witness_chain_check.py assert-count
+          
+          echo "✅ Contracts verified. WIRED / source-of-record."
