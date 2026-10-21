@@ -36,8 +36,11 @@ try:
     from .chiron_heal import chiron_heal_phase, status as chiron_heal_status
 except ImportError:
     def chiron_heal_phase(*args, **kwargs):  # type: ignore[no-redef]
+        """Fallback stub for chiron_heal_phase."""
         return None
+
     def chiron_heal_status(*args, **kwargs):  # type: ignore[no-redef]
+        """Fallback stub for chiron_heal_status."""
         return {"status": "unavailable"}
 
 try:
