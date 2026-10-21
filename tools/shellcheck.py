@@ -29,7 +29,7 @@ import re
 _RULES = [
     ("SC2006", re.compile(r'`[^`]+`'),
         "Use $(...) instead of legacy backticks."),
-    ("SC2086", re.compile(r'(?<![\w\"\'])\$\{?\w+\}?(?![\"\'])'),
+    ("SC2086", re.compile(r'(?<![\w"\'])\$\{?\w+\}?(?!["\'])'),
         "Double quote to prevent globbing/word-splitting."),
     ("SC2046", re.compile(r'(?<!")\$\([^)]*\)(?!")'),
         "Quote command substitution to avoid word-splitting."),
@@ -79,34 +79,47 @@ def _strip_quoted_spans(line):
         ch = line[i]
         if ch == "'" and not in_dquote:
             in_squote = not in_squote
-            out.append(" ")
         elif ch == '"' and not in_squote:
             in_dquote = not in_dquote
-            out.append(" ")
-        elif in_squote or in_dquote:
-            out.append(" ")
+        if in_squote or in_dquote:
+            out.append(' ')
         else:
             out.append(ch)
         i += 1
-    return "".join(out)
+    return ''.join(out)
 
 
-def lint_shell_text(text, filepath):
-    findings = []
+def _load_directives(text):
+    """Return set of rule ids disabled via '# shellcheck disable=...'."""
     disabled = set()
+    for raw in text.splitlines():
+        m = _DISABLE_RE.match(raw)
+        if m:
+            disabled.update(m.group(1).split(','))
+    return disabled
+
+
+def lint_shell_text(text, filename="<script>"):
+    findings = []
+    lines = text.splitlines()
+    disabled = _load_directives(text)
+
+    if not lines or not lines[0].startswith("#!"):
+        findings.append((1, "SC2148", "Missing shebang line."))
+    else:
+        shebang = lines[0]
+        if not re.search(r'(/(ba|da|z)?sh\b|\benv\s+\w*sh\b)', shebang):
+            findings.append((1, "SC2148", "Shebang does not point to a known shell."))
+
     declared = set()
     used = set()
 
-    for lineno, raw in enumerate(text.splitlines(), start=1):
-        m = _DISABLE_RE.match(raw)
-        if m:
-            for code in m.group(1).split(","):
-                disabled.add(code.strip())
-            continue
+    for lineno, raw in enumerate(lines, start=1):
         if _QUOTE_EXEMPT.match(raw):
             continue
 
         scrubbed = _strip_quoted_spans(raw)
+
         for rule_id, pattern, message in _RULES:
             if rule_id in disabled:
                 continue
@@ -191,5 +204,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
-# ci-touch: 2026-10-21T15:33Z
