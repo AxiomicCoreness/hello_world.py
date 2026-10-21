@@ -39,16 +39,16 @@ concurrency:
 
 env:
   HASH_ALGO: sha3_256
-  PREDECESSOR_INDEX: "8922"
+  PREDECESSOR_INDEX: "8923"
   ENGINE: quantum/quantum_singularity_engine.py
   MCP_URL: ${{ secrets.MCP_URL }}
   MCP_CONNECTOR_URL: ${{ secrets.MCP_URL }}
   GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
 jobs:
-  # ──────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   # 0. VERIFY — predecessor Ed25519 + source/live headers
-  # ──────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   verify-integrity:
     name: Verify Ledger Signatures & Security Headers
     runs-on: ubuntu-latest
@@ -111,7 +111,7 @@ jobs:
           python - <<'PY'
           import sys, os
           from pathlib import Path
-          n = os.environ.get("PREDECESSOR_INDEX", "8922")
+          n = os.environ.get("PREDECESSOR_INDEX", "8923")
           p = Path(f"ledger/{n}.yaml")
           if not p.exists():
               print(f"⚠️ {p} not found — soft skip")
@@ -194,9 +194,9 @@ jobs:
           fi
           echo "✅ All live security headers verified."
 
-  # ──────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   # 1. STREAM — status probe + NDJSON evolution
-  # ──────────────────────────────────────────────────────────────
+  # ────────────────────────────────────────────────────────────
   stream:
     name: Singularity · status · NDJSON stream
     runs-on: ubuntu-latest
@@ -296,7 +296,7 @@ jobs:
             -X POST "$MCP_URL/pulse" \
             -H "X-Garden-Secret: $GARDEN_SECRET" \
             -H "Content-Type: application/json" \
-            -d '{"source":"singularity-stream-ci","note":"stream_run","entry":8923}' \
+            -d '{"source":"singularity-stream-ci","note":"stream_run","entry":8924}' \
             || echo "⚠️ MCP pulse failed (non-fatal)"
 
       # ── Success marker ──
@@ -332,7 +332,7 @@ jobs:
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| entry | N/A (artifact only) |"
+            echo "| entry | 8924 |"
             echo "| steps | ${STEPS_INPUT} |"
             echo "| stream_seal | ${STREAM_SEAL:-pending} |"
             echo "| hash_algo | ${HASH_ALGO} |"
