@@ -26,12 +26,12 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4  # FIXED: v5 does not exist
         with:
           fetch-depth: 0
       
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5  # FIXED: v6 does not exist
         with:
           python-version: "3.11"
           cache: pip
@@ -50,9 +50,21 @@ jobs:
         run: |
           set -euo pipefail
           ARGS=(--root . --ledger-dir ledger)
-          if [ "$STRICT" = "true" ]; then ARGS+=(--strict-seals); fi
-          for s in $SERIES; do ARGS+=(--series "$s"); done
-          if [ "$NO_REWARD_CHECK" = "true" ]; then ARGS+=(--no-reward-check); fi
+          
+          if [ "$STRICT" = "true" ]; then 
+            ARGS+=(--strict-seals); 
+          fi
+          
+          # Convert space-separated series into multiple --series args
+          for s in $SERIES; do 
+            ARGS+=(--series "$s"); 
+          done
+          
+          if [ "$NO_REWARD_CHECK" = "true" ]; then 
+            ARGS+=(--no-reward-check); 
+          fi
+          
+          echo "Executing: python .github/scripts/verify_ledger.py ${ARGS[*]}"
           python .github/scripts/verify_ledger.py "${ARGS[@]}"
       
       - name: Summary
@@ -63,9 +75,9 @@ jobs:
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| strict | ${STRICT} |"
-            echo "| series | ${SERIES} |"
-            echo "| no_reward_check | ${NO_REWARD_CHECK} |"
+            echo "| strict | ${{ inputs.strict }} |"
+            echo "| series | ${{ inputs.series }} |"
+            echo "| no_reward_check | ${{ inputs.no_reward_check }} |"
             echo "| hash_algo | sha3_256 |"
             echo "| ledger_policy | NO_LEDGER_WRITE |"
           } >> "$GITHUB_STEP_SUMMARY"
