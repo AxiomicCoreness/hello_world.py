@@ -1,6 +1,7 @@
 """FastAPI TTS stub — no audio synthesis; FILLED=False surface."""
 from __future__ import annotations
 
+from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
@@ -21,7 +22,8 @@ class TTSResponse(BaseModel):
     message: str
     text_len: int
     voice: str
-    audio_url: str | None = None
+    # FIX: Replaced `str | None` with Optional[str] for Python 3.9 compatibility
+    audio_url: Optional[str] = None
 
 
 @router.get("/tts")
