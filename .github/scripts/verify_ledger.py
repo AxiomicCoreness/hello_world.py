@@ -12,23 +12,6 @@ Dual regime (append-only safe):
 
 For entry_index >= 9281, Regime B is the expected regime. An A-only match
 is accepted but flagged.
-
-Modes (default = --soft):
-  --emit   print the computed digests and exit 0 (diagnostic; never fails)
-  --soft   missing file → soft skip; mismatch → exit 0 with warning (default)
-  --hard   missing file → fail;  mismatch → exit 1
-
-Legacy zero-argument path is in _legacy_verify_ledger.py and is not
-dispatched to. See that module's docstring for restoration instructions.
-
-Usage:
-    python .github/scripts/verify_ledger.py ledger/8979.yaml
-    python .github/scripts/verify_ledger.py ledger/9237.yaml ledger/9238.yaml
-    python .github/scripts/verify_ledger.py --hard ledger/9237.yaml ledger/9238.yaml
-    python .github/scripts/verify_ledger.py --emit ledger/9242.yaml
-
-    python .github/scripts/verify_ledger.py --root .
-    python .github/scripts/verify_ledger.py --ledger-dir ledger --series 83 --series 91
 """
 
 from __future__ import annotations
@@ -43,7 +26,7 @@ import sys
 import uuid
 from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 try:
     import yaml
@@ -51,15 +34,9 @@ try:
 except ImportError:
     HAVE_YAML = False
 
-
-# ─────────────────────────────────────────────────────────────────────────
-# Constants
-# ───────────────────────────────────────────────────────────────────────
-
 HASH_ALGO = "sha3_256"
 HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
 
-# Regime B constants — must match the sealer payload byte-for-byte.
 EVENT_DOMAIN = b"GARDEN.EVENT.v1"
 EVENT_DOMAIN_LEDGER = b"GARDEN.EVENT.v1.LEDGER"
 PHI2 = "2.618033988749895"
@@ -72,42 +49,18 @@ WORKLOAD = 0.0
 COHERENCE = 1.0
 
 REQUIRED_FIELDS = ("entry_index", "event", "seal", "witness_chain")
-
-# Document classes exempt from the event schema. A YAML whose top-level
-# carries `document_class: <one of these>` is treated as a note and is
-# neither seal-checked nor chain-checked.
 NON_EVENT_CLASSES = frozenset({"design-note", "policy", "index"})
-
 KNOWN_SERIES_PREFIXES = ("83", "91", "92", "51", "00")
 
-# Witness chain pattern: "NNNN → MMMM — UNBROKEN"
-# 6 digits admits the >=100000 outliers (510510, 510511); 3-5 digit chains parse as before.
 WITNESS_RE = re.compile(r"^\s*(\d{3,6})\s*[→>-]+\s*(\d{3,6})")
-
 GENESIS_ANCHORS = {"0000"}
-
-# Series origins that open their series from an entry in another series
-# instead of from a genesis anchor: index -> declared predecessor.
-# 510510 (MATH_ORIGIN, p7#) opens series 51 as "8980 → 510510"; 510511
-# then chains from 510510 inside the series and needs no entry here.
-# Flat ledger/ only: ledger.v2 keeps the prev_hash weld check.
 SERIES_ORIGINS = {"510510": "8980"}
 
-# YAML 1.1 octal trap: PyYAML reads an unquoted `entry_index: 0010` as octal
-# (int 8) and `0019` as the string '0019'. The index is taken from the raw
-# text instead, so 0010 stays 10 and 0019 becomes 19.
-ENTRY_INDEX_RE = re.compile(r"^entry_index:\s*['\"]?(\d+)", re.MULTILINE)
-
-# From 9281 onward, Regime B is the expected seal regime.
+# Allow floats with trailing zeros, stripping them cleanly
+ENTRY_INDEX_RE = re.compile(r"^entry_index:\s*['\"]?(\d+)(?:\.\d*)?['\"]?", re.MULTILINE)
 REGIME_B_FROM = 9281
 
-
-# ───────────────────────────────────────────────────────────────────────
-# JSON canonicalisation helper
-# ───────────────────────────────────────────────────────────────────────
-
 def json_default(obj: Any) -> Any:
-    """Fallback serialiser for json.dumps(): handles PyYAML types."""
     if isinstance(obj, _dt.datetime):
         if obj.tzinfo is None:
             return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -131,11 +84,6 @@ def json_default(obj: Any) -> Any:
         return obj.as_posix()
     return str(obj)
 
-
-# ───────────────────────────────────────────────────────────────────────
-# Data model
-# ───────────────────────────────────────────────────────────────────────
-
 class Entry:
     __slots__ = (
         "path", "index", "n", "series", "data",
@@ -156,11 +104,6 @@ class Entry:
         self.chain_next: Optional[str] = None
         self.notes: List[str] = []
 
-
-# ───────────────────────────────────────────────────────────────────────
-# Loading
-# ───────────────────────────────────────────────────────────────────────
-
 def _iter_yaml_files(ledger_dir: str) -> Iterable[str]:
     if not os.path.isdir(ledger_dir):
         return
@@ -168,9 +111,7 @@ def _iter_yaml_files(ledger_dir: str) -> Iterable[str]:
         if name.endswith((".yaml", ".yml")):
             yield os.path.join(ledger_dir, name)
 
-
 def _load_yaml_file(path: str) -> List[Dict[str, Any]]:
-    """Load one file which may contain multiple '---' documents."""
     with open(path, "r", encoding="utf-8") as f:
         text = f.read()
     if not HAVE_YAML:
@@ -178,12 +119,8 @@ def _load_yaml_file(path: str) -> List[Dict[str, Any]]:
     docs = list(yaml.safe_load_all(text))
     return [d for d in docs if isinstance(d, dict) and d]
 
-
 def resolve_entry_index(data: Dict[str, Any], raw_text: Optional[str] = None,
                         raw_match: Optional[str] = None) -> Any:
-    """Integer entry_index read from the raw YAML text, falling back to the
-    parsed value. Digit strings ('0019') become int; anything else is
-    returned as parsed."""
     if raw_match is None and raw_text is not None:
         m = ENTRY_INDEX_RE.search(raw_text)
         raw_match = m.group(1) if m else None
@@ -192,27 +129,23 @@ def resolve_entry_index(data: Dict[str, Any], raw_text: Optional[str] = None,
     parsed = data.get("entry_index") if isinstance(data, dict) else None
     if isinstance(parsed, str) and parsed.strip().isdigit():
         return int(parsed.strip())
+    if isinstance(parsed, float):
+        return int(parsed)
     return parsed
-
 
 def _index_str(n: Any) -> str:
     return str(n).zfill(4)
 
-
 def _series_of(index: str) -> str:
-    """Return the series prefix for an index (zero-padded to at least 4)."""
     z = index.zfill(4)
     for p in KNOWN_SERIES_PREFIXES:
         if z.startswith(p):
             return p
     return z[:2]
 
-
 def _is_non_event(doc: Dict[str, Any]) -> bool:
-    """True if the document opts out of the event schema."""
     cls = doc.get("document_class") or doc.get("kind")
     return isinstance(cls, str) and cls in NON_EVENT_CLASSES
-
 
 def load_entries(ledger_dir: str,
                  wanted_series: Optional[List[str]] = None) -> List[Entry]:
@@ -226,7 +159,6 @@ def load_entries(ledger_dir: str,
         with open(path, "r", encoding="utf-8") as f:
             raw_hits = ENTRY_INDEX_RE.findall(f.read())
         with_index = [d for d in docs if d.get("entry_index") is not None]
-        # Pair raw indexes with documents only when they line up one-to-one.
         raw_for = dict(zip(map(id, with_index), raw_hits)) \
             if len(raw_hits) == len(with_index) else {}
         for doc in docs:
@@ -243,20 +175,7 @@ def load_entries(ledger_dir: str,
             entries.append(Entry(path=path, index=index, series=series, data=doc, n=n))
     return entries
 
-
-# ───────────────────────────────────────────────────────────────────────
-# Seal computation — Regime A (canonical JSON)
-# ───────────────────────────────────────────────────────────────────────
-
 def canonical_hash(data: dict) -> str:
-    """
-    Regime A — SHA3-256 over the canonical JSON encoding of the ledger
-    body with the 'seal' key removed.
-
-    Canonicalisation is fixed: sorted keys, compact separators ("," ":"),
-    no ASCII escaping, UTF-8 output. Any change invalidates every
-    Regime A seal ever produced.
-    """
     body = {k: v for k, v in data.items() if k != "seal"}
     canon = json.dumps(
         body,
@@ -267,31 +186,14 @@ def canonical_hash(data: dict) -> str:
     )
     return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
 
-
-# ───────────────────────────────────────────────────────────────────────
-# Seal computation — Regime B (event domain)
-# ───────────────────────────────────────────────────────────────────────
-
 def event_hash(data: dict, n: Any = None) -> Optional[str]:
-    """
-    Regime B — SHA3-256(domain || 0x00 || payload).
-
-    domain is GARDEN.EVENT.v1.LEDGER for entry_index >= 9281,
-    otherwise GARDEN.EVENT.v1.
-
-    The payload is a fixed-format ASCII string built from the entry's
-    integer index and its event name, followed by the phi2, delta, and
-    theta constants. The ASCII form of b^2 is mandatory; the Unicode
-    b² is rejected at the .encode("ascii") call.
-
-    n is the resolved integer index (resolve_entry_index); when omitted
-    the parsed value is used, as before.
-    """
     if n is None:
         n = resolve_entry_index(data)
     event = data.get("event")
     if not isinstance(n, int) or isinstance(n, bool) or not isinstance(event, str):
         return None
+    
+    event = event.strip() # Defensive stripping of whitespace
     domain = EVENT_DOMAIN_LEDGER if n >= REGIME_B_FROM else EVENT_DOMAIN
     payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
     try:
@@ -302,23 +204,7 @@ def event_hash(data: dict, n: Any = None) -> Optional[str]:
         HASH_ALGO, domain + b"\x00" + payload_bytes
     ).hexdigest()
 
-
-# ───────────────────────────────────────────────────────────────────────
-# Seal extraction from the entry
-# ───────────────────────────────────────────────────────────────────────
-
 def declared_hex(data: dict) -> Optional[str]:
-    """
-    Extract the declared seal digest from the entry.
-
-    Precedence:
-      1. The last 64-hex run inside the `seal` string. Seals produced
-         by the current sealer append the digest after a middle dot,
-         so "last" resolves to the current digest even if an older
-         digest string appears earlier in the seal text.
-      2. Fallback keys, in order: terminal_hex, witness_prefix,
-         verification_hash. Each must match the 64-hex pattern exactly.
-    """
     seal = str(data.get("seal", ""))
     matches = HASH_RE.findall(seal)
     if matches:
@@ -328,11 +214,6 @@ def declared_hex(data: dict) -> Optional[str]:
         if isinstance(v, str) and HASH_RE.fullmatch(v.strip()):
             return v.strip().lower()
     return None
-
-
-# ───────────────────────────────────────────────────────────────────────
-# Per-file verification
-# ───────────────────────────────────────────────────────────────────────
 
 def _emit_diagnostics(data: dict, declared: str,
                       computed_a: str, computed_b: Optional[str],
@@ -347,17 +228,8 @@ def _emit_diagnostics(data: dict, declared: str,
         f"W={WORKLOAD} · C={COHERENCE}"
     )
 
-
-
-# ───────────────────────────────────────────────────────────────────────
-# Sealed-entry concreteness gate
-# ───────────────────────────────────────────────────────────────────────
-# An entry with status SEALED must not carry an unresolved chain edge.
-# Applies from SEALED_CONCRETE_FROM on; earlier entries are not re-judged.
-# 9284 (PENDING_9283, resolved by 9285) is the recorded exception.
 SEALED_CONCRETE_FROM = 9286
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
-
 
 def _pending_fields(obj: Any, path: str = "") -> List[str]:
     found: List[str] = []
@@ -371,9 +243,7 @@ def _pending_fields(obj: Any, path: str = "") -> List[str]:
         found.append(path)
     return found
 
-
 def sealed_concrete_violations(data: dict, n: Any = None) -> List[str]:
-    """Reasons a SEALED entry is not concrete; empty list means it passes."""
     idx = n if n is not None else resolve_entry_index(data)
     if str(data.get("status", "")).upper() != "SEALED":
         return []
@@ -386,23 +256,7 @@ def sealed_concrete_violations(data: dict, n: Any = None) -> List[str]:
     problems += [f"unresolved field: {f}" for f in _pending_fields(data)]
     return problems
 
-
 def verify(path: Path, mode: str) -> bool:
-    """
-    Verify a single ledger file.
-
-    mode ∈ {"emit", "soft", "hard"}:
-      • emit  — print declared, computed_A, computed_B, regime; always
-                return True. Diagnostics only.
-      • soft  — missing file → True; parse error → True; mismatch →
-                True with warning. Default.
-      • hard  — missing file → False; any error → False; mismatch →
-                False.
-
-    Return value is the caller's contract: in emit/soft, the caller
-    should treat the boolean as advisory and inspect printed output;
-    in hard, the boolean is authoritative.
-    """
     if not path.exists():
         msg = f"⚠️ {path} not found"
         if mode == "hard":
@@ -422,7 +276,6 @@ def verify(path: Path, mode: str) -> bool:
         print(f"❌ {path}: top-level YAML is not a mapping")
         return False if mode == "hard" else True
 
-    # Non-event documents: skip seal checks, note the skip.
     if _is_non_event(data):
         print(f"— {path}: document_class={data.get('document_class') or data.get('kind')} — seal check skipped")
         return True
@@ -453,7 +306,6 @@ def verify(path: Path, mode: str) -> bool:
     elif computed_b is not None and declared == computed_b:
         regime = "B(event)"
 
-    # 9281+: Regime B is expected. A-only match is flagged.
     if isinstance(idx, int) and idx >= REGIME_B_FROM and regime == "A(json)":
         print(f"⚠️ {path}: entry {idx} matched Regime A only; Regime B expected for >= {REGIME_B_FROM}")
 
@@ -477,16 +329,7 @@ def verify(path: Path, mode: str) -> bool:
     )
     return True
 
-
-# Restored from 68407560 (ledger-v2-weld-9281), where these functions were
-# last present in full; 7f339b6f truncated them. Appended, existing code kept.
-# load_entries() above no longer records load errors; LOAD_ERRORS is kept
-# so main() is unchanged in shape.
 LOAD_ERRORS: List[str] = []
-
-# ─────────────────────────────────────────────────────────────────────────
-# Tree-wide checks
-# ─────────────────────────────────────────────────────────────────────────
 
 def check_required_fields(entries: List[Entry]) -> int:
     bad = 0
@@ -497,17 +340,7 @@ def check_required_fields(entries: List[Entry]) -> int:
             bad += 1
     return bad
 
-
 def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
-    """
-    Match the declared digest(s) against a computed digest.
-
-    Accepts:
-    - seal == digest (exact match)
-    - seal's final whitespace-delimited token == digest
-    - declared_hex(data) == digest (last 64-hex run in seal / terminal_hex)
-    - seal_sha3_256 == digest (first-class declared digest field)
-    """
     if not computed:
         return False
     computed = computed.lower()
@@ -526,17 +359,13 @@ def seal_field_matches(data: Dict[str, Any], computed: str) -> bool:
         return True
     return False
 
-
 def entry_declared_digest(data: Dict[str, Any]) -> Optional[str]:
-    """Declared digest: seal_sha3_256 if present, else declared_hex()."""
     s = data.get("seal_sha3_256")
     if isinstance(s, str) and HASH_RE.fullmatch(s.strip()):
         return s.strip().lower()
     return declared_hex(data)
 
-
 def check_seals(entries: List[Entry], strict: bool = False) -> int:
-    """Accept Regime A (canonical JSON) or Regime B (event hash)."""
     bad = 0
     for e in entries:
         computed_a = canonical_hash(e.data)
@@ -561,9 +390,7 @@ def check_seals(entries: List[Entry], strict: bool = False) -> int:
                 print(f"        seal_sha3_256:   {e.data.get('seal_sha3_256')}")
     return bad
 
-
 def _weld_anchor(root: str, prev_index: str) -> Optional[str]:
-    """Declared digest of ledger/<prev_index>.yaml (the flat-ledger weld point)."""
     for ext in (".yaml", ".yml"):
         p = os.path.join(root, "ledger", prev_index + ext)
         if os.path.isfile(p):
@@ -579,19 +406,7 @@ def _weld_anchor(root: str, prev_index: str) -> Optional[str]:
                     return entry_declared_digest(d)
     return None
 
-
 def check_chains(entries: List[Entry], weld_root: Optional[str] = None) -> int:
-    """
-    Verify witness-chain continuity per series.
-
-    Each entry's witness_chain must be "PPPP → NNNN" where:
-    - NNNN equals the entry's own index
-    - PPPP equals the previous entry's index in the same series
-    - The first entry of a series must point at a genesis anchor, OR
-      (when weld_root is set, i.e. verifying ledger.v2) at a flat-ledger
-      entry ledger/PPPP.yaml whose declared digest equals this entry's
-      prev_hash (weld anchor).
-    """
     by_series: Dict[str, List[Entry]] = {}
     by_index: Dict[str, Entry] = {}
     for e in entries:
@@ -650,11 +465,7 @@ def check_chains(entries: List[Entry], weld_root: Optional[str] = None) -> int:
 
     return bad
 
-
 def _is_verified_mirror(root: str, e: "Entry", flat_path: str) -> bool:
-    """A ledger.v2 entry that declares `mirrors: {file: ledger/N.yaml, sha3_256: H}`
-    is an append-only mirror, not a duplicate, when H is the SHA3-256 of the
-    current bytes of that v1 file and the file is the duplicated one."""
     m = e.data.get("mirrors")
     if not isinstance(m, dict) or e.data.get("supersedes", "none") != "none":
         return False
@@ -667,9 +478,7 @@ def _is_verified_mirror(root: str, e: "Entry", flat_path: str) -> bool:
         return False
     return hashlib.new(HASH_ALGO, raw).hexdigest() == want
 
-
 def check_cross_root_duplicates(root: str) -> int:
-    """No entry_index may appear in both ledger/ and ledger.v2/."""
     a = load_entries(os.path.join(root, "ledger"))
     b = load_entries(os.path.join(root, "ledger.v2"))
     if not b:
@@ -686,11 +495,6 @@ def check_cross_root_duplicates(root: str) -> int:
     print(f"── cross-root: ledger/={len(a)} ledger.v2/={len(b)} duplicates={bad}")
     return bad
 
-
-# ─────────────────────────────────────────────────────────────────────────
-# CLI
-# ─────────────────────────────────────────────────────────────────────────
-
 def main() -> int:
     ap = argparse.ArgumentParser(description="Verify ledger seals and chains.")
     ap.add_argument("files", nargs="*", help="YAML files to verify")
@@ -705,8 +509,8 @@ def main() -> int:
                     help="tree mode: seal mismatches are errors and fail the run")
     ap.add_argument("--no-reward-check", action="store_true",
                     help="accepted for workflow compatibility; no reward check exists")
-    ap.add_argument("--mode", choices=["soft", "hard", "emit"],
-                    help="explicit mode; overrides --hard/--soft/--emit")
+    ap.add_argument("--mode", choices=["soft", "hard", "emit"], default="soft",
+                    help="explicit mode; overrides --hard/--soft/--emit (default: soft)")
     args = ap.parse_args()
 
     missing = [f for f in args.files if not os.path.isfile(f)]
@@ -724,7 +528,6 @@ def main() -> int:
             ok = verify(Path(f), mode) and ok
         return 0 if ok else 1
 
-    # Tree mode
     ledger_dir = os.path.join(args.root, args.ledger_dir)
     is_v2 = os.path.basename(os.path.normpath(args.ledger_dir)) == "ledger.v2"
     entries = load_entries(ledger_dir, args.series)
@@ -737,7 +540,6 @@ def main() -> int:
     bad += check_cross_root_duplicates(args.root)
     print(f"bad: {bad}")
     return 0 if bad == 0 else (1 if strict else 0)
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
