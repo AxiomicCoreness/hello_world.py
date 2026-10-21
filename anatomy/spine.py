@@ -5,16 +5,17 @@ each entry's prior pointer must name the existing predecessor exactly once.
 Seal domain: GARDEN.EVENT.v1 (POLICY.md Art. 10 S1a).
 """
 
-import hashlib
 import re
 from pathlib import Path
+from typing import List, Tuple, Dict, Any
 
 LEDGER_DIR = Path("ledger")
 ASCII_ARROW = re.compile(r"(\d{1,6})\s*->\s*(\d{1,6})")
-CHAIN_RE = re.compile(r"(\d{1,6}(?:\s*→\s*\d{1,6})+)")
+CHAIN_RE = re.compile(r"(\d{1,6}(?:\s*[→\-]>\s*\d{1,6})+)")
+ENTRY_INDEX_RE = re.compile(r'^entry_index:\s*"?(\d+)"?\s*$', re.M)
 
 
-def witness_pairs(text: str) -> list[tuple[int, int]]:
+def witness_pairs(text: str) -> List[Tuple[int, int]]:
     """Pairs from a chain, including the shared middle of A → B → C."""
     pairs = []
     for chain in CHAIN_RE.finditer(text):
@@ -24,29 +25,37 @@ def witness_pairs(text: str) -> list[tuple[int, int]]:
 
 
 def as_working_default(text: str) -> str:
-    """Normalize every ASCII hop. One pass hides the second arrow in a chain."""
+    """Normalize every ASCII hop. One pass hides the second arrow in a chain.
+    
+    We loop until the text stops changing, because a chain like '1 -> 2 -> 3'
+    only replaces the first '->' per regex pass. The regex engine consumes
+    the '2' as part of the first match, so '2 -> 3' can't match until the next pass.
+    """
     previous = None
     while previous != text:
         previous = text
         text = ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
     return text
-    """Switch an ASCII witness arrow to the Unicode default the checker uses."""
-    return ASCII_ARROW.sub(lambda m: f"{m.group(1)} → {m.group(2)}", text)
 
 
 def load_index(path: Path) -> int:
+    """Extract the entry_index from a ledger YAML file."""
     text = path.read_text(encoding="utf-8")
-    m = re.search(r'^entry_index:\s*"?(\d+)"?\s*$', text, re.M)
+    m = ENTRY_INDEX_RE.search(text)
     if not m:
         raise ValueError(f"entry_index missing in {path}")
     return int(m.group(1))
 
 
-def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
+def check_spine(ledger_dir: Path = LEDGER_DIR) -> Dict[str, Any]:
     """Check chain, uniqueness, and prior pointers across the ledger tail."""
     entries = {}
     for p in sorted(ledger_dir.glob("*.yaml")):
-        entries[load_index(p)] = p
+        try:
+            entries[load_index(p)] = p
+        except ValueError as e:
+            # Skip malformed files; don't crash the whole spine check
+            print(f"::warning::spine: {e}")
 
     indices = sorted(entries)
     problems = []
@@ -63,31 +72,39 @@ def check_spine(ledger_dir: Path = LEDGER_DIR) -> dict:
     forms = {"immediate": 0, "span": 0, "skip": 0, "rewired": 0}
     history = []
     derived = []
+    
     for a, b in zip(indices, indices[1:]):
+        # Only check contiguous numeric pairs
         if b != a + 1:
             continue
+        
         text = as_working_default(entries[b].read_text(encoding="utf-8"))
-        witness_lines = "\n".join(
-            line for line in text.splitlines()
-            if line.lower().lstrip().startswith(("witness_chain:", "witness:"))
-        )
-        pairs = witness_pairs(witness_lines)
         pairs = witness_pairs(text)
+        
+        # Filter pairs where the target is b
         ends = [(x, y) for x, y in pairs if y == b]
+        
+        # Case 1: Immediate pair (a, b)
         if (a, b) in ends:
             forms["immediate"] += 1
             history.append((a, b, "immediate"))
             continue
+        
+        # Case 2: Span (stored x=0, target=b)
         spans = [x for x, y in ends if x == 0]
-        skips = [x for x, y in ends if x < a]
         if spans:
             forms["span"] += 1
             history.append((spans[0], b, "span"))
             continue
+        
+        # Case 3: Skip (stored x < a, target=b)
+        skips = [x for x, y in ends if x < a]
         if skips:
             forms["skip"] += 1
             history.append((skips[0], b, "skip"))
             continue
+        
+        # Case 4: Rewired/derived (no matching stored arrow)
         forms["rewired"] += 1
         history.append((a, b, "rewired"))
         stored = ", ".join(f"{x}→{y}" for x, y in pairs[:4])
