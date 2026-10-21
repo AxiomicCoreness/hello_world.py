@@ -24,6 +24,7 @@ def derive_ledger_head(ledger_dir: Optional[os.PathLike] = None) -> str:
     d = Path(ledger_dir) if ledger_dir is not None else DEFAULT_LEDGER_DIR
     if not d.is_dir():
         return LEDGER_HEAD_UNKNOWN
+    
     head = None
     for f in d.glob("*.yml"):
         try:
@@ -36,6 +37,7 @@ def derive_ledger_head(ledger_dir: Optional[os.PathLike] = None) -> str:
         idx = int(m.group(1), 10)
         if head is None or idx > head:
             head = idx
+            
     return str(head) if head is not None else LEDGER_HEAD_UNKNOWN
 
 
@@ -45,23 +47,63 @@ def resolve_ledger_head() -> str:
     override = os.getenv("LEDGER_HEAD", "").strip()
     if override:
         return override
-    return derive_ledger_head(os.getenv("LEDGER_DIR") or None)
+    
+    # Safely strip and check if the env var was explicitly provided
+    ledger_dir_env = os.getenv("LEDGER_DIR", "").strip()
+    return derive_ledger_head(ledger_dir_env if ledger_dir_env else None)
+
+
+def _safe_int(val: str, default: int) -> int:
+    """Safely parse an environment variable to an int, falling back on error."""
+    try:
+        return int(val.strip())
+    except (ValueError, TypeError):
+        return default
+
+
+def _safe_float(val: str, default: float) -> float:
+    """Safely parse an environment variable to a float, falling back on error."""
+    try:
+        return float(val.strip())
+    except (ValueError, TypeError):
+        return default
 
 
 class Settings:
     NAMESPACE = os.getenv("NAMESPACE", "seagate-mimic")
     LEDGER_HEAD = resolve_ledger_head()
-    PHASE_LOCK = float(os.getenv("PHASE_LOCK", "202.6"))
-    BIND_HOST = os.getenv("BIND_HOST", "0.0.0.0")
-    BIND_PORT_START = int(os.getenv("BIND_PORT_START", "8080"))
-    BIND_PORT_END = int(os.getenv("BIND_PORT_END", "8089"))
+    
+    # Safe float parsing
+    PHASE_LOCK = _safe_float(os.getenv("PHASE_LOCK", "202.6"), 202.6)
+    
+    # SECURITY FIX: Changed default from 0.0.0.0 to 127.0.0.1 to enforce loopback
+    BIND_HOST = os.getenv("BIND_HOST", "127.0.0.1").strip()
+    
+    # Safe int parsing
+    BIND_PORT_START = _safe_int(os.getenv("BIND_PORT_START", "8080"), 8080)
+    BIND_PORT_END = _safe_int(os.getenv("BIND_PORT_END", "8089"), 8089)
     BIND_PORT = BIND_PORT_START
-    MCP_PORT = int(os.getenv("MCP_PORT", "380"))
-    MCP_FILLED = os.getenv("MCP_FILLED", "false").lower() == "true"
-    GARDEN_SECRET = os.getenv("GARDEN_SECRET", "")
+    
+    MCP_PORT = _safe_int(os.getenv("MCP_PORT", "380"), 380)
+    MCP_FILLED = os.getenv("MCP_FILLED", "false").strip().lower() == "true"
+    
+    GARDEN_SECRET = os.getenv("GARDEN_SECRET", "").strip()
+    
+    # Mathematical constants
     PHI = 1.618033988749895
     PHI_INV3 = 0.23606797749978967  # ATLAS
     SEAL = 1.509281238970
 
+    def __post_init__(self):
+        """Sanity checks on configuration to fail fast at boot."""
+        if self.BIND_PORT_START > self.BIND_PORT_END:
+            raise ValueError(
+                f"BIND_PORT_START ({self.BIND_PORT_START}) cannot be greater than "
+                f"BIND_PORT_END ({self.BIND_PORT_END})"
+            )
+        if not (0 < self.BIND_PORT_START < 65536):
+            raise ValueError(f"Invalid BIND_PORT_START: {self.BIND_PORT_START}")
 
+
+# Instantiate the settings singleton
 settings = Settings()
