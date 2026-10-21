@@ -12,7 +12,7 @@ PHI = (1 + math.sqrt(5)) / 2
 PHI2 = PHI * PHI
 PHI_NEG2 = PHI ** (-2)
 NORTH_STAR_HZ = 71.975
-PHASE_LOCK_DEG = 202.6
+PHASE_LOCK_DEG = 202.603
 
 
 @router.get("/systems")
