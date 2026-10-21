@@ -4,7 +4,7 @@ name: multibody-toi
 # hash_algo: sha3_256 (FIPS 202) — declared for header consistency
 # ledger_policy: NO_LEDGER_WRITE — test lane only, no commit, no ledger
 # role: TOI correctness + differentiability check
-# note: JAX on CPU only — no GPU dependency; `jax[cpu]` pulls the CPU backend.
+# note: JAX on CPU only — no GPU dependency.
 
 on:
   push:
@@ -49,6 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
+          # Explicitly install the CPU jaxlib and jax
           python -m pip install --quiet "jax[cpu]" pytest
 
       - name: Guard — test directory present
@@ -62,9 +63,12 @@ jobs:
       - name: Head-on + grad smoke (module invocation)
         run: |
           set -euo pipefail
-          # Module-level invocation — exercises __main__ path.
-          # Uses PYTHONPATH=. so the package resolves without install.
-          PYTHONPATH=. python -m multibody_simulator.tests.test_toi
+          # Added a check to ensure the module has a __main__ block, otherwise skip gracefully
+          if grep -q 'if __name__ == "__main__":' "${TEST_DIR}/test_toi.py"; then
+            PYTHONPATH=. python -m multibody_simulator.tests.test_toi
+          else
+            echo "::warning::No __main__ block found in test_toi.py, skipping module execution. Relying on pytest."
+          fi
 
       - name: Pytest — TOI + gradient
         run: |
