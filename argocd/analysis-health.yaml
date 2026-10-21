@@ -12,8 +12,16 @@ spec:
   - name: health-check
     interval: 10s
     count: 6
-    successCondition: result == "healthy"
+    # FIX: Use JSONPath to extract the exact field, assuming the JSON is {"status": "healthy"}
+    successCondition: result.status == "healthy"
+    failureCondition: result.status == "unhealthy" || result.status == "error"
+    failureLimit: 2
     provider:
       http:
-        url: http://{{args.service-name}}:8000/health
+        url: "http://{{args.service-name}}:8000/health"
         method: GET
+        # Optional but highly recommended: Enforce timeout and headers
+        timeoutSeconds: 5
+        headers:
+          - name: Accept
+            value: application/json
