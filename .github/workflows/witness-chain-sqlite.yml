@@ -59,14 +59,11 @@ jobs:
           set -euo pipefail
           if [ ! -f "${SCRIPT}" ]; then
             echo "::error::${SCRIPT} not found"
-            echo "present=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-          echo "present=true" >> "$GITHUB_OUTPUT"
 
       - name: Run witness chain builder
         id: build
-        if: steps.check.outputs.present == 'true'
         run: |
           set -euo pipefail
           set +e
@@ -80,7 +77,6 @@ jobs:
           fi
           if [ ! -f "${DB_ARTIFACT}" ]; then
             echo "::error::${DB_ARTIFACT} not produced by script"
-            echo "db_sha3_256=" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           DB_SHA=$(python -c "import hashlib,pathlib; print(hashlib.new('sha3_256', pathlib.Path('witness_chain.db').read_bytes()).hexdigest())")
@@ -89,7 +85,6 @@ jobs:
 
       - name: Assert witness rows present
         id: rows
-        if: steps.build.outputs.db_sha3_256 != ''
         run: |
           set -euo pipefail
           if ! command -v sqlite3 >/dev/null 2>&1; then
@@ -106,7 +101,6 @@ jobs:
           done
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::witness rows missing for entries: ${missing[*]}"
-            echo "rows_ok=false" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           echo "rows_ok=true" >> "$GITHUB_OUTPUT"
@@ -119,16 +113,30 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           import sqlite3, sys
+          
           rows = sqlite3.connect("witness_chain.db").execute(
-              "SELECT entry_index, prev_hash, hash FROM witness ORDER BY entry_index").fetchall()
+              "SELECT entry_index, prev_hash, hash FROM witness ORDER BY entry_index"
+          ).fetchall()
+          
           if not rows:
-              print("no rows"); sys.exit(1)
-          prev = ""
-          for i, p, h in rows:
+              print("::error::No rows found in witness table.")
+              sys.exit(1)
+              
+          # The first entry must be a genesis anchor or explicitly empty
+          first_index, first_prev, first_hash = rows[0]
+          if first_prev not in ("", "0000000000000000", "0" * 64):
+              print(f"::error::Chain break at genesis. First entry {first_index} has prev_hash={first_prev}")
+              sys.exit(1)
+              
+          # Verify the rest of the chain
+          prev = first_hash
+          for i, p, h in rows[1:]:
               if p != prev:
-                  print("break at", i); sys.exit(1)
+                  print(f"::error::Chain break at entry {i}. Expected prev_hash={prev}, got {p}")
+                  sys.exit(1)
               prev = h
-          print("chain intact", len(rows))
+              
+          print(f"✅ Chain intact across {len(rows)} entries.")
           PY
 
       - name: Upload witness chain artifacts
