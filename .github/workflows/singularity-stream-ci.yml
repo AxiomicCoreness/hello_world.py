@@ -46,7 +46,7 @@ env:
   GARDEN_SECRET: ${{ secrets.GARDEN_SECRET }}
 
 jobs:
-  # ────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────
   # 0. VERIFY — predecessor Ed25519 + source/live headers
   # ────────────────────────────────────────────────────────────
   verify-integrity:
@@ -296,7 +296,7 @@ jobs:
             -X POST "$MCP_URL/pulse" \
             -H "X-Garden-Secret: $GARDEN_SECRET" \
             -H "Content-Type: application/json" \
-            -d '{"source":"singularity-stream-ci","note":"stream_run","entry":8924}' \
+            -d '{"source":"singularity-stream-ci","note":"stream_run","entry":8926}' \
             || echo "⚠️ MCP pulse failed (non-fatal)"
 
       # ── Success marker ──
@@ -332,7 +332,7 @@ jobs:
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| entry | 8924 |"
+            echo "| entry | 8926 |"
             echo "| steps | ${STEPS_INPUT} |"
             echo "| stream_seal | ${STREAM_SEAL:-pending} |"
             echo "| hash_algo | ${HASH_ALGO} |"
