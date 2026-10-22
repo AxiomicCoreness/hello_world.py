@@ -2,7 +2,7 @@
 
 ## [1.1.2] - 2026-10-19
 ### Fixed
-- `kernel_scripts/run_endpoint.sh` refuses to start (exit 1) when 127.0.0.1:8025 is already
+- `kernel_scripts/run_endpoint.sh` refuses to start (exit 1) when `127.0.0.1:8025` is already
   taken by a process that is not the one in `/tmp/endpoint.pid`. After the health loop it
   checks `kill -0` on the new pid and exits 1 with the log if the endpoint died, instead of
   reporting success because some other server answered `/healthz`.
@@ -22,8 +22,8 @@
 ## [1.1.0] - 2026-10-19
 ### Added
 - Demo Java endpoint `scripts/java/com/fruitfly/brain/Endpoint.java` (JDK 17 stdlib:
-  `HttpServer`, `ImageIO`, headless AWT) on 127.0.0.1:8025 with `/healthz`, `/schema`,
-  `/render` (PNG with pHYs set from dpi; 400 on bad input).
+  `HttpServer`, `ImageIO`, headless AWT) on `127.0.0.1:8025` with `/healthz`, `/schema`,
+  `/render` (PNG with `pHYs` set from dpi; 400 on bad input).
 - `scripts/install_jdk.sh` (idempotent JDK 17; Temurin fallback) and `scripts/run_endpoint.sh`.
 - `assets/render_schema.json` (JSON Schema 2020-12, iPhone 12 / A14 Bionic) and
   `assets/sample_300dpi.png` (600×900 px, 11811 px/m = 300 dpi).
@@ -42,7 +42,7 @@
   `[+] OK`, `[!] WARNING` (audited false claim) or `[?] UNRECOGNISED`.
 - `evals/conftest.py` (skill root on `sys.path`, works under `python -P`) and
   `evals/test_kernel.py`.
-- `templates/CITATION.cff` citing concept DOI 10.5281/zenodo.23378305 with the
+- `templates/CITATION.cff` citing concept DOI `10.5281/zenodo.23378305` with the
   GitCode and AtomGit mirror identifiers.
 
 ### Known repo discrepancies (not fixed here; repo untouched)
