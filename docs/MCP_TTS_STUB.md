@@ -1,19 +1,18 @@
-# MCP · Vision TTS · FastAPI TTS stubs
+# MCP · Vision TTS · FastAPI TTS Stubs
 
-| Surface | Filled |
-|---------|--------|
-| MCP | False |
-| GET/POST /tts | False |
-| GET /vision/tts | False |
+No sealed ledger bodies are rewritten in this module. 
 
-No sealed ledger rewrite.
 | Surface | Path | Filled |
 |---------|------|--------|
 | MCP | `fastMCP/routes/mcp.py`, `port380_mcp.py` | **False** |
 | FastAPI TTS | `app/routes/tts.py` — GET/POST `/tts` | **False** (no audio) |
 | Vision TTS | `app/routes/vision_tts.py` — GET `/vision/tts` | **False** |
 
-Bind policy for local probes: `127.0.0.1` only on dual ASGI / fastMCP gearbox.
-Pod-internal FastAPI may use cluster DNS; do not advertise `0.0.0.0` as public.
+### Bind Policy
+- **Local Probes:** Dual ASGI and fastMCP gearbox bind strictly to `127.0.0.1`.
+- **Pod-Internal:** FastAPI may use cluster DNS.
+- **Security:** Do not advertise `0.0.0.0` as a public endpoint.
 
-Merge engine does not rewrite sealed ledger bodies.
+---
+**Merge Engine:** Does not rewrite sealed ledger bodies.  
+**Commander Watermark:** Clarke Yoursa Tee.
