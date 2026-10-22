@@ -28,8 +28,7 @@ lines 18–32; InspireHEP lines 7–15.
 Consequences:
 - E_0 = 0 exactly (for any boundary condition, even N).
 - Ground state is unique for periodic BC.
-- Ground state is 4-fold degenerate for open BC (two free spin-1/2 edges →
-  (1/2) ⊗ (1/2) = 0 ⊕ 1 → 4 states).
+- **Ground state is 4-fold degenerate for open BC.** The two free spin-1/2 edges form a total spin of (1/2) ⊗ (1/2) = 0 ⊕ 1. This results in 1 singlet state and 3 triplet states, totaling 4 states.
 
 Sources: search result [12] lines 38–41 (periodic: 1; open: 4);
 search result [1] lines 13–18 (edge states, Haldane gap).
@@ -111,3 +110,14 @@ verified in this note.
 - Excitation spectrum above the Haldane gap.
 - Correlation functions beyond the leading exponential (sub-leading terms).
 - Frustration-free structure for spin-s > 1 (listed but not verified).
+
+---
+
+## 9. Appended Architecture Pointers
+
+The following updates have been integrated into the broader Garden system:
+
+- **TeaVM Rhythm Game (`games/teavm-rhythm/`):** Java-to-JS transpiled game using Connectome-driven autoplay. Verified locally (33 tests passing).
+- **Zenodo Archiving:** The canonical DOI (`10.5281/zenodo.23378305`) and release tag (`v8755.0.0`) are locked into the `CITATION.cff`.
+- **HHMI Connectome Loader:** The `connectome.xsd` schema is now a strict contract for the XML loader. XXE hardened and enforced by `ConnectomeSchemaTest`.
+- **Float Safety:** The `math.isclose` tolerance (`1e-9`) has been applied to the quadratic discriminant and E2E dV checks to prevent floating-point misrouting. Verified by `test_quadratic_daemon_float_safety.py`.
