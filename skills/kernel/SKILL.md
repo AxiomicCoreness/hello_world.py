@@ -108,7 +108,7 @@ D7, D8, D10 are FIXED_LANDED (`:79-99`); D7 is recomputed via `_verifier7_detect
    `[?] UNRECOGNISED` for anything else (±1e-6, set with `--tol`).
 5. Run `python -P -m pytest -q evals` from this folder; all tests must pass.
 6. Record any correction as a new appended ledger entry. The next free one is
-   `ledger.v2/9294.yml` (append-only; never edit or replace an existing entry).
+   `ledger.v2/9299.yml` (append-only; never edit or replace an existing entry).
    Timestamps use `%Y-%m-%dT%H:%M:%SZ`, hashes use SHA3-256.
 7. Cite with `templates/CITATION.cff` (concept DOI 10.5281/zenodo.23378305).
 
