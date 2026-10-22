@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: build-deepinfer-nvidia
+  namespace: seagate-mimic
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      containers:
+      - name: kaniko-builder
+        image: gcr.io/kaniko-project/executor:v1.23.2
+        args:
+        - "--dockerfile=Dockerfile.deepinfer"
+        # Using the PAT to pull the repo
+        - "--context=git://<YOUR_GITHUB_PAT>@github.com/AxiomicCoreness/hello_world.py.git#refs/heads/main"
+        - "--destination=registry.local/sovereign/deepinfer:nvidia-2.32.3"
+        - "--build-arg=DEEPINFER_ACCELERATOR=nvidia"
+        - "--build-arg=BASE_IMAGE_DEVEL=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
+        - "--build-arg=BASE_IMAGE_RUNTIME=nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04"
+        - "--git-submodules"  # CRITICAL: Pulls vendor/DeepEP, vendor/teavm-sync, etc.
+        - "--cache=true"
+        - "--cache-repo=registry.local/sovereign/deepinfer-cache"
+        - "--cache-ttl=168h"
+        - "--snapshot-mode=redo"
+        - "--compressed-caching=false"
+        volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
+        resources:
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+          limits:
+            cpu: "8"
+            memory: "32Gi"
+      restartPolicy: Never
+      volumes:
+      - name: docker-config
+        configMap:
+          name: docker-config-json
