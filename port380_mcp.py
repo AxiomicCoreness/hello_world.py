@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Port 380 MCP Service — Layer 314 Gate Re-export
-... (docstring remains identical) ...
-"""
-
 import os
 import sys
 import hashlib
