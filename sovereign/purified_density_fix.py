@@ -27,7 +27,7 @@ from __future__ import annotations
 import math
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 # ─── Constants ────────────────────────────────────────────────────────
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
@@ -68,9 +68,9 @@ class FermionicFleck:
 
     def __init__(self, n_points: int = 48) -> None:
         self.n_points = n_points
-        self.points: List[Tuple[float, float, float]] = []
-        self.phi_weights: List[float] = []
-        self.wigner: List[complex] = []
+        self.points: list[tuple[float, float, float]] = []
+        self.phi_weights: list[float] = []
+        self.wigner: list[complex] = []
 
         for k in range(n_points):
             theta = 2 * math.pi * k * PHI_INV
@@ -101,7 +101,7 @@ class FermionicFleck:
         for i in range(self.n_points):
             self.wigner[i] = complex(math.cos(i * PHI_INV), math.sin(i * PHI_INV))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "n_points": self.n_points,
@@ -129,7 +129,7 @@ class PurifiedDensity:
         total_trace: Total trace (should equal φ³).
     """
 
-    def __init__(self, fleck: Optional[FermionicFleck] = None) -> None:
+    def __init__(self, fleck: FermionicFleck | None = None) -> None:
         self.fleck = fleck or FermionicFleck()
         self.raw_trace = self.fleck.compute_raw_density()
         self.component_quantum = 0.0
@@ -139,7 +139,7 @@ class PurifiedDensity:
         self.total_trace = 0.0
         self._update_components()
 
-    def _raw_weights(self) -> Dict[str, float]:
+    def _raw_weights(self) -> dict[str, float]:
         """Compute raw weights for each component."""
         t = time.time()
         q = W_QUANTUM * sum(abs(w) ** 2 for w in self.fleck.wigner)
@@ -196,7 +196,7 @@ class PurifiedDensity:
             self.total_trace = TRACE_FIXED
         return self.total_trace
 
-    def get_weighted_sum(self) -> Dict[str, float]:
+    def get_weighted_sum(self) -> dict[str, float]:
         """Get weighted sum with trace normalization."""
         self.normalize_to_phi3()
         return {
@@ -213,7 +213,7 @@ class PurifiedDensity:
             "timestamp": time.time(),
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return self.get_weighted_sum()
 
@@ -271,7 +271,7 @@ class UprhoEnvelope:
 
 # ─── Security Integration ────────────────────────────────────────────
 
-def purified_security_status() -> Dict[str, Any]:
+def purified_security_status() -> dict[str, Any]:
     """Get security status for the purified density fix."""
     try:
         from quantum.security import status as security_status
@@ -292,7 +292,7 @@ def purified_security_status() -> Dict[str, Any]:
 
 # ─── CDP Integration ─────────────────────────────────────────────────
 
-def purified_cdp_status() -> Dict[str, Any]:
+def purified_cdp_status() -> dict[str, Any]:
     """Get CDP status for the purified density fix."""
     try:
         from quantum.cdp_convergence import status as cdp_status
@@ -325,7 +325,7 @@ def run_option_61() -> None:
     print("=" * 80)
 
 
-def run_purified_density_demo(verbose: bool = True) -> Dict[str, Any]:
+def run_purified_density_demo(verbose: bool = True) -> dict[str, Any]:
     """
     Run the purified density demo.
 
