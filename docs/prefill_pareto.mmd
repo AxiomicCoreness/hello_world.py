@@ -1,0 +1,23 @@
+graph LR
+    subgraph Legend [Prefill Throughput vs Input Length]
+        direction TB
+        A[Config: EP4DP4 | 384+32 experts | Decoder Bounded Replay 140 tokens]
+    end
+
+    L4096["Input Length: 4,096"] -->|"~60,000 tok/s/GPU"| C4096((Baseline))
+    L8192["Input Length: 8,192"] -->|"~71,500 tok/s/GPU"| C8192((Good))
+    L16384["Input Length: 16,384"] -->|"~82,000 tok/s/GPU"| C16384((High))
+    L32768["Input Length: 32,768"] -->|"~87,000 tok/s/GPU"| C32768((Near Peak))
+    L65536["Input Length: 65,536"] -->|"~89,000 tok/s/GPU"| C65536((Peak))
+
+    style L4096 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style L8192 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style L16384 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style L32768 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style L65536 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    
+    style C4096 fill:#fff2cc,stroke:#d6b656
+    style C8192 fill:#fff2cc,stroke:#d6b656
+    style C16384 fill:#dae8fc,stroke:#6c8ebf
+    style C32768 fill:#d5e8d4,stroke:#82b366
+    style C65536 fill:#d5e8d4,stroke:#82b366
