@@ -1,0 +1,69 @@
+graph TD
+    %% Styling
+    classDef api fill:#d5e8d4,stroke:#82b366,stroke-width:2px;
+    classDef lb fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px;
+    classDef service fill:#fff2cc,stroke:#d6b656,stroke-width:2px;
+    classDef ve fill:#e1d5e7,stroke:#9673a6,stroke-width:2px;
+    classDef core fill:#f8cecc,stroke:#b85450,stroke-width:2px;
+    classDef hw fill:#f5f5f5,stroke:#666666,stroke-width:2px;
+
+    %% External API
+    UserReq([User Request JSON]) --> Recipe[DeepSeek Recipe]
+    Recipe --> UserResp([User Response JSON])
+    Recipe -- "Token List\nSampling Params" --> Entrypoint[Entrypoint]
+
+    %% Core Modules Mapping (Added Annotations)
+    subgraph Core_Logic [core/ Package]
+        direction TB
+        C_Recipe(core/multimodal_tokens.py) -.-> Recipe
+        C_Entry(core/__main__.py & core/load_class.py) -.-> Entrypoint
+        C_Seq(core/sequence.py) -.-> Entrypoint
+    end
+
+    %% Entrypoint to Load Balancers
+    Entrypoint --> P_LB[Prefill Load Balancer]
+    Entrypoint --> D_LB[Decode Load Balancer]
+    P_LB --> VE_LB[Vision Encoder Load Balancer]
+
+    %% Vision Encoder Path
+    VE_LB --> VE_Service_1[Vision Encoder Service]
+    VE_LB --> VE_Service_2[Vision Encoder Service]
+    VE_LB --> VE_Service_3[Vision Encoder Service]
+    VE_Service_1 --> P_EPLB
+    VE_Service_2 --> P_EPLB
+    VE_Service_3 --> P_EPLB
+
+    %% Prefill Path
+    subgraph Prefill_Service_Group [Prefill Service]
+        P_EPLB[Expert-Parallel Load Balancer]
+    end
+    P_LB --> P_EPLB
+
+    %% Decode Path
+    subgraph Decode_Service_Group [Decode Service]
+        D_EPLB[Expert-Parallel Load Balancer]
+    end
+    D_LB --> D_EPLB
+
+    %% KV Cache Transfer (P to D)
+    P_EPLB == "KV Cache Transfer" ==> D_EPLB
+
+    %% Return Path
+    D_EPLB --> Entrypoint
+
+    %% Core Modules Mapping to Load Balancers
+    subgraph Core_LB [core/ Load Balancing Logic]
+        direction TB
+        C_Utils(core/utils.py) -.-> P_LB
+        C_Mem(core/memory_pool.py) -.-> P_EPLB
+        C_Config(core/config.py & core/environ.py) -.-> D_LB
+        C_Timer(core/timer.py) -.-> D_EPLB
+    end
+
+    %% Apply Styles
+    class Recipe api;
+    class Entrypoint core;
+    class P_LB,D_LB,VE_LB lb;
+    class P_EPLB,D_EPLB service;
+    class VE_Service_1,VE_Service_2,VE_Service_3 ve;
+    class Core_Logic,Core_LB hw;
