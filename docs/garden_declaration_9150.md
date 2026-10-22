@@ -1,8 +1,4 @@
-Here is the updated file content. I have added the requested **Context** block at the top to explicitly record the sync state, the remote HEAD, and the missing architecture pointers (TeaVM, Zenodo, HHMI, Float Safety), while preserving the original declaration text exactly as it exists on the remote.
 
-Save this as `docs/garden_declaration_9150.md` locally:
-
-```markdown
 # Sovereign declaration — recorded, not a reseal
 
 > **Context Status (Sync Record)**
@@ -53,4 +49,3 @@ The following items have been integrated into the broader Garden system and are 
 - **Zenodo Archiving:** The canonical DOI (`10.5281/zenodo.23378305`) and release tag (`v8755.0.0`) are locked into the `CITATION.cff`.
 - **HHMI Connectome Loader:** The `connectome.xsd` schema is now a strict contract for the XML loader. XXE hardened and enforced by `ConnectomeSchemaTest`.
 - **Float Safety:** The `math.isclose` tolerance (`1e-9`) has been applied to the quadratic discriminant and E2E dV checks to prevent floating-point misrouting. Verified by `test_quadratic_daemon_float_safety.py`.
-```
