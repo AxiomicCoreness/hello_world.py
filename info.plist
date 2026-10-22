@@ -1,0 +1,6 @@
+<key>NSAppTransportSecurity</key>
+<dict>
+    <!-- Allows connecting to local IPs over HTTP (e.g., 192.168.x.x) -->
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+</dict>
