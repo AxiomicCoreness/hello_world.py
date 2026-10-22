@@ -1,14 +1,26 @@
 
-```markdown
 # Public Search — AxiomicCoreness/hello_world.py
 
-**License:** MIT (`LICENSE` at repo root). 
-*Note:* GitHub does not currently detect it as MIT: the license API reports `Other` (`spdx_id: NOASSERTION`), because `LICENSE` contains extra text alongside the MIT terms, so license detection does not match it to the standard MIT template.
+This explicitly codifies the behavior we just discussed:  a required field, link, or metadata element is missing from a document, it must be appended without rewriting the rest of the document. 
 
-**Canonical URL:** https://github.com/AxiomicCoreness/hello_world.py
+You can append this to the bottom of `COSMIC_ALIGNMENT_POLICY.md` (or use it to govern how `SEARCH.md` is maintained).
 
-**Description (About):** `sovereign_engine_V5`  
-*(Set in UI if desired):* `Sovereign Engine V5 — φ-harmonic reward protocol, MCP/FastAPI surfaces, append-only ledger`
+```markdown
+## Rule: Append-Only Metadata Completion
+
+1. **Never replace, only append.** If a required link, DOI, release tag, or metadata field is identified as missing from a public index or policy document, append it to the existing block. Do not rewrite the document to accommodate it.
+2. **Maintain the Anchor.** The core structure (License, Canonical URL, Key Files, Invariants) must remain intact. Missing items (e.g., Live Site, Zenodo DOI, Release Tag) are inserted logically below the canonical URL.
+3. **Immutability applies to docs.** Once a policy or index is committed to `main`, it falls under the same immutability rules as the ledger. Subsequent additions are new sections or appended lines, not deletions.
+```
+
+### How this applies to `SEARCH.md`
+If we followed this rule strictly from the beginning, the sequence would have been:
+1. **Commit 1:** `SEARCH.md` created with Canonical URL and queries.
+2. **Commit 2 (Append):** Add `Latest Release: v8755.0.0`.
+3. **Commit 3 (Append):** Add `Live Site: https://...`.
+4. **Commit 4 (Append):** Add `Zenodo Archive: 10.5281/...`.
+
+
 
 ---
 
