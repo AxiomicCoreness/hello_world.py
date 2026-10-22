@@ -50,9 +50,42 @@ ENV/
 .pytest_cache/
 .coverage
 .coverage.*
+.cache
 htmlcov/
 .tox/
 .nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+cover/
+
+# --- Linter / type checker caches ---------------------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pkl_memoize_py3/
+.pyre/
+.pytype/
+
+# --- DeepInfer specifics ------------------------------------------
+watch_*
+deepinfer.tar.gz
+tracing/
+sweeps/
+export_only_prof_dir/
+benchmark_results*.jsonl
+compile_commands.json
+.clangd
+/deepinfer/_so/
+tests/models/offline_decode_ppl.json.lock
+tests/models/offline_decode_ppl.json.tmp
+
+# --- DeepInfer Data / Results -------------------------------------
+*.csv
+*.pkl
 
 # --- Local builds / Merge state -----------------------------------
 .merge/
@@ -102,6 +135,8 @@ logs/
 *.tmp
 *.bak
 .worker-hooks/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # --- Build side-effects -------------------------------------------
 *.exec
