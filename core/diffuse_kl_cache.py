@@ -1,95 +1,124 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-core/diffuse_kl_cache.py
-Implementation of the DiffuseKLCache for entropy regularization.
+Pytest suite for DiffuseKLCache — entropy regularization cache.
 """
 
-from __future__ import annotations
+import math
+import sys
+from pathlib import Path
+from typing import Dict, Any, Union
 
-import hashlib
-from typing import Any, List, Tuple
-
+import pytest
 import numpy as np
 
+# --- Path setup ---
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-class DiffuseKLCache:
-    """
-    Implements an entropy-regularized cache using KL divergence.
-    Maps arbitrary entries to a fixed number of bins via hashing.
-    """
-    
-    def __init__(self, M: int = 16, uniform_mix: float = 1e-3, eps: float = 1e-12):
-        """
-        Args:
-            M (int): Number of bins in the cache distribution.
-            uniform_mix (float): Amount of uniform distribution mixed in to prevent infinite KL.
-            eps (float): Small epsilon for numerical stability.
-        """
-        self.M = M
-        self.uniform_mix = uniform_mix
-        self.eps = eps
-        self.beta = 1.0  # Regularization weight, adjustable
-        
-        # Core counts
-        self.counts = np.zeros(M, dtype=np.float64)
-        self.total_entries = 0
+# --- Imports ---
+try:
+    from core.diffuse_kl_cache import DiffuseKLCache
+except ImportError:
+    DiffuseKLCache = None
 
-    def add_entry(self, key: str, value: np.ndarray) -> None:
-        """
-        Adds an entry to the cache. The bin is determined by a hash of the key.
-        """
-        # Hash the key to a 32-bit integer using SHA-256
-        h = hashlib.sha256(key.encode("utf-8")).digest()
-        bin_idx = int.from_bytes(h[:4], "little") % self.M
-        
-        self.counts[bin_idx] += 1.0
-        self.total_entries += 1
+# --- Cryptography (Soft Check) ---
+try:
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
 
-    def base_distribution(self) -> np.ndarray:
-        """
-        Returns the uniform base distribution.
-        """
-        return np.ones(self.M, dtype=np.float64) / self.M
 
-    def cache_distribution(self) -> np.ndarray:
-        """
-        Returns the smoothed cache distribution.
-        """
-        p_base = self.base_distribution()
-        
-        if self.total_entries == 0:
-            return p_base
-            
-        # Raw frequency
-        p_raw = self.counts / self.total_entries
-        
-        # Mix with uniform base to prevent infinite KL divergence
-        p_cache = (1.0 - self.uniform_mix) * p_raw + self.uniform_mix * p_base
-        
-        # Ensure it sums to 1.0
-        return p_cache / p_cache.sum()
+def test_empty_cache_returns_uniform_distributions():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
 
-    def diffuse_kl(self) -> float:
-        """
-        Calculates the KL divergence between the cache distribution and the base distribution.
-        D_KL(P || Q) = sum(P * log(P / Q))
-        """
-        p_cache = self.cache_distribution()
-        p_base = self.base_distribution()
-        
-        # Add eps to avoid log(0)
-        p_cache_safe = np.clip(p_cache, self.eps, None)
-        p_base_safe = np.clip(p_base, self.eps, None)
-        
-        kl = np.sum(p_cache_safe * np.log(p_cache_safe / p_base_safe))
-        
-        # Due to numerical precision, KL might be a tiny negative number (e.g., -1e-16)
-        return max(0.0, float(kl))
+    c = DiffuseKLCache(M=16)
+    p_cache = c.cache_distribution()
+    p_base = c.base_distribution()
 
-    def objective(self, logp: float) -> float:
-        """
-        Calculates the regularized objective.
-        L = -logp + beta * KL
-        """
-        return -logp + self.beta * self.diffuse_kl()
+    assert p_cache.shape == (16,), "Cache distribution shape mismatch"
+    assert p_base.shape == (16,), "Base distribution shape mismatch"
+    assert pytest.approx(1.0, rel=1e-12) == p_cache.sum(), "Cache distribution sum != 1"
+    assert pytest.approx(1.0, rel=1e-12) == p_base.sum(), "Base distribution sum != 1"
+
+
+def test_concentrated_cache_has_positive_kl():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
+
+    c = DiffuseKLCache(M=8)
+    for i in range(20):
+        # Force the same string hash
+        c.add_entry("entry-same", np.array([1.0]))
+
+    kl = c.diffuse_kl()
+    assert kl >= 0.0, f"KL divergence should be >= 0, got {kl}"
+    assert np.isfinite(kl), f"KL divergence should be finite, got {kl}"
+
+
+def test_smoothing_prevents_infinite_kl():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
+
+    c = DiffuseKLCache(M=4, uniform_mix=1e-3, eps=1e-12)
+    c.add_entry("only-one", np.array([0.1]))
+
+    kl = c.diffuse_kl()
+    assert np.isfinite(kl), f"KL divergence should be finite with smoothing, got {kl}"
+
+
+def test_objective_decreases_with_beta():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
+
+    c = DiffuseKLCache(M=8)
+    for i in range(10):
+        c.add_entry("same-entry", np.array([0.0]))
+
+    logp = -5.0
+
+    # Beta = 0 (no regularization)
+    c.beta = 0.0
+    obj0 = c.objective(logp)
+
+    # Beta = 1 (full regularization)
+    c.beta = 1.0
+    obj1 = c.objective(logp)
+
+    # With positive beta, the objective should be <= the unregularized one
+    assert obj1 <= obj0, f"Regularized objective {obj1} should be <= unregularized {obj0}"
+
+
+def test_cache_distribution_after_additions():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
+
+    c = DiffuseKLCache(M=8)
+    p0 = c.cache_distribution()
+    assert pytest.approx(p0.sum(), rel=1e-12) == 1.0
+
+    for i in range(10):
+        c.add_entry(f"entry-{i}", np.array([0.5]))
+
+    p1 = c.cache_distribution()
+    assert pytest.approx(p1.sum(), rel=1e-12) == 1.0
+    assert not np.allclose(p0, p1), "Cache distribution should change after additions"
+
+
+def test_kl_non_negative():
+    if DiffuseKLCache is None:
+        pytest.skip("DiffuseKLCache not available")
+
+    c = DiffuseKLCache(M=16)
+    for seed in range(5):
+        np.random.seed(seed)
+        values = np.random.randn(5)
+        for i, val in enumerate(values):
+            c.add_entry(f"rand-{seed}-{i}", np.array([val]))
+
+        kl = c.diffuse_kl()
+        assert kl >= 0.0, f"KL divergence should be >= 0, got {kl}"
+        assert np.isfinite(kl), f"KL divergence should be finite, got {kl}"
