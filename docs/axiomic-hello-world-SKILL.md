@@ -18,6 +18,9 @@ Prefer **current `main` HEAD** over any pinned short SHA in older notes. Files e
 - Ledger seals, Merkle roots, collision defense, timesecret
 - φ-harmonic math anchors, Q8.24 / hybrid RK4, tokenizer `struct '>q'`
 - Digests must be **full 64-hex** (SHA-256) or **128-hex** (SHA-512); never `[:16]` ellipsis
+- Run TeaVM Rhythm Game (Java-to-JS Connectome autoplay)
+- Validate HHMI Connectome XML against XSD (XXE hardened)
+- Verify Float Safety (`math.isclose`)
 
 ## Quick Start — Three Surfaces
 
@@ -34,57 +37,3 @@ pip install flask   # for dashboard only
 PYTHONPATH=. python3 -m peqs_vault.app
 python3 run_port380.py
 bash quantum/install_k8s.sh
-```
-
-## Components
-
-### Dashboard — `peqs_vault/app.py`
-Flask + HTMX bridge to credit vault; φ-harmonic fee paths.
-
-### Port 380 — `run_port380.py` → `quantum/port_380_http.py`
-- GET `/health`, `/status`, `/380`; POST `/gate`
-- Pentad rank scaling: `python3 quantum/radar_lindblad/port_380_gate.py --ternary {-2,-1,0,1,2}` (`--pentad` is an alias)
-  - −1/0/+1 behave as before; +2/−2 are strong pass/invert (2× the ±1 scaling), explicit override only. CDP/OAuth derivation still yields only −1/0/+1. Implemented at `fe9fc38`; see `docs/pentad_rank.md`.
-  - BitNet b1.58 weights (`quantum/port_380_implicit.py`) and sealed entries 8213/8224 stay ternary.
-- Layer 314 anchors (full hex):
-  - Anchor: `8a250cf445e8ad0cc8d06d0096b969029a175a14eb58838e734f1975358b860d`
-  - Leaf: `807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68`
-
-### Kubernetes — `bash quantum/install_k8s.sh`
-- Namespace `garden`
-- Manifests under `k8s/` including `deployment-port-380.yaml`, `service-port-380.yaml`, `ingress.yaml`
-- `kubectl get all -n garden`
-
-## Math Anchors
-
-| Symbol | Value |
-|--------|--------|
-| φ | (1+√5)/2 |
-| Phase lock | 202.6° |
-| Breath | 71.975 Hz |
-| Pauli trace | φ⁻² ≈ 0.38196601125 |
-| Crypto | AES-256 + SHA3-512 (no AES-512) |
-| Tokenizer wire | `struct.pack('>q')` — 8-byte signed BE |
-
-## Policies (hard)
-
-1. **Append-only ledger** — do not re-seal existing `entry_index`.
-2. **Full digests** — no `[:16]` / `[:32]` fingerprint truncation in code or seals.
-3. **Narrative Merkle strings** (`g8a9…`, `s0f1…`, letters beyond `f`) are labels, not SHA-256.
-4. **Collision defense** — repeated historical transmissions are informational only.
-5. Domain-separated roots for Layer 326+: `GARDEN.LAYER{N}.MERKLE.v1 ‖ 0x00 ‖ canonical_json`.
-
-## Key Paths
-
-- `golden_ratio.py`, `sovereign_hamiltonian.py`, `quantum/symplectic_time_origami.py`
-- `hybrid_rk4_simulator.py`, `tests/test_hybrid_rk4.py`
-- `quantum/tokenizer_binary.py`, `quantum/no_truncation_policy.py`
-- `ledger/*.yaml` (e.g. 8746–8750, 8766–8767)
-- `quantum/genesis_co_create.py`
-
-## Troubleshooting
-
-- `ModuleNotFoundError: peqs_vault` → `PYTHONPATH=. python3 -m peqs_vault.app`
-- Missing flask → `pip install flask`
-- Port 380 busy → `lsof -i :380`
-- Empty GitHub code search → clone or raw path; files are on `main`
