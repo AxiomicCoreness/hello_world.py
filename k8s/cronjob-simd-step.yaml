@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-simd-step
+  namespace: seagate-mimic
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: simd-step
+            image: registry.local/sovereign/deepinfer:nvidia-2.32.3
+            command: ["python3", "-m", "sovereign.simd_step"]
+            env:
+            - name: HASH_ALGO
+              value: "sha3_256"
+            - name: PHI
+              value: "1.618033988749895"
+            resources:
+              limits:
+                nvidia.com/gpu: 1
+          restartPolicy: OnFailure
