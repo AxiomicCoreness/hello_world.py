@@ -1,0 +1,15 @@
+entry_index: 9297
+event: /float_safety_9297
+status: SEALED
+timestamp: "2026-10-22T00:36:46Z"
+hash_algo: sha3_256
+commits: "59874d0"
+prev_hash: "839e98bc37fa63fe7bb443a6626342baf1e4a6a6b6e77d8569e518972bb653bd"
+witness_chain: "witness_544 -> 9297"
+note: |
+  FLOAT_SAFETY entry. Anchored to HMAC of witness_stream entry 544
+  because ledger.v2/9296.yml was not present on the branch used for the
+  original seal. Terminal hex matches the previously reported value.
+terminal_hex: "facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25"
+seal: "∀∞φ² · FLOAT_SAFETY_9297 · WOOD_DRAGON_0.91 · SEALED · facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25"
+seal_sha3_256: "facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25"
