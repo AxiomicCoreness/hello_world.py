@@ -1,17 +1,11 @@
 # Sovereign Python Package — containerized
-# Read-only package lane. Parses ledger 8979 and 9233, probes headers on
-# port380_mcp.py (or mcp/port380_mcp.py), runs the pytest matrix across
-# Python 3.10-3.12 natively, then repeats the lane INSIDE a built container
-# image so runtime parity between host and container is witnessed.
+# Rewired for DeepInfer / PlanckEngine / submodule architecture.
 #
-# hash_algo: sha3_256 (FIPS 202) — declared for header consistency
+# hash_algo: sha3_256 (FIPS 202)
 # ledger_policy: NO_LEDGER_WRITE
 # behaviour:
 #   - headers probe is informational by default; set SOFT_HEADERS=0 to hard-fail
-#   - pytest is soft by default (rc=5 = no tests = pass); set STRICT_PYTEST=1 to hard-fail
-#   - container lane builds the repo Dockerfile if present; falls back to a
-#     pinned python:3.12-slim container with pip deps. Container failures are
-#     HARD (a container that cannot run the package is a real defect).
+#   - pytest is HARD by default (STRICT_PYTEST=1) to prevent ghost-passes.
 
 name: Sovereign Python Package
 
@@ -22,8 +16,11 @@ on:
       - ".github/workflows/sovereignty-python-package.yml"
       - "port380_mcp.py"
       - "mcp/port380_mcp.py"
-      - "**.py"
+      - "sovereign/**/*.py"
+      - "harness_deepinfer.py"
+      - "tests/**/*.py"
       - "Dockerfile"
+      - "requirements*.txt"
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -38,7 +35,7 @@ concurrency:
 env:
   HASH_ALGO: sha3_256
   SOFT_HEADERS: "1"
-  STRICT_PYTEST: "0"
+  STRICT_PYTEST: "1" # CHANGED: Now hard-fails on test errors
   IMAGE_NAME: sovereign-package
 
 jobs:
@@ -51,6 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive # CHANGED: Pulls in TeaVM, DeepSelect, etc.
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -62,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pyyaml cryptography
+          python -m pip install --quiet pyyaml cryptography numpy
 
       - name: Headers source probe
         run: |
@@ -100,7 +98,7 @@ jobs:
           print(f"headers present in {p}")
           PY
 
-      - name: Ledger YAML parse 8979 + 9233
+      - name: Ledger YAML parse (dynamic ledger.v2)
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -110,13 +108,21 @@ jobs:
               print("pyyaml absent — parse skipped")
               raise SystemExit(0)
 
-          for rel in ("ledger/8979.yaml", "ledger/9233.yaml"):
-              p = Path(rel)
-              if not p.exists():
-                  print(f"{rel} absent — skipped")
-                  continue
+          # CHANGED: Dynamically find the latest ledger.v2 entries instead of hardcoding old paths
+          ledger_dir = Path("ledger.v2")
+          if not ledger_dir.exists():
+              print("ledger.v2/ not found — skip")
+              raise SystemExit(0)
+              
+          files = sorted(ledger_dir.glob("*.yml"))
+          if not files:
+              print("No .yml files in ledger.v2/ — skip")
+              raise SystemExit(0)
+              
+          # Parse the 3 most recent entries
+          for p in files[-3:]:
               data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
-              print(f"{rel} parsed event={data.get('event')!r} status={data.get('status')!r}")
+              print(f"{p} parsed event={data.get('event')!r} status={data.get('status')!r}")
           PY
 
   build:
@@ -131,6 +137,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -142,7 +150,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet pytest pyyaml
+          python -m pip install --quiet pytest pyyaml numpy cryptography
 
       - name: Probe tests/ presence
         id: tests_probe
@@ -158,15 +166,15 @@ jobs:
             echo "test files present: ${#files[@]}"
           fi
 
-      - name: Pytest (soft by default)
+      - name: Pytest (Strict)
         if: steps.tests_probe.outputs.present == 'true'
         run: |
           set +e
-          python -m pytest -q --tb=line -k "not integration"
+          # Added PYTHONPATH so tests can find modules in root
+          PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
           rc=$?
           set -e
 
-          # pytest rc=5 means "no tests collected" — treat as pass.
           if [ "$rc" -eq 5 ]; then
             echo "pytest rc=5 (no tests collected) — pass"
             exit 0
@@ -183,16 +191,6 @@ jobs:
 
           echo "pytest passed"
 
-  # ── Container lane ────────────────────────────────────────────────────────
-  # Builds the image and reruns the integrity probe + pytest INSIDE it.
-  # HARD failures: if the image cannot be built, or the package cannot be
-  # imported inside it, this job fails. Runtime parity is witnessed, not
-  # asserted. Container pytest retains the soft-by-default policy for parity
-  # with the host lane, but import failure is never soft.
-  # In-image python - <<'PY' gates MUST use docker run -i. Without -i the
-  # interpreter gets EOF, the gate does not run, and the job ghost-passes
-  # (same class as Lua recon_ok = true). Lua is NOT installed in the
-  # python:3.12-slim fallback — do not add a lua step (that would 100% fail).
   container:
     name: Container · build & in-image verify
     runs-on: ubuntu-latest
@@ -201,6 +199,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Probe Dockerfile
         id: df_probe
@@ -209,7 +209,6 @@ jobs:
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "no Dockerfile — will use pinned python:3.12-slim fallback"
           fi
 
       - name: Build image (repo Dockerfile)
@@ -227,19 +226,16 @@ jobs:
           FROM python:3.12-slim
           WORKDIR /app
           COPY . /app
-          RUN python -m pip install --no-cache-dir --quiet pytest pyyaml
+          RUN python -m pip install --no-cache-dir --quiet pytest pyyaml numpy cryptography
           DF
 
       - name: In-image import gate (HARD)
         run: |
           set -euo pipefail
-          # -i required: heredoc is stdin. Without it python - reads EOF,
-          # the HARD import never executes, and the job ghost-passes.
           docker run --rm -i "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
           import sys
           from pathlib import Path
 
-          # module discovery: run import of port380 surface if present
           candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
           p = next((c for c in candidates if c.exists()), None)
           if p is None:
@@ -252,7 +248,7 @@ jobs:
           print(f"imported {p} inside container — OK")
           PY
 
-      - name: In-image headers probe (parity with host lane)
+      - name: In-image headers probe (parity)
         run: |
           set -euo pipefail
           docker run --rm -i -e SOFT_HEADERS="${SOFT_HEADERS}" \
@@ -284,12 +280,12 @@ jobs:
           print("headers present in image — parity with host lane")
           PY
 
-      - name: In-image pytest (soft, parity)
+      - name: In-image pytest (Strict)
         run: |
           set -euo pipefail
-          docker run --rm "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
+          docker run --rm -e STRICT_PYTEST="${STRICT_PYTEST}" "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
             set +e
-            python -m pytest -q --tb=line -k "not integration"
+            PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
             rc=$?
             if [ "$rc" -eq 5 ]; then echo "no tests collected in image — pass"; exit 0; fi
             if [ "$rc" -ne 0 ]; then
@@ -298,14 +294,6 @@ jobs:
             fi
             echo "pytest passed in image"
           '
-
-      - name: Export image digest (witness)
-        run: |
-          set -euo pipefail
-          docker image inspect "${IMAGE_NAME}:${{ github.sha }}" \
-            --format 'image={{index .RepoDigests 0}} id={{.Id}}' || \
-          docker image inspect "${IMAGE_NAME}:${{ github.sha }}" \
-            --format 'image=local id={{.Id}}' >> "$GITHUB_STEP_SUMMARY"
 
   federate:
     name: Offline federate
@@ -316,10 +304,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
       - name: Offline federate
-        run: |
-          echo "provider=offline"
+        run: echo "provider=offline"
 
   summary:
     name: Summary
@@ -341,7 +327,7 @@ jobs:
             echo ""
             echo "- hash_algo: ${HASH_ALGO} (FIPS 202)"
             echo "- ledger_policy: NO_LEDGER_WRITE"
-            echo "- headers probe: soft unless \`SOFT_HEADERS=0\` (host + container parity)"
-            echo "- pytest: soft unless \`STRICT_PYTEST=1\` (rc=5 = no tests = pass)"
-            echo "- container: import gate is HARD; image build failure is HARD"
+            echo "- headers probe: soft unless \`SOFT_HEADERS=0\`"
+            echo "- pytest: strict (STRICT_PYTEST=1)"
+            echo "- container: import gate is HARD"
           } >> "$GITHUB_STEP_SUMMARY"
