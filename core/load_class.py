@@ -40,7 +40,7 @@ def _expand_macros(source: str, base_dir: Path, seen: set[Path] | None = None) -
         macro_path = (base_dir / rel_path).resolve()
 
         if macro_path in seen:
-            return f"# [agentic_loader] Skipped cyclic from_file: {macro_path}"
+            return f"# [load_class] Skipped cyclic from_file: {macro_path}"
         seen.add(macro_path)
 
         if not macro_path.exists():
@@ -52,7 +52,7 @@ def _expand_macros(source: str, base_dir: Path, seen: set[Path] | None = None) -
     return _FROM_FILE_RE.sub(_replace, source)
 
 
-def export_class_from_file(
+def load_class(
     file_path: str | Path,
     class_name: str,
     module_name: str | None = None,
@@ -73,7 +73,7 @@ def export_class_from_file(
     """
     path = Path(file_path).resolve()
     if not path.exists():
-        raise FileNotFoundError(f"Cannot export class '{class_name}': file not found at {path}")
+        raise FileNotFoundError(f"Cannot load class '{class_name}': file not found at {path}")
 
     raw_source = path.read_text(encoding="utf-8")
     expanded_source = _expand_macros(raw_source, path.parent)
