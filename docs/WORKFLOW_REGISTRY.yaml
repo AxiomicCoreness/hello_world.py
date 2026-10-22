@@ -85,6 +85,18 @@ shapes:
     sink: $GITHUB_STEP_SUMMARY
     note: "Markdown table lines appended to the run summary."
 
+  teavm_wasm_artifact:
+    required: [js_bundle, wasm_binary, build_manifest]
+    note: "Transpiled Java to JS/WASM via TeaVM. Output goes to games/teavm-rhythm/target/webapp."
+
+  zenodo_archive_record:
+    required: [doi, concept_doi, release_tag, publish_date]
+    note: "Canonical archival record. Current: 10.5281/zenodo.23378305 (v8755.0.0)."
+
+  connectome_xml:
+    required: [neuron_id, connection_source, connection_target]
+    note: "HHMI Janelia FlyEM hemibrain format. Validated by connectome.xsd (XXE hardened)."
+
 entries:
 
   - id: assert_no_forbidden_semantics
@@ -148,6 +160,28 @@ entries:
     writes: []
     exit: { 0: clean, 1: violation, 2: missing_file }
 
+  - id: assert_float_safety
+    layer: 0
+    kind: invariant
+    runs_as: pytest tests/test_quadratic_daemon_float_safety.py
+    invoked_by:
+      - .github/workflows/pytest.yml
+    reads: ["celestial/quadratic_daemon.py", ".github/scripts/E2E _workflow_dispatch.py"]
+    writes: []
+    exit: { 0: clean, 1: violation }
+
+  - id: assert_connectome_schema
+    layer: 0
+    kind: invariant
+    runs_as: mvn test -Dtest=ConnectomeSchemaTest
+    invoked_by:
+      - .github/workflows/python-package.yml
+    reads:
+      - path: src/main/resources/connectome.xsd
+      - path: HHMIJaneliaMap.xml
+    writes: []
+    exit: { 0: clean, 1: violation }
+
   - id: seal_ledger_entry
     layer: 1
     kind: producer
@@ -195,6 +229,20 @@ entries:
     idempotent: true
     conflict_rule: "outputs are content-addressed; same input → same bytes"
     exit: { 0: ok, 1: conflicts_or_violations, 2: missing_manifest }
+
+  - id: build_teavm_rhythm
+    layer: 1
+    kind: producer
+    runs_as: mvn package
+    working_directory: games/teavm-rhythm
+    invoked_by:
+      - .github/workflows/pages-teavm-rhythm.yml
+    reads: ["games/teavm-rhythm/src/**"]
+    writes:
+      - path: games/teavm-rhythm/target/webapp
+        shape: teavm_wasm_artifact
+    idempotent: true
+    exit: { 0: ok, 1: compile_error }
 
   - id: seal_sovereign_cicd_8977
     layer: 1
@@ -250,6 +298,19 @@ entries:
       no "any prior hex" fallback. If it searches, the ledger is a
       DAG; document that in the file's docstring and re-type this
       entry accordingly.
+
+  - id: verify_zenodo_archive
+    layer: 2
+    kind: verifier
+    runs_as: scripts/verify_zenodo_archive.py
+    invoked_by:
+      - .github/workflows/archive-release.yml
+    reads: ["CITATION.cff"]
+    asserts:
+      - doi_resolves
+      - release_tag_matches
+    writes: []
+    exit: { 0: clean, 1: mismatch, 2: unreachable }
 
   - id: prune_ephemeral_refs
     layer: 3
