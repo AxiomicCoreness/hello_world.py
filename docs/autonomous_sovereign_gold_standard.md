@@ -28,31 +28,3 @@ Fixed-point attractor:
 ```text
 lim_{t→∞} ‖X(t) − X_target‖ = 0
 X = (coherence, phase, entropy, workload, fingerprint)
-```
-
-Convergence stop (practical):
-
-```text
-C(t) = ‖ρ(t) − ρ_∞‖₁  <  φ^{-12}   (runtime; narrative φ^{-1000} is below float)
-```
-
-## Implementation pillars (repo anchors)
-
-| Pillar | Location |
-|--------|----------|
-| Pulse | `k8s/solar-gate-convergence.yaml`, Wood Dragon 0.91 d |
-| Self-correction | `sovereign_engine.py` |
-| Self-validation | `optimizer/opaque_ninja_chessboard.py`, `ledger/*.yaml` |
-| Invariant bake-in | `batch_phi_corrected_score.py`, `hyperian_json_server.py` |
-| Observability | `prometheus/metrics_server.py` `:9090/metrics` |
-| Identity | OIDC full 64-char Phase-3; **never export secrets** |
-| Stub bedrock | `optimizer/gold_standard.py` |
-
-## Policy
-
-1. Full digests only (64 hex SHA-256 / HMAC).
-2. No secrets in metrics, logs, Grafana, or public JSON.
-3. Ledgers append-only; corrections are new entries.
-4. Stubs **verify against Φ**; they do not redefine Φ.
-
-Witness: ledger `8639`.
