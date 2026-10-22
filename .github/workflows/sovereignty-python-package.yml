@@ -1,11 +1,12 @@
-# Sovereign Python Package — containerized
-# Rewired for DeepInfer / PlanckEngine / submodule architecture.
+# ============================================================================
+# Sovereign Python Package — Containerized & Strict
+# ============================================================================
+# This workflow validates the Python side of the Sovereign Engine.
+# It checks out submodules (DeepSelect, TeaVM, etc.), dynamically parses
+# the latest ledger.v2 entries, and runs a strict test matrix.
 #
 # hash_algo: sha3_256 (FIPS 202)
 # ledger_policy: NO_LEDGER_WRITE
-# behaviour:
-#   - headers probe is informational by default; set SOFT_HEADERS=0 to hard-fail
-#   - pytest is HARD by default (STRICT_PYTEST=1) to prevent ghost-passes.
 
 name: Sovereign Python Package
 
@@ -16,11 +17,11 @@ on:
       - ".github/workflows/sovereignty-python-package.yml"
       - "port380_mcp.py"
       - "mcp/port380_mcp.py"
-      - "sovereign/**/*.py"
       - "harness_deepinfer.py"
+      - "sovereign/**/*.py"
       - "tests/**/*.py"
-      - "Dockerfile"
       - "requirements*.txt"
+      - "Dockerfile"
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -35,10 +36,13 @@ concurrency:
 env:
   HASH_ALGO: sha3_256
   SOFT_HEADERS: "1"
-  STRICT_PYTEST: "1" # CHANGED: Now hard-fails on test errors
+  STRICT_PYTEST: "1"  # CRITICAL: Hard-fails the pipeline if any test fails
   IMAGE_NAME: sovereign-package
 
 jobs:
+  # --------------------------------------------------------------------------
+  # JOB 1: Integrity, Headers, and Ledger Parsing
+  # --------------------------------------------------------------------------
   verify-integrity:
     name: Verify integrity · headers · ledger parse
     runs-on: ubuntu-latest
@@ -48,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive # CHANGED: Pulls in TeaVM, DeepSelect, etc.
+          submodules: recursive  # Pulls in TeaVM-Sync, DeepSelect, etc.
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -84,21 +88,19 @@ jobs:
               "Permissions-Policy",
           ]
           missing = [h for h in required if h not in content]
-
           soft = os.environ.get("SOFT_HEADERS", "1") != "0"
 
           if missing and not soft:
               print(f"missing headers in {p}: {missing}", file=sys.stderr)
               sys.exit(1)
-
-          if missing:
+          elif missing:
               print(f"missing headers in {p}: {missing} (SOFT_HEADERS=1 — informational)")
               sys.exit(0)
 
           print(f"headers present in {p}")
           PY
 
-      - name: Ledger YAML parse (dynamic ledger.v2)
+      - name: Ledger YAML parse (Dynamic ledger.v2)
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -108,7 +110,6 @@ jobs:
               print("pyyaml absent — parse skipped")
               raise SystemExit(0)
 
-          # CHANGED: Dynamically find the latest ledger.v2 entries instead of hardcoding old paths
           ledger_dir = Path("ledger.v2")
           if not ledger_dir.exists():
               print("ledger.v2/ not found — skip")
@@ -119,12 +120,15 @@ jobs:
               print("No .yml files in ledger.v2/ — skip")
               raise SystemExit(0)
               
-          # Parse the 3 most recent entries
+          # Parse the 3 most recent entries (e.g., 9297, 9298, etc.)
           for p in files[-3:]:
               data = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
               print(f"{p} parsed event={data.get('event')!r} status={data.get('status')!r}")
           PY
 
+  # --------------------------------------------------------------------------
+  # JOB 2: Host Python Matrix Testing
+  # --------------------------------------------------------------------------
   build:
     name: Build · Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
@@ -152,29 +156,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml numpy cryptography
 
-      - name: Probe tests/ presence
-        id: tests_probe
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          files=(tests/test_*.py tests/*_test.py)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "no test files present — soft pass"
-          else
-            echo "present=true" >> "$GITHUB_OUTPUT"
-            echo "test files present: ${#files[@]}"
-          fi
-
       - name: Pytest (Strict)
-        if: steps.tests_probe.outputs.present == 'true'
         run: |
           set +e
-          # Added PYTHONPATH so tests can find modules in root
+          # PYTHONPATH=. ensures the tests can import `sovereign.planck_engine_v2`
           PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
           rc=$?
           set -e
 
+          # rc=5 means no tests were collected
           if [ "$rc" -eq 5 ]; then
             echo "pytest rc=5 (no tests collected) — pass"
             exit 0
@@ -182,15 +172,18 @@ jobs:
 
           if [ "$rc" -ne 0 ]; then
             if [ "${STRICT_PYTEST}" = "1" ]; then
-              echo "pytest rc=$rc — hard fail (STRICT_PYTEST=1)"
+              echo "pytest rc=$rc — HARD FAIL"
               exit "$rc"
             fi
-            echo "pytest rc=$rc — soft pass (STRICT_PYTEST=0)"
+            echo "pytest rc=$rc — soft pass"
             exit 0
           fi
 
-          echo "pytest passed"
+          echo "pytest passed successfully"
 
+  # --------------------------------------------------------------------------
+  # JOB 3: Container Parity
+  # --------------------------------------------------------------------------
   container:
     name: Container · build & in-image verify
     runs-on: ubuntu-latest
@@ -232,6 +225,7 @@ jobs:
       - name: In-image import gate (HARD)
         run: |
           set -euo pipefail
+          # -i is MANDATORY to feed the heredoc to python
           docker run --rm -i "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
           import sys
           from pathlib import Path
@@ -246,38 +240,6 @@ jobs:
           import importlib
           mod = importlib.import_module(p.stem)
           print(f"imported {p} inside container — OK")
-          PY
-
-      - name: In-image headers probe (parity)
-        run: |
-          set -euo pipefail
-          docker run --rm -i -e SOFT_HEADERS="${SOFT_HEADERS}" \
-            "${IMAGE_NAME}:${{ github.sha }}" python - <<'PY'
-          import os, sys
-          from pathlib import Path
-          candidates = [Path("mcp/port380_mcp.py"), Path("port380_mcp.py")]
-          p = next((c for c in candidates if c.exists()), None)
-          if p is None:
-              print("absent in image — skip")
-              sys.exit(0)
-          content = p.read_text(encoding="utf-8", errors="replace")
-          required = [
-              "Content-Security-Policy",
-              "Strict-Transport-Security",
-              "X-Content-Type-Options",
-              "X-Frame-Options",
-              "Referrer-Policy",
-              "Permissions-Policy",
-          ]
-          missing = [h for h in required if h not in content]
-          soft = os.environ.get("SOFT_HEADERS", "1") != "0"
-          if missing and not soft:
-              print(f"missing headers in image: {missing}", file=sys.stderr)
-              sys.exit(1)
-          if missing:
-              print(f"missing headers in image (soft): {missing}")
-              sys.exit(0)
-          print("headers present in image — parity with host lane")
           PY
 
       - name: In-image pytest (Strict)
@@ -295,6 +257,9 @@ jobs:
             echo "pytest passed in image"
           '
 
+  # --------------------------------------------------------------------------
+  # JOB 4: Federate (Stub)
+  # --------------------------------------------------------------------------
   federate:
     name: Offline federate
     runs-on: ubuntu-latest
@@ -307,6 +272,9 @@ jobs:
       - name: Offline federate
         run: echo "provider=offline"
 
+  # --------------------------------------------------------------------------
+  # JOB 5: Summary
+  # --------------------------------------------------------------------------
   summary:
     name: Summary
     runs-on: ubuntu-latest
