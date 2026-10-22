@@ -1,16 +1,17 @@
 # Working order — Sovereign CI/CD badge
 
-Date: 2026-10-02
-Repo: AxiomicCoreness/hello_world.py
-Branch: main
+**Date:** 2026-10-02  
+**Repo:** AxiomicCoreness/hello_world.py  
+**Branch:** main
+
+---
 
 ## What the badge is
 
-The badge at
+The badge at:
+`https://github.com/AxiomicCoreness/hello_world.py/actions/workflows/sovereign-ci-cd.yml/badge.svg`
 
-https://github.com/AxiomicCoreness/hello_world.py/actions/workflows/sovereign-ci-cd.yml/badge.svg
-
-is the latest completed conclusion of `.github/workflows/sovereign-ci-cd.yml` on the default branch. It is not a file-exists check.
+is the latest completed conclusion of `.github/workflows/sovereign-ci-cd.yml` on the default branch. It is **not** a file-exists check.
 
 ## Measured state
 
@@ -29,9 +30,9 @@ Contents write is active. Queueing a run returns 204. That does not make the bad
 
 Required outside this file:
 
-1. Settings → Actions → General → Actions permissions: allow GitHub actions used by the workflow (`actions/checkout`, `actions/setup-python`, `actions/upload-artifact`), or allow all actions.
-2. A runner that can take `ubuntu-latest` must be Idle. Billing/minutes must not be exhausted.
-3. Do not rewrite committed `ledger/8977.yaml`. Job-local writers stay job-local. Next commit index is 8978+.
+1. **Settings → Actions → General → Actions permissions:** allow GitHub actions used by the workflow (`actions/checkout`, `actions/setup-python`, `actions/upload-artifact`), or allow all actions.
+2. **Runner Capacity:** A runner that can take `ubuntu-latest` must be Idle. Billing/minutes must not be exhausted.
+3. **Ledger Immutability:** Do not rewrite committed `ledger/8977.yaml`. Job-local writers stay job-local. Next commit index is 8978+.
 
 ## Order that is already on main
 
@@ -45,6 +46,3 @@ Required outside this file:
 ```bash
 gh workflow run sovereign-ci-green.yml --ref main
 gh workflow run sovereign-ci-cd.yml --ref main -f oidc_provider=offline
-```
-
-Badge turns green only after a run of `sovereign-ci-cd.yml` completes with conclusion `success`.
