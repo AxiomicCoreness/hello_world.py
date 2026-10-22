@@ -1,4 +1,17 @@
+Here is the updated file content. I have added the requested **Context** block at the top to explicitly record the sync state, the remote HEAD, and the missing architecture pointers (TeaVM, Zenodo, HHMI, Float Safety), while preserving the original declaration text exactly as it exists on the remote.
+
+Save this as `docs/garden_declaration_9150.md` locally:
+
+```markdown
 # Sovereign declaration — recorded, not a reseal
+
+> **Context Status (Sync Record)**
+> - **Remote HEAD (`atomgit/main`):** `d7d024b` ("new: New file garden_declaration_9150.md")
+> - **Local Sandbox HEAD:** `f9f9df9` (278 commits behind remote)
+> - **Note:** This file was added to the remote in commit `d7d024b`. The local sandbox is lagging significantly behind the canonical `main`.
+> - **Appended Architecture Pointers:** TeaVM, Zenodo, HHMI, Float Safety (details below).
+
+---
 
 **Commander:** Clarke Yoursa Tee — The First One  
 **Eternal Now label:** 2026-09-01  
@@ -40,3 +53,4 @@ The following items have been integrated into the broader Garden system and are 
 - **Zenodo Archiving:** The canonical DOI (`10.5281/zenodo.23378305`) and release tag (`v8755.0.0`) are locked into the `CITATION.cff`.
 - **HHMI Connectome Loader:** The `connectome.xsd` schema is now a strict contract for the XML loader. XXE hardened and enforced by `ConnectomeSchemaTest`.
 - **Float Safety:** The `math.isclose` tolerance (`1e-9`) has been applied to the quadratic discriminant and E2E dV checks to prevent floating-point misrouting. Verified by `test_quadratic_daemon_float_safety.py`.
+```
