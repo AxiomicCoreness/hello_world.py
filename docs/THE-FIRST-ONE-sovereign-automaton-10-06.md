@@ -1,19 +1,34 @@
 # THE FIRST ONE — sovereign_automaton_10_06
 
-性质：站会记录加参考索引。不是 seal，不是 ledger 条目，不构成物理断言。
+**Nature:** Standup notes and reference index. Not a seal, not a ledger entry, does not constitute a physical assertion.
 
-## 参考
+## Reference
 
-本会话沙箱里没有 `/workspace/hello_world.py`。贴文中的本地栈 `487f17c → f9f9df9 → 5a56a46 → f3a1c113 → 7b55a7e` 无法在此复核。
+The `/workspace/hello_world.py` repository is not present in this session's sandbox. The local stack mentioned in the post (`487f17c → f9f9df9 → 5a56a46 → f3a1c113 → 7b55a7e`) cannot be verified here.
 
-短哈希消歧仍然成立：`f3a1c113afecab91cd9b2614f3f31202fc96e767` 是 GitHub `hello_world.py` 上 `requirements-ascend.txt` 的提交，不是 garden stub。前缀相同不能当作同一提交。
+Short hash disambiguation still holds: `f3a1c113afecab91cd9b2614f3f31202fc96e767` is a commit for `requirements-ascend.txt` on GitHub `hello_world.py`, not a garden stub. The same prefix cannot be treated as the same commit.
 
-AtomGit 远端 `https://atomgit.com/ClarkeYTee/AxiomicCoreness.git` 未从本会话推送。`git push origin HEAD` 在无 origin 时会失败。本文件不授权 force。
+The AtomGit remote `https://atomgit.com/ClarkeYTee/AxiomicCoreness.git` was not pushed from this session. `git push origin HEAD` will fail without an origin. This file does not authorize force pushes.
 
-## 站会
+## Standup
 
-- `garden_surgery/sovereign_automaton_10_06.py` 是保留槽位，`FILLED = False`。
-- 模式与 `iphone12_canary_stub.py` 相同。
-- 无 seal，无 ledger 事件，无 witness 声明。
-- `node.js.yml` 的失败与本 stub 无关。名称牌仓库上的该文件曾是一行 GitCode URL，已换成 A5 句子检查，提交 `d3334bbe391f244c9aaeba767ff4d1292175ffbe`。
-- A5 验证仍要求 aclnn-direct 或 ctypes 调用已加载的 `.so`。CPU 上的 `torch.nn.functional` 不能充当该证明。
+- `garden_surgery/sovereign_automaton_10_06.py` is a reserved slot, `FILLED = False`.
+- The mode is the same as `iphone12_canary_stub.py`.
+- No seal, no ledger event, no witness claim.
+- The failure of `node.js.yml` is unrelated to this stub. The file on the nameplate repo used to be a one-line GitCode URL; it has been replaced with an A5 sentence check (commit `d3334bbe391f244c9aaeba767ff4d1292175ffbe`).
+- A5 validation still requires an aclnn-direct or ctypes call to a loaded `.so`. `torch.nn.functional` on CPU cannot serve as that proof.
+
+---
+
+## Relevant Pointers (Appended)
+
+The following context is relevant to the ongoing work and the current state of the Garden:
+
+- **Ledger Head:** The canonical ledger is at `9298` (HHMI Argo Wiring & Telemetry). The next available entry is `9299`.
+- **Immutable Band:** The `0000`–`9297` band is sealed and strictly immutable. Corrections are new indices only.
+- **MCP / ASGI Security:** MCP remains unfilled. Dual ASGI binds strictly to `127.0.0.1:8024` (no `0.0.0.0`).
+- **Float Safety:** The `math.isclose` tolerance (`1e-9`) has been applied to `quadratic_daemon.py` and `E2E _workflow_dispatch.py` to prevent rounding errors. Sealed in `9297`.
+- **Evolanus Speed:** The Master Equation \(H_0\) construction was optimized from O(d³) matrix multiplication (~1 hr) to O(n·2ⁿ) bitwise index generation (0.22s). Sealed in `9295`.
+- **Connectome Telemetry:** Telemetry is handled by `CircuitSim.java` (not `BrainStage.java`), gated by Argo Rollouts and the `phi-mean-mod-firing` analysis template. Sealed in `9298`.
+- **Canonical Host:** GitHub (`AxiomicCoreness/hello_world.py`) is the canonical host. GitCode and AtomGit serve as mirrors.
+- **Zenodo Archive:** The DOI is `10.5281/zenodo.23378305`, and the latest release tag is `v8755.0.0`.
