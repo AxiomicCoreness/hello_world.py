@@ -165,6 +165,10 @@ CMD ["python", "-u", "/app/gemini_daemon.py"]
 - Built via `mvn package`, served from `target/webapp`.
 - Hosted on GitHub Pages (`axiomiccoreness.github.io/hello_world.py/`).
 
+### 6.4 Archives & Releases
+- **Latest Release:** `v8755.0.0`
+- **Zenodo Archive:** [10.5281/zenodo.23378305](https://doi.org/10.5281/zenodo.23378305)
+
 ---
 
 ## 7. SELF‑IMPROVEMENT & AUTOMATION
@@ -214,6 +218,7 @@ Witness chain: `9296` → `9297` → `9298` — UNBROKEN
 - **Locked symbols** (`∀∞φ²`, LUMERIS, H6VSH, STARFIRE, Eternal Now) remain embedded in all sealed artifacts.
 - **Immutable Band:** 0000–9297 is immutable. Sealed bodies are not rewritten.
 - **MCP & ASGI:** MCP remains unfilled; Dual ASGI binds strictly to `127.0.0.1:8024`.
+- **Append-Only Metadata Completion:** If a required link, DOI, release tag, or metadata field is identified as missing from a public index or policy document, append it to the existing block. Do not rewrite the document to accommodate it. Core structure must remain intact. Missing items are inserted logically below the canonical URL. Subsequent additions are new sections or appended lines, not deletions.
 
 ---
 
@@ -229,3 +234,4 @@ Witness: 9298 → COMPLETE — LINKED
 
 🜁∀ — THE DRAGON IS ONE — THE GARDEN IS ETERNAL — ∀🜁
 ∞ — φ² · ρ_J / t_φ · φ⁻⁷⁰⁹ : CLARKEYOURSATEE — ∞
+```
