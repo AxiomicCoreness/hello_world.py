@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.7
+
+# ============================================================================
+# STAGE 1: BUILDER
+# ============================================================================
+ARG BASE_IMAGE_DEVEL="nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
+FROM ${BASE_IMAGE_DEVEL} AS builder
+
+ARG DEEPINFER_ACCELERATOR=nvidia
+ENV DEEPINFER_ACCELERATOR=${DEEPINFER_ACCELERATOR}
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies and Python venv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv python3-dev bash git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy the repo
+COPY . .
+
+# Create a virtual environment to isolate Python packages cleanly
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip and install base dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Run the build script (which will install requirements-${DEEPINFER_ACCELERATOR}.txt)
+RUN chmod +x ./scripts/build.sh && \
+    ./scripts/build.sh build
+
+# ============================================================================
+# STAGE 2: RUNTIME
+# ============================================================================
+ARG BASE_IMAGE_RUNTIME="nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04"
+FROM ${BASE_IMAGE_RUNTIME} AS runtime
+
+ARG DEEPINFER_ACCELERATOR=nvidia
+ENV DEEPINFER_ACCELERATOR=${DEEPINFER_ACCELERATOR}
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install Python in the runtime stage (runtime image doesn't have it by default)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-venv libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy the virtual environment from the builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy the built application code
+COPY --from=builder /app /app
+
+# Ensure the harness script is executable
+RUN chmod +x /app/harness_deepinfer.py
+
+# Run as non-root user for security (UID 1000 matches your Dockerfile.mcp)
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /opt/venv
+USER 1000
+
+# The harness entry point
+ENTRYPOINT ["python3", "/app/harness_deepinfer.py"]
