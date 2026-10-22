@@ -19,6 +19,9 @@ identifiers:
   - type: url
     value: "https://atomgit.com/ClarkeYTee/AxiomicCoreness"
     description: "AtomGit mirror"
+  - type: url
+    value: "https://axiomiccoreness.github.io/hello_world.py/"
+    description: "Live Site (TeaVM Rhythm Game)"
 authors:
   - family-names: "Yoursa Tee"
     given-names: "Clarke"
@@ -31,9 +34,15 @@ keywords:
   - math-origin-audit
   - SHA3-256
   - hash-chained-ledger
+  - TeaVM
+  - Connectome
+  - Zenodo
+  - Float-Safety
 abstract: >-
   Golden-section closure kernel of the AxiomicCoreness repo: the open
   phi-band word algebra (phi^-1 < |w| < phi, atom norm 1, contraction
   composition), the Delta-replay patch law with its exactness theorem,
   and the math_origin defect audit (11 entries, D9 open), as measured
-  at commit 1e449302.
+  at commit 1e449302. This release (archived via Zenodo DOI 10.5281/zenodo.23378306)
+  integrates the TeaVM rhythm game, the HHMI Connectome XML loader (XXE hardened),
+  and float safety tolerances (math.isclose) across numerical engines.
