@@ -1,141 +1,95 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 core/diffuse_kl_cache.py
-
-Diffuse KL hashed cache implementation (Entry 616 materialised).
-
-API: DiffuseKLCache(hash_entry, add_entry, cache_distribution, base_distribution,
-                     diffuse_kl, objective, summary, health_report)
-
-This implementation is deterministic, uses SHA3-256 modulo M, stable softmax,
-and safe handling of p_base zeros (mix with small uniform prior).
-
-Embedding dtype: numpy.float64
+Implementation of the DiffuseKLCache for entropy regularization.
 """
 
+from __future__ import annotations
+
 import hashlib
-from typing import Dict, List, Tuple, Optional
+from typing import Any, List, Tuple
 
 import numpy as np
 
 
 class DiffuseKLCache:
-    """φ-scaled KV cache with diffuse KL regularisation.
-
-    Attributes:
-        M: number of hash bins
-        T: softmax temperature
-        beta: regularisation weight
-        eps: small smoothing to avoid log(0)
-        uniform_mix: mixing weight for p_base smoothing
     """
-
-    def __init__(self, M: int = 1024, T: float = 1.0, beta: float = 0.1,
-                 eps: float = 1e-12, uniform_mix: float = 1e-6):
-        self.M = int(M)
-        self.T = float(T)
-        self.beta = float(beta)
-        self.eps = float(eps)
-        self.uniform_mix = float(uniform_mix)
-
-        # cache: map bin -> list of (entry_id, embedding)
-        self.cache: Dict[int, List[Tuple[int, np.ndarray]]] = {}
-        # ledger of bin indices (append-only)
-        self.ledger: List[int] = []
-
-    def hash_entry(self, entry: str) -> int:
-        """SHA3-256 hash modulo M (deterministic)."""
-        h = hashlib.sha3_256(entry.encode("utf-8")).hexdigest()
-        return int(h, 16) % self.M
-
-    def add_entry(self, entry: str, embedding: np.ndarray, entry_id: Optional[int] = None):
-        """Add entry to cache and ledger. Embedding converted to float64.
-
-        Args:
-            entry: canonical string blob to be hashed
-            embedding: numpy array (any dtype) — will be cast to float64
-            entry_id: optional identifier, if None the bin is used as id
+    Implements an entropy-regularized cache using KL divergence.
+    Maps arbitrary entries to a fixed number of bins via hashing.
+    """
+    
+    def __init__(self, M: int = 16, uniform_mix: float = 1e-3, eps: float = 1e-12):
         """
-        k = self.hash_entry(entry)
-        emb = np.asarray(embedding, dtype=np.float64)
-        eid = entry_id if entry_id is not None else k
-        self.cache.setdefault(k, []).append((eid, emb))
-        self.ledger.append(k)
+        Args:
+            M (int): Number of bins in the cache distribution.
+            uniform_mix (float): Amount of uniform distribution mixed in to prevent infinite KL.
+            eps (float): Small epsilon for numerical stability.
+        """
+        self.M = M
+        self.uniform_mix = uniform_mix
+        self.eps = eps
+        self.beta = 1.0  # Regularization weight, adjustable
+        
+        # Core counts
+        self.counts = np.zeros(M, dtype=np.float64)
+        self.total_entries = 0
 
-    def _score_vector(self) -> np.ndarray:
-        """Compute raw scores per bin (frequency-based)."""
-        scores = np.zeros(self.M, dtype=np.float64)
-        for k, entries in self.cache.items():
-            scores[k] = float(len(entries))
-        return scores
-
-    def cache_distribution(self) -> np.ndarray:
-        """P_cache(h): stable softmax of scores/T."""
-        scores = self._score_vector()
-        if self.T <= 0:
-            raise ValueError("Temperature T must be > 0")
-        scaled = scores / float(self.T)
-        # stable softmax
-        m = np.max(scaled)
-        ex = np.exp(scaled - m)
-        denom = np.sum(ex)
-        if denom == 0:
-            # fallback to uniform
-            return np.ones(self.M, dtype=np.float64) / float(self.M)
-        return ex / denom
+    def add_entry(self, key: str, value: np.ndarray) -> None:
+        """
+        Adds an entry to the cache. The bin is determined by a hash of the key.
+        """
+        # Hash the key to a 32-bit integer using SHA-256
+        h = hashlib.sha256(key.encode("utf-8")).digest()
+        bin_idx = int.from_bytes(h[:4], "little") % self.M
+        
+        self.counts[bin_idx] += 1.0
+        self.total_entries += 1
 
     def base_distribution(self) -> np.ndarray:
-        """P_base(h): empirical distribution over the ledger with smoothing."""
-        counts = np.zeros(self.M, dtype=np.float64)
-        for k in self.ledger:
-            counts[k] += 1.0
-        total = np.sum(counts)
-        if total == 0:
-            # no ledger entries -> uniform
-            base = np.ones(self.M, dtype=np.float64) / float(self.M)
-        else:
-            base = counts / total
-            # mix with small uniform prior to avoid zeros
-            if self.uniform_mix > 0:
-                base = (1.0 - self.uniform_mix) * base + self.uniform_mix * (np.ones(self.M) / float(self.M))
-        # final clipping with eps
-        base = np.maximum(base, self.eps)
-        # renormalise
-        base = base / np.sum(base)
-        return base
+        """
+        Returns the uniform base distribution.
+        """
+        return np.ones(self.M, dtype=np.float64) / self.M
+
+    def cache_distribution(self) -> np.ndarray:
+        """
+        Returns the smoothed cache distribution.
+        """
+        p_base = self.base_distribution()
+        
+        if self.total_entries == 0:
+            return p_base
+            
+        # Raw frequency
+        p_raw = self.counts / self.total_entries
+        
+        # Mix with uniform base to prevent infinite KL divergence
+        p_cache = (1.0 - self.uniform_mix) * p_raw + self.uniform_mix * p_base
+        
+        # Ensure it sums to 1.0
+        return p_cache / p_cache.sum()
 
     def diffuse_kl(self) -> float:
-        """Compute D_KL^diffuse(P_cache || P_base)."""
+        """
+        Calculates the KL divergence between the cache distribution and the base distribution.
+        D_KL(P || Q) = sum(P * log(P / Q))
+        """
         p_cache = self.cache_distribution()
         p_base = self.base_distribution()
-        # mask where p_cache > 0 to avoid 0*log issues
-        mask = p_cache > 0
-        # safe division and log
-        ratio = np.zeros_like(p_cache)
-        ratio[mask] = p_cache[mask] / p_base[mask]
-        # clip ratio to avoid nan
-        ratio = np.maximum(ratio, self.eps)
-        return float(np.sum(p_cache[mask] * np.log(ratio[mask])))
+        
+        # Add eps to avoid log(0)
+        p_cache_safe = np.clip(p_cache, self.eps, None)
+        p_base_safe = np.clip(p_base, self.eps, None)
+        
+        kl = np.sum(p_cache_safe * np.log(p_cache_safe / p_base_safe))
+        
+        # Due to numerical precision, KL might be a tiny negative number (e.g., -1e-16)
+        return max(0.0, float(kl))
 
-    def objective(self, trajectory_log_prob: float) -> float:
-        """Agent improvement objective: log-prob minus beta * diffuse KL."""
-        return float(trajectory_log_prob) - float(self.beta) * float(self.diffuse_kl())
-
-    def summary(self) -> Dict:
-        """Return a brief summary dict for health reporting."""
-        p_cache = self.cache_distribution()
-        p_base = self.base_distribution()
-        top_cache_idx = int(np.argmax(p_cache))
-        top_cache_mass = float(p_cache[top_cache_idx])
-        return {
-            "M": self.M,
-            "entries": int(len(self.ledger)),
-            "top_bin": top_cache_idx,
-            "top_bin_mass": top_cache_mass,
-            "diffuse_kl": self.diffuse_kl()
-        }
-
-    def health_report(self) -> Dict:
-        return {
-            "status": "ok",
-            "summary": self.summary()
-        }
+    def objective(self, logp: float) -> float:
+        """
+        Calculates the regularized objective.
+        L = -logp + beta * KL
+        """
+        return -logp + self.beta * self.diffuse_kl()
