@@ -1,0 +1,39 @@
+graph TD
+    subgraph Legend [Config]
+        direction LR
+        L1[Context: 131,072] ~~~ L2[nextn=3 fixed] ~~~ L3[acceptance 75% → τ=3.25]
+    end
+
+    B256["Batch Size: 256"] --> E64_256["EP64DP64: ~26,500 tok/s/GPU"]
+    B256 --> E8_256["EP8DP8: ~24,500 tok/s/GPU"]
+
+    B128["Batch Size: 128"] --> E64_128["EP64DP64: ~22,700 tok/s/GPU"]
+    B128 --> E8_128["EP8DP8: ~19,000 tok/s/GPU"]
+
+    B64["Batch Size: 64"] --> E64_64["EP64DP64: ~16,000 tok/s/GPU"]
+    B64 --> E8_64["EP8DP8: ~12,500 tok/s/GPU"]
+
+    B32["Batch Size: 32"] --> E64_32["EP64DP64: ~9,500 tok/s/GPU"]
+    B32 --> E8_32["EP8DP8: ~7,000 tok/s/GPU"]
+
+    B16["Batch Size: 16"] --> E64_16["EP64DP64: ~5,000 tok/s/GPU"]
+    B16 --> E8_16["EP8DP8: ~4,000 tok/s/GPU"]
+
+    B8["Batch Size: 8"] --> E64_8["EP64DP64: ~2,400 tok/s/GPU"]
+    B8 --> E8_8["EP8DP8: ~1,500 tok/s/GPU"]
+
+    %% Styling for the EP64 nodes
+    style E64_256 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    style E64_128 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    style E64_64 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    style E64_32 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    style E64_16 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    style E64_8 fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+
+    %% Styling for the EP8 nodes
+    style E8_256 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
+    style E8_128 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
+    style E8_64 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
+    style E8_32 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
+    style E8_16 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
+    style E8_8 fill:#fbe5d6,stroke:#f5a623,stroke-width:2px
