@@ -9,7 +9,14 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{hyperref}
 
-\input{density_matrix_trace_macros}
+% Ensure macros resolve even if the separate input file is missing
+\providecommand{\Tr}{\operatorname{Tr}}
+\providecommand{\PHIthree}{\Phi^3}
+\providecommand{\EPSdp}{\varepsilon_{\mathrm{f64}}}
+\providecommand{\EPSsp}{\varepsilon_{\mathrm{exact}}}
+
+% Try to load the external macros if they exist
+\IfFileExists{density_matrix_trace_macros.tex}{\input{density_matrix_trace_macros}}{}
 
 \newtheorem{proposition}{Proposition}
 
