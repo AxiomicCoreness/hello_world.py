@@ -1,12 +1,14 @@
-# Public search — AxiomicCoreness/hello_world.py
 
-**License:** MIT (`LICENSE` at repo root). GitHub does not currently detect it as MIT: the license API reports `Other` (`spdx_id: NOASSERTION`), because `LICENSE` contains extra text alongside the MIT terms, so license detection does not match it to the standard MIT template.
+```markdown
+# Public Search — AxiomicCoreness/hello_world.py
+
+**License:** MIT (`LICENSE` at repo root). 
+*Note:* GitHub does not currently detect it as MIT: the license API reports `Other` (`spdx_id: NOASSERTION`), because `LICENSE` contains extra text alongside the MIT terms, so license detection does not match it to the standard MIT template.
 
 **Canonical URL:** https://github.com/AxiomicCoreness/hello_world.py
 
-**Description (About):** sovereign_engine_V5  
-Suggested longer About text (set in UI if desired):
-`Sovereign Engine V5 — φ-harmonic reward protocol, MCP/FastAPI surfaces, append-only ledger`
+**Description (About):** `sovereign_engine_V5`  
+*(Set in UI if desired):* `Sovereign Engine V5 — φ-harmonic reward protocol, MCP/FastAPI surfaces, append-only ledger`
 
 ---
 
@@ -19,7 +21,7 @@ license:MIT AxiomicCoreness
 AxiomicCoreness sovereign_engine_V5 MIT
 ```
 
-GitHub code search (signed in):
+**GitHub code search (signed in):**
 
 ```
 repo:AxiomicCoreness/hello_world.py license MIT
@@ -28,7 +30,7 @@ repo:AxiomicCoreness/hello_world.py reward_protocol
 repo:AxiomicCoreness/hello_world.py fiduciary_node_rewards
 ```
 
-Web search engines lag. Direct URL and code search work now. `license:MIT` filters will not match this repo while GitHub detects the license as `Other` (NOASSERTION).
+*Note:* Web search engines lag. Direct URL and code search work now. `license:MIT` filters will not match this repo while GitHub detects the license as `Other` (NOASSERTION).
 
 ---
 
@@ -38,7 +40,7 @@ Add in the GitHub UI if not already set:
 
 `python` · `mit-license` · `fastapi` · `pydantic` · `sovereign-engine` · `axiomiccoreness`
 
-CLI (owner):
+**CLI (owner):**
 
 ```bash
 gh repo edit AxiomicCoreness/hello_world.py \
@@ -70,7 +72,8 @@ gh repo edit AxiomicCoreness/hello_world.py \
 
 ## Invariants (search-friendly constants)
 
-- Bind: ASGI North Star `127.0.0.1:8024` (not `0.0.0.0` for user-facing ASGI)
-- MCP: scoped bind via `MCP_BIND_HOST` (default mesh-facing where policy allows)
-- License: MIT
-- Public: yes
+- **Bind:** ASGI North Star `127.0.0.1:8024` (not `0.0.0.0` for user-facing ASGI)
+- **MCP:** scoped bind via `MCP_BIND_HOST` (default mesh-facing where policy allows)
+- **License:** MIT
+- **Public:** yes
+```
