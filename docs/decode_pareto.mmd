@@ -1,0 +1,26 @@
+graph LR
+    subgraph Legend [Decode Throughput vs Interactivity]
+        direction TB
+        A[Config: EP64DP64 | 384+64 experts | context 131,072]
+    end
+
+    B8["Batch Size: 8"] -->|"~2,500 tok/s/GPU"| C8((Low Throughput))
+    B16["Batch Size: 16"] -->|"~5,000 tok/s/GPU"| C16((Low Throughput))
+    B32["Batch Size: 32"] -->|"~9,800 tok/s/GPU"| C32((Medium Throughput))
+    B64["Batch Size: 64"] -->|"~16,000 tok/s/GPU"| C64((High Throughput))
+    B128["Batch Size: 128"] -->|"~22,700 tok/s/GPU"| C128((Very High Throughput))
+    B256["Batch Size: 256"] -->|"~26,500 tok/s/GPU"| C256((Peak Throughput))
+
+    style B8 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style B16 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style B32 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style B64 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style B128 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    style B256 fill:#f9f9f9,stroke:#333,stroke-width:1px
+    
+    style C8 fill:#f8cecc,stroke:#b85450
+    style C16 fill:#f8cecc,stroke:#b85450
+    style C32 fill:#fff2cc,stroke:#d6b656
+    style C64 fill:#dae8fc,stroke:#6c8ebf
+    style C128 fill:#d5e8d4,stroke:#82b366
+    style C256 fill:#d5e8d4,stroke:#82b366
