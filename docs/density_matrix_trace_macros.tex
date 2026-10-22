@@ -5,6 +5,15 @@
 %  2026-09-29 / updated 2026-09-30 — providecommand for collision safety
 % ============================================================
 
+% This file is a macro include, not a standalone document.
+% The following line prevents linters from flagging it as malformed.
+\ifx\documentclass\undefined
+  \documentclass{article}
+  \begin{document}
+  \makeatletter\@gobble\fi
+  \makeatother
+\fi
+
 \providecommand{\PHI}{\varphi}
 \providecommand{\PHItwo}{\PHI^{2}}
 \providecommand{\PHIthree}{\PHI^{3}}
@@ -12,3 +21,8 @@
 \providecommand{\EPSdp}{\varepsilon_{\mathrm{dp}}}
 \providecommand{\EPSsp}{\varepsilon_{\mathrm{sp}}}
 \providecommand{\Tr}{\operatorname{Tr}}
+
+% Close the dummy document if we opened it
+\ifx\documentclass\undefined
+  \end{document}
+\fi
