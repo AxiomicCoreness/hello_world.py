@@ -128,8 +128,12 @@ def test_context_json_records_measured_and_deltas():
 
 
 def test_check_xcode_cli_ok():
+    cmd = [sys.executable]
+    if sys.version_info >= (3, 11):
+        cmd.append("-P")
+    cmd.append(str(SKILL_ROOT / "xcode_planck_scripts" / "check_xcode.py"))
     r = subprocess.run(
-        [sys.executable, "-P", str(SKILL_ROOT / "xcode_planck_scripts" / "check_xcode.py")],
+        cmd,
         capture_output=True,
         text=True,
         cwd=str(SKILL_ROOT),
