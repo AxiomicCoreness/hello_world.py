@@ -1,0 +1,53 @@
+entry_index: 9303
+timestamp: '2026-10-23T18:11:01Z'
+event: /teavm_mtls_stubs_katex_tree_milestone
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
+witness_chain: 9302 -> 9303
+measured_at_commit: b0f19acf
+sign_off: Clarke Yoursa Tee
+note: 'Milestone: TeaVM→IRC mTLS Java stubs + strict KaTeX domain tree. teaVM_mtls_stubs tip 08906a33c5a0214831ead3e3bdbe4cdb140cfdbf
+  (08906a33) lands IrcBridgeConfig / MtlsToolCall / IrcBridgeClientStub under games/teavm-rhythm/.../irc/
+  — host irc.abjects.net; WS dial plan only; no live socket; mTLS remains on sovereign-irc-bridge after
+  PEMs. Unit tests 6/6 (MtlsToolCallTest 2 + IrcBridgeClientStubTest 4). katex_tree preserved and sealed
+  forward at b0f19acfa0403b7441355c7868f04396348a0fe7 (b0f19acf): docs/katex_macros.yaml → katex.macros.{{math,garden,physics}};
+  KaTeXTreeValidator (uniqueness + self-ref + cycle DFS); KaTeXMacroSetTest strictTreeIsValid + darkLambdaIsPresent
+  (2/2). Stokes micro docs/katex_stokes_mandala_9300_micro.* untouched (separate). Root mvn clean test
+  BUILD SUCCESS Tests run: 55. Append-only NEW ledger.v2/9303.yml chaining 9302 seal 40123a96…. No invented
+  witnesses. Signed-off-by: Clarke Yoursa Tee.'
+provenance:
+  repo: AxiomicCoreness/hello_world.py
+  teavm_mtls_stubs_tip: 08906a33c5a0214831ead3e3bdbe4cdb140cfdbf
+  teavm_mtls_stubs_short: 08906a33
+  katex_tree_tip: b0f19acfa0403b7441355c7868f04396348a0fe7
+  main_tip_at_seal: b0f19acfa0403b7441355c7868f04396348a0fe7
+  prior_seal_9302: 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
+  irc_host: irc.abjects.net
+  live_socket: false
+recorded:
+  teavm_mtls_stubs: true
+  irc_abjects_net: true
+  mtls_unit_tests: 6/6
+  katex_tree_preserved: true
+  stokes_micro_separate: true
+  no_live_socket: true
+validation:
+  irc_stub_tests: 6/6
+  katex_macro_set_test: 2/2
+  root_mvn_clean_test: 'Tests run: 55, Failures: 0'
+  build: SUCCESS
+chain:
+  prev_entry: 9302
+  prev_hash: 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
+  prev_hash_source: ledger.v2/9302.yml seal_sha3_256 (declared)
+  witness_chain: 9302 -> 9303
+seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True)
+  of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex,
+  witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
+regime_b_event_domain_sha3_256: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
+regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9303|/teavm_mtls_stubs_katex_tree_milestone|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462;
+  NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
+terminal_hex: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+seal: ∀∞φ² · TEAVM_MTLS_KATEX_TREE_9303 · WOOD_DRAGON_GATE · SEALED · 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+seal_sha3_256: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
