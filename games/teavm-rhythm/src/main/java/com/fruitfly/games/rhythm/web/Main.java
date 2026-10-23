@@ -153,6 +153,18 @@ public final class Main {
     private static LoadedChart baseLoaded;
     private static AudioSync baseAudio;
     static final String PICKER_LOCK_HINT = SongSource.LOCK_HINT;
+    /** Moves list of the current run (window.__rhythmDebug); a fresh one at every start. */
+    private static MovesLog moves;
+    /** ?debug=notes: console.log every row and show the last rows on the stage (#moves-list). */
+    private static boolean debugNotes;
+    private static HTMLElement movesEl;
+    static final int STAGE_ROWS = 8;
+    /** ?clock=raw: read audio.currentTime as is (the pre-smoothing behaviour, for comparison). */
+    private static boolean rawClock;
+    /** Song paused because the tab went hidden; resumePending = re-anchor the clock on the next frame. */
+    private static boolean pausedHidden;
+    private static boolean resumePending;
+    static final String PAUSED_TEXT = "paused (tab hidden)";
     /** Left CLI → ws://127.0.0.1:6669/cli (Cosmic Alignment loopback). */
     private static CliClient cliClient;
 

@@ -131,6 +131,25 @@ final class Dom {
     @JSBody(script = "try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}")
     static native void cancelSpeech();
 
+    @org.teavm.jso.JSFunctor
+    interface VisibilityCallback extends JSObject {
+        void changed(boolean hidden);
+    }
+
+    /** document 'visibilitychange' -> hidden yes/no. No-op where the event or document.visibilityState is missing. */
+    @JSBody(params = {"cb"}, script = "if (typeof document === 'undefined' || !document.addEventListener) return;"
+            + "document.addEventListener('visibilitychange', function () { cb(document.visibilityState === 'hidden'); });")
+    static native void onVisibilityChange(VisibilityCallback cb);
+
+    @JSBody(script = "return typeof document !== 'undefined' && document.visibilityState === 'hidden';")
+    static native boolean isHidden();
+
+    @JSBody(params = {"s"}, script = "if (typeof console !== 'undefined' && console.log) console.log(s);")
+    static native void log(String s);
+
+    @JSBody(params = {"el", "show"}, script = "if (el && el.style) { var d = show ? '' : 'none'; if (el.style.display !== d) el.style.display = d; }")
+    static native void show(HTMLElement el, boolean show);
+
     /** True when {@code el} is document.activeElement. */
     @JSBody(params = {"el"}, script = "return !!(el && typeof document !== 'undefined' && document.activeElement === el);")
     static native boolean isActive(HTMLElement el);
