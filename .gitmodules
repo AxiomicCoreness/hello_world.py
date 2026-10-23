@@ -16,6 +16,9 @@
 [submodule "vendor/DeepGEMM-Ascend"]
 	path = vendor/DeepGEMM-Ascend
 	url = https://github.com/deepseek-ai/DeepGEMM-Ascend.git
+[submodule "vendor/DeepInfer"]
+	path = vendor/DeepInfer
+	url = https://github.com/deepseek-ai/DeepInfer.git
 [submodule "vendor/teavm-sync"]
 	path = vendor/teavm-sync
 	url = https://github.com/AxiomicCoreness/teavm-sync.git
