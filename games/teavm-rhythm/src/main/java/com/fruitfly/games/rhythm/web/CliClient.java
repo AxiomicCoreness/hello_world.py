@@ -109,6 +109,8 @@ public final class CliClient {
                         + ":" + IrcBridgeConfig.LOOPBACK_CLI_PORT));
         appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
                 "pythonIDE: /py help · /py list · /py call <cap> · /py pointer"));
+        appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
+                "demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"));
         appendRaw(CliLines.pagesHttpsHint());
     }
 

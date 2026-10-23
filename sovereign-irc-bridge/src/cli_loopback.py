@@ -13,6 +13,9 @@ pythonIDE path: lines starting with ``/py``, ``py``, ``/ide``, or ``ide``
 are routed through ``pythonIDE.toolkit.SovereignToolkit`` (and pointer_2300
 for ``pointer``). Failures are sent back as ``[Traceback]`` lines so the
 TeaVM chat history shows a useful Python traceback.
+
+Extra demos: ``/py deepinfer`` (engine.deepinfer_accelerator) and
+``/py katex`` / ``/katex`` (mvn -Dtest=KaTeXMacroSetTest or python mirror).
 """
 from __future__ import annotations
 
@@ -27,6 +30,14 @@ from pathlib import Path
 from typing import Any, Final, List, Optional
 
 logger = logging.getLogger("sovereign-irc-bridge.cli")
+
+# FastAPI needs WebSocket in this module's globals when `from __future__
+# import annotations` is on — local imports inside create_app() are not
+# visible to get_type_hints, so the param becomes a bogus query field (403).
+try:
+    from fastapi import WebSocket as FastAPIWebSocket
+except ModuleNotFoundError:  # optional until serve time
+    FastAPIWebSocket = None  # type: ignore[assignment,misc]
 
 LOOPBACK_HOST: Final = "127.0.0.1"
 CLI_PORT: Final = 6669
@@ -61,17 +72,44 @@ def _is_ide_line(text: str) -> bool:
         or t == "ide"
         or t.startswith("/pythonide")
         or t == "/pythonide"
+        or t.startswith("/deepinfer")
+        or t == "deepinfer"
+        or t.startswith("deepinfer ")
+        or t.startswith("/katex")
+        or t == "katex"
+        or t.startswith("katex ")
     )
 
 
 def _strip_verb(text: str) -> str:
     t = (text or "").strip()
     lower = t.lower()
-    for v in ("/pythonide", "/py", "/ide", "pythonide", "py", "ide"):
+    for v in (
+        "/pythonide",
+        "/py",
+        "/ide",
+        "pythonide",
+        "py",
+        "ide",
+        "/deepinfer",
+        "deepinfer",
+        "/katex",
+        "katex",
+    ):
         if lower == v:
+            # bare /deepinfer or /katex → treat as the command itself
+            if v in ("/deepinfer", "deepinfer"):
+                return "deepinfer"
+            if v in ("/katex", "katex"):
+                return "katex"
             return ""
         if lower.startswith(v + " "):
-            return t[len(v) :].strip()
+            rest = t[len(v) :].strip()
+            if v in ("/deepinfer", "deepinfer"):
+                return ("deepinfer " + rest).strip()
+            if v in ("/katex", "katex"):
+                return ("katex " + rest).strip()
+            return rest
     return t
 
 
@@ -107,20 +145,298 @@ def _parse_call_args(raw: str) -> tuple:
     return (val,)
 
 
+
+def _deepinfer_complete_safe(prompt: str, *, prefer: str = "auto") -> Any:
+    """Run accelerator.complete with a hard wall clock so chat UI never hangs."""
+    import concurrent.futures
+
+    from engine.deepinfer_accelerator import complete
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        fut = pool.submit(complete, prompt, prefer=prefer)
+        try:
+            return fut.result(timeout=5.0)
+        except concurrent.futures.TimeoutError as exc:
+            raise TimeoutError(
+                "deepinfer.complete exceeded 5s — chatbox refuses to hang"
+            ) from exc
+
+
+def handle_deepinfer(rest: str = "") -> List[str]:
+    """Surface DeepInfer accelerator status / probe into chat with traceback."""
+    lines: List[str] = []
+    parts = (rest or "").split(None, 1)
+    # Empty rest (bare /py deepinfer) → demo = status + probe for chatbox showcase
+    sub = parts[0].lower() if parts and parts[0] else "status"
+    prompt = parts[1] if len(parts) > 1 else "TeaVM CLI deepinfer probe"
+    if sub in {"help", "?"}:
+        lines.append("[System] deepinfer · optional accelerator (engine/deepinfer_accelerator.py)")
+        lines.append("[Engine] /py deepinfer [status|probe|complete] [prompt…]")
+        lines.append("[Engine] alias: /deepinfer · Traceback on import/runtime failure")
+        return lines
+    try:
+        from engine.deepinfer_accelerator import (
+            deepinfer_available,
+            deepinfer_status,
+        )
+
+        status = deepinfer_status()
+        lines.append(
+            "[Engine] deepinfer available="
+            + str(status.get("available"))
+            + " · role="
+            + str(status.get("role"))
+            + " · accel_env="
+            + str(status.get("accelerator_env"))
+        )
+        if status.get("import_error"):
+            lines.append("[System] import_error: " + str(status["import_error"]))
+            # Still emit a traceback-shaped block so chat history shows failure path
+            try:
+                raise ModuleNotFoundError(str(status["import_error"]))
+            except ModuleNotFoundError as exc:
+                lines.extend(_traceback_lines(exc))
+        if sub in {"status", "stat", "info"}:
+            lines.append("[Engine] " + json.dumps(status, default=str)[:1200])
+            return lines
+        if sub in {"demo", "all"}:
+            lines.append("[Engine] " + json.dumps(status, default=str)[:1200])
+            try:
+                result = _deepinfer_complete_safe(
+                    "CLI chatbox deepinfer demo", prefer="auto"
+                )
+                lines.append(
+                    "[Engine] deepinfer.probe → "
+                    + json.dumps(result, default=str)[:1200]
+                )
+            except Exception as probe_exc:  # noqa: BLE001
+                lines.append(
+                    f"[System] deepinfer.probe skipped: {type(probe_exc).__name__}: {probe_exc}"
+                )
+                lines.extend(_traceback_lines(probe_exc))
+            if not deepinfer_available():
+                lines.append(
+                    "[System] DeepInfer package absent — fell back to sovereign/offline path"
+                )
+            return lines
+        if sub in {"probe", "complete", "run", "infer"}:
+            result = _deepinfer_complete_safe(prompt if sub != "probe" else prompt, prefer="auto")
+            rendered = json.dumps(result, default=str)
+            lines.append(f"[Engine] deepinfer.{sub} → {rendered[:1500]}")
+            if not deepinfer_available() and result.get("mode") in {
+                "offline_echo",
+                "deepseek",
+                None,
+            }:
+                lines.append(
+                    "[System] DeepInfer package absent — fell back to sovereign/offline path"
+                )
+            return lines
+        # treat unknown sub as prompt for complete
+        result = _deepinfer_complete_safe(rest.strip() or prompt, prefer="auto")
+        lines.append("[Engine] deepinfer.complete → " + json.dumps(result, default=str)[:1500])
+        return lines
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[System] deepinfer error: {type(exc).__name__}: {exc}")
+        lines.extend(_traceback_lines(exc))
+        return lines
+
+
+def _validate_katex_python_mirror(yaml_path: Path) -> List[str]:
+    """Mirror KaTeXTreeValidator + KaTeXMacroSetTest checks in pure Python."""
+    import re
+
+    lines_out: List[str] = []
+    content = yaml_path.read_text(encoding="utf-8")
+    macro_re = re.compile(
+        r'^\s*"(\\{1,2}[A-Za-z]+)"\s*:\s*(?:"([^"]*)"|\[\s*"([^"]*)")'
+    )
+    domain_re = re.compile(r"^([a-z]+):$")
+    ref_re = re.compile(r"(\\{1,2}[A-Za-z]+)")
+
+    def norm(raw: str) -> str:
+        return "\\" + raw.replace("\\", "")
+
+    macro_map: dict[str, str] = {}
+    domain_of: dict[str, str] = {}
+    pending: list[tuple[str, str]] = []
+    current = "root"
+    for line in content.splitlines():
+        trimmed = line.strip()
+        if not trimmed or trimmed.startswith("#") or trimmed in {"katex:", "macros:"}:
+            continue
+        dm = domain_re.match(trimmed)
+        if dm:
+            current = dm.group(1)
+            continue
+        m = macro_re.match(line)
+        if not m:
+            continue
+        key = norm(m.group(1))
+        expansion = m.group(2) if m.group(2) is not None else m.group(3)
+        if expansion is None:
+            raise AssertionError(f"Missing expansion for {key}")
+        if current == "root":
+            raise AssertionError(f"Macro outside domain (math|garden|physics): {key}")
+        if key in macro_map:
+            raise AssertionError(
+                f"Duplicate macro definition: {key} in domain {current} "
+                f"(already in {domain_of[key]})"
+            )
+        macro_map[key] = expansion
+        domain_of[key] = current
+        pending.append((key, expansion))
+
+    graph: dict[str, list[str]] = {}
+    for key, expansion in pending:
+        deps: list[str] = []
+        for rm in ref_re.finditer(expansion):
+            dep = norm(rm.group(1))
+            if dep == key:
+                raise AssertionError(f"Self-referential macro expansion: {key}")
+            if dep in macro_map:
+                deps.append(dep)
+        graph[key] = deps
+
+    visited: set[str] = set()
+    stack: set[str] = set()
+
+    def cycle(node: str) -> bool:
+        if node in stack:
+            return True
+        if node in visited:
+            return False
+        visited.add(node)
+        stack.add(node)
+        for n in graph.get(node, []):
+            if cycle(n):
+                return True
+        stack.remove(node)
+        return False
+
+    for node in graph:
+        if cycle(node):
+            raise AssertionError(f"Cyclic macro dependency detected involving: {node}")
+
+    # KaTeXMacroSetTest.darkLambdaIsPresent
+    if '"\\\\darklambda"' not in content and '"\\darklambda"' not in content:
+        # YAML often stores as "\\darklambda"
+        if "darklambda" not in content:
+            raise AssertionError("\\darklambda must be present")
+    if "garden:" not in content:
+        raise AssertionError("garden domain must be present")
+
+    lines_out.append(
+        f"[Engine] Strict KaTeX Tree Validated. Total Macros: {len(macro_map)}"
+    )
+    lines_out.append(
+        "[Engine] KaTeXMacroSetTest.strictTreeIsValid · PASSED (python mirror)"
+    )
+    lines_out.append(
+        "[Engine] KaTeXMacroSetTest.darkLambdaIsPresent · PASSED (python mirror)"
+    )
+    domains = sorted(set(domain_of.values()))
+    lines_out.append("[Engine] domains: " + ", ".join(domains))
+    return lines_out
+
+
+def handle_katex(rest: str = "") -> List[str]:
+    """Run KaTeXMacroSetTest (mvn) or python mirror; emit chat + Traceback."""
+    lines: List[str] = []
+    sub = (rest or "").strip().lower()
+    if sub in {"help", "?"}:
+        lines.append("[System] KaTeXMacroSetTest · docs/katex_macros.yaml strict tree")
+        lines.append(
+            "[Engine] /py katex | /py katex_test | /katex · "
+            "mvn test -Dtest=KaTeXMacroSetTest (fallback: python mirror)"
+        )
+        return lines
+
+    yaml_path = _REPO_ROOT / "docs" / "katex_macros.yaml"
+    lines.append("[Engine] KaTeXMacroSetTest · path=" + str(yaml_path))
+
+    # Prefer real Maven Surefire when available
+    import shutil
+    import subprocess
+
+    mvn = shutil.which("mvn")
+    if mvn is None and (_REPO_ROOT / "mvnw").exists():
+        mvn = str(_REPO_ROOT / "mvnw")
+    if mvn:
+        lines.append(f"[Engine] running: {mvn} test -Dtest=KaTeXMacroSetTest")
+        try:
+            proc = subprocess.run(
+                [mvn, "-q", "test", "-Dtest=KaTeXMacroSetTest"],
+                cwd=str(_REPO_ROOT),
+                capture_output=True,
+                text=True,
+                timeout=300,
+                check=False,
+            )
+            combined = (proc.stdout or "") + ("\n" + proc.stderr if proc.stderr else "")
+            for raw in combined.splitlines()[-80:]:
+                tag = "[Engine]" if proc.returncode == 0 else "[System]"
+                if "FAILURE" in raw or "ERROR" in raw or "Exception" in raw:
+                    tag = "[Traceback]" if "at " in raw or "Exception" in raw else "[System]"
+                lines.append(f"{tag} {raw}")
+            if proc.returncode == 0:
+                lines.append("[Engine] KaTeXMacroSetTest · BUILD SUCCESS (mvn)")
+            else:
+                lines.append(
+                    f"[System] KaTeXMacroSetTest · mvn exit={proc.returncode}"
+                )
+                try:
+                    raise RuntimeError(
+                        f"mvn test -Dtest=KaTeXMacroSetTest failed with exit {proc.returncode}"
+                    )
+                except RuntimeError as exc:
+                    lines.extend(_traceback_lines(exc))
+            return lines
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[System] mvn invoke failed: {type(exc).__name__}: {exc}")
+            lines.extend(_traceback_lines(exc))
+            lines.append("[System] falling back to python mirror of KaTeXTreeValidator")
+
+    lines.append("[System] mvn not on PATH — python mirror of KaTeXMacroSetTest")
+    try:
+        if not yaml_path.is_file():
+            raise FileNotFoundError(f"missing {yaml_path}")
+        lines.extend(_validate_katex_python_mirror(yaml_path))
+        lines.append("[Engine] Tests run: 2, Failures: 0, Errors: 0 (mirror)")
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[System] KaTeXMacroSetTest FAILED: {type(exc).__name__}: {exc}")
+        lines.extend(_traceback_lines(exc))
+    return lines
+
+
 def handle_pythonide(text: str) -> List[str]:
     """Run a pythonIDE CLI command; always returns chat-tagged lines."""
     lines: List[str] = []
     rest = _strip_verb(text)
     if not rest or rest.lower() in {"help", "?"}:
         lines.append("[System] pythonIDE CLI · toolkit.py + pointer_2300")
-        lines.append("[Engine] commands: help | list | call <cap> [args] | pointer")
+        lines.append(
+            "[Engine] commands: help | list | call <cap> [args] | pointer | "
+            "deepinfer | katex"
+        )
         lines.append(f"[Engine] dial {LOOPBACK_HOST}:{CLI_PORT}/cli · NO_LEDGER_WRITE")
+        lines.append(
+            "[Engine] demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"
+        )
         return lines
 
     parts = rest.split(None, 2)
     cmd = parts[0].lower()
 
     try:
+        if cmd in {"deepinfer", "di"}:
+            sub = rest.split(None, 1)[1] if len(rest.split(None, 1)) > 1 else ""
+            return handle_deepinfer(sub)
+
+        if cmd in {"katex", "katex_test", "katexmacrosettest", "macros"}:
+            sub = rest.split(None, 1)[1] if len(rest.split(None, 1)) > 1 else ""
+            return handle_katex(sub)
+
         if cmd in {"list", "ls"}:
             from pythonIDE.toolkit import SovereignToolkit
 
@@ -184,7 +500,9 @@ def handle_pythonide(text: str) -> List[str]:
 
 def create_app():
     """Build the FastAPI app (import fastapi only when serving)."""
-    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+    from fastapi import FastAPI, WebSocketDisconnect
+    if FastAPIWebSocket is None:
+        raise ModuleNotFoundError("fastapi.WebSocket unavailable")
 
     app = FastAPI(title="Sovereign IRC CLI loopback", version="0.2.0")
 
@@ -197,15 +515,24 @@ def create_app():
             "remote": REMOTE_IRC,
             "live_irc": os.environ.get("CLI_LIVE_IRC", "0") == "1",
             "pythonide": True,
+            "demos": ["deepinfer", "katex"],
         }
 
     @app.websocket("/cli")
-    async def cli_socket(websocket: WebSocket) -> None:
-        await websocket.accept()
+    async def cli_socket(websocket: FastAPIWebSocket) -> None:
+        try:
+            await websocket.accept()
+        except Exception as exc:  # noqa: BLE001
+            # Handshake already failed — nothing to send; log for operators
+            logger.exception("cli websocket accept failed: %s", exc)
+            return
         await websocket.send_text(f"[System] loopback CLI on {LOOPBACK_HOST}:{CLI_PORT}/cli")
         await websocket.send_text(f"[Engine] path → {REMOTE_IRC} (browser never dials abjects)")
         await websocket.send_text(
             "[Engine] pythonIDE: /py help · /py list · /py call <cap> · /py pointer"
+        )
+        await websocket.send_text(
+            "[Engine] demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"
         )
         live = os.environ.get("CLI_LIVE_IRC", "0") == "1"
         reader = writer = None

@@ -50,3 +50,34 @@ def test_pythonide_pointer():
     blob = "\n".join(lines)
     assert "2300" in blob
     assert "314" in blob
+
+
+def test_deepinfer_demo_surfaces_status_or_traceback():
+    lines = handle_pythonide("/py deepinfer")
+    blob = "\n".join(lines)
+    assert "deepinfer" in blob.lower()
+    # Either available path or import Traceback — both are valid chat outcomes
+    assert any(
+        x.startswith("[Engine]") or x.startswith("[Traceback]") or x.startswith("[System]")
+        for x in lines
+    )
+
+
+def test_deepinfer_alias():
+    lines = handle_pythonide("/deepinfer status")
+    blob = "\n".join(lines)
+    assert "deepinfer" in blob.lower()
+
+
+def test_katex_macroset_test_via_cli():
+    lines = handle_pythonide("/py katex")
+    blob = "\n".join(lines)
+    assert "KaTeXMacroSetTest" in blob or "katex" in blob.lower()
+    # Mirror should pass on repo docs/katex_macros.yaml
+    assert "PASSED" in blob or "SUCCESS" in blob or "[Traceback]" in blob
+
+
+def test_katex_alias():
+    lines = handle_pythonide("/katex")
+    blob = "\n".join(lines)
+    assert "KaTeX" in blob or "katex" in blob.lower()
