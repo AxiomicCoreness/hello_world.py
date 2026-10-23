@@ -4,7 +4,7 @@
   "head_commit_measured": "3bd60bc0",
   "deprecated_lambda0_nm": 952057,
   "current_lambda0_nm": 952072.1,
-  "theta_lock_deg": 202.600,
+  "theta_lock_deg": 202.6,
   "phase_lock_degrees": 202.6,
   "north_star_hz": 71.975,
   "north_star_sources": [
@@ -20,5 +20,12 @@
     "ed25519_valid": true,
     "fingerprint_match": false
   },
-  "correction_draft": "ledger.v2/9289.yml"
+  "correction_draft": "ledger.v2/9289.yml",
+  "lambda0_rule_a_nm": 952072.1,
+  "lambda0_rule_b_nm": 951072.0,
+  "lambda0_alt_design_nm": 951145.0,
+  "theta_lock_rad": 3.536037,
+  "notes": {
+    "rule_a": "canonical: 2\u03c0*535805/3.536037 = 952072.1 nm at \u03b8_lock 202.6\u00b0"
+  }
 }
