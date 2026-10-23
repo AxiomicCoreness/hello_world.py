@@ -1,0 +1,113 @@
+{
+  "skill": "xcode-planck-engine",
+  "version": "1.0.0",
+  "repo": "AxiomicCoreness/hello_world.py",
+  "base_commit_measured": "bae409d0",
+  "tag_id": "xcode-planck-engine-400800db",
+  "committed": true,
+  "paths": {
+    "swift_engine": "sovereign/PlanckEngine.swift",
+    "python_engine": "sovereign/planck_engine_v2.py",
+    "swiftui_app": "AxiomicApp.swift",
+    "swiftui_view": "ContentView.swift",
+    "python_plotting": [
+      "scripts/t_rotator_graphs.py",
+      "scripts/t_rotator_emit.py"
+    ],
+    "requirements": "requirements.txt"
+  },
+  "xcode": {
+    "target_ios": "16.0+",
+    "project_hint": "AxiomicCoreness",
+    "template": "iOS App (SwiftUI)",
+    "files_to_drag": [
+      "sovereign/PlanckEngine.swift",
+      "ContentView.swift",
+      "AxiomicApp.swift"
+    ],
+    "copy_items_if_needed": true,
+    "header_marker": "XCODE INTEGRATION NOTES",
+    "header_landed_on_main": true,
+    "header_commit": "bae409d0"
+  },
+  "port380": {
+    "swift_stub": "PlanckEngine.syncWithGate(base: URL) async throws",
+    "offline_defaults": [
+      "phi",
+      "phi_5",
+      "phi_9",
+      "phi_inv_709",
+      "phi_inv_1000"
+    ],
+    "implementation": "omitted; updates static vars from JSON when gate online"
+  },
+  "parity": {
+    "phi": "(1 + sqrt(5)) / 2",
+    "shared_powers": [
+      "phi_5",
+      "phi_9",
+      "phi_inv_709",
+      "phi_inv_1000"
+    ],
+    "si_constants": [
+      "G",
+      "c",
+      "h_bar",
+      "k_B",
+      "M_sun"
+    ]
+  },
+  "run_measured": {
+    "hawkingTempK": 84057832.67649437,
+    "sBellCorrected": 4.576491222541475,
+    "dSdtOption1": -1596.9844718999245,
+    "dSdtOption2": -986.9906831399547,
+    "eps145": 1.36705719514418e-209,
+    "zetaBound": 4.320767762363209,
+    "halfPhi709": 3.3630480089697764e-149,
+    "tsirelsonBound": 2.8284271247461903
+  },
+  "run_paste_vs_measured": {
+    "hawkingTempK": {
+      "paste": 1.25e-19,
+      "measured": 84057832.67649437,
+      "abs_delta": 84057832.67649437
+    },
+    "sBellCorrected": {
+      "paste": 4.576,
+      "measured": 4.576491222541475,
+      "abs_delta": 0.0004912225414752669
+    },
+    "dSdtOption1": {
+      "paste": -1597.0,
+      "measured": -1596.9844718999245,
+      "abs_delta": 0.01552810007547123
+    },
+    "dSdtOption2": {
+      "paste": -987.0,
+      "measured": -986.9906831399547,
+      "abs_delta": 0.00931686004526
+    },
+    "eps145": {
+      "paste": 1.368e-209,
+      "measured": 1.36705719514418e-209,
+      "abs_delta": -9.428048558199839e-213
+    },
+    "zetaBound": {
+      "paste": 4.3227,
+      "measured": 4.320767762363209,
+      "abs_delta": -0.0019322376367911787
+    }
+  },
+  "constraints": {
+    "graphviz_in_swift": false,
+    "graphviz_owner": "Python (requirements.txt graphviz>=0.20.1; t_rotator / plotting)",
+    "seaborn_owner": "Python (requirements.txt seaborn>=0.13.0)",
+    "stdlib_stripping": "Xcode Release configuration only; never strip Foundation by hand",
+    "do_not_rename_package_to_scripts": true,
+    "assert_measured_not_paste": true
+  },
+  "tests": {
+    "python_evals": 10
+  }
+}
