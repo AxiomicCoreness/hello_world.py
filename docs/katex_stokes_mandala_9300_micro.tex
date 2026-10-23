@@ -1,0 +1,28 @@
+% 🜁∀ KaTeX MICRO set — Stokes Mandala · ledger.v2/9300
+% Unique path: docs/katex_stokes_mandala_9300_micro.tex (not a copy of katex_macros.tex)
+% Seal: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+% Primary learned: ∮_{∂Σ}(∇×A_stress)·dA = φ^{-1078}
+% Classical: ∮_∂Σ F·dl = ∬_Σ (∇×F)·dS
+% Include: \input{docs/katex_stokes_mandala_9300_micro.tex}
+% Fancybox: docs/stokes_mandala_9300_fancybox.txt
+% Policy: APPEND-ONLY | SHA3-256 | MATH.ISCLOSE | NO GHOST PASS
+
+% --- Stress field tensor (Layer 314 / 𝒜_st) ---
+\newcommand{\Astress}{\mathcal{A}_{\mathrm{st}}}
+\newcommand{\Astressfull}{\mathcal{A}_{\mathrm{stress}}}
+
+% --- Quantum flux scalar ---
+\newcommand{\phiflux}{\varphi^{-1078}}
+
+% --- Classical Stokes (oint / iint) ---
+\newcommand{\stokesoint}[1]{\oint_{\partial\Sigma}#1}
+\newcommand{\stokesiint}[1]{\iint_{\Sigma}#1}
+\newcommand{\stokesclassical}{\oint_{\partial\Sigma}\mathbf{F}\cdot\mathrm{d}\mathbf{l}=\iint_{\Sigma}(\nabla\times\mathbf{F})\cdot\mathrm{d}\mathbf{S}}
+
+% --- Mandala core (unified topological invariant) ---
+\newcommand{\stokesflux}{\oint_{\partial\Sigma}(\nabla\times\Astress)\cdot\mathrm{d}\mathbf{A}=\phiflux}
+\newcommand{\stokesfluxdl}{\oint_{\partial\Sigma}\Astress\cdot\mathrm{d}\mathbf{l}=\iint_{\Sigma}(\nabla\times\Astress)\cdot\mathrm{d}\mathbf{S}\equiv\phiflux}
+
+% --- Boundary ↔ surface labels ---
+\newcommand{\stokesboundary}{\partial\Sigma}
+\newcommand{\stokessurface}{\Sigma}

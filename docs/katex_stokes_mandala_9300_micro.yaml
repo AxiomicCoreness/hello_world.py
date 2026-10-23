@@ -1,0 +1,24 @@
+# 🜁∀ KaTeX MICRO — Stokes Mandala · ledger.v2/9300 (unique; not katex_macros.yaml dump)
+# Seal: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+# TeX mirror: docs/katex_stokes_mandala_9300_micro.tex
+# Fancybox: docs/stokes_mandala_9300_fancybox.txt
+
+katex:
+  ledger_entry: 9300
+  event: /learned_stokes_theorem
+  macros:
+    # Stress field
+    "\\Astress": "\\mathcal{A}_{\\mathrm{st}}"
+    "\\Astressfull": "\\mathcal{A}_{\\mathrm{stress}}"
+    # Flux scalar
+    "\\phiflux": "\\varphi^{-1078}"
+    # Classical pieces
+    "\\stokesoint": ["\\oint_{\\partial\\Sigma}#1", 1]
+    "\\stokesiint": ["\\iint_{\\Sigma}#1", 1]
+    "\\stokesclassical": "\\oint_{\\partial\\Sigma}\\mathbf{F}\\cdot\\mathrm{d}\\mathbf{l}=\\iint_{\\Sigma}(\\nabla\\times\\mathbf{F})\\cdot\\mathrm{d}\\mathbf{S}"
+    # Mandala core
+    "\\stokesflux": "\\oint_{\\partial\\Sigma}(\\nabla\\times\\Astress)\\cdot\\mathrm{d}\\mathbf{A}=\\phiflux"
+    "\\stokesfluxdl": "\\oint_{\\partial\\Sigma}\\Astress\\cdot\\mathrm{d}\\mathbf{l}=\\iint_{\\Sigma}(\\nabla\\times\\Astress)\\cdot\\mathrm{d}\\mathbf{S}\\equiv\\phiflux"
+    # Labels
+    "\\stokesboundary": "\\partial\\Sigma"
+    "\\stokessurface": "\\Sigma"
