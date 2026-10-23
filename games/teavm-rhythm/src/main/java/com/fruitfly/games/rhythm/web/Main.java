@@ -11,6 +11,10 @@ import com.fruitfly.games.rhythm.logic.EuclidSong;
 import com.fruitfly.games.rhythm.logic.EuclidTrack;
 import com.fruitfly.games.rhythm.logic.Midi;
 import com.fruitfly.games.rhythm.logic.MidiSong;
+import com.fruitfly.games.rhythm.logic.CueProbe;
+import com.fruitfly.games.rhythm.logic.Move;
+import com.fruitfly.games.rhythm.logic.MovesLog;
+import com.fruitfly.games.rhythm.logic.Sha256;
 import com.fruitfly.games.rhythm.logic.SongSource;
 import com.fruitfly.games.rhythm.logic.VoiceSong;
 import com.fruitfly.games.rhythm.logic.ClickTrack;
@@ -28,6 +32,7 @@ import com.fruitfly.games.rhythm.logic.SongClock;
 import com.fruitfly.games.rhythm.logic.StageLayout;
 import com.fruitfly.games.rhythm.logic.ToyCircuitXml;
 import org.teavm.jso.JSBody;
+import java.util.List;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.browser.Window;
@@ -147,6 +152,18 @@ public final class Main {
     private static LoadedChart baseLoaded;
     private static AudioSync baseAudio;
     static final String PICKER_LOCK_HINT = SongSource.LOCK_HINT;
+    /** Moves list of the current run (window.__rhythmDebug); a fresh one at every start. */
+    private static MovesLog moves;
+    /** ?debug=notes: console.log every row and show the last rows on the stage (#moves-list). */
+    private static boolean debugNotes;
+    private static HTMLElement movesEl;
+    static final int STAGE_ROWS = 8;
+    /** ?clock=raw: read audio.currentTime as is (the pre-smoothing behaviour, for comparison). */
+    private static boolean rawClock;
+    /** Song paused because the tab went hidden; resumePending = re-anchor the clock on the next frame. */
+    private static boolean pausedHidden;
+    private static boolean resumePending;
+    static final String PAUSED_TEXT = "paused (tab hidden)";
 
     private Main() {
     }
@@ -235,6 +252,21 @@ public final class Main {
                 status = "camera unavailable: using screenshot";
             }
         }
+        debugNotes = "notes".equals(param(q, "debug"));
+        rawClock = "raw".equals(param(q, "clock"));
+        movesEl = (HTMLElement) doc.getElementById("moves-list");
+        if (movesEl != null) {
+            Dom.show(movesEl, debugNotes);
+        }
+        DebugApi.install(DebugApi.VERSION,
+                () -> MovesLog.toJson(moves == null ? new java.util.ArrayList<>() : moves.recent()),
+                () -> MovesLog.toJson(moves == null ? new java.util.ArrayList<>() : moves.first20()),
+                () -> moves == null ? 0 : moves.size(),
+                () -> ControlMode.id(mode),
+                () -> clock.now(),
+                () -> moves == null ? -1 : moves.verifyKept(),
+                Sha256::hex);
+        Dom.onVisibilityChange(Main::visibilityChanged);
         String connectomeUrl = param(q, "connectome");
         Long fromUrl = parseSeed(q);
         if (fromUrl != null) {
@@ -613,7 +645,71 @@ public final class Main {
         if (audio != null) {
             audio.stop();
         }
-        clock = new SongClock(loaded != null ? loaded.offsetMs() : 0);
+        clock = new SongClock(loaded != null ? loaded.offsetMs() : 0, !rawClock);
+        moves = new MovesLog(game, mode, null);
+        pausedHidden = false;
+        resumePending = false;
+        if (movesEl != null && debugNotes) {
+            setText(movesEl, Move.stageHeader());
+        }
+    }
+
+    /** The active fly brain's cue probe for the moves list (null when no fly plays). */
+    private static CueProbe probeFor(int m) {
+        switch (m) {
+            case MODE_LIF: return brain.probe();
+            case MODE_CONNECTOME: return wired.probe();
+            case MODE_ASSIST_LIF: return flyLif.probe();
+            case MODE_ASSIST_CONNECTOME: return flyWired.probe();
+            default: return null;
+        }
+    }
+
+    /**
+     * Tab hidden mid-song: requestAnimationFrame stops but an audio element
+     * keeps playing, so notes would pass unplayed. Pause audio and clock;
+     * on visible, resume the audio where it stopped (no rewind) and re-anchor
+     * the clock on the next frame's stamp.
+     */
+    private static void visibilityChanged(boolean hidden) {
+        if (hidden) {
+            if (running && !pausedHidden) {
+                pausedHidden = true;
+                resumePending = false;
+                clock.pause();
+                if (audio != null) {
+                    audio.pause();
+                }
+                Dom.cancelSpeech();
+            }
+        } else if (pausedHidden) {
+            if (audio != null) {
+                audio.resume();
+            }
+            resumePending = true;
+        }
+        refreshNow();
+    }
+
+    /** Append the rows settled by song time t; with ?debug=notes log each and refresh the stage list. */
+    private static void recordMoves(long t) {
+        if (moves == null) {
+            return;
+        }
+        List<Move> fresh = moves.update(t);
+        if (fresh.isEmpty() || !debugNotes) {
+            return;
+        }
+        for (Move m : fresh) {
+            Dom.log(m.logLine());
+        }
+        if (movesEl != null) {
+            StringBuilder b = new StringBuilder(Move.stageHeader());
+            for (Move m : moves.tail(STAGE_ROWS)) {
+                b.append('\n').append(m.stageLine());
+            }
+            setText(movesEl, b.toString());
+        }
     }
 
     private static boolean assist() {
@@ -699,6 +795,7 @@ public final class Main {
                 }
                 running = true;
                 lockHintUntil = 0;
+                moves = new MovesLog(game, mode, probeFor(mode));
                 clock.start(lastStamp, audio != null && audio.isOk());
                 if (audio != null) {
                     audio.play();
@@ -718,6 +815,9 @@ public final class Main {
                 reset();
                 return;
             case InputRouter.LANE:
+                if (pausedHidden) {
+                    return;
+                }
                 break;
             default:
                 return;
@@ -741,7 +841,12 @@ public final class Main {
 
     private static void frame(double stamp) {
         lastStamp = stamp;
-        if (running) {
+        if (resumePending) {
+            resumePending = false;
+            pausedHidden = false;
+            clock.resume(stamp); // the hidden time is not added to song time
+        }
+        if (running && !pausedHidden) {
             sampleSongTime(stamp);
             int missesBefore = game.missCount();
             if (mode != MODE_OFF) {
@@ -767,6 +872,7 @@ public final class Main {
                 banner = "MISS";
                 bannerUntil = stamp + 400;
             }
+            recordMoves(songTime());
             if (game.isFinished()) {
                 running = false;
                 if (audio != null) {
@@ -840,7 +946,7 @@ public final class Main {
         for (int l = 0; l < RhythmGame.LANES; l++) {
             flashing[l] = laneFlashUntil[l] > stamp;
         }
-        StageRenderer.draw(ctx, layout, theme, songTime(), circuit, msSinceSpike(), game.chart(), sabers, flashing);
+        StageRenderer.draw(ctx, layout, theme, clock.now(), circuit, msSinceSpike(), game.chart(), sabers, flashing);
 
         // 3. Key bar: the notes themselves are the 3D blocks; keys sit under their lanes' hit-plane x.
         ctx.setFillStyle(theme.hitLine);
@@ -881,7 +987,11 @@ public final class Main {
         line(hl, "blocks cut " + NoteBlocks.hitCount(game.chart(), songTime()));
         if (loaded != null || audio != null) {
             boolean audioClock = running ? clock.isAudioMode() : audio != null && audio.isOk();
-            line(hl, audioClock ? "clock audio" : "clock frame");
+            if (running && audioClock && !pausedHidden && audio != null && audio.isBuffering()) {
+                line(hl, "clock: audio buffering");
+            } else {
+                line(hl, audioClock ? "clock audio" : "clock frame");
+            }
         }
         line(hr, loaded != null ? loaded.title() : "seed " + seed);
         line(hr, ControlMode.hudText(mode));
@@ -897,6 +1007,9 @@ public final class Main {
         }
         if (!status.isEmpty()) {
             line(hc, status.length() > 60 ? status.substring(0, 57) + "..." : status);
+        }
+        if (pausedHidden) {
+            line(hc, PAUSED_TEXT);
         }
         if (lockHintUntil > stamp && running) {
             line(hc, lockHint);
