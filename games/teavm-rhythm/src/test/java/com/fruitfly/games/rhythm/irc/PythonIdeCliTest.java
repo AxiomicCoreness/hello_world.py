@@ -63,4 +63,20 @@ class PythonIdeCliTest {
         assertTrue(tb.stream().anyMatch(s -> s.contains("ValueError: boom")));
         assertTrue(tb.stream().anyMatch(s -> s.contains("hint")));
     }
+
+    @Test
+    void deepinferOfflineSurfacesStub() {
+        assertTrue(PythonIdeCli.isIdeLine("/py deepinfer"));
+        assertTrue(PythonIdeCli.isIdeLine("/deepinfer"));
+        List<String> lines = PythonIdeCli.handleOffline("/py deepinfer");
+        assertTrue(lines.stream().anyMatch(s -> s.toLowerCase().contains("deepinfer")));
+    }
+
+    @Test
+    void katexOfflineSurfacesStub() {
+        assertTrue(PythonIdeCli.isIdeLine("/py katex"));
+        assertTrue(PythonIdeCli.isIdeLine("/katex"));
+        List<String> lines = PythonIdeCli.handleOffline("/py katex");
+        assertTrue(lines.stream().anyMatch(s -> s.contains("KaTeXMacroSetTest") || s.toLowerCase().contains("katex")));
+    }
 }
