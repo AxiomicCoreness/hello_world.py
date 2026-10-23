@@ -36,12 +36,14 @@ class Wasp107b:
         return self.phi_resonance_hz() * 1e12
 
     def status(self) -> Dict:
+        phi_r = self.phi_resonance_hz()
         return {
             "mass_mj": self.mass_mj,
             "radius_rj": self.radius_rj,
             "period_days": self.period_days,
             "orbital_frequency_hz": self.orbital_frequency_hz(),
-            "phi_resonance_hz": self.phi_resonance_hz(),
+            "phi_resonance": phi_r,
+            "phi_resonance_hz": phi_r,
             "phi_resonance_thz": self.phi_resonance_thz(),
             "coherence": self.coherence,
             "seal": "∀∞φ² · WASP_107b_THROAT_ANCHOR · SEALED",
