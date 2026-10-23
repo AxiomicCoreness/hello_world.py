@@ -37,6 +37,8 @@ public final class LifNeuron {
     private double v = V_REST;
     private double g = 0.0;
     private double refractoryRemaining = 0.0;
+    /** v after the last substep's integration, before a spike reset (display / moves list only). */
+    private double vPre = V_REST;
 
     public double v() {
         return v;
@@ -44,6 +46,16 @@ public final class LifNeuron {
 
     public double g() {
         return g;
+    }
+
+    /**
+     * Membrane voltage at the end of the last substep's RK4 step, read before
+     * the threshold check resets it. A spiking substep has vBeforeReset() &gt;=
+     * V_THRESH while {@link #v()} already reads V_RESET. Observation only: it
+     * never feeds back into the dynamics.
+     */
+    public double vBeforeReset() {
+        return vPre;
     }
 
     public double refractoryRemaining() {
@@ -59,6 +71,7 @@ public final class LifNeuron {
     public boolean substep(double gDelta, double dt) {
         g += gDelta;
         stepRK4(dt);
+        vPre = v;
         if (refractoryRemaining > 0.0) {
             refractoryRemaining -= dt;
             if (refractoryRemaining < 0.0) {
