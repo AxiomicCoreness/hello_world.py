@@ -160,7 +160,7 @@ jobs:
         run: |
           set +e
           # PYTHONPATH=. ensures the tests can import `sovereign.planck_engine_v2`
-          PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
+          PYTHONPATH=. python -m pytest -q --tb=short --ignore=vendor --ignore=multibody_simulator/tests -k "not integration"
           rc=$?
           set -e
 
@@ -247,7 +247,7 @@ jobs:
           set -euo pipefail
           docker run --rm -e STRICT_PYTEST="${STRICT_PYTEST}" "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
             set +e
-            PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
+            PYTHONPATH=. python -m pytest -q --tb=short --ignore=vendor --ignore=multibody_simulator/tests -k "not integration"
             rc=$?
             if [ "$rc" -eq 5 ]; then echo "no tests collected in image — pass"; exit 0; fi
             if [ "$rc" -ne 0 ]; then

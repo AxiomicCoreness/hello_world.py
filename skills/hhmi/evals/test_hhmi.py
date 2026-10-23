@@ -117,18 +117,25 @@ def test_duplicate_csv_pairs_are_summed_not_duplicated(tmp_path):
     assert check_hhmi.check(out)[0] == []
 
 
+def _py_cli(script, *args):
+    # -P (safe path) is 3.11+; dual-gate CI is 3.10. conftest already puts ROOT on sys.path.
+    cmd = [sys.executable]
+    if sys.version_info >= (3, 11):
+        cmd.append("-P")
+    cmd.append(str(script))
+    cmd.extend(args)
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
 def test_cli_exit_codes(tmp_path):
     src = write_fixture(tmp_path)
     out = tmp_path / "cli.xml"
-    r = subprocess.run([sys.executable, "-P", str(ROOT / "hhmi_scripts" / "csv_to_xml.py"),
-                        str(src), "-o", str(out), "--limit", "3"],
-                       capture_output=True, text=True)
+    r = _py_cli(ROOT / "hhmi_scripts" / "csv_to_xml.py",
+                str(src), "-o", str(out), "--limit", "3")
     assert r.returncode == 0 and "neurons_out=3" in r.stderr
-    r = subprocess.run([sys.executable, "-P", str(ROOT / "hhmi_scripts" / "check_hhmi.py"), str(out)],
-                       capture_output=True, text=True)
+    r = _py_cli(ROOT / "hhmi_scripts" / "check_hhmi.py", str(out))
     assert r.returncode == 0 and "[+] OK" in r.stdout and "neurons=3" in r.stdout
-    r = subprocess.run([sys.executable, "-P", str(ROOT / "hhmi_scripts" / "csv_to_xml.py"),
-                        str(tmp_path / "missing")], capture_output=True, text=True)
+    r = _py_cli(ROOT / "hhmi_scripts" / "csv_to_xml.py", str(tmp_path / "missing"))
     assert r.returncode == 1
 
 
