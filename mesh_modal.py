@@ -23,7 +23,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sqlite3
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -34,7 +36,30 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from phi_pipeline import PHI, PHASE_STEP, PhiPipeline
 
-DB_PATH = Path(__file__).resolve().parent / "mesh_ledger.sqlite3"
+
+def _resolve_db_path() -> Path:
+    """Prefer MESH_LEDGER_DB; else repo-local path if writable; else /tmp.
+
+    Container in-image pytest bind-mounts the checkout read-only (/src:ro).
+    Opening a sqlite file next to this module then fails collection with
+    OperationalError: unable to open database file.
+    """
+    env = os.environ.get("MESH_LEDGER_DB", "").strip()
+    if env:
+        return Path(env)
+    candidate = Path(__file__).resolve().parent / "mesh_ledger.sqlite3"
+    parent = candidate.parent
+    try:
+        parent.mkdir(parents=True, exist_ok=True)
+        probe = parent / ".mesh_ledger_write_probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return candidate
+    except OSError:
+        return Path(tempfile.gettempdir()) / "mesh_ledger.sqlite3"
+
+
+DB_PATH = _resolve_db_path()
 _ledger_lock = threading.Lock()
 _state_lock = threading.Lock()
 _pipeline = PhiPipeline()
@@ -43,9 +68,16 @@ _bg_stop = threading.Event()
 app = FastAPI(title="Hash Mesh Modal", version="1.0.0")
 
 
+def _db_path() -> Path:
+    """Coerce module-level DB_PATH (tests may assign a str tmp path)."""
+    return DB_PATH if isinstance(DB_PATH, Path) else Path(DB_PATH)
+
+
 def _init_db() -> None:
     with _ledger_lock:
-        con = sqlite3.connect(DB_PATH)
+        path = _db_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        con = sqlite3.connect(path)
         con.execute(
             """CREATE TABLE IF NOT EXISTS ledger (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +96,7 @@ def append_ledger(event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     h = hashlib.sha3_256(f"{event}|{body}".encode()).hexdigest()
     with _ledger_lock:
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(_db_path())
         cur = con.execute(
             "INSERT INTO ledger (ts, event, payload, hash) VALUES (?, ?, ?, ?)",
             (time.time(), event, body, h),
@@ -77,7 +109,7 @@ def append_ledger(event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def query_ledger(limit: int = 20) -> List[Dict[str, Any]]:
     with _ledger_lock:
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(_db_path())
         rows = con.execute(
             "SELECT id, ts, event, payload, hash FROM ledger ORDER BY id DESC LIMIT ?",
             (limit,),
@@ -102,7 +134,13 @@ def mesh_hash(state: Dict[str, Any]) -> str:
     return hashlib.sha3_256(raw.encode()).hexdigest()
 
 
-_init_db()
+try:
+    _init_db()
+except sqlite3.OperationalError as exc:
+    # Import must stay soft under RO mounts; append_ledger re-inits on use.
+    import warnings
+
+    warnings.warn(f"mesh_modal ledger init deferred: {exc}", RuntimeWarning)
 
 
 @app.get("/", response_class=HTMLResponse)

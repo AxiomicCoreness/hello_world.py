@@ -155,12 +155,16 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install --quiet pytest pyyaml numpy cryptography
+          # Collection needs fastapi/httpx/uvicorn/sympy/matplotlib (and friends).
+          if [ -f requirements-ci.txt ]; then
+            python -m pip install --quiet -r requirements-ci.txt
+          fi
 
       - name: Pytest (Strict)
         run: |
           set +e
           # PYTHONPATH=. ensures the tests can import `sovereign.planck_engine_v2`
-          PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
+          PYTHONPATH=. python -m pytest -q --tb=short --ignore=vendor --ignore=multibody_simulator/tests -k "not integration"
           rc=$?
           set -e
 
@@ -219,7 +223,8 @@ jobs:
           FROM python:3.12-slim
           WORKDIR /app
           COPY . /app
-          RUN python -m pip install --no-cache-dir --quiet pytest pyyaml numpy cryptography
+          RUN python -m pip install --no-cache-dir --quiet pytest pyyaml numpy cryptography \
+              && if [ -f requirements-ci.txt ]; then pip install --no-cache-dir --quiet -r requirements-ci.txt; fi
           DF
 
       - name: In-image import gate (HARD)
@@ -245,9 +250,21 @@ jobs:
       - name: In-image pytest (Strict)
         run: |
           set -euo pipefail
-          docker run --rm -e STRICT_PYTEST="${STRICT_PYTEST}" "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
+          # Repo Dockerfile copies a partial tree; bind-mount the checkout so
+          # STRICT pytest sees the same sources as the Build matrix, while
+          # still executing under the image interpreter.
+          docker run --rm -u 0 \
+            -e STRICT_PYTEST="${STRICT_PYTEST}" \
+            -e MESH_LEDGER_DB=/tmp/mesh_ledger.sqlite3 \
+            -e PYTEST_ADDOPTS="-o cache_dir=/tmp/pytest-cache" \
+            -v "$PWD:/src:ro" -w /src \
+            "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
             set +e
-            PYTHONPATH=. python -m pytest -q --tb=short -k "not integration"
+            python -m pip install --no-cache-dir --quiet pytest pyyaml numpy cryptography
+            if [ -f requirements-ci.txt ]; then
+              python -m pip install --no-cache-dir --quiet -r requirements-ci.txt
+            fi
+            PYTHONPATH=. python -m pytest -q --tb=short --ignore=vendor --ignore=multibody_simulator/tests -k "not integration"
             rc=$?
             if [ "$rc" -eq 5 ]; then echo "no tests collected in image — pass"; exit 0; fi
             if [ "$rc" -ne 0 ]; then

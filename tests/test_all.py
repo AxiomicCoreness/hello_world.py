@@ -293,7 +293,7 @@ def test_mesh_modal_ledger():
         print("⚠️ mesh_modal not imported – skipping ledger test")
         return
     with tempfile.NamedTemporaryFile(suffix='.db') as tmp:
-        db_path = tmp.name
+        db_path = Path(tmp.name)
         orig_path = mesh_modal.DB_PATH
         mesh_modal.DB_PATH = db_path
         # Temp DB was not initialized at import — create ledger table now.
