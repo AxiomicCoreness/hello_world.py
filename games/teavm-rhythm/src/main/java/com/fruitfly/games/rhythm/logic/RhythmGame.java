@@ -59,6 +59,11 @@ public final class RhythmGame {
 
     /** Handle a key press in {@code lane} at song time {@code nowMs}. Returns the judgement, or null if nothing was hit. */
     public Judgement press(int lane, long nowMs) {
+        return press(lane, nowMs, false);
+    }
+
+    /** As {@link #press(int, long)}; {@code byFly} records a fly brain's spike as the actor (moves list). */
+    public Judgement press(int lane, long nowMs, boolean byFly) {
         if (lane < 0 || lane >= LANES) {
             return null;
         }
@@ -76,7 +81,7 @@ public final class RhythmGame {
             if (j == null) {
                 continue;
             }
-            n.resolve(j, nowMs);
+            n.resolve(j, nowMs, byFly ? Note.ACTOR_FLY : Note.ACTOR_HUMAN);
             score += (long) j.baseScore() * multiplierFor(combo);
             combo++;
             maxCombo = Math.max(maxCombo, combo);
