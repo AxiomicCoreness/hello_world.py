@@ -30,6 +30,7 @@ public final class LifAutoplayer {
     private final LifNeuron[] neurons = new LifNeuron[RhythmGame.LANES];
     private final int[] nextNoteIndex = new int[RhythmGame.LANES];
     private final long latencyMs;
+    private final CueProbe probe;
     private long substepsDone;
     private int spikes;
 
@@ -50,6 +51,12 @@ public final class LifAutoplayer {
             nextNoteIndex[l] = advanceIndex(l, 0);
         }
         this.latencyMs = measureLatencyMs();
+        this.probe = new CueProbe(game.chart().notes().size());
+    }
+
+    /** Per-note cue / peak voltage / spike record of the lane neurons (moves list). */
+    public CueProbe probe() {
+        return probe;
     }
 
     /** Substeps from the pulse to the first spike for a neuron at rest (1 ms each). */
@@ -97,12 +104,15 @@ public final class LifAutoplayer {
                 int idx = nextNoteIndex[l];
                 if (idx < notes.size() && t >= notes.get(idx).timeMs() + aimMs - latencyMs) {
                     drive = DRIVE_G;
+                    probe.cue(l, idx, t, latencyMs);
                     nextNoteIndex[l] = advanceIndex(l, idx + 1);
                 }
-                if (neurons[l].substep(drive, LifNeuron.DT_MS)) {
+                boolean spiked = neurons[l].substep(drive, LifNeuron.DT_MS);
+                probe.sample(l, t, neurons[l].vBeforeReset(), spiked);
+                if (spiked) {
                     spikes++;
                     if (sink == null) {
-                        game.press(l, t);
+                        game.press(l, t, true);
                     } else {
                         sink.press(l, t);
                     }

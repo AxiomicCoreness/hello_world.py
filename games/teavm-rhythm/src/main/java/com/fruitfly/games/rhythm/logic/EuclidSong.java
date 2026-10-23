@@ -12,6 +12,12 @@ import java.util.List;
  *
  * Step i of bar b is at {@code LEAD_IN_MS + round((b * n + i) * barMs / n)},
  * barMs = 240000 / bpm. Song time 0 is audio sample 0 (offset 0).
+ *
+ * Lanes: in the layered preset each layer keeps its own lane. A
+ * single-pattern preset is spread over all four lanes: pulse number p of the
+ * song (counting from 0 across bars, p = b * k + j for the j-th onset of bar
+ * b) goes to lane {@code p mod 4}, D F J K D F ... The timbre stays the
+ * layer's.
  */
 public final class EuclidSong {
     public static final long LEAD_IN_MS = 2000;
@@ -77,6 +83,16 @@ public final class EuclidSong {
         public Layer[] layers() {
             return layers.clone();
         }
+
+        /** A single-pattern preset: its pulses rotate over all four lanes. */
+        public boolean spread() {
+            return layers.length == 1;
+        }
+
+        /** Lane of the {@code pulse}-th pulse (0-based, whole song) of {@code layer}. */
+        public int laneOf(Layer layer, int pulse) {
+            return spread() ? pulse % RhythmGame.LANES : layer.lane;
+        }
     }
 
     public static final Preset[] PRESETS = {
@@ -123,12 +139,38 @@ public final class EuclidSong {
             throw new IllegalArgumentException("bars out of range: " + bars);
         }
         List<Note> out = new ArrayList<>();
+        int[] pulses = new int[p.layers.length];
         for (int b = 0; b < bars; b++) {
-            for (Layer l : p.layers) {
+            for (int li = 0; li < p.layers.length; li++) {
+                Layer l = p.layers[li];
                 boolean[] s = l.steps();
                 for (int i = 0; i < s.length; i++) {
                     if (s[i]) {
-                        out.add(new Note(l.lane, stepMs(b, i, l.n, bpm)));
+                        out.add(new Note(p.laneOf(l, pulses[li]++), stepMs(b, i, l.n, bpm)));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Timbre of each note of {@link #notes}, same order. */
+    public static int[] timbres(Preset p, int bars) {
+        int count = 0;
+        for (int b = 0; b < bars; b++) {
+            for (Layer l : p.layers) {
+                for (boolean x : l.steps()) {
+                    count += x ? 1 : 0;
+                }
+            }
+        }
+        int[] out = new int[count];
+        int at = 0;
+        for (int b = 0; b < bars; b++) {
+            for (Layer l : p.layers) {
+                for (boolean x : l.steps()) {
+                    if (x) {
+                        out[at++] = l.timbre;
                     }
                 }
             }
@@ -142,11 +184,12 @@ public final class EuclidSong {
         return new LoadedChart("Euclid \u00b7 " + p.label, "Bjorklund \u00b7 " + bpm + " BPM", bpm, 0, null, c);
     }
 
-    /** HUD lines: "D kick      E(4,16)  x...x...x...x...". */
+    /** HUD lines: "D E(4,16) x...x...x...x..." per layer; a spread preset shows "DFJK E(7,12) x.xx.x.xx.x.". */
     public static List<String> hudLines(Preset p) {
         List<String> out = new ArrayList<>();
         for (Layer l : p.layers) {
-            out.add(RhythmGame.LANE_KEYS[l.lane] + " " + l.formula() + " " + l.text());
+            String lanes = p.spread() ? "DFJK" : RhythmGame.LANE_KEYS[l.lane];
+            out.add(lanes + " " + l.formula() + " " + l.text());
         }
         return out;
     }
