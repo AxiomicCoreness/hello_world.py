@@ -266,9 +266,20 @@ def test_offline_stream_chunk_size():
         assert len(delta_text) <= chunk_size + 1, \
             f"Delta text length {len(delta_text)} > chunk_size {chunk_size}"
 
-    # Reconstruct and verify
+    # Reconstruct — offline_stream wraps prompt (not bare text):
+    # [GARDEN_OFFLINE_ECHO] model=deepseek-chat
+    # prompt_len=N coherence=1.0 phase=202.6
+    # echo: <prompt>
     reconstructed = "".join(e.get("text", "") for e in delta_events)
-    assert reconstructed == text, f"Reconstructed text mismatch: {reconstructed} vs {text}"
+    assert reconstructed.startswith("[GARDEN_OFFLINE_ECHO]"), (
+        f"expected wrapped GARDEN_OFFLINE_ECHO prefix, got: {reconstructed[:120]!r}"
+    )
+    assert "model=deepseek-chat" in reconstructed
+    assert "coherence=1.0" in reconstructed
+    assert "phase=202.6" in reconstructed
+    assert f"echo: {text}" in reconstructed, (
+        f"wrapped echo missing prompt; got: {reconstructed!r}"
+    )
 
     print(f"✅ Chunking verified: chunk_size={chunk_size}, {len(delta_events)} deltas")
 
