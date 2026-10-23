@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "policy": "full digests — no truncation; UI labels only — no live IRC sockets",
+  "policy": "full digests \u2014 no truncation; UI labels only \u2014 no live IRC sockets",
   "team_endpoints_ui_only": [
     "irc.abjects.net:6666",
     "irc.abjects.net:6667",
@@ -36,5 +36,12 @@
     "skills",
     "quantum",
     "argocd"
-  ]
+  ],
+  "bridge": {
+    "service": "sovereign-irc-bridge",
+    "ws_path": "/ws",
+    "health_path": "/health",
+    "host": "irc.abjects.net",
+    "note": "UI labels 6666-6669; live dial uses mTLS (typically 6697) via bridge stub"
+  }
 }

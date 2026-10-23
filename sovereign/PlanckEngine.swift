@@ -16,6 +16,13 @@ import Foundation
  * - Graphviz is NOT used here. SwiftUI handles rendering natively.
  * - Stdlib stripping is handled by Xcode's release configuration automatically.
  *   Do not manually strip standard libraries; Foundation is required for Math.
+ *
+ * NOTE ON PANDAS / mTLS / CUDA:
+ * - pandas is Python-only (sovereign/planck_engine_v2.py optional to_frame()).
+ *   Do not link pandas or NumPy into this Xcode target.
+ * - mTLS certs belong to Port-380 / sovereign-irc-bridge K8s Secret mounts
+ *   (irc.abjects.net). syncWithGate uses HTTPS JSON — not raw IRC sockets.
+ * - No CUDA / GPU toolchain in this Swift target. CPU Math + Foundation only.
  * ============================================================================
  */
 

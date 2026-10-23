@@ -138,3 +138,22 @@ is **separate** from this in-repo pack; update that only when the parent asks.
 - The package is `xcode_planck_scripts`, not `scripts`, so `evals/conftest.py`
   putting the skill root first on `sys.path` cannot shadow the repo's top-level
   `scripts/` package.
+
+## Pandas / mTLS / CUDA (explicit)
+
+| Concern | Where | Xcode? |
+| --- | --- | --- |
+| pandas tables | `sovereign/planck_engine_v2.py` optional `PlanckEngine.to_frame()` | **No** — Python-side only |
+| mTLS to irc.abjects.net | `sovereign-irc-bridge/` + K8s `irc-mtls-secrets` | **No** — bridge / Port-380 secrets |
+| Port-380 sync | `PlanckEngine.syncWithGate(base:)` HTTPS JSON | Yes (URLSession) |
+| CUDA / GPU | — | **Never** invent CUDA for this skill |
+
+Compile (Python twin on Linux CI / box):
+
+```bash
+python3 -m py_compile sovereign/planck_engine_v2.py
+python3 -c "from sovereign.planck_engine_v2 import PlanckEngine; print(PlanckEngine.run()['hawkingTempK'])"
+```
+
+Swift/Xcode compile remains on macOS with the project steps in the header above.
+
