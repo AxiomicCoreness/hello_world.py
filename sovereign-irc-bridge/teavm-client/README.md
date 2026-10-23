@@ -41,3 +41,10 @@ Layout grid `300px 1fr 350px`: `#cli-column` | stage | Euclidean `.side`.
 Commands `/py help`, `/py list`, `/py call <cap>`, `/py pointer` are handled by
 `src/cli_loopback.py` via `pythonIDE.toolkit` / `pointer_2300`. Failures return
 `[Traceback]` lines into chat history. Local/CI: `ws://127.0.0.1:6669/cli`.
+
+Demos on the same path:
+
+- `/py deepinfer` — `engine.deepinfer_accelerator` status (optional `demo`/`probe`/`complete`)
+- `/py katex` / `/katex` — runs `mvn test -Dtest=KaTeXMacroSetTest` when Maven is
+  available, otherwise a python mirror of `KaTeXTreeValidator` + darklambda check
+- Aliases: `/deepinfer`, `/katex`

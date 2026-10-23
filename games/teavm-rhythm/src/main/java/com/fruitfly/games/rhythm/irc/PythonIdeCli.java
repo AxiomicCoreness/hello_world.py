@@ -50,7 +50,15 @@ public final class PythonIdeCli {
                 || lower.startsWith("ide ")
                 || lower.equals("ide")
                 || lower.equals("/pythonide")
-                || lower.startsWith("/pythonide ");
+                || lower.startsWith("/pythonide ")
+                || lower.equals("/deepinfer")
+                || lower.startsWith("/deepinfer ")
+                || lower.equals("deepinfer")
+                || lower.startsWith("deepinfer ")
+                || lower.equals("/katex")
+                || lower.startsWith("/katex ")
+                || lower.equals("katex")
+                || lower.startsWith("katex ");
     }
 
     /**
@@ -59,14 +67,30 @@ public final class PythonIdeCli {
      */
     public static String stripVerb(String raw) {
         String t = raw == null ? "" : raw.trim();
-        String[] verbs = {"/pythonide", "/py", "/ide", "pythonide", "py", "ide"};
+        String[] verbs = {
+            "/pythonide", "/py", "/ide", "pythonide", "py", "ide",
+            "/deepinfer", "deepinfer", "/katex", "katex"
+        };
         String lower = t.toLowerCase();
         for (String v : verbs) {
             if (lower.equals(v)) {
+                if ("/deepinfer".equals(v) || "deepinfer".equals(v)) {
+                    return "deepinfer";
+                }
+                if ("/katex".equals(v) || "katex".equals(v)) {
+                    return "katex";
+                }
                 return "";
             }
             if (lower.startsWith(v + " ")) {
-                return t.substring(v.length()).trim();
+                String rest = t.substring(v.length()).trim();
+                if ("/deepinfer".equals(v) || "deepinfer".equals(v)) {
+                    return ("deepinfer " + rest).trim();
+                }
+                if ("/katex".equals(v) || "katex".equals(v)) {
+                    return ("katex " + rest).trim();
+                }
+                return rest;
             }
         }
         return t;
@@ -105,6 +129,16 @@ public final class PythonIdeCli {
             case "2300":
                 pointer(out);
                 break;
+            case "deepinfer":
+            case "di":
+                deepinferOffline(out, parts.length > 1 ? parts[1] : "");
+                break;
+            case "katex":
+            case "katex_test":
+            case "katexmacrosettest":
+            case "macros":
+                katexOffline(out);
+                break;
             case "call":
             case "run":
                 if (parts.length < 2) {
@@ -134,7 +168,7 @@ public final class PythonIdeCli {
                 } else {
                     traceback(out, "PythonIdeCli.handle", "ValueError",
                             "unknown ide command: " + cmd,
-                            "try: /py help | /py list | /py call <cap> | /py pointer");
+                            "try: /py help | /py list | /py call <cap> | /py pointer | /py deepinfer | /py katex");
                 }
                 break;
         }
@@ -167,6 +201,8 @@ public final class PythonIdeCli {
         out.add(CliLines.format(CliLines.KIND_ENGINE,
                 "commands: /py help | /py list | /py call <cap> [args] | /py pointer"));
         out.add(CliLines.format(CliLines.KIND_ENGINE,
+                "demos: /py deepinfer | /py katex (KaTeXMacroSetTest) · Traceback on fail"));
+        out.add(CliLines.format(CliLines.KIND_ENGINE,
                 "local/CI dial: " + CliLines.LOOPBACK_WS + " · errors return Traceback lines"));
         out.add(CliLines.format(CliLines.KIND_SYSTEM,
                 "NO_LEDGER_WRITE · Cosmic Alignment loopback only"));
@@ -180,6 +216,26 @@ public final class PythonIdeCli {
                 "author Clarke Yoursa Tee · float_compare=math.isclose · full 64-hex digests"));
         out.add(CliLines.format(CliLines.KIND_SYSTEM,
                 "live payload: python -m pythonIDE.pointer_2300 (repo root)"));
+    }
+
+    private static void deepinferOffline(List<String> out, String sub) {
+        out.add(CliLines.format(CliLines.KIND_SYSTEM,
+                "offline stub · deepinfer needs ws://127.0.0.1:6669/cli bridge"));
+        out.add(CliLines.format(CliLines.KIND_ENGINE,
+                "queued: /py deepinfer"
+                        + (sub == null || sub.isEmpty() ? "" : " " + sub)
+                        + " · engine/deepinfer_accelerator.py"));
+        out.add(CliLines.format(CliLines.KIND_ENGINE,
+                "live: status | probe | complete [prompt] · Traceback on import miss"));
+    }
+
+    private static void katexOffline(List<String> out) {
+        out.add(CliLines.format(CliLines.KIND_SYSTEM,
+                "offline stub · KaTeXMacroSetTest needs bridge (mvn or python mirror)"));
+        out.add(CliLines.format(CliLines.KIND_ENGINE,
+                "queued: mvn test -Dtest=KaTeXMacroSetTest · docs/katex_macros.yaml"));
+        out.add(CliLines.format(CliLines.KIND_ENGINE,
+                "tests: strictTreeIsValid · darkLambdaIsPresent · Traceback on fail"));
     }
 
     private static void traceback(List<String> out, String where, String excType, String message,
