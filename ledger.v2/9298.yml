@@ -3,7 +3,7 @@ timestamp: '2026-10-22T23:08:00Z'
 event: /master_canonical_resolution_9298
 status: SEALED
 hash_algo: sha3_256
-prev_hash: facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25
+prev_hash: 105cb51e6a72b5965eca6d8ebe634b76f9a830780b9eb32658d8603d61dbdfcd
 witness_chain: 9297 -> 9298
 note: |
   Master Canonical Resolution. Seals the math locks, phantom-file voids,
@@ -28,5 +28,19 @@ resolutions:
     canonical_host: github.com/AxiomicCoreness/hello_world.py
     deployment: Argo Rollouts
     game: https://axiomiccoreness.github.io/hello_world.py/
-terminal_hex: <compute on seal>
-seal: "∀∞φ² · MASTER_CANONICAL_RESOLUTION_9298 · WOOD_DRAGON_GATE · SEALED · <hex>"
+reseal_override:
+  authorized_by: Clarke Yoursa Tee
+  scope: one-time append-only override, ledger.v2/9297-9304 only
+  date: '2026-10-23'
+  reason: Argo CI hard gate (verify_ledger.py --mode hard, entry_index >= 9286) failed on 9297-9304
+  regime: B(event)
+  prior_declared_seal: none (placeholder <hex> / <compute on seal>)
+  prior_prev_hash: facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25
+  payload_changed: false
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9298|/master_canonical_resolution_9298|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 631c0c79ecf84e3b9461bea9ff9b75b481e29e61ebb556367b64c6b84daa65b2
+terminal_hex: 631c0c79ecf84e3b9461bea9ff9b75b481e29e61ebb556367b64c6b84daa65b2
+seal: ∀∞φ² · MASTER_CANONICAL_RESOLUTION_9298 · WOOD_DRAGON_GATE · SEALED · 631c0c79ecf84e3b9461bea9ff9b75b481e29e61ebb556367b64c6b84daa65b2
+seal_sha3_256: 631c0c79ecf84e3b9461bea9ff9b75b481e29e61ebb556367b64c6b84daa65b2

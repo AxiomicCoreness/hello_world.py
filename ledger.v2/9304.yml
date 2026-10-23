@@ -3,22 +3,30 @@ event: /ui_milestone_and_debt_clear
 status: SEALED
 timestamp: '2026-10-23T21:54:53Z'
 hash_algo: sha3_256
-measured_at_commit: 5d1ea6fcb6e88922463d676308ea63fc2c7db5fa
+measured_at_commit: fc2f6c66f38b0c6422699ca479178ccbf30897f8
 commander: Clarke Yoursa Tee
 sign_off: Clarke Yoursa Tee
 open_ended: true
 even_index: true
-prev_hash: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+prev_hash: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
 witness_chain: 9303 -> 9304
-note: 'Commander REWRITE of ledger.v2/9304.yml (same index; not a new entry). measured_at_commit refreshed to 5d1ea6fcb6e88922463d676308ea63fc2c7db5fa after #123 squash-merge (fix(ci): gate python -P for 3.10; ignore vendor in Sovereign Package) and dual-gate Pytest #3018 GREEN (https://github.com/AxiomicCoreness/hello_world.py/actions/runs/40026572956 — ledger + Test Python 3.10/3.11/3.12 + Summary). debt/clear-3001-assertions MERGED via PR #121 (merge 4a5cbaa3; branch tip 72c18e45); #123 landed Path coerce / -P gate follow-ups. prev_hash/witness_chain 9303→9304 KEPT (36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2). Pages https mixed-content block of ws://127.0.0.1:6669/cli VERIFIED. Option B wss://bridge.axiomiccoreness.com/cli remains OPEN (not implemented). Watermark 2303+ MCP/vision/TTS stubs FILLED:false unchanged. Cosmic Alignment: local binds 127.0.0.1 only. No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+note: 'Option 1 CONSOLIDATION of ledger.v2/9304.yml (same index; not a new entry) under the 2026-10-23 one-time append-only
+  override for 9297-9304 granted by Clarke Yoursa Tee. measured_at_commit set to main head fc2f6c66f38b0c6422699ca479178ccbf30897f8
+  (#129). Payload now covers: Option B CliClient hostname routing (wss://bridge.axiomiccoreness.com/cli on Pages; ws://127.0.0.1:6669/cli
+  for localhost / 127.0.0.1 / ::1) merged as #126 7990bdb6427c0f6dddd7151cc14c8fa5f0c0c368; TeaVM Main.java/Dom.java restore
+  merged as #127 2d6483b7211b57ff44e0cfcc396c184e6af6a866; private loopback CORS Anywhere (tools/cors-anywhere, 127.0.0.1
+  only, origin whitelist) merged as #129 fc2f6c66f38b0c6422699ca479178ccbf30897f8; PR #128 /healthz CORS hardening (feat/harden-cors-healthz)
+  still OPEN, not merged, not on main. Earlier milestones (left IRC CLI, KaTeX strict tree, debt #121/#123, watermark 2303+)
+  retained. prev_hash re-chained to the re-sealed 9303. No CI result at the new measured commit is claimed; the recorded dual-gate
+  run #3018 is for 5d1ea6fc. Cosmic Alignment: local binds 127.0.0.1 only. No invented witnesses. Signed-off-by: Clarke Yoursa
+  Tee.'
 breakthroughs_and_milestones:
   left_irc_cli:
-    status: Live on main tip 5d1ea6fc
+    status: Live on main tip fc2f6c66
     layout: TeaVM 3-column grid (300px | 1fr | 350px)
-    client_route: CliClient -> ws://127.0.0.1:6669/cli -> bridge -> irc.abjects.net:6669
-    pages_behavior: mixed-content block verified
-    option_b_queued: wss://bridge.axiomiccoreness.com/cli
-    implemented_option_b: false
+    client_route: CliClient -> CliLines.resolveCliWsUrl(hostname) -> bridge -> irc.abjects.net:6669
+    pages_behavior: Pages (https) dials wss://bridge.axiomiccoreness.com/cli; mixed-content block of ws:// avoided
+    implemented_option_b: true
   katex_strict_tree:
     status: Active
     domains:
@@ -30,13 +38,14 @@ breakthroughs_and_milestones:
     tip: b0f19acfa0403b7441355c7868f04396348a0fe7
   ledger_9303:
     status: Sealed
-    seal_hex: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+    seal_hex: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
     payload: TeaVM mTLS stubs, irc.abjects.net, katex preserved
     commit: 0f4d915681baf56dea468b91ff3c72bad62fce64
   debt_clear_in_flight:
     branch: debt/clear-3001-assertions
     commit: 72c18e45f4a0a676795477bbce1d3144bedc973b
-    status: 'MERGED via PR #121 (merge commit 4a5cbaa354e1a0da460d494e4ba73570ffcc4237); dual-gate cleared by #123 Path/-P on tip 5d1ea6fc'
+    status: 'MERGED via PR #121 (merge commit 4a5cbaa354e1a0da460d494e4ba73570ffcc4237); dual-gate cleared by #123 Path/-P
+      on tip 5d1ea6fc'
     on_main: true
     pr: 121
     fixes:
@@ -47,6 +56,44 @@ breakthroughs_and_milestones:
     - Offline-echo [GARDEN_OFFLINE_ECHO] wrapper
     - Catalogue immunize (19 asserts)
     - mesh Path coerce + python -P gate for 3.10 (#123)
+  option_b_wss:
+    status: MERGED
+    pr: 126
+    commit: 7990bdb6427c0f6dddd7151cc14c8fa5f0c0c368
+    pages_url: wss://bridge.axiomiccoreness.com/cli
+    loopback_url: ws://127.0.0.1:6669/cli
+    loopback_hosts:
+    - localhost
+    - 127.0.0.1
+    - ::1
+    files:
+    - games/teavm-rhythm/README.md
+    - games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/irc/CliLines.java
+    - games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/web/CliClient.java
+    - games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/web/Dom.java
+    - games/teavm-rhythm/src/test/java/com/fruitfly/games/rhythm/irc/CliLinesTest.java
+  teavm_main_dom_restore:
+    status: MERGED
+    pr: 127
+    commit: 2d6483b7211b57ff44e0cfcc396c184e6af6a866
+    files:
+    - games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/web/Dom.java
+    - games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/web/Main.java
+    restored: moves-debug and pause-hidden fields in Main.java; Dom helpers
+  cors_anywhere_loopback:
+    status: MERGED
+    pr: 129
+    commit: fc2f6c66f38b0c6422699ca479178ccbf30897f8
+    path: tools/cors-anywhere/
+    bind: 127.0.0.1 only; exits on non-loopback HOST/BIND_HOST or empty whitelist
+    origin_policy: whitelist of project origins; no wildcard
+  healthz_cors_hardening:
+    status: OPEN
+    pr: 128
+    branch: feat/harden-cors-healthz
+    head: d5bbbd28e06f0fabec515a542be38fc3f07ec4bd
+    on_main: false
+    scope: 'port380_mcp.py /health and /healthz: allowlist CORS, no Origin reflection, no wildcard; tests/test_port380_cors_healthz.py'
 watermark_2303_plus:
   mcp_vision_tts_stubs:
     no_sealed_ledger_rewrite: true
@@ -81,7 +128,7 @@ dm_corrected_form:
   phi_15_relative_error: 0.1329
   event_hash_sha3_256: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 queued:
-- Option B hostname switch (wss://)
+- 'PR #128 /healthz CORS hardening (open; user Submit/merge)'
 ci:
   dual_gate_pytest:
     run: 3018
@@ -92,17 +139,17 @@ ci:
     policy: 'NO-GHOST-PASS: dual-gate green on measured tip; cite Actions #3018'
 provenance:
   repo: AxiomicCoreness/hello_world.py
-  main_tip_at_seal: 5d1ea6fcb6e88922463d676308ea63fc2c7db5fa
-  prior_seal_9303: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+  main_tip_at_seal: fc2f6c66f38b0c6422699ca479178ccbf30897f8
+  prior_seal_9303: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
   debt_branch_tip: 72c18e45f4a0a676795477bbce1d3144bedc973b
   debt_pr: '#121 merged (4a5cbaa3)'
-  rewrite: commander REWRITE of sealed 9304 (user t406u); prev_hash retained
-  prior_measured_at_commit: 6507b89d82faf607ba98649d00cb00869ea4e59e
+  rewrite: Option 1 consolidation under one-time override 9297-9304 (2026-10-23); earlier commander REWRITE (user t406u)
+  prior_measured_at_commit: 5d1ea6fcb6e88922463d676308ea63fc2c7db5fa
 recorded:
   left_irc_cli_landed: true
   mixed_content_verified: true
   option_b_plan_logged: true
-  option_b_implemented: false
+  option_b_implemented: true
   katex_tree: true
   seal_9303: true
   watermark_2303_plus: true
@@ -110,24 +157,44 @@ recorded:
   dual_gate_green: true
   override_used: true
   rewrite_9304: true
+  teavm_main_dom_restore: true
+  cors_anywhere_loopback: true
+  healthz_cors_hardening_merged: false
+  option1_consolidation: true
 open_workstreams:
 - id: option_b_wss
-  status: OPEN
-  detail: hostname-select wss://bridge.axiomiccoreness.com/cli
+  status: CLOSED
+  detail: 'merged #126 7990bdb6; wss://bridge.axiomiccoreness.com/cli on Pages, ws://127.0.0.1:6669/cli on loopback'
 - id: dual_gate_green
   status: CLOSED
   detail: 'Pytest #3018 success on 5d1ea6fc (3.10/3.11/3.12)'
 - id: debt_pr_submit
   status: CLOSED
   detail: 'PR #121 merged debt/clear-3001-assertions@72c18e45; #123 follow-up on tip'
+- id: healthz_cors_hardening
+  status: OPEN
+  detail: 'PR #128 feat/harden-cors-healthz (head d5bbbd28); not merged'
 chain:
   prev_entry: 9303
-  prev_hash: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
-  prev_hash_source: ledger.v2/9303.yml seal_sha3_256 (declared; verified on main)
+  prev_hash: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
+  prev_hash_source: ledger.v2/9303.yml seal_sha3_256 (Regime B, re-sealed under override)
   witness_chain: 9303 -> 9304
-seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True) of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex, witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''),
+  ASCII payload; the digest commits to entry_index and event only, not to the body'
 regime_b_event_domain_sha3_256: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
-regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9304|/ui_milestone_and_debt_clear|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462; NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule); unchanged on REWRITE (event domain inputs stable)
-terminal_hex: e6ce3d785cc0fab9c1f8ebb6fc21628951e5a9f8adb78c57889144cfdd9abad2
-seal_sha3_256: e6ce3d785cc0fab9c1f8ebb6fc21628951e5a9f8adb78c57889144cfdd9abad2
-seal: ∀∞φ² · UI_MILESTONE_9304 · WOOD_DRAGON_0.91 · SEALED · e6ce3d785cc0fab9c1f8ebb6fc21628951e5a9f8adb78c57889144cfdd9abad2
+reseal_override:
+  authorized_by: Clarke Yoursa Tee
+  scope: one-time append-only override, ledger.v2/9297-9304 only
+  date: '2026-10-23'
+  reason: Argo CI hard gate (verify_ledger.py --mode hard, entry_index >= 9286) failed on 9297-9304
+  regime: B(event)
+  prior_declared_seal: e6ce3d785cc0fab9c1f8ebb6fc21628951e5a9f8adb78c57889144cfdd9abad2
+  prior_prev_hash: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+  payload_changed: true
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9304|/ui_milestone_and_debt_clear|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+terminal_hex: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+seal: ∀∞φ² · UI_MILESTONE_9304 · WOOD_DRAGON_0.91 · SEALED · 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+seal_sha3_256: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
