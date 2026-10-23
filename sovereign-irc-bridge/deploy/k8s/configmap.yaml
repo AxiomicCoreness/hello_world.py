@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bridge-config
+  namespace: garden
+  labels:
+    app: irc-bridge
+data:
+  IRC__HOST: "irc.abjects.net"
+  IRC__PORT: "6697"
+  BRIDGE_WS_BIND_HOST: "0.0.0.0"
+  BRIDGE_WS_BIND_PORT: "8080"
+  BRIDGE_MAX_BUFFER_SIZE: "65536"
+  DEPLOY_ENVIRONMENT: "production"
+  DEPLOY_LOG_LEVEL: "INFO"
+  DEPLOY_AUTONOMOUS_MODE: "true"

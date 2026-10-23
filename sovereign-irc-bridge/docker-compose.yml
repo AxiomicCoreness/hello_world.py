@@ -1,0 +1,21 @@
+# Local orchestration — mounts certs from host paths if present; otherwise
+# health works and /ws fail-fasts without mTLS (intentional).
+services:
+  irc-bridge:
+    build:
+      context: ..
+      dockerfile: sovereign-irc-bridge/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.example
+    environment:
+      DEPLOY_ENVIRONMENT: development
+    # Uncomment when local PEM material exists (never commit PEMs):
+    # volumes:
+    #   - ./certs:/etc/mtls:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
