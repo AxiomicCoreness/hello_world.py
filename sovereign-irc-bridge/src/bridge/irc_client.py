@@ -1,23 +1,48 @@
-"""IRC protocol handshake & mTLS socket wrapper — stub, fail-fast without certs."""
+"""IRC mTLS TCP client — opens SSL socket only after cert validation."""
 from __future__ import annotations
+
+import asyncio
+import ssl
+from typing import Optional, Tuple
 
 from ..models.settings import IRCSettings
 
 
-class IRCClientStub:
-    """Does not open sockets until ``connect()``; refuses without mTLS material."""
+class IRCClient:
+    """mTLS TCP client to irc.abjects.net (or configured host)."""
 
     def __init__(self, irc: IRCSettings) -> None:
         self._irc = irc
-        self._connected = False
+        self._reader: Optional[asyncio.StreamReader] = None
+        self._writer: Optional[asyncio.StreamWriter] = None
 
-    def connect(self) -> None:
-        self._irc.require_mtls()
-        raise RuntimeError(
-            "IRCClientStub: live TCP/mTLS to "
-            f"{self._irc.host}:{self._irc.port} is not enabled in this stub "
-            "(certs present check passed; implement socket wrap in a follow-up)"
+    @property
+    def connected(self) -> bool:
+        return self._writer is not None and not self._writer.is_closing()
+
+    async def connect(self) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+        cert, key, ca = self._irc.require_mtls()
+        ctx = ssl.create_default_context(cafile=str(ca))
+        ctx.load_cert_chain(certfile=str(cert), keyfile=str(key))
+        reader, writer = await asyncio.open_connection(
+            self._irc.host,
+            self._irc.port,
+            ssl=ctx,
+            server_hostname=self._irc.host,
         )
+        self._reader, self._writer = reader, writer
+        return reader, writer
 
-    def close(self) -> None:
-        self._connected = False
+    async def close(self) -> None:
+        if self._writer is not None:
+            self._writer.close()
+            try:
+                await self._writer.wait_closed()
+            except Exception:
+                pass
+        self._reader = None
+        self._writer = None
+
+
+# Back-compat alias for older imports
+IRCClientStub = IRCClient

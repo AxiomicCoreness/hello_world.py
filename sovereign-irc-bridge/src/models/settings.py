@@ -1,8 +1,8 @@
 """Pydantic settings for the sovereign IRC bridge.
 
-Cert paths are optional at import time so dual-gate collection stays clean.
-Bridge connect paths call ``IRCSettings.require_mtls()`` and fail-fast when
-certs are missing — no ghost-pass runtime.
+mTLS paths are **required**. Missing ``IRC__MTLS_*`` (or nonexistent PEM files)
+raises ``pydantic.ValidationError`` at config load — FastAPI lifespan calls
+``get_settings()`` so the app does not serve without certs (no ghost-pass).
 """
 from __future__ import annotations
 
@@ -21,47 +21,23 @@ class IRCSettings(BaseSettings):
         le=65535,
         description="Target IRC port (6697 TLS/mTLS)",
     )
-    mtls_cert_path: Optional[Path] = Field(
-        default=None, description="Path to client certificate (.pem)"
-    )
-    mtls_key_path: Optional[Path] = Field(
-        default=None, description="Path to client private key (.pem)"
-    )
-    mtls_ca_path: Optional[Path] = Field(
-        default=None, description="Path to CA bundle for server verification"
-    )
+    mtls_cert_path: Path = Field(..., description="Path to client certificate (.pem)")
+    mtls_key_path: Path = Field(..., description="Path to client private key (.pem)")
+    mtls_ca_path: Path = Field(..., description="Path to CA bundle for server verification")
 
     model_config = SettingsConfigDict(env_prefix="IRC_", extra="ignore")
 
     @field_validator("mtls_cert_path", "mtls_key_path", "mtls_ca_path")
     @classmethod
-    def validate_certs_exist_when_set(cls, v: Optional[Path]) -> Optional[Path]:
-        if v is None:
-            return v
+    def validate_certs_exist(cls, v: Path) -> Path:
         if not v.exists():
             raise ValueError(f"mTLS file not found: {v}")
+        if not v.is_file():
+            raise ValueError(f"mTLS path is not a file: {v}")
         return v
 
     def require_mtls(self) -> tuple[Path, Path, Path]:
-        """Fail-fast when mTLS material is absent (no ghost-pass connect)."""
-        missing = [
-            name
-            for name, path in (
-                ("mtls_cert_path", self.mtls_cert_path),
-                ("mtls_key_path", self.mtls_key_path),
-                ("mtls_ca_path", self.mtls_ca_path),
-            )
-            if path is None
-        ]
-        if missing:
-            raise RuntimeError(
-                "mTLS required for irc.abjects.net bridge connect; "
-                f"unset: {', '.join(missing)} (mount secrets or set IRC__* paths)"
-            )
-        assert self.mtls_cert_path and self.mtls_key_path and self.mtls_ca_path
-        for p in (self.mtls_cert_path, self.mtls_key_path, self.mtls_ca_path):
-            if not p.exists():
-                raise RuntimeError(f"mTLS file not found: {p}")
+        """Return cert material (already validated at model construction)."""
         return self.mtls_cert_path, self.mtls_key_path, self.mtls_ca_path
 
 
@@ -71,7 +47,6 @@ class BridgeSettings(BaseSettings):
     allowed_origins: List[str] = Field(
         default_factory=lambda: ["https://axiomiccoreness.local"]
     )
-    # Fixed typo from paste: max-s_buffer_size → max_buffer_size
     max_buffer_size: int = Field(
         default=65536, ge=1024, description="Max byte buffer per read"
     )
@@ -103,8 +78,9 @@ class SovereignConfig(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def _team_ports_ui_note(self) -> "SovereignConfig":
-        # Team UI labels 6666-6669 live in TeaVM debug-oracle; bridge uses TLS 6697.
+    def _mtls_material_present(self) -> "SovereignConfig":
+        # Nested IRCSettings already required paths + existence; re-touch for clarity.
+        self.irc.require_mtls()
         return self
 
 
@@ -112,8 +88,14 @@ _settings: Optional[SovereignConfig] = None
 
 
 def get_settings() -> SovereignConfig:
-    """Lazy singleton — safe to import without certs present."""
+    """Lazy singleton — raises ValidationError if mTLS env/files are missing."""
     global _settings
     if _settings is None:
         _settings = SovereignConfig()
     return _settings
+
+
+def reset_settings() -> None:
+    """Test helper."""
+    global _settings
+    _settings = None

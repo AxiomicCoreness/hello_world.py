@@ -42,16 +42,33 @@ jobs:
         run: |
           cd sovereign-irc-bridge
           python - <<'PY'
-          from src.models.settings import get_settings, IRCSettings
-          s = get_settings()
+          import os
+          from pathlib import Path
+          # Ensure no ghost-pass: strip any inherited IRC__MTLS_* 
+          for k in list(os.environ):
+              if k.startswith("IRC__MTLS_") or k.startswith("IRC_MTLS_"):
+                  del os.environ[k]
+          from pydantic import ValidationError
+          from src.models import settings as settings_mod
+          settings_mod.reset_settings()
+          try:
+              settings_mod.get_settings()
+              raise SystemExit("expected ValidationError without IRC__MTLS_*")
+          except ValidationError as e:
+              print("ValidationError fail-fast ok:", e.error_count(), "errors")
+          # With temp PEMs, config loads
+          import tempfile
+          td = Path(tempfile.mkdtemp())
+          for name in ("client.crt", "client.key", "ca.crt"):
+              (td / name).write_text("-----BEGIN PLACEHOLDER-----\n")
+          os.environ["IRC__MTLS_CERT_PATH"] = str(td / "client.crt")
+          os.environ["IRC__MTLS_KEY_PATH"] = str(td / "client.key")
+          os.environ["IRC__MTLS_CA_PATH"] = str(td / "ca.crt")
+          settings_mod.reset_settings()
+          s = settings_mod.get_settings()
           assert s.irc.host == "irc.abjects.net"
           assert s.bridge.max_buffer_size == 65536
-          try:
-              s.irc.require_mtls()
-              raise SystemExit("expected fail-fast without certs")
-          except RuntimeError as e:
-              print("fail-fast ok:", e)
-          print("settings ok")
+          print("settings ok with cert paths")
           PY
 
   deploy:
