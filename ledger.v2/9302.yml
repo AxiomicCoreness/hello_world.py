@@ -1,0 +1,60 @@
+entry_index: 9302
+timestamp: '2026-10-23T18:04:12Z'
+event: /mirror_weld_confirm_already_on_tip
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
+witness_chain: 9301 -> 9302
+measured_at_commit: ab50e4b3
+sign_off: Clarke Yoursa Tee
+note: 'Weld re-queue at tip ab50e4b3: ledger.v2/9291.yml already SEALED (seal_sha3_256=bd14948a…, event
+  /mirror_weld_feasibility_audit) — append-only: NOT rewritten. git apply --check of weld.patch and weld_optional_katex_test.patch
+  both fail (already present on main). LIFRK4.java already exposes additive refractoryRemaining() with
+  Javadoc ''Milliseconds …; > 0'' (not HTML &gt;). KaTeXMacroSetTest already uses regex ^\s*"\\{1,2}[A-Za-z]+"\s*:
+  plus stripCommentsAndWrappers. Validation at tip: docker maven:3.9-eclipse-temurin-17 mvn -B clean package
+  → BUILD SUCCESS; Tests run: 66, Failures: 0, Errors: 0, Skipped: 0 (KaTeXMacroSetTest 13/13; LIFRK4Test
+  9/9). Historical 9291 weld gate was 8/8 on the then-smaller suite — tip is a strict superset, still
+  green. DualPipe deferred; KaTeXMacros.java untouched. No invented witnesses. Signed-off-by: Clarke Yoursa
+  Tee.'
+provenance:
+  repo: AxiomicCoreness/hello_world.py
+  main_tip_at_seal: ab50e4b3eaa1488fd6d221c9bf6f0f6ef8c15177
+  prior_seal_9301: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
+  prior_weld_entry: ledger.v2/9291.yml
+  prior_weld_seal: bd14948afb6dd43271397f797883f02be0740f77899e1839469ee35bcd6c5cc1
+  patches:
+  - weld.patch
+  - weld_optional_katex_test.patch
+audit:
+  9291_exists: true
+  9291_rewritten: false
+  weld_patch_apply_check: does_not_apply_already_present
+  katex_patch_apply_check: does_not_apply_already_present
+  lifrk4_accessor: refractoryRemaining() present
+  javadoc: Milliseconds of remaining refractory period; > 0 right after a spike.
+  katex_regex: '^\s*"\\{1,2}[A-Za-z]+"\s*:'
+validation:
+  container: maven:3.9-eclipse-temurin-17
+  command: mvn -B clean package
+  build: SUCCESS
+  tests_run: 66
+  failures: 0
+  errors: 0
+  skipped: 0
+  katex_macro_set_test: 13/13
+  lifrk4_test: 9/9
+  historical_9291_weld_gate: 8/8
+chain:
+  prev_entry: 9301
+  prev_hash: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
+  prev_hash_source: ledger.v2/9301.yml seal_sha3_256 (declared)
+  witness_chain: 9301 -> 9302
+seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True)
+  of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex,
+  witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
+regime_b_event_domain_sha3_256: 71217f38e0b971c3fb501ba22138a08f944e90db5c51ce85b014dbc36c60e3f1
+regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9302|/mirror_weld_confirm_already_on_tip|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462;
+  NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
+terminal_hex: 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
+seal: ∀∞φ² · MIRROR_WELD_CONFIRM_9302 · WOOD_DRAGON_GATE · SEALED · 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
+seal_sha3_256: 40123a96efd727ed2ed5fe35f998e39a2d4d3b5384119c6b7b6b6a7a68746fc0
