@@ -60,13 +60,36 @@ SECURITY_HEADERS = [
 
 # ─── HELPERS ──────────────────────────────────────────────────────────────
 
-def _load(name: str) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-    """Load a YAML file from argocd/ directory."""
+def _load(name: str) -> Dict[str, Any]:
+    """Load primary resource from argocd/ YAML (multi-doc safe).
+
+    Bundled manifests (stable/canary/httproute) contain several kinds.
+    Prefer metadata.name matching the file stem; else HTTPRoute for
+    *httproute* stems; else the sole document.
+    """
     path = ARGO / name
     assert path.is_file(), f"missing {path}"
     docs = [d for d in yaml.safe_load_all(path.read_text()) if d is not None]
     assert docs, f"empty yaml: {path}"
-    return docs[0] if len(docs) == 1 else docs
+    if len(docs) == 1:
+        return docs[0]
+    stem = path.stem
+    for d in docs:
+        meta = d.get("metadata") or {}
+        if meta.get("name") == stem:
+            return d
+    if "httproute" in stem.lower():
+        for d in docs:
+            if d.get("kind") == "HTTPRoute":
+                return d
+    # stable/canary: prefer Service named after stem pattern
+    for d in docs:
+        meta = d.get("metadata") or {}
+        kind = d.get("kind")
+        name_ = meta.get("name") or ""
+        if kind == "Service" and name_ and (name_ in stem or stem.endswith(name_.split("-")[-1])):
+            return d
+    raise AssertionError(f"no primary doc matched in {path}: kinds={[d.get('kind') for d in docs]}")
 
 
 def _wave(doc: Dict[str, Any]) -> int:
