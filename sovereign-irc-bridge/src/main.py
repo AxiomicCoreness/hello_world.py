@@ -1,23 +1,36 @@
-"""FastAPI entry: health + WebSocket stub; serves TeaVM debug-oracle static assets."""
+"""FastAPI entry: health + WebSocket byte pump; TeaVM debug-oracle static assets."""
 from __future__ import annotations
 
 import logging
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 
 from .api.health import router as health_router
-from .bridge.ws_tcp_proxy import WsTcpProxyStub
+from .bridge.ws_tcp_proxy import WsTcpProxy
 from .models.settings import get_settings
 
 logger = logging.getLogger("sovereign-irc-bridge")
 
-app = FastAPI(title="Sovereign IRC Bridge", version="0.1.0")
-app.include_router(health_router)
 
-# TeaVM client = existing debug-oracle (no duplicate teavm-client build)
-import os
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Fail-fast: ValidationError if IRC__MTLS_* missing / PEM absent — before serving.
+    settings = get_settings()
+    logger.info(
+        "mTLS ok host=%s:%s cert=%s",
+        settings.irc.host,
+        settings.irc.port,
+        settings.irc.mtls_cert_path,
+    )
+    yield
+
+
+app = FastAPI(title="Sovereign IRC Bridge", version="0.1.1", lifespan=lifespan)
+app.include_router(health_router)
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _env_static = os.environ.get("BRIDGE_STATIC_DEBUG_ORACLE", "").strip()
@@ -42,18 +55,18 @@ if _DEBUG_ORACLE.is_dir():
 async def websocket_bridge(websocket: WebSocket) -> None:
     await websocket.accept()
     settings = get_settings()
-    proxy = WsTcpProxyStub(settings)
+    proxy = WsTcpProxy(settings)
     try:
         await proxy.handle_websocket(websocket)
-    except RuntimeError as exc:
-        logger.warning("bridge refuse: %s", exc)
+    except Exception as exc:
+        logger.warning("bridge pump error: %s", exc)
         try:
             await websocket.send_text(f"ERROR: {exc}")
             await websocket.close(code=1013)
         except WebSocketDisconnect:
             pass
-    except WebSocketDisconnect:
-        return
+        except Exception:
+            pass
 
 
 @app.get("/")
@@ -63,7 +76,8 @@ async def root() -> dict:
         "health": "/health",
         "ws": "/ws",
         "teavm_client": "/debug-oracle/",
-        "irc": "irc.abjects.net (mTLS required for live dial; stub refuses without certs)",
+        "irc": "irc.abjects.net",
+        "live_wire": "WS↔TCP mTLS byte pump (requires IRC__MTLS_* PEMs at startup)",
     }
 
 

@@ -6,7 +6,8 @@ with TeaVM UI wired to `games/teavm-rhythm` **debug-oracle**.
 ## Safety
 
 - No real certs in git — `.env.example` only.
-- Bridge connect **fail-fast** without mTLS (`IRCSettings.require_mtls()`).
+- **mTLS required at startup**: missing `IRC__MTLS_*` → `pydantic.ValidationError` (lifespan); no ghost-pass.
+- **Live wire**: `WsTcpProxy` pumps WS↔TCP bytes over mTLS to `irc.abjects.net` once PEMs mount.
 - Deploy workflow **skips green** when `secrets.KUBECONFIG` is empty.
 - No dual-gate pytest files under this tree (no `test_*.py`).
 
@@ -19,7 +20,10 @@ See `src/` (FastAPI + Pydantic), `deploy/k8s/`, `teavm-client/README.md`.
 ```bash
 cd sovereign-irc-bridge
 pip install -e .
-# health only — no certs needed
+# PEMs required (see .env.example) — app refuses to start without them
+export IRC__MTLS_CERT_PATH=/etc/mtls/client.crt
+export IRC__MTLS_KEY_PATH=/etc/mtls/client.key
+export IRC__MTLS_CA_PATH=/etc/mtls/ca.crt
 uvicorn src.main:app --host 0.0.0.0 --port 8080
 ```
 ## Debug-oracle chat commands

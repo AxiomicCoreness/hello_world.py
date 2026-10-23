@@ -50,4 +50,4 @@ spec:
         - name: mtls-certs
           secret:
             secretName: irc-mtls-secrets
-            optional: true
+            optional: false

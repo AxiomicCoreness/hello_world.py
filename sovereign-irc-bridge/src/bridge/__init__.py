@@ -1,4 +1,4 @@
-from .irc_client import IRCClientStub
-from .ws_tcp_proxy import WsTcpProxyStub
+from .irc_client import IRCClient, IRCClientStub
+from .ws_tcp_proxy import WsTcpProxy, WsTcpProxyStub
 
-__all__ = ["IRCClientStub", "WsTcpProxyStub"]
+__all__ = ["IRCClient", "IRCClientStub", "WsTcpProxy", "WsTcpProxyStub"]
