@@ -23,6 +23,45 @@ class CliLinesTest {
         assertFalse(CliLines.isLoopbackCliUrl("ws://0.0.0.0:6669/cli"));
         assertFalse(CliLines.isLoopbackCliUrl("ws://irc.abjects.net:6669/cli"));
         assertFalse(CliLines.isLoopbackCliUrl("wss://example.com/cli"));
+        // Pages WSS is allowed but is not loopback (Cosmic Alignment).
+        assertFalse(CliLines.isLoopbackCliUrl(CliLines.PAGES_WSS));
+    }
+
+    @Test
+    void allowedCliUrlsOptionB() {
+        assertTrue(CliLines.isAllowedCliUrl(CliLines.LOOPBACK_WS));
+        assertTrue(CliLines.isAllowedCliUrl("ws://127.0.0.1:6669/cli"));
+        assertTrue(CliLines.isAllowedCliUrl("ws://[::1]:6669/cli"));
+        assertTrue(CliLines.isAllowedCliUrl(CliLines.PAGES_WSS));
+        assertEquals("wss://bridge.axiomiccoreness.com/cli", CliLines.PAGES_WSS);
+        assertFalse(CliLines.isAllowedCliUrl("ws://0.0.0.0:6669/cli"));
+        assertFalse(CliLines.isAllowedCliUrl("ws://irc.abjects.net:6669/cli"));
+        assertFalse(CliLines.isAllowedCliUrl("wss://irc.abjects.net:6669/cli"));
+        assertFalse(CliLines.isAllowedCliUrl("wss://example.com/cli"));
+        assertFalse(CliLines.isAllowedCliUrl(null));
+    }
+
+    @Test
+    void resolveCliWsUrlHostnameSwitch() {
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("127.0.0.1"));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("localhost"));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("LOCALHOST"));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("::1"));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("[::1]"));
+        // Null / blank → local-first (JVM / headless without browser location).
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl(null));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl(""));
+        assertEquals(CliLines.LOOPBACK_WS, CliLines.resolveCliWsUrl("  "));
+        assertEquals(CliLines.PAGES_WSS, CliLines.resolveCliWsUrl("axiomiccoreness.github.io"));
+        assertEquals(CliLines.PAGES_WSS, CliLines.resolveCliWsUrl("bridge.axiomiccoreness.com"));
+        assertEquals(CliLines.PAGES_WSS, CliLines.resolveCliWsUrl("example.com"));
+    }
+
+    @Test
+    void pagesHintNamesPagesWss() {
+        String hint = CliLines.pagesHttpsHint();
+        assertTrue(hint.contains(CliLines.PAGES_WSS));
+        assertTrue(hint.contains(CliLines.LOOPBACK_WS));
     }
 
     @Test
