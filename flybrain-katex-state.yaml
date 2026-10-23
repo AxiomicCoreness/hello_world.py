@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flybrain-katex-state
+  namespace: sovereign
+  annotations:
+    axiomiccoreness.io/lambda0-nm: '952072.1'
+    axiomiccoreness.io/katex-macros: '37'
+data:
+  state.json: "{\n  \"neurons\": 20,\n  \"lambda0_nm\": 952072.1,\n  \"theta_lock_deg\"\
+    : 202.6,\n  \"katex_source\": \"docs/katex_macros.yaml\",\n  \"macros_by_domain\"\
+    : {\n    \"garden\": 9,\n    \"math\": 25,\n    \"physics\": 3\n  },\n  \"macros_total\"\
+    : 37,\n  \"macros_wired\": [\n    \"\\\\phiinv\",\n    \"\\\\darktrace\",\n  \
+    \  \"\\\\darklambda\",\n    \"\\\\darkeig\",\n    \"\\\\darksv\",\n    \"\\\\\
+    trimerham\",\n    \"\\\\eternalnow\",\n    \"\\\\wooddragon\",\n    \"\\\\connectome\"\
+    ,\n    \"\\\\half\",\n    \"\\\\third\",\n    \"\\\\quarter\",\n    \"\\\\ket\"\
+    ,\n    \"\\\\bra\",\n    \"\\\\braket\",\n    \"\\\\ketbra\",\n    \"\\\\expect\"\
+    ,\n    \"\\\\Tr\",\n    \"\\\\Det\",\n    \"\\\\Rank\"\n  ],\n  \"background_macros\"\
+    : [\n    \"\\\\diag\",\n    \"\\\\vertex\",\n    \"\\\\Res\",\n    \"\\\\spec\"\
+    ,\n    \"\\\\Disc\",\n    \"\\\\psitwo\",\n    \"\\\\phiv\",\n    \"\\\\phitwo\"\
+    ,\n    \"\\\\phithree\",\n    \"\\\\phifive\",\n    \"\\\\phieight\",\n    \"\\\
+    \\phinine\",\n    \"\\\\seedpoly\",\n    \"\\\\seedeq\",\n    \"\\\\kB\",\n  \
+    \  \"\\\\hbar\",\n    \"\\\\entropy\"\n  ],\n  \"spike_history\": [\n    {\n \
+    \     \"step\": 3,\n      \"neurons\": [\n        18\n      ]\n    },\n    {\n\
+    \      \"step\": 4,\n      \"neurons\": [\n        8\n      ]\n    },\n    {\n\
+    \      \"step\": 5,\n      \"neurons\": [\n        6,\n        7,\n        17,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 6,\n      \"neurons\": [\n\
+    \        10,\n        11,\n        18\n      ]\n    },\n    {\n      \"step\"\
+    : 7,\n      \"neurons\": [\n        5,\n        16\n      ]\n    },\n    {\n \
+    \     \"step\": 8,\n      \"neurons\": [\n        4,\n        8,\n        15\n\
+    \      ]\n    },\n    {\n      \"step\": 9,\n      \"neurons\": [\n        7,\n\
+    \        18\n      ]\n    },\n    {\n      \"step\": 10,\n      \"neurons\": [\n\
+    \        6,\n        17,\n        19\n      ]\n    },\n    {\n      \"step\":\
+    \ 11,\n      \"neurons\": [\n        0,\n        10,\n        14\n      ]\n  \
+    \  },\n    {\n      \"step\": 12,\n      \"neurons\": [\n        8,\n        11,\n\
+    \        18\n      ]\n    },\n    {\n      \"step\": 13,\n      \"neurons\": [\n\
+    \        7,\n        16\n      ]\n    },\n    {\n      \"step\": 14,\n      \"\
+    neurons\": [\n        5\n      ]\n    },\n    {\n      \"step\": 15,\n      \"\
+    neurons\": [\n        4,\n        6,\n        15,\n        17,\n        18,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 16,\n      \"neurons\": [\n\
+    \        8,\n        10\n      ]\n    },\n    {\n      \"step\": 17,\n      \"\
+    neurons\": [\n        7\n      ]\n    },\n    {\n      \"step\": 18,\n      \"\
+    neurons\": [\n        11,\n        18\n      ]\n    },\n    {\n      \"step\"\
+    : 19,\n      \"neurons\": [\n        16\n      ]\n    },\n    {\n      \"step\"\
+    : 20,\n      \"neurons\": [\n        6,\n        8,\n        17,\n        19\n\
+    \      ]\n    },\n    {\n      \"step\": 21,\n      \"neurons\": [\n        0,\n\
+    \        5,\n        7,\n        10,\n        14,\n        18\n      ]\n    },\n\
+    \    {\n      \"step\": 22,\n      \"neurons\": [\n        4,\n        15\n  \
+    \    ]\n    },\n    {\n      \"step\": 24,\n      \"neurons\": [\n        8,\n\
+    \        11,\n        18\n      ]\n    },\n    {\n      \"step\": 25,\n      \"\
+    neurons\": [\n        6,\n        7,\n        16,\n        17,\n        19\n \
+    \     ]\n    },\n    {\n      \"step\": 26,\n      \"neurons\": [\n        10\n\
+    \      ]\n    },\n    {\n      \"step\": 27,\n      \"neurons\": [\n        18\n\
+    \      ]\n    },\n    {\n      \"step\": 28,\n      \"neurons\": [\n        1,\n\
+    \        5,\n        8\n      ]\n    },\n    {\n      \"step\": 29,\n      \"\
+    neurons\": [\n        4,\n        7,\n        15\n      ]\n    },\n    {\n   \
+    \   \"step\": 30,\n      \"neurons\": [\n        6,\n        11,\n        17,\n\
+    \        18,\n        19\n      ]\n    },\n    {\n      \"step\": 31,\n      \"\
+    neurons\": [\n        0,\n        10,\n        14,\n        16\n      ]\n    },\n\
+    \    {\n      \"step\": 32,\n      \"neurons\": [\n        8\n      ]\n    },\n\
+    \    {\n      \"step\": 33,\n      \"neurons\": [\n        7,\n        18\n  \
+    \    ]\n    },\n    {\n      \"step\": 35,\n      \"neurons\": [\n        5,\n\
+    \        6,\n        17,\n        19\n      ]\n    },\n    {\n      \"step\":\
+    \ 36,\n      \"neurons\": [\n        4,\n        8,\n        10,\n        11,\n\
+    \        15,\n        18\n      ]\n    },\n    {\n      \"step\": 37,\n      \"\
+    neurons\": [\n        7,\n        16\n      ]\n    },\n    {\n      \"step\":\
+    \ 38,\n      \"neurons\": [\n        3\n      ]\n    },\n    {\n      \"step\"\
+    : 39,\n      \"neurons\": [\n        2,\n        18\n      ]\n    },\n    {\n\
+    \      \"step\": 40,\n      \"neurons\": [\n        6,\n        8,\n        17,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 41,\n      \"neurons\": [\n\
+    \        0,\n        7,\n        10,\n        14\n      ]\n    },\n    {\n   \
+    \   \"step\": 42,\n      \"neurons\": [\n        5,\n        11,\n        18\n\
+    \      ]\n    },\n    {\n      \"step\": 43,\n      \"neurons\": [\n        4,\n\
+    \        15,\n        16\n      ]\n    },\n    {\n      \"step\": 44,\n      \"\
+    neurons\": [\n        8\n      ]\n    },\n    {\n      \"step\": 45,\n      \"\
+    neurons\": [\n        6,\n        7,\n        12,\n        17,\n        18,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 46,\n      \"neurons\": [\n\
+    \        10\n      ]\n    },\n    {\n      \"step\": 48,\n      \"neurons\": [\n\
+    \        8,\n        11,\n        18\n      ]\n    },\n    {\n      \"step\":\
+    \ 49,\n      \"neurons\": [\n        5,\n        7,\n        16\n      ]\n   \
+    \ },\n    {\n      \"step\": 50,\n      \"neurons\": [\n        4,\n        6,\n\
+    \        15,\n        17,\n        19\n      ]\n    },\n    {\n      \"step\"\
+    : 51,\n      \"neurons\": [\n        0,\n        10,\n        14,\n        18\n\
+    \      ]\n    },\n    {\n      \"step\": 52,\n      \"neurons\": [\n        8\n\
+    \      ]\n    },\n    {\n      \"step\": 53,\n      \"neurons\": [\n        1,\n\
+    \        7\n      ]\n    },\n    {\n      \"step\": 54,\n      \"neurons\": [\n\
+    \        11,\n        18\n      ]\n    },\n    {\n      \"step\": 55,\n      \"\
+    neurons\": [\n        6,\n        16,\n        17,\n        19\n      ]\n    },\n\
+    \    {\n      \"step\": 56,\n      \"neurons\": [\n        5,\n        8,\n  \
+    \      10\n      ]\n    },\n    {\n      \"step\": 57,\n      \"neurons\": [\n\
+    \        4,\n        7,\n        15,\n        18\n      ]\n    },\n    {\n   \
+    \   \"step\": 60,\n      \"neurons\": [\n        6,\n        8,\n        11,\n\
+    \        17,\n        18,\n        19\n      ]\n    },\n    {\n      \"step\"\
+    : 61,\n      \"neurons\": [\n        0,\n        7,\n        10,\n        14,\n\
+    \        16\n      ]\n    },\n    {\n      \"step\": 63,\n      \"neurons\": [\n\
+    \        5,\n        18\n      ]\n    },\n    {\n      \"step\": 64,\n      \"\
+    neurons\": [\n        4,\n        8,\n        15\n      ]\n    },\n    {\n   \
+    \   \"step\": 65,\n      \"neurons\": [\n        6,\n        7,\n        17,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 66,\n      \"neurons\": [\n\
+    \        10,\n        11,\n        18\n      ]\n    },\n    {\n      \"step\"\
+    : 67,\n      \"neurons\": [\n        16\n      ]\n    },\n    {\n      \"step\"\
+    : 68,\n      \"neurons\": [\n        8\n      ]\n    },\n    {\n      \"step\"\
+    : 69,\n      \"neurons\": [\n        7,\n        18\n      ]\n    },\n    {\n\
+    \      \"step\": 70,\n      \"neurons\": [\n        5,\n        6,\n        17,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 71,\n      \"neurons\": [\n\
+    \        0,\n        4,\n        10,\n        14,\n        15\n      ]\n    },\n\
+    \    {\n      \"step\": 72,\n      \"neurons\": [\n        8,\n        11,\n \
+    \       18\n      ]\n    },\n    {\n      \"step\": 73,\n      \"neurons\": [\n\
+    \        3,\n        7,\n        16\n      ]\n    },\n    {\n      \"step\": 75,\n\
+    \      \"neurons\": [\n        2,\n        6,\n        17,\n        18,\n    \
+    \    19\n      ]\n    },\n    {\n      \"step\": 76,\n      \"neurons\": [\n \
+    \       8,\n        10\n      ]\n    },\n    {\n      \"step\": 77,\n      \"\
+    neurons\": [\n        5,\n        7\n      ]\n    },\n    {\n      \"step\": 78,\n\
+    \      \"neurons\": [\n        1,\n        4,\n        11,\n        15,\n    \
+    \    18\n      ]\n    },\n    {\n      \"step\": 79,\n      \"neurons\": [\n \
+    \       16\n      ]\n    },\n    {\n      \"step\": 80,\n      \"neurons\": [\n\
+    \        6,\n        8,\n        17,\n        19\n      ]\n    },\n    {\n   \
+    \   \"step\": 81,\n      \"neurons\": [\n        0,\n        7,\n        10,\n\
+    \        14,\n        18\n      ]\n    },\n    {\n      \"step\": 84,\n      \"\
+    neurons\": [\n        5,\n        8,\n        11,\n        18\n      ]\n    },\n\
+    \    {\n      \"step\": 85,\n      \"neurons\": [\n        4,\n        6,\n  \
+    \      7,\n        15,\n        16,\n        17,\n        19\n      ]\n    },\n\
+    \    {\n      \"step\": 86,\n      \"neurons\": [\n        10\n      ]\n    },\n\
+    \    {\n      \"step\": 87,\n      \"neurons\": [\n        12,\n        18\n \
+    \     ]\n    },\n    {\n      \"step\": 88,\n      \"neurons\": [\n        8\n\
+    \      ]\n    },\n    {\n      \"step\": 89,\n      \"neurons\": [\n        7\n\
+    \      ]\n    },\n    {\n      \"step\": 90,\n      \"neurons\": [\n        6,\n\
+    \        11,\n        17,\n        18,\n        19\n      ]\n    },\n    {\n \
+    \     \"step\": 91,\n      \"neurons\": [\n        0,\n        5,\n        10,\n\
+    \        14,\n        16\n      ]\n    },\n    {\n      \"step\": 92,\n      \"\
+    neurons\": [\n        4,\n        8,\n        15\n      ]\n    },\n    {\n   \
+    \   \"step\": 93,\n      \"neurons\": [\n        7,\n        18\n      ]\n   \
+    \ },\n    {\n      \"step\": 95,\n      \"neurons\": [\n        6,\n        17,\n\
+    \        19\n      ]\n    },\n    {\n      \"step\": 96,\n      \"neurons\": [\n\
+    \        8,\n        10,\n        11,\n        18\n      ]\n    },\n    {\n  \
+    \    \"step\": 97,\n      \"neurons\": [\n        7,\n        16\n      ]\n  \
+    \  },\n    {\n      \"step\": 98,\n      \"neurons\": [\n        5\n      ]\n\
+    \    },\n    {\n      \"step\": 99,\n      \"neurons\": [\n        4,\n      \
+    \  15,\n        18\n      ]\n    }\n  ],\n  \"final_voltage\": [\n    -51.52908456684814,\n\
+    \    -51.224382089663735,\n    -52.31186081415495,\n    -51.67843428715428,\n\
+    \    -65.0,\n    -62.242231959152235,\n    -51.21111569989761,\n    -56.980659396108614,\n\
+    \    -51.201682935437184,\n    -65.0005021669096,\n    -54.823231794429134,\n\
+    \    -55.623966123041214,\n    -57.14953834308003,\n    -94.40874538085278,\n\
+    \    -51.73941763497932,\n    -65.0,\n    -59.401287087365176,\n    -51.0449205953628,\n\
+    \    -65.0,\n    -51.25706795914947\n  ],\n  \"connectome_shape\": [\n    20,\n\
+    \    20\n  ]\n}"

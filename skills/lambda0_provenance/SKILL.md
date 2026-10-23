@@ -19,6 +19,23 @@ of Clarke Yoursa Tee.
   when a commit references 952,057 nm without a `-draft` suffix.
 - Alternative design branch: λ₀ = 951,145 nm gives Σθ = 202.797° (+0.197°).
 
+## Rule A vs Rule B (λ₀)
+- **Rule A (canonical):** θ_lock = 202.6° = 3.536037 rad → λ₀ = 2π·535805 / 3.536037 = **952,072.1 nm**.
+- **Rule B (accumulated):** Σθ_k = 202.79° = 3.539755 rad → λ₀ = 2π·535805 / 3.539755 = **951,072 nm**.
+- Value 951,145 nm sits between the two (θ ≈ 202.79°, not the target). Prefer Rule A.
+
+### Four small numeric deviations (read-as-math)
+1. θ_lock rad: stated 3.536233 vs 202.6°×π/180 = 3.536037 (Δ ≈ 1.96×10⁻⁴ rad).
+2. ω_NS: stated 452.217 vs 2π·71.975 = 452.2323 rad/s (Δ ≈ 1.5×10⁻²).
+3. λ₀ 951,145 nm: −927 nm from Rule A, −73 nm from Rule B.
+4. Σθ_k rows at 951145 nm: recomputed 202.797° vs stated 202.813° (Δ 0.016°); residual vs lock ≈ 0.197° (stated 0.21°).
+
+### Two structural flags
+1. §7 λ₀ formula cites θ_lock but 951145 nm tracks Σθ, not 202.6° — use Rule A 952072.1 nm.
+2. §10 Σγ_k = −Δ admissible (Berry phase); per-layer γ_k not stated — layer-by-layer would close §10 at §9 precision.
+
+Structural relations (§2 J²=−Id, §4 T³=0, §5 A_k unitary, §7/§11 closure, §8 control-band) hold with no defects.
+
 ## Context: North Star
 - North Star **f★ = 71.975 Hz**, with phase lock **202.6°** (`assets/context.json`:
   `north_star_hz`, `phase_lock_degrees`). The repo spells it `north_star_freq` /
