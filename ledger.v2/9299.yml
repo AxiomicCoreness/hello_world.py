@@ -1,0 +1,15 @@
+draft schema: axiomiccoreness/ledger-entry/v2
+id: 9299
+prev_id: 9298
+witness: "0000 → … → 9298 → 9299 — UNBROKEN"
+role: patch_seal
+summary: "Resolved CI cascade (IndentationError), hardened CORS, isolated t_rotator_emit"
+math_origin: 510510
+signing:
+  status: draft
+  hash:
+    alg: sha3_256
+    value: PENDING_LOCAL_SIGNING
+  signature:
+    alg: ed25519
+    value: PENDING_LOCAL_SIGNING
