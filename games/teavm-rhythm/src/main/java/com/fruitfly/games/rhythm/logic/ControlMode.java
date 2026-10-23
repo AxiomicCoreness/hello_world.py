@@ -80,6 +80,14 @@ public final class ControlMode {
         return running ? TITLE_LOCKED : TITLE_IDLE;
     }
 
+    private static final String[] ID = {"off", "lif", "connectome", "assist-lif", "assist-connectome"};
+
+    /** Short id (window.__rhythmDebug.mode()). */
+    public static String id(int mode) {
+        check(mode);
+        return ID[mode];
+    }
+
     /** Mode line in the right-hand HUD. */
     public static String hudText(int mode) {
         check(mode);

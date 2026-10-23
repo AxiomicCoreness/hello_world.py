@@ -28,6 +28,7 @@ public final class ConnectomeAutoplayer {
     private final int[] outputs = new int[RhythmGame.LANES];
     private final long[] latency = new long[RhythmGame.LANES];
     private final int[] nextNoteIndex = new int[RhythmGame.LANES];
+    private final CueProbe probe;
     private int presses;
 
     public ConnectomeAutoplayer(RhythmGame game, Circuit circuit) {
@@ -52,6 +53,12 @@ public final class ConnectomeAutoplayer {
         for (int l = 0; l < RhythmGame.LANES; l++) {
             nextNoteIndex[l] = advanceIndex(l, 0);
         }
+        this.probe = new CueProbe(game.chart().notes().size());
+    }
+
+    /** Per-note cue / peak voltage / spike record of each lane's motor neuron laneN.out (moves list). */
+    public CueProbe probe() {
+        return probe;
     }
 
     public static String inputId(int lane) {
@@ -141,15 +148,17 @@ public final class ConnectomeAutoplayer {
                 int idx = nextNoteIndex[l];
                 if (idx < notes.size() && t >= notes.get(idx).timeMs() + aimMs - latency[l]) {
                     ext[inputs[l]] += LifAutoplayer.DRIVE_G;
+                    probe.cue(l, idx, t, latency[l]);
                     nextNoteIndex[l] = advanceIndex(l, idx + 1);
                 }
             }
             boolean[] spiked = sim.step(ext);
             for (int l = 0; l < RhythmGame.LANES; l++) {
+                probe.sample(l, t, sim.neuron(outputs[l]).vBeforeReset(), spiked[outputs[l]]);
                 if (spiked[outputs[l]]) {
                     presses++;
                     if (sink == null) {
-                        game.press(l, t);
+                        game.press(l, t, true);
                     } else {
                         sink.press(l, t);
                     }

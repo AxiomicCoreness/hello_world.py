@@ -64,7 +64,7 @@ public final class AssistArbiter implements PressSink {
             flyHeld++;
             return;
         }
-        if (game.press(lane, timeMs) != null) {
+        if (game.press(lane, timeMs, true) != null) {
             flyHits++;
         } else {
             flyHeld++;
