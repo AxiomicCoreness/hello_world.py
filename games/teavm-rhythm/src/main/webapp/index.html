@@ -15,7 +15,17 @@
     /* Default: light stage (off-white backdrop, dark text). body.theme-ar: dark AR-photo / camera look. */
     html, body { margin: 0; min-height: 100%; background: #f7f6f3; color: #2a2f3a; font-family: monospace; }
     body.theme-ar { background: #05070d; color: #ccd; }
-    body { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 24px; padding: 16px; box-sizing: border-box; }
+    body { margin: 0; padding: 0; box-sizing: border-box; }
+    #layout {
+      display: grid;
+      grid-template-columns: 300px 1fr 350px;
+      gap: 16px;
+      padding: 16px;
+      box-sizing: border-box;
+      align-items: start;
+      min-height: 100vh;
+      justify-content: center;
+    }
     canvas { border: 1px solid #dddad3; display: block; }
     body.theme-ar canvas { border-color: #334; }
     /* Stage: canvas (background, 3D fly-brain stage, lanes) with the HUD as an HTML overlay on top. */
@@ -44,13 +54,15 @@
     .picker.locked { opacity: 0.55; cursor: default; border-style: dashed; }
     body.theme-ar .picker { background: rgba(10,14,28,0.85); color: #ffd9b8; border-color: #e0995e; }
     body.theme-ar #autoplay-btn { background: rgba(10,14,28,0.85); color: #cfe0ff; border-color: #8fb3ff; }
-    @media (max-width: 599px) {
-      body { padding: 0; gap: 0; }
+    @media (max-width: 899px) {
+      #layout { grid-template-columns: 1fr; padding: 0; gap: 0; }
       canvas { border: 0; }
       .hud { font-size: 15px; }
       #hud-c { font-size: 13px; }
+      #cli-column { min-height: 220px; height: 240px; border-radius: 0; }
+      .side { max-width: none; padding: 12px; }
     }
-    .side { max-width: 380px; font-size: 13px; line-height: 1.45; }
+    .side { max-width: 350px; font-size: 13px; line-height: 1.45; }
     .side h2 { font-size: 15px; color: #11141c; margin: 4px 0 8px; }
     .tex { margin: 10px 0; color: #1d2230; }
     .note { color: #555c70; }
@@ -59,10 +71,56 @@
     body.theme-ar .tex { color: #e8e8f0; }
     body.theme-ar .note { color: #8890a8; }
     body.theme-ar .side a { color: #8fb3ff; }
+
+    /* LEFT CLI column (Cosmic Alignment: ws://127.0.0.1:6669/cli → irc.abjects.net:6669). */
+    #cli-column {
+      width: 300px; max-width: 100%; min-height: 600px; height: 100%;
+      box-sizing: border-box; display: flex; flex-direction: column;
+      border: 1px solid #243041; border-radius: 6px;
+      background: #0e141c; color: #d7e0ea;
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow: hidden;
+    }
+    body.theme-ar #cli-column { border-color: #334; }
+    #cli-column .cli-title {
+      padding: 0.45rem 0.65rem; border-bottom: 1px solid #243041;
+      color: #5eead4; font-size: 0.72rem; letter-spacing: 0.04em;
+      text-transform: uppercase; flex: 0 0 auto;
+    }
+    #cli-column .cli-title .remote { color: #fbbf24; text-transform: none; letter-spacing: 0; }
+    #chat-history {
+      flex: 1 1 auto; margin: 0; padding: 0.55rem 0.65rem;
+      overflow: auto; white-space: pre-wrap; word-break: break-word;
+      color: #d7e0ea; background: #0a1018;
+    }
+    #cli-form {
+      display: grid; grid-template-columns: auto 1fr; gap: 0.35rem;
+      align-items: center; padding: 0.4rem 0.55rem;
+      border-top: 1px solid #243041; background: #0e141c; flex: 0 0 auto; margin: 0;
+    }
+    #cli-form .ps1 { color: #5eead4; }
+    #chat-input {
+      width: 100%; box-sizing: border-box;
+      background: #0a1018; color: #d7e0ea;
+      border: 1px solid #243041; border-radius: 4px;
+      padding: 0.35rem 0.45rem; outline: none; font: inherit;
+    }
+    #chat-input:focus { border-color: #5eead4; }
+    .stage { justify-self: center; }
   </style>
   <script type="text/javascript" charset="utf-8" src="classes.js"></script>
 </head>
 <body onload="main()">
+  <div id="layout">
+  <aside id="cli-column" aria-label="CLI to ws://127.0.0.1:6669/cli → irc.abjects.net:6669">
+    <div class="cli-title">CLI · <span class="remote">127.0.0.1:6669</span> → irc.abjects.net:6669</div>
+    <pre id="chat-history" aria-live="polite"></pre>
+    <form id="cli-form" autocomplete="off" action="#">
+      <span class="ps1" aria-hidden="true">›</span>
+      <input id="chat-input" type="text" spellcheck="false" autocomplete="off"
+             placeholder="message · Enter to send" aria-label="CLI chat input" />
+    </form>
+  </aside>
   <div class="stage">
     <canvas id="game" width="400" height="600"></canvas>
     <div id="hud-l" class="hud"></div>
@@ -150,6 +208,7 @@
       <code>metadata.audio</code>, else a click track the page synthesises at the chart's bpm.
       <code>?audio=none</code> or an audio error falls back to the frame clock.</p>
   </div>
+  </div><!-- /#layout -->
   <script>
     window.addEventListener('load', function () {
       if (typeof katex === 'undefined') { return; }
