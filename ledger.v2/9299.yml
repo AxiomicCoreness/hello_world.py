@@ -1,25 +1,67 @@
 entry_index: 9299
-timestamp: '2026-10-23T00:00:00Z'
-event: /ci_cascade_resolution_and_cors_hardening_9299
+timestamp: '2026-10-23T15:43:15Z'
+event: /port380_restore_cors_and_9298_stub_gap
 status: SEALED
 hash_algo: sha3_256
-prev_hash: <compute_hash_of_9298>
-witness_chain: 9298 -> 9299
-note: |
-  Resolves the P0 CI cascade (IndentationError in port380_mcp.py). 
-  Hardens the FastAPI CORS middleware against preflight spike vulnerabilities 
-  and dynamic wildcard reflection.
-  Isolates the t_rotator graph emitter into a dedicated CLI to prevent 
-  state-drift into beacons/ or ledger/.
-resolutions:
-  ci:
-    p0_syntax: "port380_mcp.py (line 42) class indentation resolved"
-    cors_patch: "app/main.py strict ALLOWED_ORIGINS strip + wildcard reflection block"
-    rotator_isolate: "scripts/t_rotator_emit.py routed strictly to t_rotator_out/"
-  files:
-    modified: [port380_mcp.py, app/main.py, README.md]
-    created: [scripts/t_rotator_emit.py]
-  infra:
-    bind_host_ui: "app/main.py UI now accurately reflects BIND_HOST env var"
-terminal_hex: <compute on seal>
-seal: "∀∞φ² · CI_CASCADE_RESOLUTION_9299 · WOOD_DRAGON_GATE · SEALED · <hex>"
+prev_hash: facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25
+witness_chain: 9297 -> 9299
+measured_at_commit: 5eb80b45
+exceptional_rewrite: true
+sign_off: Clarke Yoursa Tee
+note: |-
+  EXCEPTIONAL THIS-INSTANCE-ONLY rewrite of ledger.v2/9299.yml under commander override (append-only remains the standing rule). Prior 9299 stub claimed SEALED with placeholder hashes and misstated the lasting bug as an IndentationError in port380_mcp.py. Measured: root port380_mcp.py was gutted (SecurityHeadersMiddleware site replaced by a GardenGate stub with 'INDENT THIS' comments and ellipsis placeholders at efc8ad19, 376 lines) then restored at a68ecbff from intact mcp/port380_mcp.py (569 lines); app/main.py CORS allow_headers tightened from ['*'] to an explicit list with expose_headers X-Ledger-Head. Chain: prev_hash is 9297's declared seal_sha3_256 (facffab4…); 9298.yml is a stub with no real seal_sha3_256 and is SKIPPED for the witness/chain link (honest gap). No invented witnesses. File sha256 values measured from origin/main at 5eb80b45 (identical blobs to a68ecbff). Affirmed by directive of Clarke Yoursa Tee.
+stub_gap:
+  prior_9299_stub: placeholders <compute_hash_of_9298> / <compute on seal>; claimed IndentationError
+    as P0 lasting bug
+  reason: 9298.yml claims SEALED but has no seal_sha3_256; terminal_hex and seal contain placeholders;
+    cannot be used as prev_hash
+  skipped_index: 9298
+corrections:
+  indentation_error_claim: NOT the lasting bug; gutted file at efc8ad19 carried a GardenGate
+    stub and 'INDENT THIS' comment at former SecurityHeadersMiddleware site
+  lasting_fix: a68ecbffcc19ecedb817fbcbb0d77350acf6e4ba restore of port380_mcp.py + CORS header
+    tighten in app/main.py
+commits:
+- files:
+  - port380_mcp.py
+  - app/main.py
+  sha: a68ecbffcc19ecedb817fbcbb0d77350acf6e4ba
+  subject: 'fix(port380): restore gutted port380_mcp.py; tighten app/main.py CORS headers'
+measured_files:
+  app_main_py:
+    at_commit: 5eb80b45
+    cors_allow_headers:
+    - Content-Type
+    - Authorization
+    - X-Garden-Secret
+    - X-Ledger-Head
+    cors_prior_allow_headers:
+    - '*'
+    expose_headers:
+    - X-Ledger-Head
+    path: app/main.py
+    same_blob_as: a68ecbffcc19ecedb817fbcbb0d77350acf6e4ba
+    sha256: 75abb8c546c0a9d77ca64e956edf0ef1d18e1fd655f42827aee3ebfc3749f350
+  port380_mcp.py:
+    at_commit: 5eb80b45
+    line_count_post_restore_a68ecbff: 569
+    line_count_pre_restore_efc8ad19: 376
+    path: port380_mcp.py
+    same_blob_as: a68ecbffcc19ecedb817fbcbb0d77350acf6e4ba
+    sha256: fc3aa17209ebfca087e1ca300b05d57056e243b30e39d2be3883365a71b6faf8
+chain:
+  prev_entry: 9297
+  prev_hash: facffab4e05148c8c29e4aa192bb410687e6328f9da6dc9b7e66284833395d25
+  prev_hash_source: ledger.v2/9297.yml seal_sha3_256 (declared)
+  skipped_stub: 9298
+  witness_chain: 9297 -> 9299
+seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True)
+  of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex,
+  witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md
+  Article 26
+regime_b_event_domain_sha3_256: 3bfa83fd6c42450b37abf1ada158cb330b6bfd74e845e9cb8fa94a5cc6fac814
+regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9299|/port380_restore_cors_and_9298_stub_gap|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462;
+  NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
+terminal_hex: 7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121
+seal: ∀∞φ² · PORT380_RESTORE_CORS_AND_9298_STUB_GAP_9299 · WOOD_DRAGON_GATE · SEALED · 7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121
+seal_sha3_256: 7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121
