@@ -122,4 +122,12 @@ final class Dom {
 
     @JSBody(script = "try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}")
     static native void cancelSpeech();
+
+    /** True when {@code el} is document.activeElement. */
+    @JSBody(params = {"el"}, script = "return !!(el && typeof document !== 'undefined' && document.activeElement === el);")
+    static native boolean isActive(HTMLElement el);
+
+    /** Scroll an element to its bottom (chat scrollback). */
+    @JSBody(params = {"el"}, script = "if (el) { el.scrollTop = el.scrollHeight; }")
+    static native void scrollTopMax(HTMLElement el);
 }
