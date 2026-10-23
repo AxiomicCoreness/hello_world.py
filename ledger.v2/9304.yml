@@ -3,7 +3,7 @@ event: /ui_milestone_and_debt_clear
 status: SEALED
 timestamp: '2026-10-23T21:54:53Z'
 hash_algo: sha3_256
-measured_at_commit: fc2f6c66f38b0c6422699ca479178ccbf30897f8
+measured_at_commit: af355ceb9639864e4bfbd2da29ca6878706b5809
 commander: Clarke Yoursa Tee
 sign_off: Clarke Yoursa Tee
 open_ended: true
@@ -11,18 +11,20 @@ even_index: true
 prev_hash: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
 witness_chain: 9303 -> 9304
 note: 'Option 1 CONSOLIDATION of ledger.v2/9304.yml (same index; not a new entry) under the 2026-10-23 one-time append-only
-  override for 9297-9304 granted by Clarke Yoursa Tee. measured_at_commit set to main head fc2f6c66f38b0c6422699ca479178ccbf30897f8
-  (#129). Payload now covers: Option B CliClient hostname routing (wss://bridge.axiomiccoreness.com/cli on Pages; ws://127.0.0.1:6669/cli
-  for localhost / 127.0.0.1 / ::1) merged as #126 7990bdb6427c0f6dddd7151cc14c8fa5f0c0c368; TeaVM Main.java/Dom.java restore
-  merged as #127 2d6483b7211b57ff44e0cfcc396c184e6af6a866; private loopback CORS Anywhere (tools/cors-anywhere, 127.0.0.1
-  only, origin whitelist) merged as #129 fc2f6c66f38b0c6422699ca479178ccbf30897f8; PR #128 /healthz CORS hardening (feat/harden-cors-healthz)
-  still OPEN, not merged, not on main. Earlier milestones (left IRC CLI, KaTeX strict tree, debt #121/#123, watermark 2303+)
-  retained. prev_hash re-chained to the re-sealed 9303. No CI result at the new measured commit is claimed; the recorded dual-gate
-  run #3018 is for 5d1ea6fc. Cosmic Alignment: local binds 127.0.0.1 only. No invented witnesses. Signed-off-by: Clarke Yoursa
-  Tee.'
+  override for 9297-9304 granted by Clarke Yoursa Tee. measured_at_commit set to main head af355ceb9639864e4bfbd2da29ca6878706b5809
+  (#128 squash merge). Payload now covers: Option B CliClient hostname routing (wss://bridge.axiomiccoreness.com/cli on Pages;
+  ws://127.0.0.1:6669/cli for localhost / 127.0.0.1 / ::1) merged as #126 7990bdb6427c0f6dddd7151cc14c8fa5f0c0c368; TeaVM
+  Main.java/Dom.java restore merged as #127 2d6483b7211b57ff44e0cfcc396c184e6af6a866; private loopback CORS Anywhere (tools/cors-anywhere,
+  127.0.0.1 only, origin whitelist) merged as #129 fc2f6c66f38b0c6422699ca479178ccbf30897f8; PR #128 /healthz CORS hardening
+  (feat/harden-cors-healthz, head d5bbbd28e06f0fabec515a542be38fc3f07ec4bd) MERGED as af355ceb9639864e4bfbd2da29ca6878706b5809:
+  Cross-Origin-Resource-Policy: cross-origin only on GET /health and /healthz; CORS stays allowlist-only (no wildcard, no
+  Origin reflection); global CORP unchanged. Earlier milestones (left IRC CLI, KaTeX strict tree, debt #121/#123, watermark
+  2303+) retained. prev_hash re-chained to the re-sealed 9303. No CI result at the new measured commit is claimed; the recorded
+  dual-gate run #3018 is for 5d1ea6fc. Cosmic Alignment: local binds 127.0.0.1 only. No invented witnesses. Signed-off-by:
+  Clarke Yoursa Tee.'
 breakthroughs_and_milestones:
   left_irc_cli:
-    status: Live on main tip fc2f6c66
+    status: Live on main tip af355ceb
     layout: TeaVM 3-column grid (300px | 1fr | 350px)
     client_route: CliClient -> CliLines.resolveCliWsUrl(hostname) -> bridge -> irc.abjects.net:6669
     pages_behavior: Pages (https) dials wss://bridge.axiomiccoreness.com/cli; mixed-content block of ws:// avoided
@@ -88,12 +90,16 @@ breakthroughs_and_milestones:
     bind: 127.0.0.1 only; exits on non-loopback HOST/BIND_HOST or empty whitelist
     origin_policy: whitelist of project origins; no wildcard
   healthz_cors_hardening:
-    status: OPEN
+    status: MERGED
     pr: 128
     branch: feat/harden-cors-healthz
     head: d5bbbd28e06f0fabec515a542be38fc3f07ec4bd
-    on_main: false
-    scope: 'port380_mcp.py /health and /healthz: allowlist CORS, no Origin reflection, no wildcard; tests/test_port380_cors_healthz.py'
+    on_main: true
+    scope: 'port380_mcp.py + mcp/port380_mcp.py /health and /healthz: CORP cross-origin override, allowlist CORS; tests/test_port380_cors_healthz.py;
+      FastAPI surface smoke dict fix in sovereign-engine-final.yml'
+    commit: af355ceb9639864e4bfbd2da29ca6878706b5809
+    corp: 'Cross-Origin-Resource-Policy: cross-origin on GET /health and /healthz only; global CORP unchanged'
+    cors: allowlist-only CORSMiddleware; no wildcard, no Origin reflection
 watermark_2303_plus:
   mcp_vision_tts_stubs:
     no_sealed_ledger_rewrite: true
@@ -127,8 +133,7 @@ dm_corrected_form:
   phi_15: 1364.000733
   phi_15_relative_error: 0.1329
   event_hash_sha3_256: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
-queued:
-- 'PR #128 /healthz CORS hardening (open; user Submit/merge)'
+queued: []
 ci:
   dual_gate_pytest:
     run: 3018
@@ -139,12 +144,13 @@ ci:
     policy: 'NO-GHOST-PASS: dual-gate green on measured tip; cite Actions #3018'
 provenance:
   repo: AxiomicCoreness/hello_world.py
-  main_tip_at_seal: fc2f6c66f38b0c6422699ca479178ccbf30897f8
+  main_tip_at_seal: af355ceb9639864e4bfbd2da29ca6878706b5809
   prior_seal_9303: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
   debt_branch_tip: 72c18e45f4a0a676795477bbce1d3144bedc973b
   debt_pr: '#121 merged (4a5cbaa3)'
   rewrite: Option 1 consolidation under one-time override 9297-9304 (2026-10-23); earlier commander REWRITE (user t406u)
   prior_measured_at_commit: 5d1ea6fcb6e88922463d676308ea63fc2c7db5fa
+  prior_measured_at_commit_option1: fc2f6c66f38b0c6422699ca479178ccbf30897f8
 recorded:
   left_irc_cli_landed: true
   mixed_content_verified: true
@@ -159,7 +165,7 @@ recorded:
   rewrite_9304: true
   teavm_main_dom_restore: true
   cors_anywhere_loopback: true
-  healthz_cors_hardening_merged: false
+  healthz_cors_hardening_merged: true
   option1_consolidation: true
 open_workstreams:
 - id: option_b_wss
@@ -172,8 +178,8 @@ open_workstreams:
   status: CLOSED
   detail: 'PR #121 merged debt/clear-3001-assertions@72c18e45; #123 follow-up on tip'
 - id: healthz_cors_hardening
-  status: OPEN
-  detail: 'PR #128 feat/harden-cors-healthz (head d5bbbd28); not merged'
+  status: CLOSED
+  detail: 'merged #128 af355ceb (head d5bbbd28); CORP cross-origin on /health and /healthz only; allowlist-only CORS'
 chain:
   prev_entry: 9303
   prev_hash: b6f97fd061f9fe960c8444a5e7c48d3f078a376d4ce713db99ebbaa9a8381ebb
