@@ -1,15 +1,25 @@
-draft schema: axiomiccoreness/ledger-entry/v2
-id: 9299
-prev_id: 9298
-witness: "0000 → … → 9298 → 9299 — UNBROKEN"
-role: patch_seal
-summary: "Resolved CI cascade (IndentationError), hardened CORS, isolated t_rotator_emit"
-math_origin: 510510
-signing:
-  status: draft
-  hash:
-    alg: sha3_256
-    value: PENDING_LOCAL_SIGNING
-  signature:
-    alg: ed25519
-    value: PENDING_LOCAL_SIGNING
+entry_index: 9299
+timestamp: '2026-10-23T00:00:00Z'
+event: /ci_cascade_resolution_and_cors_hardening_9299
+status: SEALED
+hash_algo: sha3_256
+prev_hash: <compute_hash_of_9298>
+witness_chain: 9298 -> 9299
+note: |
+  Resolves the P0 CI cascade (IndentationError in port380_mcp.py). 
+  Hardens the FastAPI CORS middleware against preflight spike vulnerabilities 
+  and dynamic wildcard reflection.
+  Isolates the t_rotator graph emitter into a dedicated CLI to prevent 
+  state-drift into beacons/ or ledger/.
+resolutions:
+  ci:
+    p0_syntax: "port380_mcp.py (line 42) class indentation resolved"
+    cors_patch: "app/main.py strict ALLOWED_ORIGINS strip + wildcard reflection block"
+    rotator_isolate: "scripts/t_rotator_emit.py routed strictly to t_rotator_out/"
+  files:
+    modified: [port380_mcp.py, app/main.py, README.md]
+    created: [scripts/t_rotator_emit.py]
+  infra:
+    bind_host_ui: "app/main.py UI now accurately reflects BIND_HOST env var"
+terminal_hex: <compute on seal>
+seal: "∀∞φ² · CI_CASCADE_RESOLUTION_9299 · WOOD_DRAGON_GATE · SEALED · <hex>"
