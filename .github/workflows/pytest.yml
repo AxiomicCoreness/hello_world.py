@@ -25,7 +25,7 @@ concurrency:
 
 env:
   HASH_ALGO: sha3_256
-  LEDGER_DIR: ledger.v2 # FIXED: Updated to target the v2 directory
+  LEDGER_DIR: ledger.v2
 
 jobs:
   verify-integrity:
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive # FIXED: Pulls in TeaVM, DeepSelect, etc.
+          submodules: recursive
 
       - uses: actions/setup-python@v5
         with:
@@ -46,29 +46,29 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet cryptography pyyaml jax jaxlib torch fastmcp kubernetes # FIXED: dual-gate collection deps (PyPI: fastmcp, kubernetes)
+          # PyPI: cryptography/pyyaml + jax/torch; keep fastmcp + kubernetes (collection triage)
+          python -m pip install --quiet cryptography pyyaml jax jaxlib torch fastmcp kubernetes
 
       - name: Verify Ledger (Dynamic)
         run: |
           set -euo pipefail
           shopt -s nullglob
-          
+
           VERIFIER=".github/scripts/verify_ledger.py"
           [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          
+
           if [ ! -f "$VERIFIER" ]; then
             echo "verify_ledger.py absent — skip"
             exit 0
           fi
 
-          # FIXED: Dynamically target ledger.v2/ instead of hardcoded 9240-9245
           entries=(ledger.v2/*.yml)
           if [ ${#entries[@]} -eq 0 ]; then
             echo "No entries in ledger.v2/ — skip"
             exit 0
           fi
 
-          # Hard check the entire v2 ledger
+          # Hard check the entire v2 ledger (9299/9300 sealed — do not rewrite)
           python "$VERIFIER" --hard "${entries[@]}"
 
       - name: Verify Ed25519 signatures on ledger entries (soft)
@@ -78,7 +78,7 @@ jobs:
           python - <<'PY'
           import sys
           from pathlib import Path
-          p = Path("ledger.v2/9298.yml") # Updated target
+          p = Path("ledger.v2/9298.yml")
           if not p.exists():
               print("ledger.v2/9298.yml not present — soft skip")
               sys.exit(0)
@@ -91,7 +91,7 @@ jobs:
               print(f"missing dependency {e} — soft skip")
           PY
 
-      - name: Verify security headers in FastAPI middleware (source)
+      - name: Verify security headers in FastAPI middleware (source, soft)
         id: headers_source
         continue-on-error: true
         run: |
@@ -149,23 +149,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-          
+
       - name: Install dependencies
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           if [ -f requirements-ci.txt ]; then pip install -q -r requirements-ci.txt || true; fi
           if [ -f requirements.txt ]; then pip install -q -r requirements.txt || true; fi
+          # jax/torch + keep fastmcp kubernetes from tip (PyPI names)
           pip install -q cryptography pyyaml requests flake8 pytest numpy jax jaxlib torch fastmcp kubernetes || true
 
       - name: Run pytest
         run: |
-          # FIXED: Removed `exit 0`. If tests fail, the job now fails.
-          # FIXED: Ignored the GPU-specific folders so CI doesn't crash.
+          # Collection debt cleared via importorskip — do NOT use --continue-on-collection-errors
+          # (keeps triage win: collection errors fail the job visibly).
           PYTHONPATH=. python -m pytest -q --tb=short \
             --ignore=vendor \
             --ignore=multibody_simulator/tests \
-            --continue-on-collection-errors \
             -m "not gpu"
 
   summary:
@@ -182,7 +182,10 @@ jobs:
             echo "| Gate | Mode |"
             echo "|------|------|"
             echo "| ledger.v2/*.yml | hard |"
+            echo "| Ed25519 9298 | soft |"
+            echo "| security headers | soft |"
             echo ""
+            echo "9299/9300 sealed — next CI-restoration seal is NEW 9301 (append-only)."
+            echo "No --continue-on-collection-errors (collection triage retained)."
             echo "Display name distinct from sovereign-cicd.yml (Sovereign CI/CD)."
-            echo "No sealed ledger body rewritten."
           } >> "$GITHUB_STEP_SUMMARY"
