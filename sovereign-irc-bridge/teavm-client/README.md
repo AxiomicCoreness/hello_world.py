@@ -6,7 +6,15 @@ existing debug-oracle panel:
 - `games/teavm-rhythm/src/main/webapp/debug-oracle/index.html`
 - `games/teavm-rhythm/src/main/webapp/debug-oracle/hex_locks.json`
 
+Java-side TeaVM → IRC mTLS bridge stubs (pure logic, no live sockets):
+
+- `games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/irc/IrcBridgeConfig.java`
+- `games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/irc/MtlsToolCall.java` — `/mtls` tool call
+- `games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/irc/IrcBridgeClientStub.java` — WS dial *plan* only
+
 Team channel **UI labels**: `irc.abjects.net:6666`–`6669` (no live sockets in CI).
+Live path: TeaVM/browser → `ws(s)://<bridge>/ws` → bridge mTLS TCP →
+`irc.abjects.net:6697` (PEMs via `IRC__MTLS_*`).
 
 The bridge FastAPI app mounts that directory at `/debug-oracle/`. Dockerfile
 copies the same path into the image. When a live WS dial exists, point the
