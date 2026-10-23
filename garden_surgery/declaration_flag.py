@@ -41,10 +41,12 @@ def htmx_fragment() -> str:
     p = declaration_payload()
     h = p["honest_split"]
     d = p["diagnostic"]
+    chi_note = "chi is not an axiom" if not h.get("chi_is_axiom", True) else "chi flagged"
     return (
         '<div id="declaration-flag">'
         f'<p>{FLAG}</p>'
         f'<p>overstated: {str(p["declaration_overstated"]).lower()}</p>'
+        f'<p>{chi_note}</p>'
         f'<p>W = {d["W"]:.3f}</p>'
         "</div>"
     )

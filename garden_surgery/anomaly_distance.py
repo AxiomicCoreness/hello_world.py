@@ -109,7 +109,7 @@ def math_form() -> Dict[str, Any]:
 
 def response_headers() -> Dict[str, str]:
     return {
-        "X-Garden-Entry": "9031",
+        "X-Garden-Entry": "9030",
         "X-Garden-Event": "/surgery/qed_sandbox_to_main",
         "X-Garden-Metric": "d_i",
         "X-Garden-Fusion": "515",
