@@ -39,11 +39,9 @@ HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
 # ============================================================================
 # SecurityHeadersMiddleware
 # ============================================================================
-# port380_mcp.py (around line 42)
-class SomeClass:  # <-- Line 42
-    # ADD THIS PASS OR INDENT THE FUNCTION BELOW IT
-    def garden_secret_missing(self) -> bool:
-        # ... existing code ...
+class GardenGate:  # Line 42
+    def garden_secret_missing(self) -> bool:  # <-- INDENT THIS
+        return not os.environ.get("GARDEN_SECRET")
 
 # ============================================================================
 # GARDEN_SECRET FAIL-FAST
