@@ -117,12 +117,12 @@ def build_h0_dense(n):
 
 
 def build_h0_numpy(n):
-    """Same matrix as build_h0_dense, as a numpy float64 array."""
+    """Same matrix as build_h0_dense, as a numpy complex128 array (bijection/ODE float-safe)."""
     import numpy as np
 
     _check_n(n)
     dim = 1 << n
-    h = np.zeros((dim, dim), dtype=np.float64)
+    h = np.zeros((dim, dim), dtype=np.complex128)
     for r, c, v in _h0_entries(n):
         h[r, c] += v
     return h
