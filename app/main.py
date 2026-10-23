@@ -19,10 +19,12 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://axiomiccoreness.local").
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS, 
+    allow_origins=[o.strip() for o in ALLOWED_ORIGINS if o.strip()],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
+    # Explicit headers only — no wildcard with credentials.
+    allow_headers=["Content-Type", "Authorization", "X-Garden-Secret", "X-Ledger-Head"],
+    expose_headers=["X-Ledger-Head"],
     max_age=3600,  # Cache preflight for 1 hour to absorb spikes
 )
 # ==============================================================================
