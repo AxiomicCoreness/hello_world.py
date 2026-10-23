@@ -3,6 +3,11 @@
 Sovereign Planck Engine v2 (Python)
 Matches the canonical math from PlanckEngine.swift.
 Structured as a class for CI test compatibility.
+
+Pandas / mTLS / Xcode notes (no CUDA):
+- Optional ``to_frame()`` uses pandas when installed (Python-side tables only).
+- mTLS belongs to Port-380 / sovereign-irc-bridge secret mounts — not this math core.
+- Xcode / Swift twin is ``sovereign/PlanckEngine.swift``; never invent CUDA paths.
 """
 
 import math
@@ -74,9 +79,27 @@ class PlanckEngine:
             "zetaBound": zeta_bound
         }
 
+    @classmethod
+    def to_frame(cls):
+        """Optional pandas DataFrame of ``run()`` metrics (Python-side only).
+
+        Soft-imports pandas. Xcode/Swift does **not** use pandas or CUDA.
+        """
+        try:
+            import pandas as pd
+        except ImportError as exc:  # pragma: no cover
+            raise ImportError(
+                "pandas is optional for PlanckEngine.to_frame(); "
+                "pip install pandas — not required for Swift/Xcode parity"
+            ) from exc
+        data = cls.run()
+        return pd.DataFrame([data])
+
+
 # Module-level function for backwards compatibility with scripts
 def run_engine():
     return PlanckEngine.run()
+
 
 if __name__ == "__main__":
     results = PlanckEngine.run()
