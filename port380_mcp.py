@@ -19,9 +19,11 @@ phi-harmonic anchors preserved.
 Full digests, no truncation.
 
 Security posture:
-  - CORSMiddleware (allow-list, no wildcard with credentials)
+  - CORSMiddleware (allow-list, no wildcard with credentials; no Origin reflection)
   - SecurityHeadersMiddleware (CSP, HSTS, XCTO, XFO, Referrer-Policy,
     Permissions-Policy, COOP/CORP/COEP, X-Permitted-Cross-Domain-Policies)
+  - GET /health and /healthz: public (bypass GARDEN_SECRET); CORP cross-origin
+    so allowlisted Origins can read the probe without loosening global CORP
 """
 
 import os
@@ -300,6 +302,10 @@ async def _read_json(request: Request, require_object: bool = False) -> Any:
 @app.get("/health")
 @app.get("/healthz")
 async def health():
+    # Public probes stay unauthenticated. Default CORP is same-origin, which
+    # would block allowlisted browser Origins from reading this response even
+    # when CORSMiddleware echoes ACAO. Override CORP only here so CSP/HSTS/
+    # COOP/COEP stay strict everywhere else. Never * and never Origin reflection.
     return JSONResponse(
         content={
             "status": "healthy",
@@ -308,7 +314,8 @@ async def health():
             "layer": LAYER,
             "timestamp": _now(),
             "gate_identity": GATE_IDENTITY,
-        }
+        },
+        headers={"Cross-Origin-Resource-Policy": "cross-origin"},
     )
 
 
