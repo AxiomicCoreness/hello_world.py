@@ -11,12 +11,15 @@ spec:
       - name: builder
         image: gcr.io/kaniko-project/executor:v1.23.2
         args:
-        - "--dockerfile=Dockerfile.deepinfer"
+        - "--dockerfile=argocd/Dockerfile.deepinfer"
+        # TODO(auth): private clone may need credentials via Secret (name TBD).
         - "--context=git://github.com/AxiomicCoreness/hello_world.py#refs/heads/main"
         - "--destination=registry.local/sovereign/deepinfer:nvidia-2.32.3"
         - "--build-arg=DEEPINFER_ACCELERATOR=nvidia"
+        # FOLLOW-UP: CUDA 12.4.1 vs upstream DeepInfer CUDA 13 — see docs/deepinfer_integration.md
         - "--build-arg=BASE_IMAGE_DEVEL=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
         - "--build-arg=BASE_IMAGE_RUNTIME=nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04"
+        - "--git-submodules"
         - "--cache=true"
         - "--cache-repo=registry.local/sovereign/deepinfer-cache"
         - "--cache-ttl=168h"

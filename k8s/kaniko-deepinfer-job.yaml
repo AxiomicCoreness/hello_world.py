@@ -11,14 +11,20 @@ spec:
       - name: kaniko-builder
         image: gcr.io/kaniko-project/executor:v1.23.2
         args:
-        - "--dockerfile=Dockerfile.deepinfer"
-        # Using the PAT to pull the repo
-        - "--context=git://<YOUR_GITHUB_PAT>@github.com/AxiomicCoreness/hello_world.py.git#refs/heads/main"
+        # Real Dockerfile lives under argocd/ (no root Dockerfile.deepinfer).
+        - "--dockerfile=argocd/Dockerfile.deepinfer"
+        # TODO(auth): inject clone credentials via a K8s Secret / projected volume.
+        # Do not embed a PAT in this manifest. Example context once Secret exists:
+        #   --context=git://github.com/AxiomicCoreness/hello_world.py.git#refs/heads/main
+        # with GIT_TOKEN / .netrc supplied out-of-band (secret name TBD by cluster owners).
+        - "--context=git://github.com/AxiomicCoreness/hello_world.py.git#refs/heads/main"
         - "--destination=registry.local/sovereign/deepinfer:nvidia-2.32.3"
         - "--build-arg=DEEPINFER_ACCELERATOR=nvidia"
+        # FOLLOW-UP: upstream DeepInfer requires CUDA 13 / cu132 / SM100;
+        # these 12.4.1 bases match the existing argocd/Dockerfile.deepinfer only.
         - "--build-arg=BASE_IMAGE_DEVEL=nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04"
         - "--build-arg=BASE_IMAGE_RUNTIME=nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04"
-        - "--git-submodules"  # CRITICAL: Pulls vendor/DeepEP, vendor/teavm-sync, etc.
+        - "--git-submodules"
         - "--cache=true"
         - "--cache-repo=registry.local/sovereign/deepinfer-cache"
         - "--cache-ttl=168h"
@@ -27,6 +33,7 @@ spec:
         volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker
+        # TODO(auth): mount git credentials Secret here when available (name TBD).
         resources:
           requests:
             cpu: "4"
