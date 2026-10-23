@@ -1,0 +1,45 @@
+name: One-shot materialize DeepGEMM gitlinks
+
+# Temporary: lands mode-160000 vendor gitlinks (MCP push_files cannot create them).
+# Removes itself after success. DualPipe not included.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-deepgemm-gitlinks
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Materialize pinned inference vendors
+        run: bash ./scripts/init_deepinfer_vendors.sh
+
+      - name: Write vendor README + commit gitlinks + push
+        run: python3 .github/scripts/materialize_deepgemm_gitlinks.py
+
+      - name: Remove this one-shot workflow from main
+        if: success()
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B main origin/main
+          if [ -f .github/workflows/one-shot-materialize-deepgemm.yml ]; then
+            git rm .github/workflows/one-shot-materialize-deepgemm.yml
+            git config user.name "Clarke Yoursa Tee"
+            git config user.email "ClarkeYTee@users.noreply.github.com"
+            git commit -m "ci: remove one-shot DeepGEMM materialize workflow"$'\n\n'"Signed-off-by: Clarke Yoursa Tee <ClarkeYTee@users.noreply.github.com>"
+            git push origin HEAD:main
+          fi
