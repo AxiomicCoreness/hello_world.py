@@ -14,6 +14,11 @@ package com.fruitfly.games.rhythm.logic;
  *       {@code stamp - startStamp}. If audio stops part-way, the frame clock
  *       continues from the last audio reading, so play carries on.</li>
  *   <li>Song time never goes backwards.</li>
+ *   <li>Pause / resume (tab hidden): {@link #pause} freezes song time;
+ *       {@link #resume} re-anchors the frame-clock fallback at the resume
+ *       stamp, so the time the tab spent hidden is not added. In audio mode
+ *       the audio element is paused alongside and resumes from where it
+ *       stopped, so its position carries on from the frozen time.</li>
  * </ul>
  */
 public final class SongClock {
@@ -23,9 +28,22 @@ public final class SongClock {
     private double anchorSong;
     private double anchorStamp;
     private double now;
+    private boolean paused;
+    /** null = raw audio reads (the original behaviour); else the smoother for drawing / judging. */
+    private final SmoothClock smooth;
 
     public SongClock(long offsetMs) {
+        this(offsetMs, false);
+    }
+
+    /** @param smoothAudio steer a frame-clock estimate toward the audio ({@link SmoothClock}) instead of reading it raw. */
+    public SongClock(long offsetMs, boolean smoothAudio) {
         this.offsetMs = offsetMs;
+        this.smooth = smoothAudio ? new SmoothClock() : null;
+    }
+
+    public boolean isSmoothed() {
+        return smooth != null;
     }
 
     /** Start a run at frame time {@code stampMs}; {@code withAudio} picks audio mode. */
@@ -35,12 +53,41 @@ public final class SongClock {
         anchorSong = 0.0;
         anchorStamp = stampMs;
         now = 0.0;
+        paused = false;
+        if (smooth != null) {
+            smooth.reset();
+        }
+    }
+
+    /** Freeze song time (no-op before start or when already paused). */
+    public void pause() {
+        if (started) {
+            paused = true;
+        }
+    }
+
+    /** Unfreeze at frame time {@code stampMs}: the fallback clock continues from the frozen time, not from the stamp gap. */
+    public void resume(double stampMs) {
+        if (!paused) {
+            return;
+        }
+        paused = false;
+        anchorSong = now;
+        anchorStamp = stampMs;
+        if (smooth != null) {
+            smooth.reset(); // the paused audio resumes where it stopped: take its next reading as is
+        }
+    }
+
+    public boolean isPaused() {
+        return paused;
     }
 
     /** Back to the not-started state (song time 0). */
     public void stop() {
         started = false;
         audioMode = false;
+        paused = false;
         now = 0.0;
     }
 
@@ -55,9 +102,12 @@ public final class SongClock {
         if (!started) {
             return 0.0;
         }
+        if (paused) {
+            return now;
+        }
         double t;
         if (audioMode && audioOk) {
-            t = audioPosMs + offsetMs;
+            t = smooth != null ? smooth.sample(stampMs, audioPosMs + offsetMs) : audioPosMs + offsetMs;
             anchorSong = Math.max(now, t);
             anchorStamp = stampMs;
         } else {

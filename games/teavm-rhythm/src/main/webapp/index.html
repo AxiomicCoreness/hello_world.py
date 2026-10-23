@@ -36,6 +36,9 @@
     #hud-l { left: 10px; top: 8px; }
     #hud-r { right: 10px; top: 8px; text-align: right; }
     #hud-c { left: 0; right: 0; top: 21%; text-align: center; font-size: 17px; font-weight: bold; }
+    /* ?debug=notes: last moves rows, bottom of the stage; ~51 chars at 9 px fits the 390 px iPhone stage */
+    #moves-list { left: 4px; bottom: 4px; max-width: calc(100% - 8px); overflow: hidden; font: 9px/1.25 monospace;
+      background: rgba(255, 255, 255, 0.78); color: #1d2230; padding: 2px 4px; margin: 0; border-radius: 3px; text-shadow: none; }
     /* On-screen AUTOPLAY button: same action as key C. Main.java sets its box from StageLayout.autoplayButton()
        (under the corner HUD, above the centre text) and its label every frame. */
     #autoplay-btn { position: absolute; left: 50px; top: 124px; width: 290px; height: 44px; box-sizing: border-box;
@@ -128,6 +131,7 @@
     <div id="hud-l" class="hud"></div>
     <div id="hud-r" class="hud"></div>
     <div id="hud-c" class="hud"></div>
+    <pre id="moves-list" class="hud" style="display:none" aria-label="moves list (debug)"></pre>
     <button id="autoplay-btn" type="button" tabindex="-1"
             title="Autoplay mode (same as key C; changes between songs only)"
             aria-label="AUTOPLAY: OFF">AUTOPLAY: OFF</button>

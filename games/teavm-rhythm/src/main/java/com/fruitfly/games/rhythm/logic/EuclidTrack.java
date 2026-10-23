@@ -60,15 +60,9 @@ public final class EuclidTrack {
         }
         int len = (int) ((last + 1500) * rate / 1000L);
         double[] mix = new double[len];
-        EuclidSong.Layer[] layers = p.layers();
-        for (Note n : notes) {
-            int timbre = EuclidSong.KICK;
-            for (EuclidSong.Layer l : layers) {
-                if (l.lane == n.lane()) {
-                    timbre = l.timbre;
-                }
-            }
-            addHit(mix, onsetSample(n.timeMs(), rate), timbre, rate);
+        int[] timbre = EuclidSong.timbres(p, EuclidSong.BARS); // same order as notes(), lane-independent
+        for (int k = 0; k < notes.size(); k++) {
+            addHit(mix, onsetSample(notes.get(k).timeMs(), rate), timbre[k], rate);
         }
         return toPcm(mix);
     }

@@ -22,6 +22,8 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `logic/Euclid`, `EuclidSong`, `EuclidTrack` | Bjorklund's E(k,n), the Euclidean presets (lanes D/F/J/K), their charts and synthesised audio. See "Euclidean rhythm songs" below. |
 | `logic/SongSource`, `Midi`, `MidiSong`, `VoiceSong` | The music-source picker (Euclidean / MIDI file / TTS voice), the Standard MIDI File reader, MIDI -> chart + synthesised audio, and the spoken-line beat grid. See "Music sources" below. |
 | `logic/InputRouter` | Pure key / click routing: Space and Enter only start a song (never step the mode), held C / B step once, a keyboard-synthesised button click (`detail == 0`) is ignored, and mid-song mode inputs return `LOCKED` for the hint. |
+| `logic/Move`, `MovesLog`, `CueProbe`, `Sha256` | The per-note moves list (ledger-style rows: decision value, lane chain, derived `math_origin`, SHA-256 hash chain), the fly cue-window probe and a pure-Java SHA-256. Exposed by `web/DebugApi` as `window.__rhythmDebug`. See "Moves list" below. |
+| `logic/SmoothClock` | The smoothed audio song clock (coarse `currentTime` steps, Safari). See "Smoothed song clock" below. |
 | `logic/Scene3D`, `StageLayout`, `BrainStage` | DRAFT: pseudo-3D math (lookAt orbit camera, near-plane culling and clipping), the iPhone 12 / desktop layout, and the toy positions of the brain-object nodes. |
 | `web/StageRenderer.java`, `web/Dom.java` | DRAFT: draws the stage (grid, origin anchor, brain object, synapse flashes) and guards JS access (DPR, viewport, image, camera). |
 | `src/main/webapp/connectomes/toy_lane_circuit.xml` | **TOY** 12-neuron circuit. Not the Drosophila connectome. |
@@ -37,6 +39,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/test/resources/lif_rk4_golden_traces.txt` | Golden v / g / refractory / spike traces generated from the real root `LIFRK4`. Do not hand-edit. |
 | `tools/LifGoldenTraceGen.java`, `tools/regen-lif-traces.sh` | Trace generator. It compiles against the root `src/` LIFRK4 and isn't part of the Maven build. |
 | `tools/smoke.js` | Headless Node smoke test for the compiled `classes.js`, using a stubbed DOM. |
+| `tools/chrome_smoke.mjs` | Real headless Chrome (CDP) check of a served build: `window.__rhythmDebug`, `?debug=notes`, pause on a hidden tab, and clock jitter with Safari-like 40 ms `currentTime` steps. `node tools/chrome_smoke.mjs http://127.0.0.1:8092/` |
 
 ## Rules
 
@@ -329,7 +332,12 @@ output and always starts on a pulse. `Euclid.rotate(p, r)` rotates LEFT by r
 | J | cinquillo E(5,8) | `x.xx.xx.` | 330 + 660 Hz conga |
 | K | bembe bell E(7,12) | `x.xx.x.xx.x.` | inharmonic bell, 1320 Hz x {1, 2.76, 5.40} |
 
-Presets: `layered` (all four), or one layer alone. Each pattern spans one
+Presets: `layered` (all four, each layer on its own lane as in the table), or
+one layer alone. **A single-pattern preset is spread over all four lanes:**
+pulse number p of the song (counting from 0 across bars, p = b*k + j for the
+j-th onset of bar b) goes to lane `p mod 4`, so `?rhythm=bembe` plays
+D F J K D F ... instead of putting every block on K; the timbre stays the
+layer's. Its HUD line reads `DFJK E(7,12) x.xx.x.xx.x.`. Each pattern spans one
 4/4 bar, so 8 steps are eighths, 16 sixteenths and 12 triplet eighths; step i
 of bar b is at `2000 + round((b*n + i) * 240000 / bpm / n)` ms, 8 bars. Each
 pulse is one note. The audio is synthesised in the page as 16 kHz PCM and
@@ -395,4 +403,129 @@ Browser debug shell served with the TeaVM webapp:
 - Companion TUI: `tools/debug_oracle_irc/oracle_shell.py`
 
 Team endpoints are **UI labels only**: `irc.abjects.net:6666`–`6669`. No live IRC sockets in CI.
+
+## Moves list and window.__rhythmDebug
+
+Every note gets one row, written once the note is judged and its fly cue
+window has closed (note time + 295 ms: 95 ms assist aim + 150 ms window + one
+50 ms brain tick), in chart order (`logic/MovesLog`, `logic/Move`). The page
+keeps the first 20 rows and a ring of the last 64, and exposes them read-only:
+
+```text
+window.__rhythmDebug = {            // frozen, non-writable; rows are JSON copies
+  version: "rhythm-moves/1",
+  moves(),   first20(),   count(),  // last 64 rows / first 20 / rows written
+  mode(),                           // off | lif | connectome | assist-lif | assist-connectome
+  clock(),                          // song time now, ms (the smoothed clock)
+  verify(rows?),                    // no arg: re-derive math_origin + hash chain in Java; rows: re-hash them
+  sha256(s)                         // the game's SHA-256, hex
+}
+```
+
+`?debug=notes` also `console.log`s each row and shows the last 8 rows at the
+bottom of the stage (`#moves-list`, 9 px monospace, at most 52 characters a
+row, so it fits the 390 px iPhone stage). `skills/rhythm-moves-debug` is a
+bookmarklet that shows the same rows as a table.
+
+**Row fields.** `i` note index, `t` note time (ms), `lane`/`key`, `delta` =
+t minus the previous note's t in the chart (null for the first), `who`
+(`you` / `fly` / `none` for a MISS), `press` and `dt` = press - t, `judge`
+(PERFECT / GREAT / GOOD / MISS). Fly modes add the decision inputs, read from
+the lane's motor neuron (the LIF fly's lane neuron, or `laneN.out` of the
+connectome): `V` = its peak membrane voltage in the cue window, read after each
+1 ms RK4 step and before a spike resets it (`LifNeuron.vBeforeReset`), `th` =
+its threshold (-45 mV), `fired` = it spiked in the window, `lat` =
+cue-to-press latency (ms). The cue window of a note cued at c in a lane with
+latency L is c .. c + L + 150 ms; open windows in one lane are served
+first-in first-out, like `RhythmGame.press` serves the earliest open note.
+
+**Decision value d**, like a ledger entry's value (all in integer thousandths,
+so the row recomputes exactly anywhere):
+
+- Fly modes, rows not taken by you: `d = margin = V_peak - th`, with V_peak and
+  th first rounded to 0.001 mV. A fired row has margin >= 0; an unfired cue is
+  a MISS with margin < 0.
+- You (or no fly): the timing score `d = (150 - |dt|) / 150`, rounded to 0.001;
+  0 for a MISS.
+
+**Chain** (per lane): `chain_n = chain_(n-1) + 1` on a hit, `0` on a MISS (this
+row included). **Chain factor** `f(chain) = 1 + min(chain, 10) / 10`, so
+1.0 .. 2.0. **Value** `value = d * f(chain)`, rounded to 0.001 half away from
+zero.
+
+**math_origin** (derived, never asserted; fixed 3 decimals), in the style of
+`math_origin.py`'s `payload_segment`:
+
+```text
+math_origin=Decision(t=<t>;lane=<lane>;who=<who>;V=<V>;th=<th>;margin=<d>;chain=<chain>;f=<f>;value=<value>)   fly decision
+math_origin=Decision(t=<t>;lane=<lane>;who=<who>;dt=<dt|na>;score=<d>;chain=<chain>;f=<f>;value=<value>)     timing
+```
+
+**Hash chain.** `hash = SHA-256(preimage)` (pure Java `logic/Sha256`, so it
+runs in TeaVM), over
+
+```text
+rhythm-move/v1|prev=<prev>|i=<i>|t=<t>|lane=<lane>|delta=<delta|na>|who=<who>|press=<press|na>|dt=<dt|na>|judge=<judge>|fired=<yes|no|na>|lat=<lat|na>|<math_origin>
+```
+
+where `prev` is the previous row's hash and the first row's prev is 64 zeros.
+`verify()` recomputes math_origin from the fields and every hash and link, and
+returns the note index of the first bad row.
+
+<!-- moves-example -->
+Worked example (`?rhythm=bembe&bpm=90`, connectome fly, row 0): V_peak =
+-44.612 mV, th = -45.000, margin = 0.388, chain 1, f = 1.100, value =
+round(388 * 11 / 10) = 427 thousandths:
+
+```text
+math_origin=Decision(t=2000;lane=0;who=fly;V=-44.612;th=-45.000;margin=0.388;chain=1;f=1.100;value=0.427)
+rhythm-move/v1|prev=0000000000000000000000000000000000000000000000000000000000000000|i=0|t=2000|lane=0|delta=na|who=fly|press=2000|dt=0|judge=PERFECT|fired=yes|lat=15|math_origin=Decision(t=2000;lane=0;who=fly;V=-44.612;th=-45.000;margin=0.388;chain=1;f=1.100;value=0.427)
+hash=22ea0433e02da0165d90ec9f0af1f2d82fbb94f58986788ca67f0a12c98d4f71
+```
+
+A human hit 12 ms early on a lane's 3rd hit in a row: score =
+round(1000 * 138 / 150) = 920, f(3) = 1.3, value = 1.196:
+`math_origin=Decision(t=2000;lane=2;who=you;dt=-12;score=0.920;chain=3;f=1.300;value=1.196)`.
+<!-- /moves-example -->
+`MovesDocsTest` checks these examples against the implementation.
+
+## Tab hidden: pause and resume
+
+Browsers stop `requestAnimationFrame` in a hidden tab while an `<audio>`
+element keeps playing, so the song clock ran on and every note passed
+unplayed (and `AudioSync.play()` restarts from 0, so it could not be used to
+continue). Now a `visibilitychange` to hidden mid-song pauses the audio and
+`SongClock` (`pause()`); the stage says `paused (tab hidden)`. On visible,
+`AudioSync.resume()` plays on from the paused position (no rewind) and the
+clock is re-anchored on the next frame's stamp (`resume(stamp)`), so the
+frame-clock fallback does not add the hidden time either. Lane keys are
+ignored while paused.
+
+`AudioSync.isOk()` still ignores a stalled (buffering) element on purpose:
+SongClock leaves audio mode for good once it reads false, so a short stall
+would hand the song to the frame clock and drift. A stall holds song time
+instead, and the HUD shows `clock: audio buffering` (`isBuffering()`:
+playing with `readyState` below HAVE_FUTURE_DATA).
+
+## Smoothed song clock (jitter)
+
+Root cause of the stutter: block positions were computed every frame from
+the raw `audio.currentTime`, which browsers update on their own timer; Safari
+(iOS in particular) moves it in coarse steps, so at 60 fps the reading stays
+put for a frame or two and then jumps tens of ms. Nothing accumulated, but
+the per-frame block step alternated between 0 and ~40 ms. (The stage was also
+drawn from song time floored to whole ms.) The DOM side was already quiet:
+HUD and button writes only happen when the text changes, and the canvas is
+sized once.
+
+`logic/SmoothClock` free-runs on the frame clock and is steered toward the
+audio: target = last reading + time since it last changed (capped at 300 ms,
+and none before the audio first moves); each frame 8% of the error is
+corrected, at most 10% of the frame delta, so a frame step stays within
+0.9x .. 1.1x of real time and song time never goes backwards; a gap over
+150 ms snaps forward (seek, start) or holds (stall, seek back). The stage now
+draws from this clock as a double. `?clock=raw` restores the raw reads for
+comparison. With 60 fps frames and the audio reported in 40 ms steps
+(`tools/smoke.js` section U): raw per-frame delta sd about 20 ms (0 to 40 ms
+steps), smoothed about 1 ms or less (15 .. 18.4 ms steps).
 

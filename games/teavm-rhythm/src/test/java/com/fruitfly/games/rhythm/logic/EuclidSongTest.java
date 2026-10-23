@@ -17,7 +17,10 @@ class EuclidSongTest {
             assertEquals(1, p.layers().length);
             assertEquals(w[1], p.layers()[0].text());
             assertEquals(w[2], RhythmGame.LANE_KEYS[p.layers()[0].lane]);
+            assertTrue(p.spread());
+            assertEquals(List.of("DFJK " + p.layers()[0].formula() + " " + w[1]), EuclidSong.hudLines(p));
         }
+        assertTrue(!EuclidSong.PRESETS[0].spread(), "layered keeps one lane per layer");
         EuclidSong.Preset layered = EuclidSong.PRESETS[0];
         assertEquals("layered", layered.id);
         assertEquals(List.of("D E(4,16) x...x...x...x...", "F E(3,8) x..x..x.", "J E(5,8) x.xx.xx.", "K E(7,12) x.xx.x.xx.x."),
@@ -33,7 +36,7 @@ class EuclidSongTest {
         long[] at = {2000, 2750, 3500, 4000, 4750, 5500}; // bar 2000 ms, 8th = 250 ms: steps 0, 3, 6
         for (int i = 0; i < at.length; i++) {
             assertEquals(at[i], n.get(i).timeMs());
-            assertEquals(1, n.get(i).lane());
+            assertEquals(i % 4, n.get(i).lane(), "single preset: pulse p on lane p mod 4");
         }
         // Bembe: 12 triplet-eighths per bar at 90 BPM (bar 2666.67 ms), rounded per step from the song start.
         assertEquals(2000 + Math.round(13 * 240000.0 / 90 / 12), EuclidSong.stepMs(1, 1, 12, 90));
@@ -46,6 +49,41 @@ class EuclidSongTest {
             assertTrue(c.chart().notes().get(i).timeMs() >= c.chart().notes().get(i - 1).timeMs(), "sorted");
         }
         assertEquals("120 BPM", EuclidSong.bpmLabel(120));
+    }
+
+    @Test
+    void singlePresetsUseAllFourLanesEvenlyAndLayeredKeepsItsLanes() {
+        for (EuclidSong.Preset p : EuclidSong.PRESETS) {
+            List<Note> n = EuclidSong.notes(p, 90, EuclidSong.BARS);
+            int[] lanes = new int[4];
+            for (Note x : n) {
+                lanes[x.lane()]++;
+            }
+            if (p.spread()) {
+                for (int l = 0; l < 4; l++) {
+                    assertTrue(Math.abs(lanes[l] - n.size() / 4.0) <= 1, p.id + " lane " + l + ": " + java.util.Arrays.toString(lanes));
+                }
+                for (int i = 0; i < n.size(); i++) {
+                    assertEquals(i % 4, n.get(i).lane(), p.id + " pulse " + i);
+                }
+            } else {
+                int[] want = {4 * EuclidSong.BARS, 3 * EuclidSong.BARS, 5 * EuclidSong.BARS, 7 * EuclidSong.BARS};
+                assertEquals(java.util.Arrays.toString(want), java.util.Arrays.toString(lanes), "layered: kick D, tresillo F, cinquillo J, bembe K");
+            }
+        }
+        // bembe @90: first pulses D F J K D at steps 0, 2, 3, 5, 7
+        List<Note> b = EuclidSong.notes(EuclidSong.PRESETS[EuclidSong.indexOf("bembe")], 90, 1);
+        int[] steps = {0, 2, 3, 5, 7};
+        for (int i = 0; i < steps.length; i++) {
+            assertEquals(EuclidSong.stepMs(0, steps[i], 12, 90), b.get(i).timeMs());
+            assertEquals(i % 4, b.get(i).lane());
+        }
+        // timbre follows the layer, not the lane
+        int[] tb = EuclidSong.timbres(EuclidSong.PRESETS[EuclidSong.indexOf("bembe")], 2);
+        assertEquals(14, tb.length);
+        for (int t : tb) {
+            assertEquals(EuclidSong.BELL, t);
+        }
     }
 
     @Test

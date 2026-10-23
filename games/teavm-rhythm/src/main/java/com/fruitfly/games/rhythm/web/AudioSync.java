@@ -43,9 +43,41 @@ final class AudioSync {
         audio.pause();
     }
 
+    /** Pause mid-song (tab hidden); the position is kept for {@link #resume()}. */
+    void pause() {
+        audio.pause();
+    }
+
+    /**
+     * Continue from the paused position. Unlike {@link #play()} this does not
+     * rewind to 0, so a song paused while the tab was hidden picks up where
+     * it stopped.
+     */
+    void resume() {
+        if (failed || audio.isEnded()) {
+            return;
+        }
+        playSafe(audio, () -> fail("audio play() was refused"));
+    }
+
+    /**
+     * Still a valid clock: loaded, not failed, not ended. Deliberately not
+     * false while buffering: SongClock leaves audio mode for good when this
+     * turns false, so a short stall would hand the song to the frame clock
+     * and drift from the audio. A stall holds song time instead (the audio
+     * position stops) and {@link #isBuffering()} says so on the HUD.
+     */
     boolean isOk() {
         return !failed && !audio.isEnded();
     }
+
+    /** Playing but without enough data to advance (readyState below HAVE_FUTURE_DATA). */
+    boolean isBuffering() {
+        return !failed && !audio.isEnded() && buffering(audio);
+    }
+
+    @JSBody(params = {"a"}, script = "return !a.paused && typeof a.readyState === 'number' && a.readyState < 3;")
+    private static native boolean buffering(HTMLAudioElement a);
 
     double positionMs() {
         return audio.getCurrentTime() * 1000.0;
