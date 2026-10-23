@@ -3,6 +3,7 @@
 
 def probe():
     return {
+        "folded_offline": False,
         "four_ban_refrain": False,
         "logarithm_means": "restriction",
         "named_logarithm": None,
@@ -14,4 +15,10 @@ def probe():
         "restart_issued": False,
         "fusion_canonical": 515,
         "hyperion_preserved": 516,
+        "lead": {
+            "oidc_client_credentials": False,
+            "cron_6h": False,
+            "restart_from_here": False,
+            "alpha_eff": 0.0,
+        },
     }

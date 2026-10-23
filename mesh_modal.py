@@ -60,6 +60,7 @@ def _init_db() -> None:
 
 
 def append_ledger(event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    _init_db()
     body = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     h = hashlib.sha3_256(f"{event}|{body}".encode()).hexdigest()
     with _ledger_lock:

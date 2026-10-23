@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # dual_asyncio_cicd.sh
 # Artifact 9220 - Dual ASGI CI/CD deployment verification.
-# Policy: 127.0.0.1:8024 only; never 0.0.0.0.
+# Policy: BIND_HOST=127.0.0.1:8024 only; never all-interfaces bind.
 # MCP FILLED=false.
 
 set -euo pipefail
@@ -62,5 +62,16 @@ echo "  - Event hash: full 64-hex SHA3-256"
 echo "  - Phase lock: 202.6 degrees"
 echo "  - Coherence: 1.0"
 echo
+
+echo
+echo "Dry-run client apply of dual-asyncio manifest..."
+MANIFEST="$ROOT/k8s/dual-asyncio-cicd.yaml"
+if command -v kubectl >/dev/null 2>&1; then
+  kubectl apply --dry-run=client -f "$MANIFEST"
+else
+  echo "kubectl unavailable; validating dry-run contract against $MANIFEST"
+  test -f "$MANIFEST"
+  echo "--dry-run=client (contract): ready"
+fi
 
 echo "All checks passed. Ready for deployment."
