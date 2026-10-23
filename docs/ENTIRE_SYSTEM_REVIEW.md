@@ -157,9 +157,40 @@ USER daemon
 CMD ["python", "-u", "/app/gemini_daemon.py"]
 ```
 
-### 6.2 Argo Rollouts (HHMI)
-- `rollout-hhmi-schema.yaml`: Gateway API, 20→100 canary, `X-Schema-Canary` header routing.
-- `analysis-phi-mean.yaml`: Prometheus check `sovereign_phi_phase_mod_firing >= 0.99`.
+### 6.2 Kubernetes Native (Argo/Rollouts)
+
+Because it runs as a **standard Kubernetes pod**, [Kaniko](https://github.com/GoogleContainerTools/kaniko) integrates directly with **Argo Workflows**, **Tekton**, or a **custom CI runner**. The pod pulls the build context (this repo), builds the image in-cluster (no Docker daemon), and pushes to a registry (**GHCR** or **ECR**) using the cluster's native **IAM / OIDC** roles — not a long-lived registry password on the laptop.
+
+**Build (Kaniko pod)**
+
+| Piece | Repo path |
+|-------|-----------|
+| Dockerfile | `argocd/Dockerfile.deepinfer` (no root `Dockerfile.deepinfer`) |
+| Job manifests | `k8s/kaniko-deepinfer-job.yaml`, `k8s/build-deepinfer-job.yaml` |
+| Executor | `gcr.io/kaniko-project/executor:v1.23.2` |
+| Typical args | `--dockerfile=argocd/Dockerfile.deepinfer`, `--context=git://github.com/AxiomicCoreness/hello_world.py.git#refs/heads/main`, `--destination=…`, `--git-submodules` |
+
+Auth for private clone / push is via projected Secrets / service-account IAM (see `TODO(auth)` in the Kaniko jobs). Do not embed PATs in manifests. Nested Dockerfile path is intentional; Kaniko accepts `--dockerfile=argocd/Dockerfile.deepinfer` (see `docs/DEEPINFER_DOCKERFILE.md`).
+
+**Ship (Argo CD + Rollouts)**
+
+After the image lands in GHCR/ECR, progressive delivery is GitOps — not a second Docker build on the Actions runner:
+
+| Piece | Repo path |
+|-------|-----------|
+| Rollout manifests | `argocd/rollout-sovereign-garden-gateway-multistage.yaml`, `argocd/rollout-sovereign-garden.yaml`, `argocd/rollout-sovereign-garden-gateway-header.yaml` |
+| Canary / Gateway API | `argocd/sovereign-garden-canary.yaml`, `argocd/sovereign-garden-httproute.yaml`, `argocd/sovereign-garden-stable.yaml` |
+| Analysis | `argocd/analysis-health.yaml` |
+| CD combinator | `.github/workflows/cd-combinator-argo-rollout.yml` |
+
+The CD combinator applies a catalogued Rollout when **EKS/GKE cluster secrets are set**; if `EKS_CLUSTER_NAME` / `AWS_REGION` (or GKE equivalents) are empty, deploy steps skip with neutral success — no empty `--name`/`--region`, no `localhost:8080` kubectl. That workflow gate is unrelated to DeepInfer MoE `TopKGate`.
+
+**Flow**
+
+1. Trigger (Argo Workflows / Tekton / custom runner) schedules the Kaniko Job.
+2. Kaniko pulls context → builds with `argocd/Dockerfile.deepinfer` → pushes to GHCR/ECR via IAM/OIDC.
+3. GitOps (Argo CD) reconciles Rollout manifests under `argocd/`.
+4. Argo Rollouts runs canary / analysis; CD combinator may annotate or sync when cluster credentials exist.
 
 ### 6.3 TeaVM Deployment
 - Built via `mvn package`, served from `target/webapp`.
