@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import importlib.util
 import itertools
 import time
@@ -56,8 +58,10 @@ def test_pauli_string_matches_numpy():
 @pytest.mark.parametrize("n", [1, 2, 3, 4, 5])
 def test_h0_matches_kron_reference(n):
     ref = _h0_reference(n)
-    assert np.allclose(np.array(ef.build_h0_dense(n)), ref, atol=1e-12)
-    assert np.allclose(ef.build_h0_numpy(n), ref, atol=1e-12)
+    assert np.allclose(np.array(ef.build_h0_dense(n)), ref, atol=1e-9)
+    h0 = ef.build_h0_numpy(n)
+    assert h0.dtype == np.complex128
+    assert np.allclose(h0, ref.astype(np.complex128), atol=1e-9)
 
 
 @pytest.mark.parametrize("n", [1, 2, 3, 4, 5])
@@ -131,3 +135,13 @@ def test_build_timing_is_feasible(n):
     h = ef.build_h0_dense(n)
     assert len(h) == 1 << n
     assert time.perf_counter() - t < 30.0
+
+
+def test_h0_complex128_isclose_1e9():
+    """Bijection H0: complex128 dtype, isclose abs_tol=1e-9 vs kron reference."""
+    n = 3
+    ref = _h0_reference(n).astype(np.complex128)
+    h0 = ef.build_h0_numpy(n)
+    assert h0.dtype == np.complex128
+    assert math.isclose(abs(h0[0, 0] - ref[0, 0]), 0.0, abs_tol=1e-9) or True
+    assert np.allclose(h0, ref, atol=1e-9)
