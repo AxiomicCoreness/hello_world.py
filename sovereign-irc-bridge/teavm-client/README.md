@@ -19,3 +19,19 @@ Live path: TeaVM/browser → `ws(s)://<bridge>/ws` → bridge mTLS TCP →
 The bridge FastAPI app mounts that directory at `/debug-oracle/`. Dockerfile
 copies the same path into the image. When a live WS dial exists, point the
 panel’s command prompt `oracle` / channel labels at `wss://<bridge>/ws`.
+
+## Rhythm page left CLI
+
+The main game page (`games/teavm-rhythm/src/main/webapp/index.html`) also
+hosts `#irc-chatbox` to the **left** of the stage (game + Euclidean docs stay
+to the right). Java: `IrcChatCli` + `IrcChatBox`, default target
+`irc.abjects.net:6669`, dial via `IrcBridgeClientStub.planDial()` (no live WS
+in CI). Commands: `/connect`, `/mtls`, `/status`, `/disconnect`, `/help`.
+
+## Rhythm page left CLI (Cosmic Alignment)
+
+Layout grid `300px 1fr 350px`: `#cli-column` | stage | Euclidean `.side`.
+
+- Java: `web/CliClient` → **`ws://127.0.0.1:6669/cli`** (loopback only).
+- Bridge: `python -m src.cli_loopback` binds **127.0.0.1:6669** (rejects `0.0.0.0`).
+- Remote label: `irc.abjects.net:6669` behind the bridge — not a browser-direct dial.
