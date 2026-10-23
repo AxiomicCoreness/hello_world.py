@@ -22,6 +22,12 @@ from typing import Dict, Any, Optional, Union, List, Tuple
 
 import pytest
 
+if sys.version_info < (3, 12):
+    pytest.skip(
+        "core.environ uses PEP 695 generics (EnvVar[T]); needs Python >= 3.12",
+        allow_module_level=True,
+    )
+
 # FIXED: Set up ROOT after imports
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

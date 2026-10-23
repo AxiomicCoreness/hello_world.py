@@ -1,5 +1,10 @@
 """Pydantic model tests. FILLED enum exists; default state is IDLE."""
 
+import pytest
+
+# Local fastMCP package (bind/gearbox/models/routes) is not the PyPI fastmcp SDK.
+pytest.importorskip("fastMCP", reason="local fastMCP package not present; PyPI fastmcp ≠ fastMCP.bind")
+
 from fastMCP.models.envelope import Envelope
 from fastMCP.models.state import State, StateEnum
 from fastMCP.models.event import Event
