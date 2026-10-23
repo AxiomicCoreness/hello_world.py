@@ -92,29 +92,75 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Configure kubeconfig (OIDC / cloud CLI)
-        continue-on-error: true
+      # Workflow gate (NOT DeepInfer MoE TopKGate): skip kubectl when cluster secrets empty.
+      - name: Gate cluster credentials
+        id: cluster
+        env:
+          EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          GKE_CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
+          GKE_REGION: ${{ secrets.GKE_REGION }}
         run: |
           set -euo pipefail
-          if command -v aws >/dev/null 2>&1; then
-            aws eks update-kubeconfig --name "${{ secrets.EKS_CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
-          elif command -v gcloud >/dev/null 2>&1; then
-            gcloud container clusters get-credentials "${{ secrets.GKE_CLUSTER_NAME }}" --region "${{ secrets.GKE_REGION }}"
+          if [ -n "${EKS_CLUSTER_NAME:-}" ] && [ -n "${AWS_REGION:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "provider=eks" >> "$GITHUB_OUTPUT"
+            echo "EKS credentials present — deploy will proceed"
+          elif [ -n "${GKE_CLUSTER_NAME:-}" ] && [ -n "${GKE_REGION:-}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "provider=gke" >> "$GITHUB_OUTPUT"
+            echo "GKE credentials present — deploy will proceed"
           else
-            echo "No cloud CLI — using existing kubeconfig"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "provider=none" >> "$GITHUB_OUTPUT"
+            echo "EKS_CLUSTER_NAME/AWS_REGION (or GKE_*) empty — kubectl deploy skipped (neutral success)"
+            echo "Refusing empty --name/--region and localhost:8080 apply failures"
           fi
-      - name: Verify kubectl access
+
+      - name: Configure kubeconfig (OIDC / cloud CLI)
+        if: steps.cluster.outputs.ready == 'true'
+        env:
+          EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          GKE_CLUSTER_NAME: ${{ secrets.GKE_CLUSTER_NAME }}
+          GKE_REGION: ${{ secrets.GKE_REGION }}
+          PROVIDER: ${{ steps.cluster.outputs.provider }}
         run: |
           set -euo pipefail
-          kubectl cluster-info --request-timeout=5s || echo "Cluster not reachable"
-          kubectl get namespaces || true
+          if [ "$PROVIDER" = "eks" ]; then
+            if ! command -v aws >/dev/null 2>&1; then
+              echo "aws CLI missing but EKS secrets set — cannot configure kubeconfig"
+              exit 1
+            fi
+            aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
+          elif [ "$PROVIDER" = "gke" ]; then
+            if ! command -v gcloud >/dev/null 2>&1; then
+              echo "gcloud missing but GKE secrets set — cannot configure kubeconfig"
+              exit 1
+            fi
+            gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION"
+          else
+            echo "Unexpected provider=$PROVIDER"
+            exit 1
+          fi
+
+      - name: Verify kubectl access
+        if: steps.cluster.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          kubectl cluster-info --request-timeout=5s
+          kubectl get namespaces
+
       - name: Install Argo Rollouts kubectl plugin
+        if: steps.cluster.outputs.ready == 'true'
         run: |
           set -euo pipefail
           curl -sLO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
           chmod +x kubectl-argo-rollouts-linux-amd64
           sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
       - name: Apply Rollout manifest (robust)
+        if: steps.cluster.outputs.ready == 'true'
         run: |
           set -euo pipefail
           ROLLOUT_MANIFEST=""
@@ -163,7 +209,9 @@ jobs:
           YAML
             kubectl apply -f "$MIN"
           fi
+
       - name: Annotate Rollout (only if it exists)
+        if: steps.cluster.outputs.ready == 'true'
         run: |
           set -euo pipefail
           if kubectl get rollout sovereign-garden -n sovereign-garden >/dev/null 2>&1; then
@@ -173,7 +221,9 @@ jobs:
           else
             echo "Rollout 'sovereign-garden' not found — skipping annotation"
           fi
+
       - name: Argo CD live sync (safe)
+        if: steps.cluster.outputs.ready == 'true'
         env:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
@@ -197,8 +247,9 @@ jobs:
             --server "$ARGOCD_SERVER" \
             --auth-token "$ARGOCD_AUTH_TOKEN" \
             --grpc-web --health --timeout 300
+
       - name: Seal ledger entry 8926 (SHA3-256)
-        if: success()
+        if: success() && steps.cluster.outputs.ready == 'true'
         run: |
           set -euo pipefail
           mkdir -p ledger
@@ -229,8 +280,9 @@ jobs:
           print("Ledger entry 8926 written.")
           print(f"Sealed 8926 · {HASH_ALGO}:{h[:16]}...")
           PY
+
       - name: Verify ledger entry 8926 (SHA3-256)
-        if: success()
+        if: success() && steps.cluster.outputs.ready == 'true'
         run: |
           set -euo pipefail
           if [ -f .github/scripts/verify_ledger.py ]; then
@@ -238,8 +290,9 @@ jobs:
           else
             echo "verify_ledger.py absent — soft skip"
           fi
+
       - name: Commit ledger entry if changed
-        if: success()
+        if: success() && steps.cluster.outputs.ready == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal CD Combinator entry 8926 (sha3_256)"
@@ -253,8 +306,15 @@ jobs:
           {
             echo "### CD Combinator"
             echo ""
-            echo "- status: completed"
-            echo "- seal: \`∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED\`"
-            echo "- hash_algo: sha3_256"
-            echo "- witness: 8925 -> 8926 -- UNBROKEN"
+            if [ "${{ steps.cluster.outputs.ready }}" = "true" ]; then
+              echo "- status: completed (deploy attempted)"
+              echo "- provider: \`${{ steps.cluster.outputs.provider }}\`"
+              echo "- seal: \`∀∞φ² · CD_COMBINATOR_8926 · WOOD_DRAGON_0.91 · SEALED\`"
+              echo "- hash_algo: sha3_256"
+              echo "- witness: 8925 -> 8926 -- UNBROKEN"
+            else
+              echo "- status: skipped (neutral success)"
+              echo "- reason: EKS/GKE cluster secrets empty — no kubeconfig, no kubectl apply"
+              echo "- note: DeepInfer MoE gate (TopKGate) is unrelated; this is a workflow credential gate"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
