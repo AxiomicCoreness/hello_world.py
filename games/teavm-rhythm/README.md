@@ -30,6 +30,8 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/webapp/assets/ar_brain_bg.jpg` | Your AR fly-brain screenshot, resized to 1170 px wide, used as the dimmed background. |
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
+| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment: UI → `ws://127.0.0.1:6669/cli` → bridge → `irc.abjects.net:6669`. |
+| `web/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; dials loopback only. |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
 | `src/test/java/.../logic/` | JUnit 5 tests (166: the original 74, 55 for the draft, 9 for `InputRouter` / the picker row, 12 for the Euclidean songs and their docs, 12 for the MIDI parser and the music sources, 4 for label / HUD / blocks-cut sync) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, the autoplayer, the JSON loader, the song clock and the click track. |
 | `tools/gen_click_track.py` | Writes the same click track as a `.wav` (and `.ogg` with `--ogg`, via ffmpeg) for use outside the page. |

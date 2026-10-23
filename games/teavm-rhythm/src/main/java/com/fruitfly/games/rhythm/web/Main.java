@@ -70,6 +70,7 @@ import org.teavm.jso.dom.html.HTMLElement;
  * assets/ar_brain_bg.jpg, dimmed; ?camera=1: live camera, else the AR shot), the 3D stage (StageRenderer:
  * grid, origin anchor, fly-brain object), lanes and notes, then the HUD as
  * an HTML overlay (#hud-l, #hud-r, #hud-c; canvas text if those are absent).
+ * Left of the stage: #cli-column (CliClient → ws://127.0.0.1:6669/cli → irc.abjects.net:6669).
  * The canvas is sized by StageLayout (iPhone 12: 390x844 CSS px;
  * ?device=iphone12 forces it) with a devicePixelRatio backing store
  * (1170x2532 at DPR 3).
@@ -152,18 +153,8 @@ public final class Main {
     private static LoadedChart baseLoaded;
     private static AudioSync baseAudio;
     static final String PICKER_LOCK_HINT = SongSource.LOCK_HINT;
-    /** Moves list of the current run (window.__rhythmDebug); a fresh one at every start. */
-    private static MovesLog moves;
-    /** ?debug=notes: console.log every row and show the last rows on the stage (#moves-list). */
-    private static boolean debugNotes;
-    private static HTMLElement movesEl;
-    static final int STAGE_ROWS = 8;
-    /** ?clock=raw: read audio.currentTime as is (the pre-smoothing behaviour, for comparison). */
-    private static boolean rawClock;
-    /** Song paused because the tab went hidden; resumePending = re-anchor the clock on the next frame. */
-    private static boolean pausedHidden;
-    private static boolean resumePending;
-    static final String PAUSED_TEXT = "paused (tab hidden)";
+    /** Left CLI → ws://127.0.0.1:6669/cli (Cosmic Alignment loopback). */
+    private static CliClient cliClient;
 
     private Main() {
     }
@@ -181,6 +172,9 @@ public final class Main {
         dpr = canvas.getWidth() / (double) width; // backing scale = devicePixelRatio (3 on iPhone 12)
         Dom.cssSize(canvas, width, height);
         ctx = (CanvasRenderingContext2D) canvas.getContext("2d");
+        // Cosmic Alignment CLI: loopback WS only (never browser→abjects).
+        cliClient = new CliClient();
+        cliClient.mount(doc);
         hudL = (HTMLElement) doc.getElementById("hud-l");
         hudR = (HTMLElement) doc.getElementById("hud-r");
         hudC = (HTMLElement) doc.getElementById("hud-c");
@@ -766,6 +760,9 @@ public final class Main {
     }
 
     private static void onKey(KeyboardEvent e) {
+        if (cliClient != null && cliClient.inputFocused()) {
+            return; // typing in #chat-input — do not steal D F J K / Space
+        }
         String key = e.getKey();
         String code = e.getCode();
         int action = InputRouter.key(key, code, e.isRepeat(), running);

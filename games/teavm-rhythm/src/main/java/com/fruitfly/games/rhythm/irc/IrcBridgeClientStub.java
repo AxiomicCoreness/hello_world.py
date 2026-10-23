@@ -54,6 +54,12 @@ public final class IrcBridgeClientStub {
         return lastPlan;
     }
 
+    /** Return to IDLE and clear the last plan (local disconnect). */
+    public void reset() {
+        state = State.IDLE;
+        lastPlan = null;
+    }
+
     /** Mark dry-run without connecting (CI / unit tests). */
     public void markDryRun() {
         state = State.DRY_RUN_MARKED;

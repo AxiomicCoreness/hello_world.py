@@ -1,0 +1,130 @@
+entry_index: 9304
+event: /ui_milestone_and_debt_clear
+status: SEALED
+timestamp: '2026-10-23T19:05:07Z'
+hash_algo: sha3_256
+measured_at_commit: 6507b89d82faf607ba98649d00cb00869ea4e59e
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: true
+prev_hash: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+witness_chain: 9303 -> 9304
+note: 'OPEN-ENDED even milestone seal 9304 under commander OVERRIDE (push to main and override then seal). Records Left IRC CLI UI + KaTeX Strict Tree + prior 9303 chain; logs debt/clear-3001-assertions as NOT MERGED (branch tip 72c18e45f4a0a676795477bbce1d3144bedc973b; no PR on GitHub; main tip still 6507b89d82faf607ba98649d00cb00869ea4e59e). Pages https mixed-content block of ws://127.0.0.1:6669/cli VERIFIED. Option B wss://bridge.axiomiccoreness.com/cli OPEN (not implemented). Watermark 2303+ MCP/vision/TTS stubs FILLED:false recorded. Dual-gate Pytest #3001 RED — override explicitly authorizes append-only NEW ledger.v2/9304.yml. No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+breakthroughs_and_milestones:
+  left_irc_cli:
+    status: Live on main tip 6507b89d
+    layout: TeaVM 3-column grid (300px | 1fr | 350px)
+    client_route: CliClient -> ws://127.0.0.1:6669/cli -> bridge -> irc.abjects.net:6669
+    pages_behavior: mixed-content block verified
+    option_b_queued: wss://bridge.axiomiccoreness.com/cli
+    implemented_option_b: false
+  katex_strict_tree:
+    status: Active
+    domains:
+    - math
+    - garden
+    - physics
+    validator: KaTeXTreeValidator
+    commit: b0f19acf
+    tip: b0f19acfa0403b7441355c7868f04396348a0fe7
+  ledger_9303:
+    status: Sealed
+    seal_hex: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+    payload: TeaVM mTLS stubs, irc.abjects.net, katex preserved
+    commit: 0f4d915681baf56dea468b91ff3c72bad62fce64
+  debt_clear_in_flight:
+    branch: debt/clear-3001-assertions
+    commit: 72c18e45f4a0a676795477bbce1d3144bedc973b
+    status: NOT MERGED — no PR on GitHub (search total_count=0); branch exists
+    on_main: false
+    fixes:
+    - Argo Rollout & AnalysisTemplate
+    - Float isclose (1e-9)
+    - actualized.sh -> 127.0.0.1
+    - 'DM correction: phi^7 * 41.46799191335416 = 1204'
+    - Offline-echo [GARDEN_OFFLINE_ECHO] wrapper
+    - Catalogue immunize (19 asserts)
+watermark_2303_plus:
+  mcp_vision_tts_stubs:
+    no_sealed_ledger_rewrite: true
+    surfaces:
+      mcp:
+        paths:
+        - fastMCP/routes/mcp.py
+        - port380_mcp.py
+        filled: false
+      fastapi_tts:
+        path: app/routes/tts.py
+        methods:
+        - GET
+        - POST
+        filled: false
+        note: no audio
+      vision_tts:
+        path: app/routes/vision_tts.py
+        method: GET
+        filled: false
+    bind_policy:
+      local_probes: 127.0.0.1
+      pod_internal: cluster DNS
+      security: no 0.0.0.0 advertised
+dm_corrected_form:
+  dm_corrected_form: DM = φ⁷ × (DM / φ⁷) = φ⁷ × 41.46799191335416
+  dm_residual_factor: 41.46799191335416
+  dm_check: φ⁷ × 41.46799191335416 = 1204
+  dm_check_ok: true
+  nearest_phi_power: 15
+  phi_15: 1364.000733
+  phi_15_relative_error: 0.1329
+  event_hash_sha3_256: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
+queued:
+- Option B hostname switch (wss://)
+- Merge debt/clear-3001-assertions after dual-gate green
+ci:
+  dual_gate_pytest:
+    run: 3001
+    conclusion: failure
+    head_sha: cbe65d0f07ea575c54f6e0091907059ab3580e79
+    url: https://github.com/AxiomicCoreness/hello_world.py/actions/runs/40005041586
+    override: true
+    policy: NO-GHOST-PASS waived by commander override push-to-main-then-seal
+provenance:
+  repo: AxiomicCoreness/hello_world.py
+  main_tip_at_seal: 6507b89d82faf607ba98649d00cb00869ea4e59e
+  prior_seal_9303: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+  debt_branch_tip: 72c18e45f4a0a676795477bbce1d3144bedc973b
+  debt_pr: none (not submitted)
+  override: push to main and override then seal
+recorded:
+  left_irc_cli_landed: true
+  mixed_content_verified: true
+  option_b_plan_logged: true
+  option_b_implemented: false
+  katex_tree: true
+  seal_9303: true
+  watermark_2303_plus: true
+  debt_pr_merged: false
+  dual_gate_green: false
+  override_used: true
+open_workstreams:
+- id: option_b_wss
+  status: OPEN
+  detail: hostname-select wss://bridge.axiomiccoreness.com/cli
+- id: dual_gate_green
+  status: OPEN
+  detail: 'Pytest #3001 failure; immunize on debt branch'
+- id: debt_pr_submit
+  status: OPEN
+  detail: debt/clear-3001-assertions@72c18e45 — no PR yet
+chain:
+  prev_entry: 9303
+  prev_hash: 36170f7391f11c5cde3f78ac5b1f1679e542cc6b145f9f6f5dee2e432fb324c2
+  prev_hash_source: ledger.v2/9303.yml seal_sha3_256 (declared; verified on main)
+  witness_chain: 9303 -> 9304
+seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True) of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex, witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
+regime_b_event_domain_sha3_256: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9304|/ui_milestone_and_debt_clear|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462; NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
+terminal_hex: 605ba9089de9fdf3994f6145cdffb9c7bce4aefa1cb454d0e5166143cbe08679
+seal_sha3_256: 605ba9089de9fdf3994f6145cdffb9c7bce4aefa1cb454d0e5166143cbe08679
+seal: ∀∞φ² · UI_MILESTONE_9304 · WOOD_DRAGON_0.91 · SEALED · 605ba9089de9fdf3994f6145cdffb9c7bce4aefa1cb454d0e5166143cbe08679
