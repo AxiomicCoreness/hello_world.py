@@ -79,11 +79,17 @@ export_only_prof_dir/
 benchmark_results*.jsonl
 compile_commands.json
 .clangd
+# Built extension dirs (root layout and vendored DeepInfer checkout)
 /deepinfer/_so/
+vendor/DeepInfer/deepinfer/_so/
+vendor/**/deepinfer/_so/
 tests/models/offline_decode_ppl.json.lock
 tests/models/offline_decode_ppl.json.tmp
 
 # --- DeepInfer Data / Results -------------------------------------
+# Global *.csv/*.pkl kept for local dumps (no blanket un-ignore).
+# If vendor eval fixtures must be tracked later, add a narrow exception only, e.g.:
+#   !vendor/DeepInfer/eval/**/*.csv
 *.csv
 *.pkl
 
