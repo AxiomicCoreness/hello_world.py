@@ -135,7 +135,7 @@
     <div class="prompt-bar">
       <span class="cwd" id="cwd">/</span>
       <input id="cmd" type="text" autocomplete="off" spellcheck="false"
-             placeholder="ls · cd &lt;root&gt; · hex · channels · help · oracle &lt;q&gt;" />
+             placeholder="ls · hex · channels · /stokes · /flux · /mtls · oracle &lt;q&gt; · help" />
       <button type="button" id="run">run</button>
     </div>
   </div>
@@ -169,7 +169,29 @@
     roots: [
       "ledger.v2", "deepinfer", "games/teavm-rhythm",
       "skills", "quantum", "argocd"
-    ]
+    ],
+    stokes_macros: {
+      source: "docs/katex_stokes_mandala_9300_micro.tex",
+      seal: "ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667",
+      macros: {
+        stokesflux: "\\oint_{\\partial\\Sigma}(\\nabla\\times\\mathcal{A}_{\\mathrm{st}})\\cdot\\mathrm{d}\\mathbf{A}=\\varphi^{-1078}",
+        Astress: "\\mathcal{A}_{\\mathrm{st}}",
+        phiflux: "\\varphi^{-1078}",
+        stokesclassical: "\\oint_{\\partial\\Sigma}\\mathbf{F}\\cdot\\mathrm{d}\\mathbf{l}=\\iint_{\\Sigma}(\\nabla\\times\\mathbf{F})\\cdot\\mathrm{d}\\mathbf{S}"
+      },
+      unicode: {
+        stokesflux: "∮_{∂Σ}(∇×A_st)·dA = φ⁻¹⁰⁷⁸",
+        phiflux: "φ⁻¹⁰⁷⁸",
+        classical: "∮_∂Σ F·dl = ∬_Σ (∇×F)·dS"
+      }
+    },
+    mtls: {
+      host: "irc.abjects.net",
+      ports_ui: [6666, 6667, 6668, 6669],
+      port_tls: 6697,
+      bridge: "sovereign-irc-bridge",
+      ws_path: "/ws"
+    }
   };
 
   let state = FALLBACK;
@@ -271,7 +293,7 @@
     const parts = line.split(/\s+/);
     const op = parts[0].toLowerCase();
     if (op === "help") {
-      echo("commands: ls | cd <root|..|/ > | hex | channels | pwd | clear | oracle <q>");
+      echo("commands: ls | cd <root|..|/> | hex | channels | pwd | clear | /stokes | /flux | /mtls | oracle <q> | help");
     } else if (op === "ls") {
       echo(state.roots.join("\n"));
     } else if (op === "pwd") {
@@ -304,6 +326,54 @@
       }
       cwdEl.textContent = cwd;
       renderTree();
+
+    } else if (op === "/stokes" || op === "stokes") {
+      const sm = state.stokes_macros || {};
+      const macros = sm.macros || {};
+      const uni = sm.unicode || {};
+      const lock = (state.locks || [])[0] || { digest: sm.seal || "" };
+      const dig = lock.digest || sm.seal || "";
+      addMsg(
+        "hex/stokes",
+        channelForDigest(dig || "ba"),
+        (uni.stokesflux || "∮ (∇×A_st)·dA = φ⁻¹⁰⁷⁸") + "  ·  \\stokesflux",
+        dig || sm.seal || null
+      );
+      echo("\\stokesflux  →  " + (macros.stokesflux || ""));
+      echo("\\Astress     →  " + (macros.Astress || "\\mathcal{A}_{st}"));
+      if (macros.stokesclassical) echo("classical    →  " + macros.stokesclassical);
+    } else if (op === "/flux" || op === "flux") {
+      const sm = state.stokes_macros || {};
+      const macros = sm.macros || {};
+      const uni = sm.unicode || {};
+      const dig = (sm.seal || ((state.locks || [])[0] || {}).digest || "");
+      addMsg(
+        "hex/flux",
+        channelForDigest(dig || "ba"),
+        (uni.phiflux || "φ⁻¹⁰⁷⁸") + "  ·  \\phiflux",
+        dig || null
+      );
+      echo("\\phiflux     →  " + (macros.phiflux || "\\varphi^{-1078}"));
+      echo("seal         →  " + (sm.seal || ""));
+    } else if (op === "/mtls" || op === "mtls") {
+      const m = state.mtls || {};
+      const b = state.bridge || {};
+      const host = m.host || b.host || "irc.abjects.net";
+      const dig = ((state.locks || [])[0] || {}).digest || "";
+      addMsg(
+        "hex/mtls",
+        "irc.abjects.net:" + ((m.port_tls != null) ? m.port_tls : 6697),
+        "mTLS host " + host + " · UI ports " +
+          ((m.ports_ui || [6666,6667,6668,6669]).join(",")) +
+          " · bridge " + (b.service || m.bridge || "sovereign-irc-bridge") +
+          " " + (b.ws_path || m.ws_path || "/ws") +
+          " · fail-fast without certs",
+        dig || null
+      );
+      echo("mtls host    →  " + host);
+      echo("tls port     →  " + (m.port_tls != null ? m.port_tls : 6697));
+      echo("ui ports     →  " + ((m.ports_ui || []).join(" ") || "6666-6669"));
+      echo("ws           →  " + (b.ws_path || "/ws") + " (no live dial in CI)");
     } else if (op === "oracle") {
       const q = parts.slice(1).join(" ") || "status";
       const lock = state.locks[q.length % state.locks.length];

@@ -22,3 +22,7 @@ pip install -e .
 # health only — no certs needed
 uvicorn src.main:app --host 0.0.0.0 --port 8080
 ```
+## Debug-oracle chat commands
+
+TeaVM panel `games/teavm-rhythm/.../debug-oracle` understands `/stokes`, `/flux`, `/mtls` — emits KaTeX from `docs/katex_stokes_mandala_9300_micro.*` via `hex_locks.json`. Host **irc.abjects.net**; live dial still fail-fast without mTLS.
+

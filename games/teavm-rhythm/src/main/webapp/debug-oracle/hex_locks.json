@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "policy": "full digests \u2014 no truncation; UI labels only \u2014 no live IRC sockets",
+  "policy": "full digests — no truncation; UI labels only — no live IRC sockets",
   "team_endpoints_ui_only": [
     "irc.abjects.net:6666",
     "irc.abjects.net:6667",
@@ -42,6 +42,42 @@
     "ws_path": "/ws",
     "health_path": "/health",
     "host": "irc.abjects.net",
-    "note": "UI labels 6666-6669; live dial uses mTLS (typically 6697) via bridge stub"
+    "note": "UI labels 6666-6669; live dial uses mTLS (typically 6697) via bridge stub; /stokes /flux /mtls in chat"
+  },
+  "stokes_macros": {
+    "source": "docs/katex_stokes_mandala_9300_micro.tex",
+    "yaml": "docs/katex_stokes_mandala_9300_micro.yaml",
+    "fancybox": "docs/stokes_mandala_9300_fancybox.txt",
+    "seal": "ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667",
+    "commands": {
+      "/stokes": "\\stokesflux",
+      "/flux": "\\phiflux",
+      "/mtls": "irc.abjects.net mTLS (UI label; bridge require_mtls)"
+    },
+    "macros": {
+      "stokesflux": "\\oint_{\\partial\\Sigma}(\\nabla\\times\\mathcal{A}_{\\mathrm{st}})\\cdot\\mathrm{d}\\mathbf{A}=\\varphi^{-1078}",
+      "Astress": "\\mathcal{A}_{\\mathrm{st}}",
+      "phiflux": "\\varphi^{-1078}",
+      "stokesclassical": "\\oint_{\\partial\\Sigma}\\mathbf{F}\\cdot\\mathrm{d}\\mathbf{l}=\\iint_{\\Sigma}(\\nabla\\times\\mathbf{F})\\cdot\\mathrm{d}\\mathbf{S}",
+      "stokesfluxdl": "\\oint_{\\partial\\Sigma}\\mathcal{A}_{\\mathrm{st}}\\cdot\\mathrm{d}\\mathbf{l}=\\iint_{\\Sigma}(\\nabla\\times\\mathcal{A}_{\\mathrm{st}})\\cdot\\mathrm{d}\\mathbf{S}\\equiv\\varphi^{-1078}"
+    },
+    "unicode": {
+      "stokesflux": "∮_{∂Σ}(∇×A_st)·dA = φ⁻¹⁰⁷⁸",
+      "phiflux": "φ⁻¹⁰⁷⁸",
+      "classical": "∮_∂Σ F·dl = ∬_Σ (∇×F)·dS"
+    }
+  },
+  "mtls": {
+    "host": "irc.abjects.net",
+    "ports_ui": [
+      6666,
+      6667,
+      6668,
+      6669
+    ],
+    "port_tls": 6697,
+    "bridge": "sovereign-irc-bridge",
+    "ws_path": "/ws",
+    "note": "UI labels only in debug-oracle; live dial requires mTLS certs via bridge"
   }
 }
