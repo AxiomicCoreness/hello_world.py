@@ -1,5 +1,24 @@
 import Foundation
 
+/*
+ * ============================================================================
+ * XCODE INTEGRATION NOTES
+ * ============================================================================
+ * 1. Open Xcode -> File -> New -> Project -> iOS App (SwiftUI).
+ * 2. Name the project "AxiomicCoreness" (or similar).
+ * 3. Delete the default ContentView.swift and [AppName]App.swift.
+ * 4. Drag this file (PlanckEngine.swift), ContentView.swift, and
+ *    AxiomicApp.swift into the Xcode project navigator.
+ * 5. Ensure "Copy items if needed" is checked.
+ * 6. Target iOS 16.0+ (required for standard SwiftUI grid/list features).
+ *
+ * NOTE ON GRAPHVIZ & STDLIB:
+ * - Graphviz is NOT used here. SwiftUI handles rendering natively.
+ * - Stdlib stripping is handled by Xcode's release configuration automatically.
+ *   Do not manually strip standard libraries; Foundation is required for Math.
+ * ============================================================================
+ */
+
 struct PlanckEngine {
     // §0 Constants (Defaults if the Port-380 Gate is offline)
     static var phi: Double = (1.0 + sqrt(5.0)) / 2.0
