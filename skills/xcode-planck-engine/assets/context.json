@@ -1,6 +1,6 @@
 {
   "skill": "xcode-planck-engine",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repo": "AxiomicCoreness/hello_world.py",
   "base_commit_measured": "bae409d0",
   "tag_id": "xcode-planck-engine-400800db",
@@ -14,7 +14,9 @@
       "scripts/t_rotator_graphs.py",
       "scripts/t_rotator_emit.py"
     ],
-    "requirements": "requirements.txt"
+    "requirements": "requirements.txt",
+    "deepinfer_v4_modules": "deepinfer/model_executor/models/v4_modules/",
+    "deepinfer_provenance": "deepinfer/PROVENANCE.md"
   },
   "xcode": {
     "target_ios": "16.0+",
@@ -109,5 +111,52 @@
   },
   "tests": {
     "python_evals": 10
+  },
+  "deepinfer_v4_modules_anchor": {
+    "role": "provenance/integration anchor for DeepInfer model executor modules; NOT Swift/Xcode",
+    "sovereign_path_unchanged": true,
+    "in_repo_path": "deepinfer/model_executor/models/v4_modules/",
+    "in_repo_provenance": [
+      "deepinfer/PROVENANCE.md",
+      "deepinfer/model_executor/models/v4_modules/PROVENANCE.md"
+    ],
+    "upstream_repo": "deepseek-ai/DeepInfer",
+    "upstream_commit": "9bd9cf243fc53ef9afbf8f04d391d989117d6ab9",
+    "upstream_tree_url": "https://github.com/deepseek-ai/DeepInfer/tree/9bd9cf243fc53ef9afbf8f04d391d989117d6ab9/deepinfer/model_executor/models/v4_modules",
+    "after_submodule_init": "vendor/DeepInfer/deepinfer/model_executor/models/v4_modules/",
+    "pin_manifest": "vendor/PINNED_SHAS.md",
+    "init_script": "scripts/init_deepinfer_vendors.sh",
+    "why_top_level_deepinfer": "Matches imports like deepinfer.model_executor.models.v4_modules.engram (engine/deepinfer_shim/llm_engine.py)",
+    "scope": "v4_modules tree only + minimal parent __init__.py stubs",
+    "license": "Apache-2.0",
+    "files": [
+      "__init__.py",
+      "attn.py",
+      "builder.py",
+      "compress.py",
+      "containers.py",
+      "cross_layer.py",
+      "engram.py",
+      "engram_metadata.py",
+      "engram_parameters.py",
+      "hc.py",
+      "hc_blocks.py",
+      "hc_lazy.py",
+      "heads.py",
+      "index_attn.py",
+      "linear.py",
+      "mhc_modeling.py",
+      "mhc_ops.py",
+      "mla_attn.py",
+      "mlp.py",
+      "moe.py",
+      "norm.py",
+      "rope.py",
+      "utils.py",
+      "yoco.py"
+    ],
+    "file_count_py": 24,
+    "bot_skill_separate": true,
+    "bot_skill_ref": "sand-workflow:xcode-planckengine"
   }
 }

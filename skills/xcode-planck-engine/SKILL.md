@@ -3,7 +3,7 @@ name: xcode-planck-engine
 description: "xcode-planck-engine-400800db. Use when building or running the Sovereign PlanckEngine in Apple Xcode / SwiftUI (sovereign/PlanckEngine.swift with ContentView.swift and AxiomicApp.swift); keep Swift/Python phi math in parity with planck_engine_v2.py; graphviz and seaborn are Python-side only (t_rotator / plotting); stdlib stripping is Xcode Release config, never hand-edited into Swift."
 tags:
   - xcode-planck-engine-400800db
-  - "context:Xcode iOS16+,SwiftUI,PlanckEngine,Port-380 syncWithGate,no graphviz in Swift"
+  - "context:Xcode iOS16+,SwiftUI,PlanckEngine,Port-380 syncWithGate,no graphviz in Swift,DeepInfer v4_modules@9bd9cf24"
 ---
 
 # xcode-planck-engine
@@ -68,9 +68,44 @@ Evals assert measured values (with tight relative tolerances), not the paste.
  * ============================================================================
 ```
 
+
+## DeepInfer `v4_modules` repo anchor (not Swift)
+
+Planck / Xcode stays the **sovereign** path (`sovereign/PlanckEngine.swift`,
+`sovereign/planck_engine_v2.py`). DeepInfer is an optional accelerator /
+model-executor provenance pin — **not** an Xcode or Swift source.
+
+In-repo sparse vendor (copied verbatim from upstream; parent `__init__.py`
+stubs only):
+
+- **Anchor path:** `deepinfer/model_executor/models/v4_modules/`
+- **Upstream:** `deepseek-ai/DeepInfer` commit
+  `9bd9cf243fc53ef9afbf8f04d391d989117d6ab9`
+- **Tree URL:**
+  https://github.com/deepseek-ai/DeepInfer/tree/9bd9cf243fc53ef9afbf8f04d391d989117d6ab9/deepinfer/model_executor/models/v4_modules
+- **Why top-level `deepinfer/`:** matches existing imports such as
+  `from deepinfer.model_executor.models.v4_modules.engram import CompressedTokenizer`
+  (`engine/deepinfer_shim/llm_engine.py`).
+- **After submodule init:** the same tree also exists at
+  `vendor/DeepInfer/deepinfer/model_executor/models/v4_modules/`
+  (pin in `vendor/PINNED_SHAS.md`; run `scripts/init_deepinfer_vendors.sh`).
+- **Provenance docs:** `deepinfer/PROVENANCE.md` and
+  `deepinfer/model_executor/models/v4_modules/PROVENANCE.md`.
+- **License:** Apache-2.0 (upstream).
+
+`v4_modules` listing at that SHA (24 `.py` files): `__init__.py`, `attn.py`,
+`builder.py`, `compress.py`, `containers.py`, `cross_layer.py`, `engram.py`,
+`engram_metadata.py`, `engram_parameters.py`, `hc.py`, `hc_blocks.py`,
+`hc_lazy.py`, `heads.py`, `index_attn.py`, `linear.py`, `mhc_modeling.py`,
+`mhc_ops.py`, `mla_attn.py`, `mlp.py`, `moe.py`, `norm.py`, `rope.py`,
+`utils.py`, `yoco.py`.
+
+The short reusable bot skill ([Xcode PlanckEngine](sand-workflow:xcode-planckengine))
+is **separate** from this in-repo pack; update that only when the parent asks.
+
 ## Steps
 
-1. Read `assets/context.json` for paths, pins, measured run() values, and constraints.
+1. Read `assets/context.json` for paths, pins, measured run() values, constraints, and the DeepInfer `v4_modules` anchor (`deepinfer/model_executor/models/v4_modules/` @ `9bd9cf24`).
 2. Confirm `sovereign/PlanckEngine.swift` contains `XCODE INTEGRATION NOTES`
    and `syncWithGate`.
 3. In Xcode: new iOS App (SwiftUI), target **iOS 16.0+**, drag in
@@ -86,6 +121,7 @@ Evals assert measured values (with tight relative tolerances), not the paste.
 
 ## Known limits
 
+- DeepInfer `v4_modules` under `deepinfer/` is a **sparse provenance copy** (model executor modules only). It does not make the full DeepInfer package importable without `vendor/DeepInfer` + kernels. Do not treat it as Swift.
 - `syncWithGate` is a stub; Port-380 JSON schema for live φ updates is not
   specified in this skill.
 - `ContentView.swift` hard-codes a LAN URL (`http://192.168.1.20:8025`); that is

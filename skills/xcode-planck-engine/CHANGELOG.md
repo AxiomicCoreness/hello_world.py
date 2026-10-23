@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.0] - 2026-10-23
+### Added
+- Sparse in-repo vendor of DeepInfer `v4_modules` at
+  `deepinfer/model_executor/models/v4_modules/` copied verbatim from
+  `deepseek-ai/DeepInfer@9bd9cf243fc53ef9afbf8f04d391d989117d6ab9`
+  (24 `.py` files + minimal parent `__init__.py` stubs + `PROVENANCE.md`).
+- Skill docs (`SKILL.md`, `assets/context.json`) anchor to that path; note
+  post-init mirror under `vendor/DeepInfer/...`. Planck/Xcode remains sovereign;
+  v4_modules is model-executor provenance only (not Swift). Bot skill stays
+  separate.
+
 ## [1.0.0] - 2026-10-23
 ### Added
 - `SKILL.md` with frontmatter (name `xcode-planck-engine`, tagged description
