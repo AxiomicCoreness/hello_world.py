@@ -3,9 +3,11 @@
 #
 # k8s/cert-manager/install.sh
 # ============================
-# Nexus = GGUF: this script is self-describing and self-verifying. It
-# carries its own manifest (see README.md) and its own seal (see the
-# header above), and can be run without external tooling.
+# Nexus = GGUF: like a GGUF file, which a DeepInfer-style loader
+# (cf. deepinfer/model_executor/) reads as one self-describing unit of
+# header metadata + tensors + load info, this script is self-describing
+# and self-verifying. It carries its own manifest (see README.md) and its
+# own seal (see the header above), and can be run without external tooling.
 #
 # Purpose:
 #   Bring the cert-manager PKI + Port-380 gate into a running state
