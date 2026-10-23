@@ -676,8 +676,10 @@ public final class Main {
     }
 
     private static void onKey(KeyboardEvent e) {
-        if (cliClient != null && cliClient.inputFocused()) {
-            return; // typing in #chat-input — do not steal D F J K / Space
+        // Prefer Dom.isTypingTarget(): TeaVM stopPropagation on #chat-input is not enough
+        // when the document listener still sees the native keydown.
+        if (Dom.isTypingTarget() || (cliClient != null && cliClient.inputFocused())) {
+            return; // typing in #chat-input / CLI column — do not steal D F J K / Space
         }
         String key = e.getKey();
         String code = e.getCode();

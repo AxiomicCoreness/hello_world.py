@@ -12,6 +12,7 @@ class CliLinesTest {
         assertEquals("[System] hi", CliLines.format(CliLines.KIND_SYSTEM, "hi"));
         assertEquals("[Engine] pong", CliLines.format(CliLines.KIND_ENGINE, "pong"));
         assertEquals("[User] yo", CliLines.format(CliLines.KIND_USER, "yo"));
+        assertEquals("[Traceback] boom", CliLines.format(CliLines.KIND_TRACEBACK, "boom"));
     }
 
     @Test
