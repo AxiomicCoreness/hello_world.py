@@ -25,6 +25,14 @@ final class Dom {
     @JSBody(script = "return (typeof window !== 'undefined' && window.devicePixelRatio) ? +window.devicePixelRatio : 1;")
     static native double devicePixelRatio();
 
+    /**
+     * {@code window.location.hostname}, or empty when unavailable (JVM / headless).
+     * Used by {@code CliClient} Option B URL selection.
+     */
+    @JSBody(script = "if (typeof window === 'undefined' || !window.location) return '';"
+            + "return String(window.location.hostname || '');")
+    static native String locationHostname();
+
     /** CSS size via style (when present); backing store already set by the caller. */
     @JSBody(params = {"c", "w", "h"}, script = "if (c && c.style) { c.style.width = w + 'px'; c.style.height = h + 'px'; }")
     static native void cssSize(HTMLCanvasElement c, int w, int h);

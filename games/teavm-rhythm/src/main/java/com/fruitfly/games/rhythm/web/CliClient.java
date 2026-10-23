@@ -12,10 +12,14 @@ import org.teavm.jso.websocket.CloseEvent;
 import org.teavm.jso.websocket.WebSocket;
 
 /**
- * Left-column TeaVM CLI. Dials {@link CliLines#LOOPBACK_WS}
- * ({@code ws://127.0.0.1:6669/cli}) only — Cosmic Alignment loopback.
- * Remote IRC {@code irc.abjects.net:6669} is behind the bridge, never a
- * browser-direct socket from Pages.
+ * Left-column TeaVM CLI. Option B hostname switch:
+ * <ul>
+ *   <li>local / CI ({@code 127.0.0.1}, {@code localhost}) → {@link CliLines#LOOPBACK_WS}</li>
+ *   <li>GitHub Pages / production → {@link CliLines#PAGES_WSS}
+ *       ({@code wss://bridge.axiomiccoreness.com/cli})</li>
+ * </ul>
+ * Remote IRC {@code irc.abjects.net:6669} stays behind the bridge; the browser
+ * never dials abjects or {@code 0.0.0.0} directly.
  *
  * <p>Enter sends; history lines are tagged System / Engine / User / Traceback.
  * Clicking the column focuses {@code #chat-input}; Main skips game keys while
@@ -30,14 +34,19 @@ public final class CliClient {
     private WebSocket socket;
     private boolean open;
 
+    /** Resolve dial URL from browser hostname (Option B). */
     public CliClient() {
-        this(CliLines.LOOPBACK_WS);
+        this(CliLines.resolveCliWsUrl(Dom.locationHostname()));
     }
 
+    /**
+     * Explicit URL ctor. Accepts loopback CLI URLs or exact {@link CliLines#PAGES_WSS}.
+     */
     public CliClient(String wsUrl) {
-        if (!CliLines.isLoopbackCliUrl(wsUrl)) {
+        if (!CliLines.isAllowedCliUrl(wsUrl)) {
             throw new IllegalArgumentException(
-                    "CliClient requires loopback ws://127.0.0.1:6669/…, got: " + wsUrl);
+                    "CliClient requires loopback ws://127.0.0.1:6669/… or "
+                            + CliLines.PAGES_WSS + ", got: " + wsUrl);
         }
         this.wsUrl = wsUrl;
     }
@@ -52,7 +61,7 @@ public final class CliClient {
 
     /**
      * Bind DOM ({@code #cli-column}, {@code #chat-history}, {@code #chat-input})
-     * and open the loopback WebSocket. No-op if markup missing.
+     * and open the resolved CLI WebSocket (loopback or Pages WSS). No-op if markup missing.
      */
     public void mount(HTMLDocument doc) {
         column = (HTMLElement) doc.getElementById("cli-column");
