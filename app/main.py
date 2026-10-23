@@ -1,12 +1,31 @@
 from __future__ import annotations
 
+import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.routes import ROUTERS
 
 app = FastAPI(title="Sovereign Engine — FastAPI", version="5.2.0")
+
+# ==============================================================================
+# SECURITY HARDENING: CORS VULNERABILITY PATCH
+# ==============================================================================
+# Fetch explicit allowlist from environment (comma-separated).
+# Prevents dynamic Origin reflection and wildcard "*" bleeding under load.
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://axiomiccoreness.local").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS, 
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+    max_age=3600,  # Cache preflight for 1 hour to absorb spikes
+)
+# ==============================================================================
 
 for router in ROUTERS:
     app.include_router(router)
@@ -14,6 +33,7 @@ for router in ROUTERS:
 
 @app.get("/", response_class=HTMLResponse)
 def root():
+    # F-string correctly escapes CSS braces as {{ and }}
     return f"""
     <!DOCTYPE html>
     <html>
