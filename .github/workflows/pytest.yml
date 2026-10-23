@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install --quiet cryptography pyyaml jax jaxlib torch # FIXED: Added missing heavy deps
+          python -m pip install --quiet cryptography pyyaml jax jaxlib torch fastmcp kubernetes # FIXED: dual-gate collection deps (PyPI: fastmcp, kubernetes)
 
       - name: Verify Ledger (Dynamic)
         run: |
@@ -156,7 +156,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements-ci.txt ]; then pip install -q -r requirements-ci.txt || true; fi
           if [ -f requirements.txt ]; then pip install -q -r requirements.txt || true; fi
-          pip install -q cryptography pyyaml requests flake8 pytest numpy jax jaxlib torch || true
+          pip install -q cryptography pyyaml requests flake8 pytest numpy jax jaxlib torch fastmcp kubernetes || true
 
       - name: Run pytest
         run: |

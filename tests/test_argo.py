@@ -12,9 +12,11 @@ from pathlib import Path
 
 import pytest
 
-kubernetes = pytest.importorskip(
-    "kubernetes",
-    reason="kubernetes client not installed (CI default)",
+# Local repo has kubernetes/ YAML manifests (namespace package) which can shadow
+# the PyPI "kubernetes" client under PYTHONPATH=.; require .client explicitly.
+pytest.importorskip(
+    "kubernetes.client",
+    reason="kubernetes.client unavailable (not installed or shadowed by ./kubernetes manifests)",
 )
 from kubernetes import client, config  # noqa: E402
 from kubernetes.client.rest import ApiException  # noqa: E402

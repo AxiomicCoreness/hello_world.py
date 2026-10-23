@@ -1,6 +1,8 @@
 """Bind policy tests — Dual ASGI 127.0.0.1:8024 only."""
 
 import pytest
+
+pytest.importorskip("fastMCP", reason="local fastMCP package not present; PyPI fastmcp ≠ fastMCP.bind")
 from fastMCP.bind import resolve, BIND_HOST, BIND_PORT
 
 
