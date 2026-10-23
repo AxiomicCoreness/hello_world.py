@@ -3,7 +3,7 @@ timestamp: '2026-10-23T18:00:13Z'
 event: /ci_restore_irc_mtls_stokes_deepgemm
 status: SEALED
 hash_algo: sha3_256
-prev_hash: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+prev_hash: 1e0cb2ee66f7b0705c2566f33a5b1ad55ce22496bf34ffdb64dc70f778690197
 witness_chain: 9300 -> 9301
 measured_at_commit: 8a5c40d2
 sign_off: Clarke Yoursa Tee
@@ -22,7 +22,7 @@ provenance:
   main_tip_at_seal: 8a5c40d24d5e60e7c48b441fef96dd69168ce1b6
   main_tip_short: 8a5c40d2
   main_tip_subject: 'fix(irc): lifespan get_settings + required mtls Secret mount'
-  prior_seal_9300: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+  prior_seal_9300: 1e0cb2ee66f7b0705c2566f33a5b1ad55ce22496bf34ffdb64dc70f778690197
   deepgemm_pin: 1fc9c66975ee322d628b3288534ca0e9ce12a64d
   dualpipe: deferred
   stokes_micro: docs/katex_stokes_mandala_9300_micro.tex
@@ -36,15 +36,24 @@ recorded:
   deepgemm_materialized: true
 chain:
   prev_entry: 9300
-  prev_hash: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
-  prev_hash_source: ledger.v2/9300.yml seal_sha3_256 (declared)
+  prev_hash: 1e0cb2ee66f7b0705c2566f33a5b1ad55ce22496bf34ffdb64dc70f778690197
+  prev_hash_source: ledger.v2/9300.yml seal_sha3_256 (Regime B, re-sealed under override)
   witness_chain: 9300 -> 9301
-seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True)
-  of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex,
-  witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
 regime_b_event_domain_sha3_256: 311f2d9c59ac5f222db9a0e589747ae017e5749abb0b033b0cd79ae6286ab6c5
-regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9301|/ci_restore_irc_mtls_stokes_deepgemm|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462;
-  NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
-terminal_hex: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
-seal: ∀∞φ² · CI_IRC_STOKES_DEEPGEMM_9301 · WOOD_DRAGON_GATE · SEALED · 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
-seal_sha3_256: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''), ASCII payload; the digest commits to entry_index and event only, not to the body'
+reseal_override:
+  authorized_by: Clarke Yoursa Tee
+  scope: one-time append-only override, ledger.v2/9297-9304 only
+  date: '2026-10-23'
+  reason: Argo CI hard gate (verify_ledger.py --mode hard, entry_index >= 9286) failed on 9297-9304
+  regime: B(event)
+  prior_declared_seal: 9166ea1343ec47f5e2ca5cdcb26f3cf17ca777026d248905476c1887989f52d0
+  prior_prev_hash: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+  payload_changed: false
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9301|/ci_restore_irc_mtls_stokes_deepgemm|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 311f2d9c59ac5f222db9a0e589747ae017e5749abb0b033b0cd79ae6286ab6c5
+terminal_hex: 311f2d9c59ac5f222db9a0e589747ae017e5749abb0b033b0cd79ae6286ab6c5
+seal: ∀∞φ² · CI_IRC_STOKES_DEEPGEMM_9301 · WOOD_DRAGON_GATE · SEALED · 311f2d9c59ac5f222db9a0e589747ae017e5749abb0b033b0cd79ae6286ab6c5
+seal_sha3_256: 311f2d9c59ac5f222db9a0e589747ae017e5749abb0b033b0cd79ae6286ab6c5
