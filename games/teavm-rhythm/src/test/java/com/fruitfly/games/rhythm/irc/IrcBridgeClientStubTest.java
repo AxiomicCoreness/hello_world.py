@@ -37,4 +37,13 @@ class IrcBridgeClientStubTest {
         assertEquals("irc.abjects.net:6669", IrcBridgeConfig.uiEndpoint(3));
         assertEquals("irc.abjects.net:6666", IrcBridgeConfig.uiEndpoint(4));
     }
+
+    @Test
+    void resetReturnsToIdle() {
+        IrcBridgeClientStub c = new IrcBridgeClientStub();
+        c.planDial();
+        c.reset();
+        assertEquals(IrcBridgeClientStub.State.IDLE, c.state());
+        assertEquals(null, c.lastPlan());
+    }
 }
