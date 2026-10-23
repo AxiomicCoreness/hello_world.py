@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: irc-bridge
+  namespace: garden
+  labels:
+    app: irc-bridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: irc-bridge
+  template:
+    metadata:
+      labels:
+        app: irc-bridge
+    spec:
+      containers:
+        - name: bridge
+          image: ghcr.io/axiomiccoreness/irc-bridge:latest
+          envFrom:
+            - configMapRef:
+                name: bridge-config
+          env:
+            - name: IRC__MTLS_CERT_PATH
+              value: "/etc/mtls/client.crt"
+            - name: IRC__MTLS_KEY_PATH
+              value: "/etc/mtls/client.key"
+            - name: IRC__MTLS_CA_PATH
+              value: "/etc/mtls/ca.crt"
+          volumeMounts:
+            - name: mtls-certs
+              mountPath: /etc/mtls
+              readOnly: true
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+      volumes:
+        - name: mtls-certs
+          secret:
+            secretName: irc-mtls-secrets
+            optional: true

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: irc-bridge
+  namespace: garden
+  labels:
+    app: irc-bridge
+spec:
+  selector:
+    app: irc-bridge
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
