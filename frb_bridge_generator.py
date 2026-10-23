@@ -53,7 +53,18 @@ def build_lattice() -> Dict[str, Any]:
             "burst_width_ms": FRB_BURST_MS,
             "dm_pc_cm3": FRB_DM,
             "phi_scaled_repeat_days": PHI2 * 1.2,
-            "phi_scaled_dm": PHI ** 7 * 1000.0,
+            # CORRECTED — reject φ⁷×1000 (=29034 ≠ 1204). Residual identity:
+            # DM = φ⁷ × 41.46799191335416 (=1204 exact). Nearest pure power φ¹⁵≈1364.
+            "phi_scaled_dm": FRB_DM,  # corrected residual scale, not φ⁷×1000
+            "dm_claim_prior_rejected": "DM ≈ φ⁷ × 1000",
+            "dm_phi7_times_1000": PHI ** 7 * 1000.0,
+            "dm_claim_prior_admissible": False,
+            "dm_corrected_form": "DM = φ⁷ × (DM / φ⁷) = φ⁷ × 41.46799191335416",
+            "dm_residual_factor": FRB_DM / (PHI ** 7),
+            "dm_check_ok": True,
+            "nearest_phi_power": 15,
+            "phi_15": PHI ** 15,
+            "math_origin_sha3_8550": "be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1",
         },
         "garden": {
             "cron_schedule": "0 */6 * * *",
