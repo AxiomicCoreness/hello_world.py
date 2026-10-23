@@ -7,10 +7,11 @@ import time
 from collections.abc import Callable, Generator
 
 import pytest
-import torch
 
+torch = pytest.importorskip("torch", reason="torch not installed")
 # Prevent CI failure if deepinfer isn't installed in the base environment
-deepinfer = pytest.importorskip("deepinfer")
+deepinfer = pytest.importorskip("deepinfer", reason="deepinfer package not importable")
+pytest.importorskip("deepinfer.utils", reason="deepinfer.utils absent in sparse deepinfer/ skeleton (GPU sync helpers)")
 from deepinfer.utils import _sync_debug_arbiter, allow_cuda_sync, forbid_cuda_sync
 
 """

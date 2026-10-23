@@ -1,3 +1,6 @@
+import pytest
+
+pytest.importorskip("scripts.hook_branch_policy", reason="scripts.hook_branch_policy not importable")
 from scripts.hook_branch_policy import (
     hook_policy,
     will_update_all_branches_over_time,

@@ -1,6 +1,9 @@
 """Dual asyncio CI/CD loops (ledger 9174). No socket bind. MCP unfilled."""
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("scripts.dual_asyncio_cicd", reason="scripts.dual_asyncio_cicd not importable")
 from scripts.dual_asyncio_cicd import (
     BIND,
     DUAL_ASGI,

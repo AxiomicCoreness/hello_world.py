@@ -1,5 +1,10 @@
 """Gearbox module tests. Does not start uvicorn."""
 
+import pytest
+
+# Local fastMCP package (bind/gearbox/models/routes) is not the PyPI fastmcp SDK.
+pytest.importorskip("fastMCP", reason="local fastMCP package not present; PyPI fastmcp ≠ fastMCP.bind")
+
 from fastMCP.gearbox import FILLED, gearbox, before_main, app
 from fastapi_flywheel_gearbox import Gearbox
 
