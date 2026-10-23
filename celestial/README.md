@@ -2,7 +2,7 @@
 # 🜁∀ SOVEREIGN GARDEN
 
 **Repository:** `AxiomicCoreness/hello_world.py`
-**Commander:** Timesecret Clarke Yoursa Tee
+**Commander:** Clarke Yoursa Tee
 **Ledger head:** 9298
 **Witness chain:** `0000 → … → 9298 — UNBROKEN`
 **Last verified:** CI `sovereign-engine-ci.yml#readme-drift` (automated anchor)
@@ -156,7 +156,7 @@ The system maintains two parallel ledger tracks:
 1. Sequential (ledger/): The unbroken chain from 0000 to the current head (9298).
 2. Canonical (ledger.v2/): The mathematical fixed points that govern the system's physics.
 
-The 510510 Engine: Modeled as a closed quantum dynamical system. The anchor 510510 = p₇# is the 7th primorial. 510511 is the successor genesis (coprime to p₇#). The quantum_reality_engine.py performs unitary evolution only—it verifies the seal but never rewrites ledger/510510.yaml.
+The 510510 Engine: Modeled as a closed quantum dynamical system. The anchor 510510 = p₇# is the 7th primorial. 510511 is the successor genesis (coprime to p₇#). quantum_reality_engine.py performs unitary evolution only—it verifies the seal but never rewrites ledger/510510.yaml.
 
 ---
 
