@@ -30,3 +30,15 @@ uvicorn src.main:app --host 0.0.0.0 --port 8080
 
 TeaVM panel `games/teavm-rhythm/.../debug-oracle` understands `/stokes`, `/flux`, `/mtls` — emits KaTeX from `docs/katex_stokes_mandala_9300_micro.*` via `hex_locks.json`. Host **irc.abjects.net**; live dial still fail-fast without mTLS.
 
+## TeaVM CLI loopback (Cosmic Alignment)
+
+```bash
+# MUST bind 127.0.0.1 only — never 0.0.0.0
+python -m src.cli_loopback
+# → ws://127.0.0.1:6669/cli  →  (label) irc.abjects.net:6669
+```
+
+TeaVM `CliClient` dials that URL from the rhythm page left column. Pages HTTPS
+needs a `wss://` tunnel; the local contract stays `ws://127.0.0.1:6669/cli`.
+Set `CLI_LIVE_IRC=1` to open plain TCP to `irc.abjects.net:6669` from the
+bridge process (browser still never dials abjects). Default is stub echo.
