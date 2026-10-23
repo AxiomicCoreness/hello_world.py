@@ -1,10 +1,9 @@
 name: Sovereign Pulse
 
-# Entry 8755
-# Manual only. Removed from the parity slot and from cron.
-# Emits a heartbeat to the MCP gate. Read-only; writes no ledger.
-# Seal label only (no terminal hex in this file).
-# Policy: NO_LEDGER_WRITE · MCP FILLED=False · bind 127.0.0.1:8024
+# Manual heartbeat + policy smoke. No ledger write.
+# Standards: bind 127.0.0.1 only · ledger.v2 · dual-gate · MCP FILLED=False
+# Removed from parity cron (entry 8755 era). Dispatch only.
+# Signed-off-by: Clarke Yoursa Tee <mrteanotcoffee@gmail.com>
 
 on:
   workflow_dispatch:
@@ -18,10 +17,12 @@ concurrency:
 
 env:
   PULSE_SOURCE: sovereign-pulse
+  BIND_HOST: "127.0.0.1"
+  BIND_PORT: "8024"
 
 jobs:
   pulse:
-    name: Pulse · MCP heartbeat
+    name: Pulse · policy smoke + MCP heartbeat
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -30,6 +31,44 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Policy smoke (loopback · ledger.v2 · dual-gate)
+        id: policy
+        run: |
+          set -euo pipefail
+          echo "### Policy smoke"
+          echo "BIND_HOST=${BIND_HOST}:${BIND_PORT} (never 0.0.0.0)"
+
+          test -d ledger.v2
+          test -f ledger.v2/README.md
+          echo "ledger.v2: present"
+
+          # Dual-gate / pytest must not swallow collection errors
+          if grep -nE -- '--continue-on-collection-errors' .github/workflows/pytest.yml; then
+            echo "FAIL: pytest.yml still uses --continue-on-collection-errors"
+            exit 1
+          fi
+          echo "dual-gate: no --continue-on-collection-errors"
+
+          # OIDC handover keeps contents: write (deploy path); pulse stays read-only
+          if ! grep -qE '^  contents:[[:space:]]+write[[:space:]]*$' \
+              .github/workflows/OIDC-handover-380.yml; then
+            echo "FAIL: OIDC-handover-380.yml missing permissions contents: write"
+            exit 1
+          fi
+          echo "OIDC-handover-380: contents: write FOUND"
+
+          # Refuse live all-interfaces binds in dual-ASGI entry scripts
+          if grep -nE 'BIND_HOST=0\.0\.0\.0|host=["'\'']0\.0\.0\.0["'\'']' \
+              scripts/dual_asyncio_cicd.sh scripts/dual_asyncio_cicd.py \
+              scripts/start.sh 2>/dev/null; then
+            echo "FAIL: live 0.0.0.0 bind in dual-ASGI entry"
+            exit 1
+          fi
+          echo "dual-ASGI entry: no 0.0.0.0 literal bind"
+
+          echo "policy_ok=true" >> "$GITHUB_OUTPUT"
+          echo "All policy checks passed."
 
       - name: Send pulse
         id: send
@@ -41,18 +80,19 @@ jobs:
           set -euo pipefail
 
           if [ -z "${MCP_URL:-}" ]; then
-            echo "MCP_URL not set — soft skip"
+            echo "MCP_URL not set — soft skip heartbeat"
             echo "http_code=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if [ -z "${GARDEN_SECRET:-}" ]; then
-            echo "GARDEN_SECRET not set — soft skip"
+            echo "GARDEN_SECRET not set — soft skip heartbeat"
             echo "http_code=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           PULSE_ID="pulse_$(date -u +%s)"
-          BODY=$(printf '{"pulse_id":"%s","source":"%s"}' "$PULSE_ID" "$PULSE_SOURCE")
+          BODY=$(printf '{"pulse_id":"%s","source":"%s","bind":"%s:%s"}' \
+            "$PULSE_ID" "$PULSE_SOURCE" "${BIND_HOST}" "${BIND_PORT}")
 
           HTTP_CODE=$(curl -sS --max-time 20 \
             -o /tmp/pulse_resp.json -w "%{http_code}" \
@@ -78,16 +118,19 @@ jobs:
         env:
           PULSE_ID: ${{ steps.send.outputs.pulse_id }}
           HTTP_CODE: ${{ steps.send.outputs.http_code }}
+          POLICY_OK: ${{ steps.policy.outputs.policy_ok }}
         run: |
           {
             echo "### Sovereign Pulse"
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
+            echo "| policy_ok | ${POLICY_OK:-false} |"
             echo "| pulse_id | ${PULSE_ID:-<none>} |"
             echo "| http_code | ${HTTP_CODE:-<skipped>} |"
             echo "| source | ${PULSE_SOURCE} |"
+            echo "| bind | ${BIND_HOST}:${BIND_PORT} |"
             echo "| trigger | workflow_dispatch only |"
             echo ""
-            echo "Policy: read-only · no ledger write · MCP FILLED=False"
+            echo "Policy: read-only · no ledger write · MCP FILLED=False · ledger.v2"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -24,7 +24,7 @@ spec:
         - select(.metadata.labels["rollouts.argoproj.io/gatewayapi-canary"] == "in-progress") | .metadata.labels
   syncPolicy:
     automated:
-      prune: false
+      prune: true
       selfHeal: true
     syncOptions:
       - RespectIgnoreDifferences=true
