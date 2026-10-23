@@ -19,7 +19,7 @@ concurrency:
 
 env:
   HASH_ALGO: sha3_256
-  LEDGER_DIR: ledger
+  LEDGER_DIR: ledger.v2
 
 jobs:
   debug:
@@ -87,6 +87,21 @@ jobs:
           else
             echo "  scripts/  not found"
           fi
+          echo "-- structured roots (debug-oracle panel) --"
+          for root in ledger.v2 deepinfer games/teavm-rhythm skills quantum argocd; do
+            if [ -d "$root" ]; then
+              echo "  $root/  present"
+            else
+              echo "  $root/  absent"
+            fi
+          done
+          if [ -f games/teavm-rhythm/src/main/webapp/debug-oracle/index.html ]; then
+            echo "  TeaVM debug-oracle panel present (UI labels irc.abjects.net:6666-6669; no live IRC)"
+            python3 tools/debug_oracle_irc/oracle_shell.py --once channels || true
+          else
+            echo "  TeaVM debug-oracle panel absent"
+          fi
+
           echo "::endgroup::"
 
       - name: Summary

@@ -382,3 +382,14 @@ and `?voice=fly|count|solfege` pick from the URL.
 
 `MusicSourceTest` plays a MIDI scale, a two-channel MIDI riff with octave
 doubling and all three voice lines with each of the four fly modes (no misses).
+
+## Debug Oracle panel (team v1)
+
+Browser debug shell served with the TeaVM webapp:
+
+- `src/main/webapp/debug-oracle/index.html` — left directory panel + chat emergent from hex locks
+- `src/main/webapp/debug-oracle/hex_locks.json` — full 64-hex digests (9300 seal, Layer 314 Anchor/Leaf)
+- Companion TUI: `tools/debug_oracle_irc/oracle_shell.py`
+
+Team endpoints are **UI labels only**: `irc.abjects.net:6666`–`6669`. No live IRC sockets in CI.
+
