@@ -127,6 +127,24 @@ final class Dom {
     @JSBody(params = {"el"}, script = "return !!(el && typeof document !== 'undefined' && document.activeElement === el);")
     static native boolean isActive(HTMLElement el);
 
+    /**
+     * True when keyboard focus is in a text field or inside {@code #cli-column}.
+     * Prefer this over TeaVM stopPropagation — game keys must not steal chat typing.
+     */
+    @JSBody(script = "if (typeof document === 'undefined' || !document.activeElement) return false;"
+            + "var a = document.activeElement;"
+            + "var tag = (a.tagName || '').toUpperCase();"
+            + "if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || a.isContentEditable) return true;"
+            + "if (a.id === 'chat-input') return true;"
+            + "var col = document.getElementById('cli-column');"
+            + "return !!(col && typeof col.contains === 'function' && col.contains(a));")
+    static native boolean isTypingTarget();
+
+    /** Focus an element (chat input); swallow focus errors. */
+    @JSBody(params = {"el"}, script = "if (!el || typeof el.focus !== 'function') return;"
+            + "try { el.focus({preventScroll: true}); } catch (e) { try { el.focus(); } catch (e2) {} }")
+    static native void focus(HTMLElement el);
+
     /** Scroll an element to its bottom (chat scrollback). */
     @JSBody(params = {"el"}, script = "if (el) { el.scrollTop = el.scrollHeight; }")
     static native void scrollTopMax(HTMLElement el);

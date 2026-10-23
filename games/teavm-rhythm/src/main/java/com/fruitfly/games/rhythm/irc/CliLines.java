@@ -11,6 +11,8 @@ public final class CliLines {
     public static final String KIND_SYSTEM = "System";
     public static final String KIND_ENGINE = "Engine";
     public static final String KIND_USER = "User";
+    /** Traceback / pythonIDE error lines in chat history. */
+    public static final String KIND_TRACEBACK = "Traceback";
 
     /** Contract URL for the loopback CLI (TeaVM must use this, not abjects directly). */
     public static final String LOOPBACK_WS = "ws://127.0.0.1:6669/cli";

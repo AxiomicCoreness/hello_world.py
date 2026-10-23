@@ -88,6 +88,7 @@
       text-transform: uppercase; flex: 0 0 auto;
     }
     #cli-column .cli-title .remote { color: #fbbf24; text-transform: none; letter-spacing: 0; }
+    #cli-column, #chat-history { cursor: text; }
     #chat-history {
       flex: 1 1 auto; margin: 0; padding: 0.55rem 0.65rem;
       overflow: auto; white-space: pre-wrap; word-break: break-word;
@@ -113,12 +114,13 @@
 <body onload="main()">
   <div id="layout">
   <aside id="cli-column" aria-label="CLI to ws://127.0.0.1:6669/cli → irc.abjects.net:6669">
-    <div class="cli-title">CLI · <span class="remote">127.0.0.1:6669</span> → irc.abjects.net:6669</div>
+    <div class="cli-title">CLI · <span class="remote">127.0.0.1:6669</span> → irc.abjects.net:6669 · /py</div>
     <pre id="chat-history" aria-live="polite"></pre>
     <form id="cli-form" autocomplete="off" action="#">
       <span class="ps1" aria-hidden="true">›</span>
       <input id="chat-input" type="text" spellcheck="false" autocomplete="off"
-             placeholder="message · Enter to send" aria-label="CLI chat input" />
+             autocapitalize="off" tabindex="0"
+             placeholder="message · /py help · Enter to send" aria-label="CLI chat input" />
     </form>
   </aside>
   <div class="stage">
