@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Debug Oracle · TeaVM Rhythm · team v1</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121821;
+      --border: #243041;
+      --text: #d7e0ea;
+      --muted: #7f8fa3;
+      --accent: #5eead4;
+      --warn: #fbbf24;
+      --hex: #a78bfa;
+      --dir: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      background: var(--bg); color: var(--text);
+      font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+    }
+    header {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      padding: 0.55rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: #0e141c;
+    }
+    header h1 { font-size: 0.95rem; margin: 0; font-weight: 600; }
+    header .badge {
+      color: var(--warn); border: 1px solid #5b4a1e; background: #1a1508;
+      padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem;
+    }
+    header .endpoints { color: var(--muted); font-size: 0.75rem; }
+    header a { color: var(--accent); }
+    .main {
+      display: grid;
+      grid-template-columns: minmax(220px, 28%) 1fr;
+      min-height: 0;
+    }
+    .dir-panel, .chat-panel {
+      min-height: 0; display: flex; flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+    .chat-panel { border-right: none; }
+    .panel-title {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      font-size: 0.7rem;
+    }
+    #tree {
+      overflow: auto; padding: 0.5rem 0.35rem 0.75rem;
+      flex: 1;
+    }
+    .root {
+      padding: 0.35rem 0.55rem; margin: 0.15rem 0.25rem;
+      border-radius: 4px; cursor: pointer; color: var(--dir);
+    }
+    .root:hover, .root.active { background: #1a2433; }
+    .root .path { color: var(--text); }
+    .root .meta { color: var(--muted); font-size: 0.7rem; }
+    #chat {
+      overflow: auto; flex: 1; padding: 0.65rem 0.85rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
+    }
+    .msg {
+      border-left: 3px solid var(--hex);
+      padding: 0.35rem 0.55rem;
+      background: var(--panel);
+      border-radius: 0 4px 4px 0;
+    }
+    .msg .who { color: var(--accent); font-weight: 600; }
+    .msg .chan { color: var(--muted); }
+    .msg .body { margin-top: 0.2rem; word-break: break-word; }
+    .msg .digest {
+      margin-top: 0.25rem; color: var(--hex); font-size: 0.72rem;
+      word-break: break-all;
+    }
+    .prompt-bar {
+      border-top: 1px solid var(--border);
+      display: grid; grid-template-columns: auto 1fr auto;
+      gap: 0.45rem; padding: 0.45rem 0.65rem; background: #0e141c;
+      align-items: center;
+    }
+    .cwd { color: var(--dir); white-space: nowrap; }
+    #cmd {
+      width: 100%; background: #0a1018; color: var(--text);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.4rem 0.55rem; outline: none;
+    }
+    #cmd:focus { border-color: var(--accent); }
+    button {
+      background: #163028; color: var(--accent); border: 1px solid #2a5a4c;
+      border-radius: 4px; padding: 0.35rem 0.7rem; cursor: pointer;
+    }
+    button:hover { background: #1c3d34; }
+    #out {
+      max-height: 7rem; overflow: auto; padding: 0.35rem 0.85rem;
+      border-top: 1px solid var(--border); color: var(--muted);
+      background: #090d12; white-space: pre-wrap;
+    }
+    @media (max-width: 720px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: 40% 60%; }
+      .dir-panel { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Debug Oracle · TeaVM Rhythm</h1>
+      <span class="badge">team v1 · UI labels only · no live IRC sockets</span>
+      <span class="endpoints" id="endpoints">irc.abjects.net:6666–6669</span>
+      <a href="../index.html">← rhythm game</a>
+    </header>
+    <div class="main">
+      <aside class="dir-panel" aria-label="Directory panel">
+        <div class="panel-title">Directory / root</div>
+        <div id="tree"></div>
+      </aside>
+      <section class="chat-panel" aria-label="Hex-emergent chat">
+        <div class="panel-title">Chat · emergent from hex locks</div>
+        <div id="chat"></div>
+      </section>
+    </div>
+    <div id="out" aria-live="polite"></div>
+    <div class="prompt-bar">
+      <span class="cwd" id="cwd">/</span>
+      <input id="cmd" type="text" autocomplete="off" spellcheck="false"
+             placeholder="ls · cd &lt;root&gt; · hex · channels · help · oracle &lt;q&gt;" />
+      <button type="button" id="run">run</button>
+    </div>
+  </div>
+  <script>
+(function () {
+  const LEX = [
+    "phase-lock", "breath", "pauli-trace", "stokes-curl",
+    "garden", "connectome", "ledger-seal", "merkle-leaf",
+    "anchor", "dark-state", "phi-gate", "tea-vm",
+    "rhythm", "oracle", "append-only", "full-digest"
+  ];
+  const FALLBACK = {
+    version: 1,
+    policy: "full digests — no truncation; UI labels only — no live IRC sockets",
+    team_endpoints_ui_only: [
+      "irc.abjects.net:6666",
+      "irc.abjects.net:6667",
+      "irc.abjects.net:6668",
+      "irc.abjects.net:6669"
+    ],
+    locks: [
+      { id: "9300_seal", label: "ledger.v2/9300 seal",
+        digest: "ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667" },
+      { id: "9299_prev", label: "ledger.v2/9300 prev (9299)",
+        digest: "7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121" },
+      { id: "layer314_anchor", label: "Layer 314 Anchor",
+        digest: "8a250cf445e8ad0cc8d06d0096b969029a175a14eb58838e734f1975358b860d" },
+      { id: "layer314_leaf", label: "Layer 314 Leaf",
+        digest: "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68" }
+    ],
+    roots: [
+      "ledger.v2", "deepinfer", "games/teavm-rhythm",
+      "skills", "quantum", "argocd"
+    ]
+  };
+
+  let state = FALLBACK;
+  let cwd = "/";
+
+  const treeEl = document.getElementById("tree");
+  const chatEl = document.getElementById("chat");
+  const outEl = document.getElementById("out");
+  const cwdEl = document.getElementById("cwd");
+  const cmdEl = document.getElementById("cmd");
+  const endpointsEl = document.getElementById("endpoints");
+
+  function nibbleWords(digest) {
+    const words = [];
+    for (let i = 0; i < digest.length; i += 4) {
+      const n = parseInt(digest.slice(i, i + 4), 16);
+      words.push(LEX[n % LEX.length]);
+    }
+    return words.slice(0, 8).join(" · ");
+  }
+
+  function channelForDigest(digest) {
+    const ports = [6666, 6667, 6668, 6669];
+    const n = parseInt(digest.slice(0, 2), 16);
+    return "irc.abjects.net:" + ports[n % 4];
+  }
+
+  function renderTree() {
+    treeEl.innerHTML = "";
+    state.roots.forEach(function (r) {
+      const div = document.createElement("div");
+      div.className = "root" + (cwd === "/" + r ? " active" : "");
+      div.innerHTML =
+        '<div class="path">📁 ' + r + "</div>" +
+        '<div class="meta">repo root · structured debug</div>';
+      div.addEventListener("click", function () {
+        cwd = "/" + r;
+        cwdEl.textContent = cwd;
+        renderTree();
+        echo("cd " + cwd);
+        seedChatFromRoot(r);
+      });
+      treeEl.appendChild(div);
+    });
+  }
+
+  function addMsg(who, chan, body, digest) {
+    const m = document.createElement("div");
+    m.className = "msg";
+    m.innerHTML =
+      '<div><span class="who">' + who + "</span> " +
+      '<span class="chan">' + chan + " · UI-only</span></div>" +
+      '<div class="body">' + body + "</div>" +
+      (digest ? '<div class="digest">' + digest + "</div>" : "");
+    chatEl.appendChild(m);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function seedChat() {
+    chatEl.innerHTML = "";
+    addMsg(
+      "oracle",
+      "system",
+      "Chat capabilities emerge from literal 64-hex locks. " +
+        "Team endpoints labeled " +
+        state.team_endpoints_ui_only.join(", ") +
+        " — no sockets opened.",
+      null
+    );
+    state.locks.forEach(function (lock) {
+      addMsg(
+        "hex/" + lock.id,
+        channelForDigest(lock.digest),
+        lock.label + " → " + nibbleWords(lock.digest),
+        lock.digest
+      );
+    });
+  }
+
+  function seedChatFromRoot(root) {
+    const lock = state.locks[root.length % state.locks.length];
+    addMsg(
+      "dir/" + root,
+      channelForDigest(lock.digest),
+      "root focus · " + nibbleWords(lock.digest),
+      lock.digest
+    );
+  }
+
+  function echo(line) {
+    outEl.textContent += (outEl.textContent ? "\n" : "") + line;
+    outEl.scrollTop = outEl.scrollHeight;
+  }
+
+  function runCmd(raw) {
+    const line = (raw || "").trim();
+    if (!line) return;
+    echo(cwd + " $ " + line);
+    const parts = line.split(/\s+/);
+    const op = parts[0].toLowerCase();
+    if (op === "help") {
+      echo("commands: ls | cd <root|..|/ > | hex | channels | pwd | clear | oracle <q>");
+    } else if (op === "ls") {
+      echo(state.roots.join("\n"));
+    } else if (op === "pwd") {
+      echo(cwd);
+    } else if (op === "clear") {
+      outEl.textContent = "";
+      chatEl.innerHTML = "";
+      seedChat();
+    } else if (op === "channels") {
+      echo("UI-only team endpoints (no live connect):");
+      state.team_endpoints_ui_only.forEach(function (e) { echo("  " + e); });
+    } else if (op === "hex") {
+      state.locks.forEach(function (l) {
+        echo(l.id + "  " + l.digest);
+      });
+    } else if (op === "cd") {
+      const arg = parts[1] || "/";
+      if (arg === "/" || arg === "~") {
+        cwd = "/";
+      } else if (arg === "..") {
+        cwd = "/";
+      } else {
+        const name = arg.replace(/^\//, "");
+        if (state.roots.indexOf(name) >= 0) {
+          cwd = "/" + name;
+          seedChatFromRoot(name);
+        } else {
+          echo("no such root: " + name);
+        }
+      }
+      cwdEl.textContent = cwd;
+      renderTree();
+    } else if (op === "oracle") {
+      const q = parts.slice(1).join(" ") || "status";
+      const lock = state.locks[q.length % state.locks.length];
+      addMsg(
+        "llm/oracle",
+        channelForDigest(lock.digest),
+        "channeling · " + q + " · " + nibbleWords(lock.digest),
+        lock.digest
+      );
+      echo("oracle seeded from " + lock.id);
+    } else {
+      echo("unknown: " + op + " (try help)");
+    }
+  }
+
+  document.getElementById("run").addEventListener("click", function () {
+    runCmd(cmdEl.value);
+    cmdEl.value = "";
+    cmdEl.focus();
+  });
+  cmdEl.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") {
+      runCmd(cmdEl.value);
+      cmdEl.value = "";
+    }
+  });
+
+  fetch("hex_locks.json")
+    .then(function (r) { return r.ok ? r.json() : FALLBACK; })
+    .then(function (data) {
+      state = data || FALLBACK;
+      endpointsEl.textContent = state.team_endpoints_ui_only.join(" · ");
+      renderTree();
+      seedChat();
+      echo("debug-oracle ready · policy: " + (state.policy || "UI-only"));
+    })
+    .catch(function () {
+      renderTree();
+      seedChat();
+      echo("hex_locks.json fetch failed — using embedded fallback");
+    });
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "policy": "full digests — no truncation; UI labels only — no live IRC sockets",
+  "team_endpoints_ui_only": [
+    "irc.abjects.net:6666",
+    "irc.abjects.net:6667",
+    "irc.abjects.net:6668",
+    "irc.abjects.net:6669"
+  ],
+  "locks": [
+    {
+      "id": "9300_seal",
+      "label": "ledger.v2/9300 seal",
+      "digest": "ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667"
+    },
+    {
+      "id": "9299_prev",
+      "label": "ledger.v2/9300 prev (9299)",
+      "digest": "7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121"
+    },
+    {
+      "id": "layer314_anchor",
+      "label": "Layer 314 Anchor",
+      "digest": "8a250cf445e8ad0cc8d06d0096b969029a175a14eb58838e734f1975358b860d"
+    },
+    {
+      "id": "layer314_leaf",
+      "label": "Layer 314 Leaf",
+      "digest": "807de931c86add23baabafd1252dcc89cbcc23812be1f69e8fc215e51849ee68"
+    }
+  ],
+  "roots": [
+    "ledger.v2",
+    "deepinfer",
+    "games/teavm-rhythm",
+    "skills",
+    "quantum",
+    "argocd"
+  ]
+}
