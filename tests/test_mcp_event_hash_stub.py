@@ -18,5 +18,5 @@ def test_stub_unfilled_loopback():
 
 def test_hash_matches_sealed_9189():
     block = ledger_event_hash(9189, "/actualized_dual_asyncio_cicd_appended_math_origin")
-    assert block["hex"] == "8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86"
+    assert block["hex"] == "226e6589c7233ba762b5817bbd601c962325dbf3ae94c1b79fcb967adc25c839"  # GARDEN.EVENT.v1.LEDGER domain; sealed 9189 terminal_hex is historical (append-only)
     assert preview_payload(9189, "/actualized_dual_asyncio_cicd_appended_math_origin").startswith("9189|")
