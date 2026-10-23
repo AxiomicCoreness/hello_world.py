@@ -132,6 +132,7 @@ function boot(search, opts) {
     return btn;
     };
     huds['autoplay-btn'] = makeBtn('autoplay-btn', 'AUTOPLAY: OFF');
+    huds['moves-list'] = { id: 'moves-list', textContent: '', style: { display: 'none' } };
     if (!opts.noPickers) {
       huds['rhythm-btn'] = makeBtn('rhythm-btn', 'LAYERED x4');
       huds['bpm-btn'] = makeBtn('bpm-btn', '120 BPM');
@@ -181,10 +182,13 @@ function boot(search, opts) {
   const doc = {
     body: { className: '' },
     getElementById: (id) => (id === 'game' ? cv : (huds[id] || null)),
-    addEventListener: (type, fn) => { if (type === 'keydown') b.key = fn; },
+    visibilityState: 'visible',
+    addEventListener: (type, fn) => { if (type === 'keydown') b.key = fn; if (type === 'visibilitychange') b.vis = fn; },
     createElement: (tag) => (tag === 'audio' ? makeAudio() : {}),
   };
-  const sb = { console, document: doc, location: { search }, XMLHttpRequest: FakeXHR,
+  b.logs = [];
+  const con = opts.captureLog ? { log: (s) => b.logs.push(String(s)), error: console.error, warn: console.warn } : console;
+  const sb = { console: con, document: doc, location: { search }, XMLHttpRequest: FakeXHR,
     requestAnimationFrame: (cb) => { b.raf = cb; return 1; }, setTimeout, clearTimeout };
   if (opts.vw) { sb.innerWidth = opts.vw; sb.innerHeight = opts.vh; sb.devicePixelRatio = opts.dpr || 1; }
   if (opts.image) { sb.Image = class { constructor() { this.src = ''; this.naturalWidth = 0; this.naturalHeight = 0; b.images.push(this); } }; }
@@ -197,6 +201,8 @@ function boot(search, opts) {
   }
   b.cv = cv;
   b.doc = doc;
+  b.sb = sb;
+  b.hide = (hidden) => { doc.visibilityState = hidden ? 'hidden' : 'visible'; if (b.vis) b.vis({ type: 'visibilitychange' }); };
   sb.window = sb; sb.self = sb;
   vm.createContext(sb);
   vm.runInContext(fs.readFileSync(path, 'utf8'), sb, { filename: path });
@@ -491,13 +497,13 @@ const CHART = '?chart=charts/sample_chart.json';
     && rx(br.style.left) + rx(br.style.width) <= 390 && rx(rr.style.top) >= rx(p.btn.style.top) + rx(p.btn.style.height)
     && rx(p.huds['hud-c'].style.top) >= rx(rr.style.top) + rx(rr.style.height), [rr.style.left, rr.style.top, rr.style.width, br.style.width, p.huds['hud-c'].style.top].join(' '));
   rr.tap(); p.frame(16);
-  expect('P: tap rhythm -> TRESILLO, F x..x..x.', rr.textContent === 'TRESILLO E(3,8)' && p.has('F E(3,8) x..x..x.') && p.has('Bjorklund \u00b7 120 BPM \u00b7 24 notes'), rr.textContent);
+  expect('P: tap rhythm -> TRESILLO, DFJK x..x..x. (single pattern spread over the lanes)', rr.textContent === 'TRESILLO E(3,8)' && p.has('DFJK E(3,8) x..x..x.') && p.has('Bjorklund \u00b7 120 BPM \u00b7 24 notes'), rr.textContent);
   br.tap(); p.frame(32);
   expect('P: tap BPM -> 140', br.textContent === '140 BPM' && p.has('Bjorklund \u00b7 140 BPM \u00b7 24 notes'), br.textContent);
   p.press('t', 'KeyT'); p.frame(48);
   expect('P: key T -> 90 BPM', br.textContent === '90 BPM', br.textContent);
   p.press('e', 'KeyE'); p.press('e', 'KeyE'); p.frame(64);
-  expect('P: key E x2 -> BEMBE E(7,12)', rr.textContent === 'BEMBE E(7,12)' && p.has('K E(7,12) x.xx.x.xx.x.'), rr.textContent);
+  expect('P: key E x2 -> BEMBE E(7,12)', rr.textContent === 'BEMBE E(7,12)' && p.has('DFJK E(7,12) x.xx.x.xx.x.'), rr.textContent);
   rr.fire('click', { detail: 0 }); p.frame(80);
   expect('P: keyboard-synthesised click on a picker ignored', rr.textContent === 'BEMBE E(7,12)');
   p.press('e', 'KeyE'); p.press('e', 'KeyE'); p.frame(96);
@@ -618,15 +624,115 @@ const CHART = '?chart=charts/sample_chart.json';
     && p.huds['hud-r'].textContent.split('\n')[1] === 'assist ON (connectome fly)' && p.rhythmBtn.className === 'picker locked', p.btn.textContent);
   p.btn.tap();
   expect('R: mid-song tap -> hint shown at once', p.huds['hud-c'].textContent.includes('Autoplay locked during song - press R to restart'));
-  // blocks cut == hits on the press itself (bembe @90: first notes K at 2000 and 2444 ms; frame clock from stamp 0)
+  // blocks cut == hits on the press itself (bembe @90: first notes D at 2000 and F at 2444 ms, spread over the lanes; frame clock from stamp 0)
   p = boot('?rhythm=bembe&bpm=90&audio=none', IPHONE);
   p.frame(0); p.press(' ');
   const first2 = [2000, 2000 + Math.round(2 * 240000 / 90 / 12)];
-  p.frame(first2[0]); p.press('k', 'KeyK');
+  p.frame(first2[0]); p.press('d', 'KeyD');
   const hl1 = p.huds['hud-l'].textContent;
-  p.frame(first2[1]); p.press('k', 'KeyK');
+  p.frame(first2[1]); p.press('f', 'KeyF');
   const hl2 = p.huds['hud-l'].textContent;
   expect('R: blocks cut moves with combo on the press (1/1 then 2/2)', /Combo 1 /.test(hl1) && /blocks cut 1/.test(hl1) && /Combo 2 /.test(hl2) && /blocks cut 2/.test(hl2), JSON.stringify([hl1, hl2]));
+
+  // S: moves list, window.__rhythmDebug, ?debug=notes (console + on-stage list). Connectome fly on bembe @90.
+  p = boot('?rhythm=bembe&bpm=90&audio=none&debug=notes', Object.assign({ captureLog: true }, IPHONE));
+  p.frame(0);
+  const dbg = p.sb.__rhythmDebug;
+  expect('S: window.__rhythmDebug installed (frozen, read-only)', !!dbg && dbg.version === 'rhythm-moves/1' && Object.isFrozen(dbg)
+    && typeof dbg.moves === 'function' && typeof dbg.first20 === 'function' && typeof dbg.verify === 'function', dbg && dbg.version);
+  try { p.sb.__rhythmDebug = null; } catch (e) { /* strict-mode TypeError is fine too */ }
+  expect('S: __rhythmDebug cannot be overwritten', p.sb.__rhythmDebug === dbg);
+  expect('S: ?debug=notes shows the on-stage list', p.huds['moves-list'].style.display === '' && p.huds['moves-list'].textContent.startsWith('  #'));
+  p.press('c', 'KeyC'); p.press('c', 'KeyC');
+  expect('S: mode() follows the AUTOPLAY cycle', dbg.mode() === 'connectome', dbg.mode());
+  p.press(' ');
+  st = 0; done = false;
+  for (let i = 0; i < 4000 && !done; i++) { st += 16; p.frame(st); done = p.has('Song complete'); }
+  const mv = dbg.moves(), f20 = dbg.first20();
+  expect('S: 56 rows (bembe 7 x 8 bars), first20 = rows 0..19', done && dbg.count() === 56 && mv.length === 56 && f20.length === 20 && f20[19].i === 19 && mv[55].i === 55, dbg.count());
+  expect('S: every row: fly, PERFECT, fired, margin >= 0, value = margin * f(chain)', mv.every((r) => r.who === 'fly' && r.judge === 'PERFECT' && r.fired === true
+    && r.kind === 'margin' && r.margin >= 0 && Math.abs(r.value - Math.round(r.margin * 1000 * (10 + Math.min(r.chain, 10)) / 10) / 1000) < 1e-9), JSON.stringify(mv[0]));
+  expect('S: single pattern spread: lanes D F J K D ... (pulse mod 4)', mv.every((r, k) => r.lane === k % 4) && mv[1].key === 'F', mv.slice(0, 5).map((r) => r.key).join(''));
+  expect('S: chain counts consecutive hits per lane (row 8 is the 3rd D)', mv[0].chain === 1 && mv[4].chain === 2 && mv[8].chain === 3, [mv[0].chain, mv[4].chain, mv[8].chain].join(','));
+  expect('S: row 0: genesis prev, delta null, math_origin derived', mv[0].prev === '0'.repeat(64) && mv[0].delta === null && mv[1].delta === mv[1].t - mv[0].t
+    && mv[0].math_origin === 'math_origin=Decision(t=2000;lane=0;who=fly;V=' + mv[0].V.toFixed(3) + ';th=-45.000;margin=' + mv[0].margin.toFixed(3) + ';chain=1;f=1.100;value=' + mv[0].value.toFixed(3) + ')', mv[0].math_origin);
+  const pre0 = 'rhythm-move/v1|prev=' + mv[0].prev + '|i=0|t=2000|lane=0|delta=na|who=fly|press=' + mv[0].press + '|dt=' + mv[0].dt + '|judge=PERFECT|fired=yes|lat=' + mv[0].lat + '|' + mv[0].math_origin;
+  expect('S: row hash = SHA-256(canonical preimage) (node crypto agrees)', require('crypto').createHash('sha256').update(pre0).digest('hex') === mv[0].hash && dbg.sha256(pre0) === mv[0].hash, mv[0].hash.slice(0, 8));
+  const vk = dbg.verify();
+  expect('S: verify() ok over the kept rows', vk.ok === true && vk.firstBad === null && vk.checked === 56, JSON.stringify(vk));
+  const tam = dbg.moves(); tam[5].judge = 'MISS';
+  const vt = dbg.verify(tam);
+  expect('S: verify(rows) finds a tampered row (judge of row 5)', vt.ok === false && vt.firstBad === 5, JSON.stringify(vt));
+  const tam2 = dbg.moves(); tam2[9].hash = tam2[9].hash.replace(/^./, (c) => (c === '0' ? '1' : '0'));
+  expect('S: verify(rows) finds a broken link (hash of row 9)', dbg.verify(tam2).firstBad === 9, JSON.stringify(dbg.verify(tam2)));
+  expect('S: copies only: tampering did not touch the game', dbg.verify().ok && dbg.moves()[5].judge === 'PERFECT');
+  const logs = p.logs.filter((l) => l.startsWith('[moves] '));
+  expect('S: ?debug=notes console.logs every row once, in order', logs.length === 56 && logs[0].startsWith('[moves] #0 t=2000 D delta=na fly press=2000 dt=0 PERFECT V=') && logs[55].startsWith('[moves] #55 '), logs[0]);
+  const stageRows = p.huds['moves-list'].textContent.split('\n');
+  expect('S: on-stage list = header + last 8 rows, each <= 52 chars (390 px stage at 9 px)', stageRows.length === 9 && stageRows.every((r) => r.length <= 52) && stageRows[8].trim().startsWith('55 '), stageRows[8] + ' (' + Math.max(...stageRows.map((r) => r.length)) + ')');
+  // without ?debug=notes: the API is there, nothing logged, list hidden
+  p = boot('?rhythm=bembe&bpm=90&audio=none', Object.assign({ captureLog: true }, IPHONE));
+  p.frame(0); p.press(' ');
+  for (let t2 = 16; t2 < 6000; t2 += 16) p.frame(t2);
+  expect('S: no ?debug: API present, list hidden, no console rows; human-off rows are timing rows (MISS -> chain 0, score 0)', !!p.sb.__rhythmDebug && p.huds['moves-list'].style.display === 'none'
+    && p.logs.filter((l) => l.startsWith('[moves]')).length === 0 && p.sb.__rhythmDebug.moves().length > 0
+    && p.sb.__rhythmDebug.moves().every((r) => r.who === 'none' && r.judge === 'MISS' && r.kind === 'timing' && r.d === 0 && r.chain === 0 && r.fired === null && r.V === null), p.sb.__rhythmDebug.moves().length);
+
+  // T: pause when the tab is hidden, resume without rewinding.
+  p = boot('?rhythm=bembe&bpm=90', IPHONE);
+  p.frame(0); p.press(' ');
+  let aT = p.audios[p.audios.length - 1];
+  const playsBefore = aT.plays;
+  st = 0;
+  for (let i = 0; i < 100; i++) { st += 16; aT.currentTime += 0.016; p.frame(st); }
+  const songBefore = p.sb.__rhythmDebug.clock();
+  p.hide(true);
+  expect('T: hidden mid-song -> audio paused, HUD "paused (tab hidden)"', aT.paused === true && p.huds['hud-c'].textContent.includes('paused (tab hidden)'), p.huds['hud-c'].textContent.split('\n')[0]);
+  for (let i = 0; i < 20; i++) { st += 500; p.frame(st); }           // throttled frames while hidden: song time must not move
+  expect('T: song clock frozen while hidden', p.sb.__rhythmDebug.clock() === songBefore, songBefore + ' -> ' + p.sb.__rhythmDebug.clock());
+  const ctAtHide = aT.currentTime;
+  p.hide(false);
+  expect('T: visible -> audio.play() again, NOT rewound to 0', aT.plays === playsBefore + 1 && aT.paused === false && aT.currentTime === ctAtHide, aT.currentTime);
+  st += 16; aT.currentTime += 0.016; p.frame(st);
+  const songAfter = p.sb.__rhythmDebug.clock();
+  expect('T: continues from the frozen time (no 10 s jump), notes not missed while hidden', songAfter >= songBefore && songAfter - songBefore < 40
+    && p.hud('Miss ') === 'Miss 0' && !p.huds['hud-c'].textContent.includes('paused'), (songAfter - songBefore).toFixed(1) + ' ms');
+  // frame-clock fallback (no audio): re-anchored on resume
+  p = boot('?rhythm=bembe&bpm=90&audio=none', IPHONE);
+  p.frame(0); p.press('c', 'KeyC'); p.press(' ');
+  for (st = 16; st <= 3000; st += 16) p.frame(st);
+  const fb0 = p.sb.__rhythmDebug.clock();
+  p.hide(true); p.frame(st + 9000); p.hide(false); p.frame(st + 9016);
+  const fb1 = p.sb.__rhythmDebug.clock();
+  expect('T: no-audio clock re-anchored: 9 s hidden adds nothing', fb1 >= fb0 && fb1 - fb0 <= 16, fb0 + ' -> ' + fb1);
+  for (st = st + 9032; st < 40000; st += 16) p.frame(st);
+  expect('T: LIF fly still plays the whole song after the pause (no miss)', p.has('Song complete') && / M 0$/.test(p.texts.find((t) => t.startsWith('P ')) || ''), p.texts.find((t) => t.startsWith('P ')));
+
+  // U: jitter. 60 fps frames, audio.currentTime updated only every 40 ms (Safari-like coarse steps).
+  function jitter(search) {
+    const q = boot(search, IPHONE);
+    q.frame(0); q.press(' ');
+    const a = q.audios[q.audios.length - 1];
+    const d = []; let prev = null; let mono = true;
+    for (let i = 1; i <= 300; i++) {
+      const stamp = i * (1000 / 60);
+      a.currentTime = Math.floor(stamp / 40) * 0.040;   // true time = stamp, reported in 40 ms steps
+      q.frame(stamp);
+      const c = q.sb.__rhythmDebug.clock();
+      if (prev !== null && i > 30) { d.push(c - prev); if (c < prev) mono = false; }
+      prev = c;
+    }
+    const mean = d.reduce((x, y) => x + y, 0) / d.length;
+    const sd = Math.sqrt(d.reduce((x, y) => x + (y - mean) * (y - mean), 0) / d.length);
+    return { mean, sd, max: Math.max(...d), min: Math.min(...d), mono, end: prev };
+  }
+  const jr = jitter('?rhythm=bembe&bpm=90&clock=raw'), js = jitter('?rhythm=bembe&bpm=90');
+  const fmtJ = (j) => 'mean ' + j.mean.toFixed(2) + ' sd ' + j.sd.toFixed(2) + ' min ' + j.min.toFixed(1) + ' max ' + j.max.toFixed(1);
+  console.log('JITTER raw  (?clock=raw) per-frame song-time delta: ' + fmtJ(jr));
+  console.log('JITTER smooth (default)  per-frame song-time delta: ' + fmtJ(js));
+  expect('U: raw clock under 40 ms audio steps is jittery (sd > 10 ms, 0 ms frames)', jr.sd > 10 && jr.min === 0, fmtJ(jr));
+  expect('U: smoothed clock: monotonic, sd < 1 ms, every step 0.9x..1.1x of 16.7 ms', js.mono && js.sd < 1 && js.min >= 15 && js.max <= 18.4, fmtJ(js));
+  expect('U: smoothed clock stays on the audio (within 25 ms of true time at 5 s)', Math.abs(js.end - 300 * 1000 / 60) < 25, (js.end - 5000).toFixed(1));
 
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
