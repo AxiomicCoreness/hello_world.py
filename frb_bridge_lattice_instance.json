@@ -10,7 +10,16 @@
     "burst_width_ms": 1.0,
     "dm_pc_cm3": 1204.0,
     "phi_scaled_repeat_days": 3.141640786499874,
-    "phi_scaled_dm": 29034.441853748638
+    "phi_scaled_dm": 1204.0,
+    "dm_claim_prior_rejected": "DM \u2248 \u03c6\u2077 \u00d7 1000",
+    "dm_phi7_times_1000": 29034.441853748638,
+    "dm_claim_prior_admissible": false,
+    "dm_corrected_form": "DM = \u03c6\u2077 \u00d7 (DM / \u03c6\u2077) = \u03c6\u2077 \u00d7 41.46799191335416",
+    "dm_residual_factor": 41.467991913354155,
+    "dm_check_ok": true,
+    "nearest_phi_power": 15,
+    "phi_15": 1364.0007331374366,
+    "math_origin_sha3_8550": "be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1"
   },
   "garden": {
     "cron_schedule": "0 */6 * * *",
@@ -29,11 +38,11 @@
   "mapping": {
     "cron_to_repeat_ratio": 12.8,
     "phi5_approx": 11.0902,
-    "analogue": "FRB repeat ≈ Garden CronJob at longer cosmological scale",
+    "analogue": "FRB repeat \u2248 Garden CronJob at longer cosmological scale",
     "optimisation": [
-      "Experiment CronJob every ~18.1h (3.2d / φ³)",
-      "Scale charge window by φ⁸ for deep-space mode",
-      "Map sub-burst count to handshake steps φ³…φ⁶"
+      "Experiment CronJob every ~18.1h (3.2d / \u03c6\u00b3)",
+      "Scale charge window by \u03c6\u2078 for deep-space mode",
+      "Map sub-burst count to handshake steps \u03c6\u00b3\u2026\u03c6\u2076"
     ]
   },
   "weights": {
@@ -41,5 +50,5 @@
     "phi_inv": 0.6180339887498948,
     "phi_inv2": 0.38196601125010515
   },
-  "seal": "∀∞φ² · FRB_BRIDGE_LATTICE · SEALED"
+  "seal": "\u2200\u221e\u03c6\u00b2 \u00b7 FRB_BRIDGE_LATTICE \u00b7 SEALED"
 }
