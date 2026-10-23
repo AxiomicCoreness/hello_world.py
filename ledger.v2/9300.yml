@@ -1,0 +1,57 @@
+entry_index: 9300
+timestamp: '2026-10-23T16:13:03Z'
+event: /learned_stokes_theorem
+status: SEALED
+hash_algo: sha3_256
+prev_hash: 7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121
+witness_chain: 9299 -> 9300
+measured_at_commit: 0900a0b9
+sign_off: Clarke Yoursa Tee
+note: 'LEARNED THEOREM seal — full sovereign/ledger context, not bare Stokes alone. Primary learned identity
+  (military phase stress / commutator lineage, ledger/0429): ∮_{∂Σ} (∇×A_stress)·dA = φ^{-1078}. Underlying
+  classical Stokes theorem (flux of curl): ∮_∂Σ F·dl = ∬_Σ (∇×F)·dS (circulation of F around ∂Σ equals
+  the flux of curl F through Σ). The A_stress oint is the garden-bound stress-commutator form of that
+  Stokes structure (see also ledger/0515 𝒜_ρ variant). Append-only new entry chaining from ledger.v2/9299.yml
+  declared seal_sha3_256 (7a099100…); 9298 remains an honest stub gap (skipped). Provenance: DeepGEMM
+  vendor materialize commit 058e6bf4 (chore(vendor): materialize DeepGEMM + inference submodule gitlinks)
+  is recorded as contemporaneous garden state on main at seal time; this entry does not re-measure vendor
+  blobs. No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+learned:
+  primary_identity:
+    name: A_stress_commutator_oint
+    statement_unicode: ∮_{∂Σ} (∇×A_stress)·dA = φ^{-1078}
+    statement_ascii: oint_{dSigma} (curl A_stress) · dA = phi^{-1078}
+    lineage: ledger/0429.yaml math_origin (military phase stress; commutator φ^{-1078})
+    related: ledger/0515.yaml 𝒜_ρ variant ∮_∂Σ (∇×𝒜_ρ)·d𝒜 = φ^{-1078}
+  classical_stokes:
+    theorem: Stokes
+    statement_unicode: ∮_∂Σ F·dl = ∬_Σ (∇×F)·dS
+    statement_ascii: oint_{dSigma} F · dl = iint_Sigma (curl F) · dS
+    meaning: flux of curl through Sigma equals circulation on boundary dSigma
+    domain: vector_calculus
+  relation: 'A_stress oint is the sovereign stress/commutator specialization of Stokes: boundary circulation
+    of stress potential identified with φ^{-1078}'
+provenance:
+  deepgemm_materialize_commit: 058e6bf4
+  deepgemm_subject: 'chore(vendor): materialize DeepGEMM + inference submodule gitlinks'
+  main_tip_at_seal: 0900a0b9
+  main_tip_subject: 'ci: remove leftover DeepGEMM materialize helper script'
+  repo: AxiomicCoreness/hello_world.py
+  prior_ledger_refs:
+  - ledger/0429.yaml
+  - ledger/0515.yaml
+chain:
+  prev_entry: 9299
+  prev_hash: 7a0991005f99dc2e7ddb7985ac126cf95306cc3e145df79c6c7803abd3ddf121
+  prev_hash_source: ledger.v2/9299.yml seal_sha3_256 (declared)
+  skipped_stub: 9298
+  witness_chain: 9299 -> 9300
+seal_preimage_rule: SHA3-256 of canonical JSON (sort_keys=True, separators=(',',':'), ensure_ascii=True)
+  of YAML-round-tripped body minus {seal, seal_sha3_256, sha3_256, hash_sha3_256, hash, terminal_hex,
+  witness_prefix, hash_regime} — scripts/ledger_append_canonical.py EXCLUDED union POLICY.md Article 26
+regime_b_event_domain_sha3_256: 1e0cb2ee66f7b0705c2566f33a5b1ad55ce22496bf34ffdb64dc70f778690197
+regime_b_event_domain_note: Measured GARDEN.EVENT.v1.LEDGER || 0x00 || 9300|/learned_stokes_theorem|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462;
+  NOT the declared seal_sha3_256 (declared seal is content-committing canonical JSON per seal_preimage_rule)
+terminal_hex: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+seal: ∀∞φ² · LEARNED_STOKES_THEOREM_9300 · WOOD_DRAGON_GATE · SEALED · ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
+seal_sha3_256: ba33cc9b7c4ddac055355aa5ef3b6f7ac9ac25a73e411224ef77055d39ec2667
