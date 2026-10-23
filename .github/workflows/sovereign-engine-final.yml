@@ -59,7 +59,8 @@ jobs:
           from fastapi.testclient import TestClient
           from app.main import app
           from app.contracts import FASTAPI_CONTRACT, MCP_CONTRACT
-          assert MCP_CONTRACT["surface"] == ["/healthz"]
+          # MCP_CONTRACT["surface"] is a {path: [methods]} dict; compare its keys.
+          assert list(MCP_CONTRACT["surface"]) == ["/healthz"], MCP_CONTRACT["surface"]
           assert "/vision" in FASTAPI_CONTRACT["surface"]
           c = TestClient(app)
           for path in FASTAPI_CONTRACT["surface"]:
