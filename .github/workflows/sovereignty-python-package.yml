@@ -256,7 +256,7 @@ jobs:
           docker run --rm -u 0 \
             -e STRICT_PYTEST="${STRICT_PYTEST}" \
             -e MESH_LEDGER_DB=/tmp/mesh_ledger.sqlite3 \
-            -e PYTEST_ADDOPTS="--cache-dir=/tmp/pytest-cache" \
+            -e PYTEST_ADDOPTS="-o cache_dir=/tmp/pytest-cache" \
             -v "$PWD:/src:ro" -w /src \
             "${IMAGE_NAME}:${{ github.sha }}" bash -lc '
             set +e

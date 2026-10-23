@@ -68,10 +68,16 @@ _bg_stop = threading.Event()
 app = FastAPI(title="Hash Mesh Modal", version="1.0.0")
 
 
+def _db_path() -> Path:
+    """Coerce module-level DB_PATH (tests may assign a str tmp path)."""
+    return DB_PATH if isinstance(DB_PATH, Path) else Path(DB_PATH)
+
+
 def _init_db() -> None:
     with _ledger_lock:
-        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-        con = sqlite3.connect(DB_PATH)
+        path = _db_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        con = sqlite3.connect(path)
         con.execute(
             """CREATE TABLE IF NOT EXISTS ledger (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,7 +96,7 @@ def append_ledger(event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     h = hashlib.sha3_256(f"{event}|{body}".encode()).hexdigest()
     with _ledger_lock:
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(_db_path())
         cur = con.execute(
             "INSERT INTO ledger (ts, event, payload, hash) VALUES (?, ?, ?, ?)",
             (time.time(), event, body, h),
@@ -103,7 +109,7 @@ def append_ledger(event: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def query_ledger(limit: int = 20) -> List[Dict[str, Any]]:
     with _ledger_lock:
-        con = sqlite3.connect(DB_PATH)
+        con = sqlite3.connect(_db_path())
         rows = con.execute(
             "SELECT id, ts, event, payload, hash FROM ledger ORDER BY id DESC LIMIT ?",
             (limit,),
