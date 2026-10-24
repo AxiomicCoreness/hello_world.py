@@ -3,6 +3,10 @@
 `bridge.axiomiccoreness.com.conf` terminates TLS for the public bridge
 host and passes the `/cli` WebSocket through to the local bridge.
 
+> **Status:** `axiomiccoreness.com` is not registered (public DNS: NXDOMAIN), so this
+> conf is a template only. Substitute a domain you control before using it; the
+> TeaVM client does not dial any remote bridge unless one is configured.
+
 Nothing in this repo deploys it automatically. The host admin does these steps:
 
 1. Issue the certificate, for example `certbot certonly -d bridge.axiomiccoreness.com`.
@@ -24,8 +28,11 @@ Nothing in this repo deploys it automatically. The host admin does these steps:
 
 - The bridge stays bound to `127.0.0.1:6680` (Cosmic Alignment, never `0.0.0.0`).
   nginx on 443 is the only public listener.
-- The Pages client already dials `wss://bridge.axiomiccoreness.com/cli`
-  (see `client/CliLines.java`). Local play still uses `ws://127.0.0.1:6680/cli`.
+- The Pages client no longer hardcodes this host (`axiomiccoreness.com` is not
+  registered: public DNS returns NXDOMAIN). Once a real TLS endpoint exists, point
+  the client at it with `<meta name="cli-bridge" content="wss://<host>/cli">` in
+  `index.html` or `?bridge=wss://<host>/cli` (see `client/CliLines.java`).
+  Local play still uses `ws://127.0.0.1:6680/cli`.
 - `/llm` is a chat command sent over the `/cli` socket, so it has no `location` of its own.
 - cors-anywhere (`127.0.0.1:8080`) stays internal on purpose. Publishing it
   would make the host an open relay.

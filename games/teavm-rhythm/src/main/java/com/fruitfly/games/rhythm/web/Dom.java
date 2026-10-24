@@ -33,6 +33,27 @@ public final class Dom {
             + "return String(window.location.hostname || '');")
     public static native String locationHostname();
 
+    /** {@code window.location.protocol} (e.g. {@code "https:"}, {@code "file:"}), or empty. */
+    @JSBody(script = "if (typeof window === 'undefined' || !window.location) return '';"
+            + "return String(window.location.protocol || '');")
+    public static native String locationProtocol();
+
+    /** Value of query param {@code name} in {@code window.location.search}, or empty. */
+    @JSBody(params = {"name"}, script = "try { if (typeof window === 'undefined' || !window.location"
+            + " || typeof URLSearchParams === 'undefined') return '';"
+            + "var v = new URLSearchParams(window.location.search || '').get(name);"
+            + "return v == null ? '' : String(v); } catch (e) { return ''; }")
+    public static native String locationQueryParam(String name);
+
+    /** {@code content} of the first {@code <meta name=...>} with this name, or empty. */
+    @JSBody(params = {"name"}, script = "try { if (typeof document === 'undefined'"
+            + " || typeof document.getElementsByName !== 'function') return '';"
+            + "var els = document.getElementsByName(name);"
+            + "for (var i = 0; i < els.length; i++) { var el = els[i];"
+            + " if (el && String(el.tagName || '').toLowerCase() === 'meta') return String(el.content || ''); }"
+            + "return ''; } catch (e) { return ''; }")
+    public static native String metaContent(String name);
+
     /** CSS size via style (when present); backing store already set by the caller. */
     @JSBody(params = {"c", "w", "h"}, script = "if (c && c.style) { c.style.width = w + 'px'; c.style.height = h + 'px'; }")
     static native void cssSize(HTMLCanvasElement c, int w, int h);
@@ -145,7 +166,7 @@ public final class Dom {
     static native boolean isHidden();
 
     @JSBody(params = {"s"}, script = "if (typeof console !== 'undefined' && console.log) console.log(s);")
-    static native void log(String s);
+    public static native void log(String s);
 
     @JSBody(params = {"el", "show"}, script = "if (el && el.style) { var d = show ? '' : 'none'; if (el.style.display !== d) el.style.display = d; }")
     static native void show(HTMLElement el, boolean show);

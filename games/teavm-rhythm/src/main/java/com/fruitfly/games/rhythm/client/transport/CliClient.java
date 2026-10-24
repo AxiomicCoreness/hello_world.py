@@ -16,12 +16,12 @@ import org.teavm.jso.websocket.CloseEvent;
 import org.teavm.jso.websocket.WebSocket;
 
 /**
- * Left-column TeaVM CLI. Option B hostname switch:
- * <ul>
- *   <li>local / CI ({@code 127.0.0.1}, {@code localhost}) → {@link CliLines#LOOPBACK_WS}</li>
- *   <li>GitHub Pages / production → {@link CliLines#PAGES_WSS}
- *       ({@code wss://bridge.axiomiccoreness.com/cli})</li>
- * </ul>
+ * Left-column TeaVM CLI. Bridge URL ({@link CliLines#resolveBridge}), in order:
+ * <ol>
+ *   <li>{@code ?bridge=ws(s)://…} or {@code <meta name="cli-bridge" content="ws(s)://…">}</li>
+ *   <li>loopback page / {@code file:} → {@link CliLines#LOOPBACK_WS}</li>
+ *   <li>otherwise stay disconnected and print {@link CliLines#REMOTE_NOT_CONFIGURED}</li>
+ * </ol>
  * Remote IRC {@code irc.abjects.net:6669} stays behind the bridge; the browser
  * never dials abjects or {@code 0.0.0.0} directly.
  *
@@ -31,7 +31,11 @@ import org.teavm.jso.websocket.WebSocket;
  * {@link PythonIdeCli} offline and the bridge toolkit when the socket is open.
  */
 public final class CliClient {
+    /** Resolved dial URL, or null when no bridge is configured (stay disconnected). */
     private final String wsUrl;
+    /** Rejected-override / mixed-content notes, printed once at boot (may be null). */
+    private final String rejectedNote;
+    private final String warningNote;
     private HTMLElement history;
     private HTMLInputElement input;
     private HTMLElement column;
@@ -42,23 +46,39 @@ public final class CliClient {
     /** Live neuron snapshot JSON from Main (null until wired). */
     private Supplier<String> neuronSnapshot;
 
-    /** Resolve dial URL from browser hostname (Option B). */
+    /** Resolve dial URL from the page: ?bridge= / meta override, loopback, else none. */
     public CliClient() {
-        this(CliLines.resolveCliWsUrl(Dom.locationHostname()));
+        this(CliLines.resolveBridge(
+                Dom.locationProtocol(),
+                Dom.locationHostname(),
+                Dom.locationQueryParam(CliLines.BRIDGE_QUERY_PARAM),
+                Dom.metaContent(CliLines.BRIDGE_META_NAME)));
     }
 
     /**
-     * Explicit URL ctor. Accepts loopback CLI URLs or exact {@link CliLines#PAGES_WSS}.
+     * Explicit URL ctor. Accepts loopback CLI URLs or a valid ws:// / wss:// override.
      */
     public CliClient(String wsUrl) {
         if (!CliLines.isAllowedCliUrl(wsUrl)) {
             throw new IllegalArgumentException(
-                    "CliClient requires loopback ws://127.0.0.1:6680/… or "
-                            + CliLines.PAGES_WSS + ", got: " + wsUrl);
+                    "CliClient requires loopback ws://127.0.0.1:6680/… or a ws:// / wss:// "
+                            + "bridge URL, got: " + wsUrl);
         }
-        this.wsUrl = wsUrl;
+        this.wsUrl = wsUrl.trim();
+        this.rejectedNote = null;
+        this.warningNote = null;
     }
 
+    private CliClient(CliLines.BridgeResolution r) {
+        this.wsUrl = r.url;
+        this.rejectedNote = r.rejected;
+        this.warningNote = r.warning;
+        if (r.rejected != null) {
+            Dom.log("[CliClient] " + r.rejected);
+        }
+    }
+
+    /** Dial URL, or null when no bridge is configured. */
     public String wsUrl() {
         return wsUrl;
     }
@@ -74,7 +94,8 @@ public final class CliClient {
 
     /**
      * Bind DOM ({@code #cli-column}, {@code #chat-history}, {@code #chat-input})
-     * and open the resolved CLI WebSocket (loopback or Pages WSS). No-op if markup missing.
+     * and open the resolved CLI WebSocket (override or loopback; none → stay disconnected).
+     * No-op if markup missing.
      */
     public void mount(HTMLDocument doc) {
         column = (HTMLElement) doc.getElementById("cli-column");
@@ -138,6 +159,16 @@ public final class CliClient {
     }
 
     private void connect() {
+        if (rejectedNote != null) {
+            append(CliLines.KIND_SYSTEM, rejectedNote);
+        }
+        if (wsUrl == null) {
+            append(CliLines.KIND_SYSTEM, CliLines.REMOTE_NOT_CONFIGURED);
+            return;
+        }
+        if (warningNote != null) {
+            append(CliLines.KIND_SYSTEM, warningNote);
+        }
         if (!WebSocket.isSupported()) {
             append(CliLines.KIND_SYSTEM, "WebSocket unsupported in this browser");
             return;
@@ -153,7 +184,8 @@ public final class CliClient {
         socket.onOpen(evt -> {
             open = true;
             append(CliLines.KIND_SYSTEM, "connected " + wsUrl);
-            append(CliLines.KIND_ENGINE, "loopback up · path → " + CliLines.REMOTE_IRC);
+            append(CliLines.KIND_ENGINE, (CliLines.isLoopbackCliUrl(wsUrl) ? "loopback" : "bridge")
+                    + " up · path → " + CliLines.REMOTE_IRC);
             append(CliLines.KIND_ENGINE, "pythonIDE live via bridge · /py call <cap>");
         });
         socket.onMessage(evt -> {
@@ -170,7 +202,9 @@ public final class CliClient {
         });
         socket.onError(evt -> {
             open = false;
-            append(CliLines.KIND_SYSTEM, "WS error (is loopback bridge on 127.0.0.1:6680?)");
+            append(CliLines.KIND_SYSTEM, CliLines.isLoopbackCliUrl(wsUrl)
+                    ? "WS error (is loopback bridge on 127.0.0.1:6680?)"
+                    : "WS error (is the bridge at " + wsUrl + " up?)");
             appendRaw(CliLines.pagesHttpsHint());
         });
         socket.onClose(evt -> {
@@ -242,7 +276,11 @@ public final class CliClient {
                 }
             }
         } else {
-            append(CliLines.KIND_SYSTEM, "not connected — start bridge on 127.0.0.1:6680 (/cli)");
+            append(CliLines.KIND_SYSTEM, wsUrl == null
+                    ? CliLines.REMOTE_NOT_CONFIGURED
+                    : CliLines.isLoopbackCliUrl(wsUrl)
+                            ? "not connected — start bridge on 127.0.0.1:6680 (/cli)"
+                            : "not connected — bridge " + wsUrl + " is not open");
         }
         scrollToEnd();
     }

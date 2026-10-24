@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TeaVM Rhythm</title>
+  <!-- Remote CLI bridge for non-loopback pages (GitHub / AtomGit Pages). Empty = none: the chat
+       stays disconnected unless the page is loopback/file: or ?bridge=wss://… is given.
+       Only ws:// or wss:// URLs are accepted. Example: content="wss://your-bridge.example/cli" -->
+  <meta name="cli-bridge" content="">
   <!-- KaTeX 0.16.11, pinned with SRI. If it fails to load, the plain-text formulas below stay visible. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
         integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+"
