@@ -66,6 +66,19 @@ class _Stub(BaseHTTPRequestHandler):
         pass
 
 
+@pytest.fixture(autouse=True)
+def _backend_env(monkeypatch):
+    """Each test starts from the documented defaults: no fallback, empty liveness cache."""
+    from src import llm_backend
+
+    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_DEEPSEEK_URL", "DEEPINFER_REPROBE_S",
+              "DEEPINFER_CONNECT_TIMEOUT"):
+        monkeypatch.delenv(k, raising=False)
+    llm_backend.reset_state()
+    yield
+    llm_backend.reset_state()
+
+
 @pytest.fixture()
 def stub_llm(monkeypatch):
     _Stub.requests = []
@@ -77,6 +90,7 @@ def stub_llm(monkeypatch):
     monkeypatch.setenv("LLM_URL", f"http://127.0.0.1:{srv.server_port}/v1/chat/completions")
     monkeypatch.setenv("LLM_MODEL", "stub-gguf")
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
+    monkeypatch.setenv("LLM_BACKEND", "gguf")  # these tests exercise the llama-server path directly
     yield _Stub
     srv.shutdown()
     srv.server_close()
@@ -120,6 +134,7 @@ def test_llm_path_hits_stub_with_snapshot_and_feedback(stub_llm):
 
 
 def test_llm_offline_is_a_line_not_a_crash(monkeypatch):
+    monkeypatch.setenv("LLM_BACKEND", "gguf")
     monkeypatch.setenv("LLM_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
     monkeypatch.setenv("LLM_TIMEOUT_S", "2")
@@ -134,6 +149,7 @@ def test_llm_http_error_is_offline_line(stub_llm):
 
 
 def test_non_loopback_llm_url_refused(monkeypatch):
+    monkeypatch.setenv("LLM_BACKEND", "gguf")  # LLM_URL is the gguf server's URL
     for bad in ("http://0.0.0.0:8081/v1/chat/completions", "http://10.0.0.5:8081/x",
                 "http://api.example.com/v1/chat/completions", "file:///etc/passwd"):
         with pytest.raises(llm_chat.LlmConfigError):
@@ -280,6 +296,6 @@ def test_guarded_reply_lines_through_bridge(stub_llm):
         stub_llm.reply = original
     assert not any(x.startswith("[Engine] llm: User") for x in lines)
     assert "[Engine] llm: (empty reply)" in lines
-    assert "[System] llm route: path=/v1/chat/completions mode=auto family=chatml" in lines
+    assert "[System] llm route: backend=gguf path=/v1/chat/completions mode=auto family=chatml" in lines
     assert any(x.startswith("[System] llm: reply trimmed at a role echo") for x in lines)
 
