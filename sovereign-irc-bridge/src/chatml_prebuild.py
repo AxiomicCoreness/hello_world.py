@@ -56,7 +56,9 @@ STOP_BY_FAMILY: Final[Dict[str, Tuple[str, ...]]] = {
     "chatml": ("<|im_end|>", "<|im_start|>", "<|endoftext|>", "\nUser:", "\nuser:", "\nHuman:"),
     "llama3": ("<|eot_id|>", "<|start_header_id|>", "<|end_of_text|>", "\nUser:", "\nuser:", "\nHuman:"),
     "gemma": ("<end_of_turn>", "<start_of_turn>", "<eos>", "\nUser:", "\nuser:", "\nHuman:"),
-    "unknown": ("<|im_end|>", "<|im_start|>", "<|eot_id|>", "<end_of_turn>", "\nUser:", "\nuser:", "\nHuman:"),
+    # DeepSeek-V3/V4 templates (fullwidth bars, U+2581 in end▁of▁sentence).
+    "deepseek": ("<｜end▁of▁sentence｜>", "<｜User｜>", "<｜Assistant｜>", "\nUser:", "\nuser:", "\nHuman:"),
+    "unknown": ("<|im_end|>", "<|im_start|>", "<|eot_id|>", "<end_of_turn>", "<｜end▁of▁sentence｜>", "<｜User｜>", "\nUser:", "\nuser:", "\nHuman:"),
     "none": ("<|im_end|>", "<|im_start|>", "<|endoftext|>", "\nUser:", "\nuser:", "\nHuman:"),
 }
 # Small models that drift into writing a chat log ("User 1: … User 38: …").
@@ -109,6 +111,8 @@ def template_family(tpl: Optional[str]) -> str:
         return "llama3"
     if "<start_of_turn>" in t:
         return "gemma"
+    if "<｜User｜>" in t or "<｜Assistant｜>" in t:
+        return "deepseek"
     return "unknown"
 
 

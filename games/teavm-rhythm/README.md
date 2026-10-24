@@ -472,10 +472,17 @@ offline: … unreachable`. Neither crashes the chat.
    ```bash
    cd sovereign-irc-bridge
    pip install -e .
-   LLM_URL=http://127.0.0.1:8081/v1/chat/completions LLM_MODEL=local-gguf python -m src.cli_loopback
+   LLM_BACKEND=gguf LLM_URL=http://127.0.0.1:8081/v1/chat/completions LLM_MODEL=local-gguf python -m src.cli_loopback
    ```
 
    `LLM_TIMEOUT_S` (default 60) and `LLM_MAX_TOKENS` (default 256) are optional.
+   The default backend is DeepInfer (`DEEPINFER_URL`, 127.0.0.1:8090), which
+   needs SM100 GPUs. On a CPU box either set `LLM_BACKEND=gguf` as above, or keep
+   the default and add `LLM_FALLBACK=gguf`. With the fallback, every reply is
+   labeled `[Fallback: Qwen]`, and `LLM_FALLBACK=deepseek-fixture` uses the
+   RalphSeek DeepSeek-V4 test fixture instead. See
+   `sovereign-irc-bridge/README.md`, "`/llm` backends" and "DeepInfer Server
+   Requirements".
 
 3. Build and serve the game, then open it on `127.0.0.1`:
 
