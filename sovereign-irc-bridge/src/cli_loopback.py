@@ -637,7 +637,8 @@ def run() -> None:
         )
         # DeepInfer is held to the same loopback rule as LLM_URL.
         assert_loopback_url(llm_backend.deepinfer_url_raw(), "DEEPINFER_URL")
-        assert_loopback_url(llm_backend.deepseek_url_raw(), "LLM_DEEPSEEK_URL")
+        assert_loopback_url(llm_backend.clarkeyoursatee_url_raw(), "LLM_CLARKEYOURSATEE_URL")
+        assert_loopback_url(llm_backend.abliterated_url_raw(), "LLM_ABLITERATED_URL")
         backend = llm_backend.backend()
         fallback = llm_backend.fallback()
     except (RuntimeError, LlmConfigError, llm_backend.BackendConfigError) as exc:
@@ -653,8 +654,10 @@ def run() -> None:
     print(llm_backend.startup_probe(llm_url_env), file=sys.stderr, flush=True)
     if "gguf" in (backend, fallback):
         chatml_prebuild.startup_check(llm_url_env)
-    if "deepseek-fixture" in (backend, fallback):
-        chatml_prebuild.startup_check(llm_backend.deepseek_url_raw())
+    if "clarkeyoursatee" in (backend, fallback):
+        chatml_prebuild.startup_check(llm_backend.clarkeyoursatee_url_raw())
+    if "gguf-abliterated" in (backend, fallback):
+        chatml_prebuild.startup_check(llm_backend.abliterated_url_raw())
     port = int(os.environ.get("CLI_BIND_PORT", str(CLI_PORT)))
     if port != CLI_PORT:
         logger.warning("non-default CLI port %s (contract is %s)", port, CLI_PORT)
