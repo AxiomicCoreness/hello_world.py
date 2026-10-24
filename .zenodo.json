@@ -1,7 +1,6 @@
 {
   "title": "AxiomicCoreness/hello_world.py — sovereign_engine",
   "upload_type": "software",
-  "version": "8755.0.0",
   "description": "Public MIT-licensed sovereign engine: a FastAPI application with a Port-380 MCP gate, an append-only hash-chained YAML ledger (ledger/ and ledger.v2/) sealed with SHA3-256, a ledger verifier run in CI, and Argo CD / Argo Rollouts manifests for Gateway API canary delivery.",
   "creators": [
     {
