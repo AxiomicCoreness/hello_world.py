@@ -137,7 +137,7 @@ def solve_quadratic(a: float, b: float, c: float) -> QuadraticResult:
         x2 = (-b - sqrtD) / (2.0 * a)
         kind = RootKind.REAL_DISTINCT
         roots = [complex(x1, 0.0), complex(x2, 0.0)]
-    elif D == 0.0:
+    elif math.isclose(D, 0.0, abs_tol=1e-9):
         x = -b / (2.0 * a)
         kind = RootKind.REAL_REPEATED
         roots = [complex(x, 0.0), complex(x, 0.0)]

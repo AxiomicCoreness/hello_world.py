@@ -1419,7 +1419,7 @@ class SovereignMetrics:
         if self.entropy.check_repump(t): self.coherence = min(1.0, self.coherence*1.0001)
         self.gearbox.update_phase(t); self.attune()
     def attune(self):
-        if self.neptune_active and self.dV==0.0: self.coherence = min(1.0, self.coherence*1.0001)
+        if self.neptune_active and math.isclose(self.dV, 0.0, abs_tol=1e-9): self.coherence = min(1.0, self.coherence*1.0001)
         self.phi_phase = (self.phi_phase + (self.galactic_pulse % (2*math.pi))) % (2*math.pi)
     def is_locked(self): return self.coherence > 0.99999 and self.pid_error <= 0.0004
 
