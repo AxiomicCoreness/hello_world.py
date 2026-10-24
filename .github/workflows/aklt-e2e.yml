@@ -21,6 +21,10 @@ name: aklt-e2e
 on:
   workflow_dispatch:
 
+concurrency:
+  group: aklt-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -38,6 +42,7 @@ jobs:
         run: python3 -m pip install --quiet numpy
 
       - name: hard assert
+        id: assert
         run: |
           python3 - <<'PY'
           import math
@@ -179,3 +184,25 @@ jobs:
 
           sys.exit(aklt_dispatch())
           PY
+
+      - name: Write E2E summary
+        if: always()
+        env:
+          OUTCOME: ${{ steps.assert.outcome }}
+        run: |
+          case "$OUTCOME" in
+            success) status="PASS (all AKLT e2e gates passed)" ;;
+            failure) status="FAIL (see hard assert log)" ;;
+            *)       status="NOT RUN ($OUTCOME)" ;;
+          esac
+          {
+            echo "## AKLT E2E gate results"
+            echo ""
+            echo "| Check | Result |"
+            echo "|---|---|"
+            echo "| hard assert (G1-G10) | $status |"
+            echo ""
+            echo "- Trigger: ${{ github.event_name }}"
+            echo "- Ref: ${{ github.ref }}"
+            echo "- SHA: ${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
