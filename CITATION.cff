@@ -13,6 +13,9 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.23378306
     description: "Version 5.0.0"
+  - type: doi
+    value: 10.5281/zenodo.23479808
+    description: "Version 8755.0.0"
 authors:
   - family-names: "Yoursa Tee"
     given-names: "Clarke"
