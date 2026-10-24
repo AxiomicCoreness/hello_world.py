@@ -3,9 +3,12 @@ package com.fruitfly.games.rhythm.logic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 class NeuronSnapshotTest {
@@ -24,7 +27,7 @@ class NeuronSnapshotTest {
         String json = NeuronSnapshot.build("lif", "lif", 3010, 3000, w,
                 new double[] {-51.84, -52.0, -45.06, Double.NaN}, LABELS, 4, top);
         assertEquals("{\"v\":1,\"mode\":\"lif\",\"brain\":\"lif\",\"song_ms\":3010,\"brain_ms\":3000,"
-                + "\"window_ms\":2000,\"lanes\":["
+                + "\"window_ms\":2000,\"window_end_ms\":3000,\"window_anchor\":\"brain\",\"lanes\":["
                 + "{\"lane\":0,\"label\":\"A\",\"spikes\":2,\"rate_hz\":1.0,\"last_ms\":2900,\"v_mv\":-51.8,\"total\":3},"
                 + "{\"lane\":1,\"label\":\"B\",\"spikes\":0,\"rate_hz\":0.0,\"last_ms\":null,\"v_mv\":-52.0,\"total\":0},"
                 + "{\"lane\":2,\"label\":\"C\",\"spikes\":1,\"rate_hz\":0.5,\"last_ms\":2999,\"v_mv\":-45.1,\"total\":1},"
@@ -92,5 +95,130 @@ class NeuronSnapshotTest {
         String json = NeuronSnapshot.fromConnectome("connectome", 8000, p, LABELS);
         assertTrue(json.contains("\"brain\":\"connectome\""));
         assertTrue(json.contains("\"top\":[{\"id\":\""), json);
+    }
+
+    /**
+     * The HUD-side counter: every lane spike the autoplayer turns into a press,
+     * recorded at the press sink with its substep time, then passed on to the game.
+     */
+    private static final class HudSink implements PressSink {
+        final RhythmGame game;
+        final List<long[]> spikes = new ArrayList<>();
+
+        HudSink(RhythmGame game) {
+            this.game = game;
+        }
+
+        @Override
+        public void press(int lane, long timeMs) {
+            spikes.add(new long[] {lane, timeMs});
+            game.press(lane, timeMs, true);
+        }
+
+        long inWindow(long endMs) {
+            long n = 0;
+            for (long[] s : spikes) {
+                if (s[1] > endMs - NeuronSnapshot.WINDOW_MS && s[1] <= endMs) {
+                    n++;
+                }
+            }
+            return n;
+        }
+    }
+
+    private static String lanesJson(String json) {
+        int a = json.indexOf("\"lanes\":[");
+        int b = json.indexOf("],\"total_spikes\"");
+        assertTrue(a >= 0 && b > a, json);
+        return json.substring(a, b);
+    }
+
+    private static long sum(String json, String key) {
+        Matcher m = Pattern.compile("\"" + key + "\":(\\d+)").matcher(json);
+        long n = 0;
+        while (m.find()) {
+            n += Long.parseLong(m.group(1));
+        }
+        return n;
+    }
+
+    private static long jsonLong(String json, String key) {
+        Matcher m = Pattern.compile("\"" + key + "\":(-?\\d+)").matcher(json);
+        if (!m.find()) {
+            fail("no \"" + key + "\" in " + json);
+        }
+        return Long.parseLong(m.group(1));
+    }
+
+    @Test
+    void lifSnapshotLaneSpikesMatchHudCounterMidSong() {
+        RhythmGame g = new RhythmGame(NoteChart.generate(2026, 64, 120, 2000));
+        HudSink hud = new HudSink(g);
+        LifAutoplayer p = new LifAutoplayer(g, 0, hud);
+        p.advanceTo(8000);
+        assertEquals(p.spikeCount(), hud.spikes.size(), "HUD counter = every lane spike");
+        String json = NeuronSnapshot.fromLif("lif", 8000, p, LABELS);
+        long lanes = sum(lanesJson(json), "spikes");
+        assertTrue(lanes > 0, json);
+        assertEquals(p.brainTimeMs(), jsonLong(json, "window_end_ms"), "cues pending: window ends at brain time");
+        assertTrue(json.contains("\"window_anchor\":\"brain\""), json);
+        assertEquals(hud.inWindow(p.brainTimeMs()), lanes);
+        assertEquals(p.spikeCount(), sum(lanesJson(json), "total"));
+    }
+
+    /**
+     * Regression (live Chrome, PR #132): HUD said 57 spikes but /llm sent every
+     * lane = 0, because the brain coasted seconds past the last note (long frame
+     * after the final cue) and the window was anchored at brain time.
+     */
+    @Test
+    void lifSnapshotKeepsSongSpikesWhenBrainCoastsPastLastNote() {
+        RhythmGame g = new RhythmGame(NoteChart.generate(2026, 64, 120, 2000));
+        HudSink hud = new HudSink(g);
+        LifAutoplayer p = new LifAutoplayer(g, 0, hud);
+        long lastNote = g.chart().lastNoteMs();
+        p.advanceTo(lastNote + 500);   // song plays out
+        p.advanceTo(lastNote + 6000);  // one long frame: stalled or throttled tab
+        assertTrue(g.isFinished());
+        assertEquals(p.spikeCount(), hud.spikes.size(), "HUD counter = every lane spike");
+        String json = NeuronSnapshot.fromLif("lif", lastNote + 6000, p, LABELS);
+        long lanes = sum(lanesJson(json), "spikes");
+        assertTrue(lanes > 0, "lanes must carry the song's real spikes, not 0: " + json);
+        long end = jsonLong(json, "window_end_ms");
+        assertEquals(hud.inWindow(end), lanes, "window counts = HUD-side spikes in the same window");
+        assertTrue(end <= p.brainTimeMs());
+        assertTrue(json.contains("\"window_anchor\":\"last_spike\""), json);
+        assertEquals(p.brainTimeMs(), jsonLong(json, "brain_ms"), "brain clock still reported as is");
+        assertEquals(p.spikeCount(), sum(lanesJson(json), "total"));
+        assertEquals(p.spikeCount(), jsonLong(json, "total_spikes"));
+    }
+
+    @Test
+    void connectomeSnapshotKeepsSongSpikesWhenBrainCoastsPastLastNote() {
+        Circuit toy = ConnectomeXml.parse(ToyCircuitXml.XML);
+        RhythmGame g = new RhythmGame(NoteChart.generate(2026, 64, 120, 2000));
+        HudSink hud = new HudSink(g);
+        ConnectomeAutoplayer p = new ConnectomeAutoplayer(g, toy, 0, hud);
+        long lastNote = g.chart().lastNoteMs();
+        p.advanceTo(lastNote + 6000);
+        assertEquals(p.pressCount(), hud.spikes.size(), "HUD keys = laneN.out spikes");
+        String json = NeuronSnapshot.fromConnectome("connectome", lastNote + 6000, p, LABELS);
+        long lanes = sum(lanesJson(json), "spikes");
+        assertTrue(lanes > 0, json);
+        assertEquals(hud.inWindow(jsonLong(json, "window_end_ms")), lanes);
+        assertEquals(p.pressCount(), sum(lanesJson(json), "total"));
+        assertEquals(p.spikeCount(), jsonLong(json, "total_spikes"));
+        assertTrue(json.contains("\"top\":[{\"id\":\""), "circuit neurons active in the window: " + json);
+    }
+
+    @Test
+    void windowEndOnlyMovesAfterLastCue() {
+        SpikeWindow w = new SpikeWindow(2);
+        assertEquals(9000, NeuronSnapshot.windowEndMs(9000, w, true), "never spiked: brain clock");
+        w.record(1, 4000);
+        w.record(0, 4200);
+        assertEquals(4200, w.latestSpikeMs());
+        assertEquals(9000, NeuronSnapshot.windowEndMs(9000, w, false), "cues pending: brain clock");
+        assertEquals(4200, NeuronSnapshot.windowEndMs(9000, w, true), "cues done: newest real spike");
     }
 }
