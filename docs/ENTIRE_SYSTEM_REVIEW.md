@@ -180,7 +180,7 @@ Paths checked with `git ls-files` at `83ad9e47`. No row removed.
 - Every new v8.3 listener is loopback-only and refuses to start otherwise:
   - CLI bridge on `127.0.0.1:6680`.
   - Qwen GGUF on `127.0.0.1:8081`.
-  - DeepSeek-V4 fixture on `127.0.0.1:8082`.
+  - ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative) on `127.0.0.1:8082`; it replaced the DeepSeek-V4 fixture.
   - DeepInfer on `127.0.0.1:8090`.
   - CORS Anywhere on `127.0.0.1:8080`.
 - None of them binds `0.0.0.0`.
@@ -370,11 +370,11 @@ Witness chain (v8.3): `9296` → `9297` → `9298` → `9299` → `9300` → `93
 - The bridge keeps no chat history.
 
 ### 11.5 DeepInfer default backend with labeled fallbacks (`7d5d90d1`, `83ad9e47`)
-- `sovereign-irc-bridge/src/llm_backend.py` sets `LLM_BACKEND` to `deepinfer` by default (`DEEPINFER_URL` `http://127.0.0.1:8090/v1/chat/completions`). The other backends are `gguf` (Qwen, `127.0.0.1:8081`) and `deepseek-fixture` (`127.0.0.1:8082`).
+- `sovereign-irc-bridge/src/llm_backend.py` sets `LLM_BACKEND` to `deepinfer` by default (`DEEPINFER_URL` `http://127.0.0.1:8090/v1/chat/completions`). The other backends are `gguf` (Qwen, `127.0.0.1:8081`), `gguf-abliterated` (`127.0.0.1:8083`) and `clarkeyoursatee` (`127.0.0.1:8082`). `deepseek-fixture` was removed with no alias; an unknown value fails with `FATAL: Cosmic Alignment`.
 - **Offline without fallback:** with `LLM_FALLBACK` unset, an offline DeepInfer answers `[System] llm: deepinfer backend offline (…)`.
 - **Fallback labels:**
   - `LLM_FALLBACK=gguf` → `backend=qwen (gguf fallback from deepinfer)`, replies prefixed `[Fallback: Qwen]`, log `DeepInfer unreachable, falling back to Qwen`.
-  - `LLM_FALLBACK=deepseek-fixture` → prefix `[DeepSeek-V4 fixture: RalphSeek 122M — not a real model]`.
+  - `LLM_FALLBACK=clarkeyoursatee` → `backend=clarkeyoursatee (clarkeyoursatee fallback from deepinfer)`, prefix `[ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative)]`.
   - A fallback is never shown as DeepInfer.
 - **Fast fail:**
   - Socket `connect_ex` bounded by `DEEPINFER_CONNECT_TIMEOUT` (default 0.5 s).
