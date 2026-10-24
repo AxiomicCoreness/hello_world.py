@@ -14,6 +14,11 @@ are routed through ``pythonIDE.toolkit.SovereignToolkit`` (and pointer_2300
 for ``pointer``). Failures are sent back as ``[Traceback]`` lines so the
 TeaVM chat history shows a useful Python traceback.
 
+LLM chat: ``/llm <text>`` (+ ``#neuro`` spike snapshot and ``#feedback``
+traceback block) is forwarded by :mod:`src.llm_chat` to llama.cpp's
+``llama-server`` on ``LLM_URL`` (default http://127.0.0.1:8081, loopback
+only). Model down → ``[System] llm offline: …``, never a crash.
+
 Extra demos: ``/py deepinfer`` (engine.deepinfer_accelerator) and
 ``/py katex`` / ``/katex`` (mvn -Dtest=KaTeXMacroSetTest or python mirror).
 """
@@ -28,6 +33,13 @@ import sys
 import traceback
 from pathlib import Path
 from typing import Any, Final, List, Optional
+
+from src.llm_chat import (
+    LlmConfigError,
+    assert_loopback_url,
+    handle_llm,
+    is_llm_line,
+)
 
 logger = logging.getLogger("sovereign-irc-bridge.cli")
 
@@ -516,6 +528,7 @@ def create_app():
             "live_irc": os.environ.get("CLI_LIVE_IRC", "0") == "1",
             "pythonide": True,
             "demos": ["deepinfer", "katex"],
+            "llm": os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions"),
         }
 
     @app.websocket("/cli")
@@ -533,6 +546,9 @@ def create_app():
         )
         await websocket.send_text(
             "[Engine] demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"
+        )
+        await websocket.send_text(
+            "[Engine] llm: /llm <text> → GGUF llama-server (loopback) with spike snapshot + traceback feedback"
         )
         live = os.environ.get("CLI_LIVE_IRC", "0") == "1"
         reader = writer = None
@@ -555,6 +571,14 @@ def create_app():
                 if text is None and message.get("bytes") is not None:
                     text = message["bytes"].decode("utf-8", errors="replace")
                 if not text:
+                    continue
+                if is_llm_line(text):
+                    try:
+                        llm_lines = await handle_llm(text)
+                    except Exception as exc:  # noqa: BLE001 — chat must survive
+                        llm_lines = [f"[System] llm offline: {type(exc).__name__}: {exc}"]
+                    for line in llm_lines:
+                        await websocket.send_text(line)
                     continue
                 if _is_ide_line(text):
                     for line in handle_pythonide(text):
@@ -597,7 +621,15 @@ except ModuleNotFoundError:
 def run() -> None:
     import uvicorn
 
-    host = assert_loopback_bind(os.environ.get("CLI_BIND_HOST", LOOPBACK_HOST))
+    try:
+        host = assert_loopback_bind(os.environ.get("CLI_BIND_HOST", LOOPBACK_HOST))
+        assert_loopback_url(
+            os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions")
+        )
+    except (RuntimeError, LlmConfigError) as exc:
+        # Same as tools/cors-anywhere: refuse non-loopback, exit non-zero.
+        print(f"FATAL: Cosmic Alignment — {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
     port = int(os.environ.get("CLI_BIND_PORT", str(CLI_PORT)))
     if port != CLI_PORT:
         logger.warning("non-default CLI port %s (contract is %s)", port, CLI_PORT)
