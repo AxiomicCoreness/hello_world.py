@@ -61,6 +61,15 @@ public final class SpikeWindow {
         return times[lane][(head[lane] + count[lane] - 1) % CAPACITY];
     }
 
+    /** Most recent spike time over all lanes, or Long.MIN_VALUE if no lane ever spiked. */
+    public long latestSpikeMs() {
+        long best = Long.MIN_VALUE;
+        for (int l = 0; l < times.length; l++) {
+            best = Math.max(best, lastSpikeMs(l));
+        }
+        return best;
+    }
+
     /** All spikes ever recorded in lane (not just the ring). */
     public long total(int lane) {
         return total[lane];

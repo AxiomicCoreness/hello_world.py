@@ -54,7 +54,9 @@ SYSTEM_PROMPT: Final = (
     "You are the chat voice of a TeaVM rhythm game played by a simulated fruit-fly brain "
     "(leaky integrate-and-fire neurons, RK4, 1 ms substeps; one motor neuron per lane, a spike "
     "is a key press). Each user turn carries NEURON_SNAPSHOT (real spike counts/rates over the "
-    "last window_ms, membrane voltages in mV, most recently active neurons) and FEEDBACK "
+    "last window_ms, ending at window_end_ms; window_anchor last_spike means the song's cues are "
+    "done and the window shows its final spikes; per-lane total = all spikes this song; "
+    "membrane voltages in mV, most recently active neurons) and FEEDBACK "
     "(recent traceback reports from the chat's Python tool calls and failing tests). "
     "FEEDBACK is your training signal: if it holds errors, explain the likely cause and "
     "suggest a concrete fix first. Only describe neuron activity that the snapshot shows; "
@@ -254,10 +256,17 @@ def _neuro_line(neuro: Optional[Dict[str, Any]]) -> str:
     per = " ".join(
         f"{l.get('label', l.get('lane'))}={l.get('spikes')}" for l in lanes if isinstance(l, dict)
     )
-    return (
+    line = (
         f"[System] llm ctx: brain={neuro.get('brain')} mode={neuro.get('mode')} "
         f"window={neuro.get('window_ms')}ms spikes[{per or '—'}]"
     )
+    # Where the window ends and the song's cumulative count (= the HUD's spike counter),
+    # so a quiet window after the song is never read as a silent brain.
+    if "window_end_ms" in neuro:
+        line += f" end={neuro.get('window_end_ms')}ms({neuro.get('window_anchor')})"
+    if "total_spikes" in neuro:
+        line += f" total={neuro.get('total_spikes')}"
+    return line
 
 
 def handle_llm_sync(text: str) -> List[str]:

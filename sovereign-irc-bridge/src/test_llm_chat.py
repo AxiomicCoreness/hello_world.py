@@ -196,3 +196,11 @@ def test_cli_port_is_6680_and_not_browser_restricted():
     assert cli_loopback.CLI_PORT == 6680
     assert cli_loopback.CLI_PORT not in {6665, 6666, 6667, 6668, 6669, 6679, 6697}
     assert cli_loopback.LOOPBACK_HOST == "127.0.0.1"
+
+
+def test_neuro_line_shows_window_end_and_song_total():
+    n = dict(NEURO, window_end_ms=22400, window_anchor="last_spike")
+    line = llm_chat._neuro_line(n)
+    assert "spikes[L0=0 L1=1 L2=2 L3=3]" in line
+    assert line.endswith(" end=22400ms(last_spike) total=46")
+    assert llm_chat._neuro_line(NEURO).endswith("spikes[L0=0 L1=1 L2=2 L3=3] total=46")
