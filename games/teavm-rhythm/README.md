@@ -439,14 +439,31 @@ offline: … unreachable`. Neither crashes the chat.
 
 ### Run it
 
-1. Serve any GGUF model with llama.cpp on loopback (prebuilt `llama-server`
-   from the llama.cpp releases page, or your own build). For a quick CPU test a
-   ~100 MB model is enough, e.g. SmolLM2-135M-Instruct Q4_K_M:
+1. Serve an instruct GGUF model with llama.cpp on loopback (prebuilt
+   `llama-server` from the llama.cpp releases page, or your own build). The
+   recommended model is Qwen2.5-1.5B-Instruct Q4_K_M (~986 MB, runs on CPU):
+
+   ```bash
+   curl -L -o Qwen2.5-1.5B-Instruct-Q4_K_M.gguf https://huggingface.co/bartowski/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf
+   llama-server -m Qwen2.5-1.5B-Instruct-Q4_K_M.gguf --jinja --host 127.0.0.1 --port 8081 -c 4096
+   curl -s http://127.0.0.1:8081/health      # {"status":"ok"}
+   ```
+
+   The bridge sends role messages (system + user) to `/v1/chat/completions`;
+   `llama-server` renders them with the GGUF's own chat template (jinja is on
+   by default in current builds, `--jinja` makes it explicit), so nothing
+   hand-builds `<|im_start|>` strings. `curl -s 127.0.0.1:8081/apply-template`
+   with a messages body shows the exact prompt.
+
+   Quick plumbing test only: SmolLM2-135M-Instruct Q4_K_M (~100 MB) loads in
+   seconds but is too small to follow the chat role. It tends to write fake
+   `User 1: … User 38:` turns or loop on one sentence; the bridge's reply guard
+   (stop sequences, repeat penalties, role-echo and 3-gram loop trimming) cuts
+   that and says so in a `[System] llm: reply trimmed …` line.
 
    ```bash
    curl -L -o smol.gguf https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q4_K_M.gguf
    llama-server -m smol.gguf --host 127.0.0.1 --port 8081 -c 2048
-   curl -s http://127.0.0.1:8081/health      # {"status":"ok"}
    ```
 
 2. Start the bridge (binds 127.0.0.1:6680 only; exits with `FATAL: Cosmic

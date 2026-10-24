@@ -630,6 +630,10 @@ def run() -> None:
         # Same as tools/cors-anywhere: refuse non-loopback, exit non-zero.
         print(f"FATAL: Cosmic Alignment — {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
+    # Template family + ChatML prebuild tokenization check; logs, never raises.
+    from src import chatml_prebuild
+
+    chatml_prebuild.startup_check(os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions"))
     port = int(os.environ.get("CLI_BIND_PORT", str(CLI_PORT)))
     if port != CLI_PORT:
         logger.warning("non-default CLI port %s (contract is %s)", port, CLI_PORT)
