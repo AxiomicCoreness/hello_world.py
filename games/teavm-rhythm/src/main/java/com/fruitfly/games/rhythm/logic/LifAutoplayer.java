@@ -33,6 +33,7 @@ public final class LifAutoplayer {
     private final CueProbe probe;
     private long substepsDone;
     private int spikes;
+    private final SpikeWindow window = new SpikeWindow(RhythmGame.LANES);
 
     public LifAutoplayer(RhythmGame game) {
         this(game, 0, null);
@@ -83,6 +84,11 @@ public final class LifAutoplayer {
         return (long) (substepsDone * LifNeuron.DT_MS);
     }
 
+    /** Recent per-lane spike times (observation only; for the CLI neuron snapshot). */
+    public SpikeWindow spikeWindow() {
+        return window;
+    }
+
     public LifNeuron neuron(int lane) {
         return neurons[lane];
     }
@@ -111,6 +117,7 @@ public final class LifAutoplayer {
                 probe.sample(l, t, neurons[l].vBeforeReset(), spiked);
                 if (spiked) {
                     spikes++;
+                    window.record(l, t);
                     if (sink == null) {
                         game.press(l, t, true);
                     } else {

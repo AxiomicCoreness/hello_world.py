@@ -30,6 +30,7 @@ public final class ConnectomeAutoplayer {
     private final int[] nextNoteIndex = new int[RhythmGame.LANES];
     private final CueProbe probe;
     private int presses;
+    private final SpikeWindow window = new SpikeWindow(RhythmGame.LANES);
 
     public ConnectomeAutoplayer(RhythmGame game, Circuit circuit) {
         this(game, circuit, 0, null);
@@ -110,6 +111,16 @@ public final class ConnectomeAutoplayer {
         return latency[lane];
     }
 
+    /** Recent spike times of each lane's motor neuron laneN.out (observation only). */
+    public SpikeWindow spikeWindow() {
+        return window;
+    }
+
+    /** Circuit index of lane's motor neuron laneN.out. */
+    public int outputIndex(int lane) {
+        return outputs[lane];
+    }
+
     public CircuitSim sim() {
         return sim;
     }
@@ -157,6 +168,7 @@ public final class ConnectomeAutoplayer {
                 probe.sample(l, t, sim.neuron(outputs[l]).vBeforeReset(), spiked[outputs[l]]);
                 if (spiked[outputs[l]]) {
                     presses++;
+                    window.record(l, t);
                     if (sink == null) {
                         game.press(l, t, true);
                     } else {
