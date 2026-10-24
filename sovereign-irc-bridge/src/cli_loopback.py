@@ -529,6 +529,7 @@ def create_app():
             "pythonide": True,
             "demos": ["deepinfer", "katex"],
             "llm": os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions"),
+            "llm_backend": _llm_backend_health(),
         }
 
     @app.websocket("/cli")
@@ -618,22 +619,42 @@ except ModuleNotFoundError:
     app = None  # type: ignore[assignment]
 
 
+def _llm_backend_health() -> dict:
+    from src import llm_backend
+
+    return llm_backend.health_blob()
+
+
 def run() -> None:
     import uvicorn
+
+    from src import llm_backend
 
     try:
         host = assert_loopback_bind(os.environ.get("CLI_BIND_HOST", LOOPBACK_HOST))
         assert_loopback_url(
             os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions")
         )
-    except (RuntimeError, LlmConfigError) as exc:
+        # DeepInfer is held to the same loopback rule as LLM_URL.
+        assert_loopback_url(llm_backend.deepinfer_url_raw(), "DEEPINFER_URL")
+        assert_loopback_url(llm_backend.deepseek_url_raw(), "LLM_DEEPSEEK_URL")
+        backend = llm_backend.backend()
+        fallback = llm_backend.fallback()
+    except (RuntimeError, LlmConfigError, llm_backend.BackendConfigError) as exc:
         # Same as tools/cors-anywhere: refuse non-loopback, exit non-zero.
         print(f"FATAL: Cosmic Alignment — {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
     # Template family + ChatML prebuild tokenization check; logs, never raises.
     from src import chatml_prebuild
 
-    chatml_prebuild.startup_check(os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions"))
+    llm_url_env = os.environ.get("LLM_URL", "http://127.0.0.1:8081/v1/chat/completions")
+    # One "[System] llm backend: …" line (DeepInfer liveness + deep_gemm/deep_ep/CUDA);
+    # it also fills the liveness cache so the first /llm never waits on a dead port.
+    print(llm_backend.startup_probe(llm_url_env), file=sys.stderr, flush=True)
+    if "gguf" in (backend, fallback):
+        chatml_prebuild.startup_check(llm_url_env)
+    if "deepseek-fixture" in (backend, fallback):
+        chatml_prebuild.startup_check(llm_backend.deepseek_url_raw())
     port = int(os.environ.get("CLI_BIND_PORT", str(CLI_PORT)))
     if port != CLI_PORT:
         logger.warning("non-default CLI port %s (contract is %s)", port, CLI_PORT)
