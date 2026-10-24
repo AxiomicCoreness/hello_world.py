@@ -89,6 +89,20 @@ public final class LifAutoplayer {
         return window;
     }
 
+    /**
+     * True once every lane's last chart cue has been delivered: from here on the
+     * brain only coasts (no more drive), so the song's activity is over.
+     */
+    public boolean cuesDone() {
+        int n = game.chart().notes().size();
+        for (int l = 0; l < RhythmGame.LANES; l++) {
+            if (nextNoteIndex[l] < n) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public LifNeuron neuron(int lane) {
         return neurons[lane];
     }

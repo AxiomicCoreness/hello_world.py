@@ -15,13 +15,28 @@ import java.util.List;
  * <p>Shape (keys stable, numbers rounded to 0.1):
  * <pre>
  * {"v":1,"mode":"lif","brain":"lif","song_ms":5230,"brain_ms":5200,"window_ms":2000,
+ *  "window_end_ms":5200,"window_anchor":"brain",
  *  "lanes":[{"lane":0,"label":"MB","spikes":3,"rate_hz":1.5,"last_ms":5101,"v_mv":-51.8,"total":12},…],
  *  "total_spikes":40,"top":[{"id":"lane0.out","region":"MB","spikes":12,"ms_since":99},…]}
  * </pre>
+ *
+ * <p>Window anchor. The spike window is (window_end_ms - window_ms, window_end_ms].
+ * While the chart still has cues to deliver it ends at the brain's own clock
+ * ({@code "brain"}). Once every cue has been delivered the brain only coasts,
+ * and a long frame (stalled or throttled tab, slow desktop driver) or the song
+ * tail can carry brain time seconds past the last spike; a window anchored
+ * there reported every lane as 0 while the HUD showed the song's spikes. So
+ * after the last cue the window ends at the newest real spike
+ * ({@code "last_spike"}), i.e. it shows the song's final 2 s of activity.
+ * {@code brain_ms} and {@code ms_since} stay relative to the brain's clock.
  */
 public final class NeuronSnapshot {
     public static final long WINDOW_MS = 2000;
     public static final int MAX_TOP = 5;
+    /** Window ends at the brain's clock (chart cues still pending). */
+    public static final String ANCHOR_BRAIN = "brain";
+    /** Window ends at the newest lane spike (all cues delivered; brain coasting). */
+    public static final String ANCHOR_LAST_SPIKE = "last_spike";
 
     private NeuronSnapshot() {
     }
@@ -45,14 +60,15 @@ public final class NeuronSnapshot {
         }
         long now = a.brainTimeMs();
         SpikeWindow w = a.spikeWindow();
+        long end = windowEndMs(now, w, a.cuesDone());
         List<Top> top = new ArrayList<>();
         for (int l = 0; l < lanes; l++) {
             long last = w.lastSpikeMs(l);
-            if (last != Long.MIN_VALUE && last > now - WINDOW_MS) {
+            if (last != Long.MIN_VALUE && last > end - WINDOW_MS) {
                 top.add(new Top("lane" + l, label(labels, l), w.total(l), now - last));
             }
         }
-        return build(mode, "lif", songMs, now, w, v, labels, a.spikeCount(), top);
+        return build(mode, "lif", songMs, now, end, anchor(now, end), w, v, labels, a.spikeCount(), top);
     }
 
     /** Connectome autoplayer: lanes are laneN.out; top = most recently active circuit neurons. */
@@ -64,6 +80,7 @@ public final class NeuronSnapshot {
             v[l] = sim.neuron(a.outputIndex(l)).v();
         }
         long now = a.brainTimeMs();
+        long end = windowEndMs(now, a.spikeWindow(), a.cuesDone());
         Circuit c = sim.circuit();
         List<Top> top = new ArrayList<>();
         for (int i = 0; i < c.neuronCount(); i++) {
@@ -72,28 +89,53 @@ public final class NeuronSnapshot {
                 continue;
             }
             long last = (long) (s * LifNeuron.DT_MS);
-            if (last > now - WINDOW_MS) {
+            if (last > end - WINDOW_MS) {
                 top.add(new Top(c.id(i), c.region(i), sim.spikeCount(i), now - last));
             }
         }
-        return build(mode, "connectome", songMs, now, a.spikeWindow(), v, labels, a.spikeCount(), top);
+        return build(mode, "connectome", songMs, now, end, anchor(now, end), a.spikeWindow(), v, labels,
+                a.spikeCount(), top);
+    }
+
+    /**
+     * Where the spike window ends: the brain's clock while cues are pending;
+     * after the last cue, the newest real lane spike (never later than brain time).
+     */
+    static long windowEndMs(long brainMs, SpikeWindow w, boolean cuesDone) {
+        long latest = w.latestSpikeMs();
+        if (cuesDone && latest != Long.MIN_VALUE && latest < brainMs) {
+            return latest;
+        }
+        return brainMs;
+    }
+
+    private static String anchor(long brainMs, long endMs) {
+        return endMs == brainMs ? ANCHOR_BRAIN : ANCHOR_LAST_SPIKE;
+    }
+
+    /** Serializer with the window ending at the brain's clock; package-visible for tests. */
+    static String build(String mode, String brain, long songMs, long brainMs, SpikeWindow w,
+            double[] vMv, String[] labels, long totalSpikes, List<Top> top) {
+        return build(mode, brain, songMs, brainMs, brainMs, ANCHOR_BRAIN, w, vMv, labels, totalSpikes, top);
     }
 
     /** Pure serializer; package-visible for tests. */
-    static String build(String mode, String brain, long songMs, long brainMs, SpikeWindow w,
-            double[] vMv, String[] labels, long totalSpikes, List<Top> top) {
+    static String build(String mode, String brain, long songMs, long brainMs, long windowEndMs, String anchor,
+            SpikeWindow w, double[] vMv, String[] labels, long totalSpikes, List<Top> top) {
         StringBuilder b = new StringBuilder(512);
         b.append("{\"v\":1,\"mode\":").append(Json.str(mode))
                 .append(",\"brain\":").append(Json.str(brain))
                 .append(",\"song_ms\":").append(songMs)
                 .append(",\"brain_ms\":").append(brainMs)
                 .append(",\"window_ms\":").append(WINDOW_MS)
+                .append(",\"window_end_ms\":").append(windowEndMs)
+                .append(",\"window_anchor\":").append(Json.str(anchor))
                 .append(",\"lanes\":[");
         for (int l = 0; l < w.lanes(); l++) {
             if (l > 0) {
                 b.append(',');
             }
-            int n = w.countInWindow(l, brainMs, WINDOW_MS);
+            int n = w.countInWindow(l, windowEndMs, WINDOW_MS);
             long last = w.lastSpikeMs(l);
             b.append("{\"lane\":").append(l)
                     .append(",\"label\":").append(Json.str(label(labels, l)))
