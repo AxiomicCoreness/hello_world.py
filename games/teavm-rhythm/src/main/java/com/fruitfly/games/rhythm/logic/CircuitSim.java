@@ -27,6 +27,7 @@ public final class CircuitSim {
     private final int[] synSlots;
     private final long[] lastSpike;
     private final long[] perNeuron;
+    private final boolean[] spiked;
     private int head;
     private long substeps;
     private long spikes;
@@ -47,6 +48,7 @@ public final class CircuitSim {
         pending = new double[n][max + 2];
         lastSpike = new long[n];
         perNeuron = new long[n];
+        spiked = new boolean[n];
         Arrays.fill(lastSpike, Long.MIN_VALUE);
     }
 
@@ -58,12 +60,13 @@ public final class CircuitSim {
     /**
      * Advance one 1 ms substep. {@code external[i]} (may be null) is added to
      * neuron i's g at the start of the substep, alongside synaptic input due
-     * now. Returns which neurons spiked in this substep.
+     * now. Returns which neurons spiked in this substep. The returned array is
+     * owned by this sim and overwritten (every entry) by the next step: read
+     * it before stepping again, copy it to keep it.
      */
     public boolean[] step(double[] external) {
         int n = neurons.length;
         int h = pending.length == 0 ? 0 : pending[0].length;
-        boolean[] spiked = new boolean[n];
         for (int j = 0; j < n; j++) {
             double in = pending[j][head] + (external == null ? 0.0 : external[j]);
             pending[j][head] = 0.0;

@@ -1,6 +1,7 @@
 package com.fruitfly.games.rhythm.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -69,5 +70,22 @@ class CircuitSimTest {
         assertEquals(3, sim.lastSpikeSubstep(0));
         assertTrue(sim.lastSpikeSubstep(1) > 3);
         assertEquals(2, sim.spikeCount());
+    }
+
+    /** step() reuses one spike array; each call must still report only that substep's spikes. */
+    @Test
+    void reusedSpikeArrayReportsOnlyTheCurrentSubstep() {
+        CircuitSim sim = new CircuitSim(edge(10.0, 1.0));
+        boolean[] first = sim.step(new double[] {LifAutoplayer.DRIVE_G, 0.0});
+        long s0 = LifAutoplayer.measureLatencyMs();
+        boolean[] sp = first;
+        for (int s = 1; s <= s0; s++) {
+            sp = sim.step(null);
+        }
+        assertTrue(sp == first, "same array instance");
+        assertTrue(sp[0], "A spikes at substep " + s0);
+        sp = sim.step(null);
+        assertFalse(sp[0], "the next substep's array no longer shows A's spike");
+        assertFalse(sp[1]);
     }
 }
