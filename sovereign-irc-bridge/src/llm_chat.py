@@ -1,4 +1,10 @@
-"""`/llm` chat path for the TeaVM CLI bridge — GGUF via llama.cpp, loopback only.
+"""`/llm` chat path for the TeaVM CLI bridge — DeepInfer or GGUF, loopback only.
+
+Backend selection (see :mod:`src.llm_backend`): LLM_BACKEND=deepinfer (default)
+posts to DEEPINFER_URL; LLM_BACKEND=gguf posts to LLM_URL (llama.cpp). With
+LLM_FALLBACK=gguf an offline DeepInfer hands the turn to the GGUF server and
+the reply is labeled ``backend=qwen`` / ``[Fallback: Qwen]``. Without it the
+turn ends with ``[System] llm: deepinfer backend offline (…)``.
 
 The TeaVM chatbox sends one WebSocket frame::
 
@@ -37,7 +43,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, List, Optional, Tuple
 from urllib.parse import urlsplit
 
-from src import chatml_prebuild
+from src import chatml_prebuild, llm_backend
 
 logger = logging.getLogger("sovereign-irc-bridge.llm")
 
@@ -63,6 +69,9 @@ MAX_REPLY_LINES: Final = 40
 STOP_SEQUENCES: Final = tuple(chatml_prebuild.stops_for("chatml"))
 MAX_NGRAM_REPEATS: Final = chatml_prebuild.MAX_NGRAM_REPEATS
 ROLE_ECHO_RE: Final = re.compile(r"(?im)^[ \t>*_-]*(user|assistant|system)\s*\d*\s*:")
+# DeepSeek-V3/V4 turn markers in the text = the model wrote another turn.
+DEEPSEEK_TURN_RE: Final = re.compile(r"<｜(?:User|Assistant|end▁of▁sentence)｜>")
+THINK_TAG_RE: Final = re.compile(r"</?think>")
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 SUREFIRE_DIR: Final = _REPO_ROOT / "games" / "teavm-rhythm" / "target" / "surefire-reports"
@@ -98,15 +107,19 @@ def llm_model() -> str:
     return os.environ.get("LLM_MODEL", DEFAULT_LLM_MODEL)
 
 
-def assert_loopback_url(url: str) -> str:
+def assert_loopback_url(url: str, name: str = "LLM_URL") -> str:
     """The model server must be on 127.0.0.1 / localhost / ::1 (Cosmic Alignment)."""
     parts = urlsplit((url or "").strip())
     host = (parts.hostname or "").lower()
     if parts.scheme not in ("http", "https") or host not in LOOPBACK_HOSTS:
         raise LlmConfigError(
-            f"LLM_URL must be http(s)://127.0.0.1|localhost|[::1]…, got {url!r}"
+            f"{name} must be http(s)://127.0.0.1|localhost|[::1]…, got {url!r}"
         )
     return url.strip()
+
+
+def deepinfer_url() -> str:
+    return assert_loopback_url(llm_backend.deepinfer_url_raw(), "DEEPINFER_URL")
 
 
 def _trim(s: Any, n: int) -> str:
@@ -244,19 +257,74 @@ def complete(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[st
 
 
 def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
-    """Like complete(), plus the route meta (path/mode/family) for telemetry."""
+    """Like complete(), plus route meta. meta["backend"] is the provenance label:
+    "deepinfer", "gguf" (LLM_BACKEND=gguf), "qwen" (GGUF fallback for an offline
+    DeepInfer) or "deepseek-fixture" (RalphSeek 122M fixture, direct or fallback)."""
+    try:
+        be, fb = llm_backend.backend(), llm_backend.fallback()
+    except llm_backend.BackendConfigError as exc:
+        return None, str(exc), {"backend": None}
+    if be == "gguf":
+        return _complete_gguf(messages, llm_backend.LABEL_GGUF)
+    if be == "deepseek-fixture":
+        return _complete_fixture(messages)
+    try:
+        url = deepinfer_url()
+    except LlmConfigError as exc:
+        return None, str(exc), {"backend": llm_backend.LABEL_DEEPINFER}
+    online, detail = llm_backend.deepinfer_state(url)
+    err: Optional[str] = None
+    if online:
+        reply, err, meta = _complete_at(lambda: url, llm_backend.deepinfer_model(), messages)
+        meta["backend"] = llm_backend.LABEL_DEEPINFER
+        if err is None:
+            return reply, None, meta
+        llm_backend.mark_offline(url, err)
+        detail = err
+    offline = f"deepinfer backend offline ({detail})"
+    if fb == "gguf":
+        logger.warning("%s (%s)", llm_backend.FALLBACK_LOG, detail)
+        reply, err, meta = _complete_gguf(messages, llm_backend.LABEL_FALLBACK)
+    elif fb == "deepseek-fixture":
+        logger.warning("%s (%s)", llm_backend.FIXTURE_FALLBACK_LOG, detail)
+        reply, err, meta = _complete_fixture(messages)
+    else:
+        return None, offline, {"backend": llm_backend.LABEL_DEEPINFER, "deepinfer_offline": offline}
+    meta.update(fallback_from="deepinfer", deepinfer_offline=offline)
+    return reply, err, meta
+
+
+def _complete_gguf(messages, label: str):
+    reply, err, meta = _complete_at(llm_url, llm_model(), messages)
+    meta["backend"] = label
+    return reply, err, meta
+
+
+def _complete_fixture(messages):
+    reply, err, meta = _complete_at(
+        lambda: assert_loopback_url(llm_backend.deepseek_url_raw(), "LLM_DEEPSEEK_URL"),
+        llm_backend.deepseek_model(), messages, extra=llm_backend.DEEPSEEK_FIXTURE_EXTRA)
+    meta["backend"] = llm_backend.LABEL_FIXTURE
+    return reply, err, meta
+
+
+def _complete_at(url_fn, model: str, messages: List[Dict[str, str]],
+                 extra: Optional[Dict[str, Any]] = None) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
+    """One OpenAI-style request through the chatml_prebuild routing + guard pipeline."""
     meta: Dict[str, Any] = {}
     try:
-        url = llm_url()
+        url = url_fn()
         base = chatml_prebuild.base_url(url)
         path, payload, meta = chatml_prebuild.build_request(
             messages, base, chatml_prebuild.prompt_mode(),
-            model=llm_model(),
+            model=model,
             max_tokens=int(os.environ.get("LLM_MAX_TOKENS", "256")),
             chat_url=url,
         )
     except (LlmConfigError, chatml_prebuild.PromptConfigError) as exc:
         return None, str(exc), meta
+    if extra and path != chatml_prebuild.COMPLETION_PATH:
+        payload.update(extra)
     target = url if path == urlsplit(url).path else base + path
     logger.info("llm route path=%s mode=%s family=%s reason=%s",
                 meta.get("path"), meta.get("mode"), meta.get("family"), meta.get("reason"))
@@ -277,10 +345,10 @@ def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Opti
 
 
 def _cut_role_echo(text: str) -> Tuple[str, bool]:
-    m = ROLE_ECHO_RE.search(text)
-    if m is None:
+    hits = [m.start() for m in (ROLE_ECHO_RE.search(text), DEEPSEEK_TURN_RE.search(text)) if m]
+    if not hits:
         return text, False
-    return text[: m.start()], True
+    return text[: min(hits)], True
 
 
 def _cut_repeats(text: str, limit: int = MAX_NGRAM_REPEATS) -> Tuple[str, bool]:
@@ -290,7 +358,7 @@ def _cut_repeats(text: str, limit: int = MAX_NGRAM_REPEATS) -> Tuple[str, bool]:
 
 def clean_reply(raw: str) -> Tuple[str, List[str]]:
     """→ (reply, notes). Cuts role echoes and n-gram loops; a normal reply is returned unchanged."""
-    text = raw or ""
+    text = THINK_TAG_RE.sub("", raw or "")  # bare <think>/</think> tags, content kept
     notes: List[str] = []
     text, echoed = _cut_role_echo(text)
     if echoed:
@@ -328,12 +396,25 @@ def handle_llm_sync(text: str) -> List[str]:
     lines.append(_neuro_line(neuro))
     lines.append(f"[System] llm ctx: feedback={len(feedback['reports'])} traceback report(s)")
     reply, err, meta = complete_routed(build_messages(prompt, neuro, feedback))
+    logger.info("llm_reply %s", json.dumps({
+        "backend": meta.get("backend"), "fallback_from": meta.get("fallback_from"),
+        "path": meta.get("path"), "ok": err is None}))
+    if meta.get("deepinfer_offline"):
+        lines.append(f"[System] llm: {meta['deepinfer_offline']}")
+    fallback = bool(meta.get("fallback_from"))
+    via = {llm_backend.LABEL_FALLBACK: "gguf fallback", llm_backend.LABEL_FIXTURE: "fixture fallback"}
+    label = f"{meta.get('backend')}" + (
+        f" ({via.get(meta.get('backend'), 'fallback')} from deepinfer)" if fallback else "")
     if meta.get("path"):
         lines.append(
-            f"[System] llm route: path={meta['path']} mode={meta.get('mode')} family={meta.get('family')}"
+            f"[System] llm route: backend={label} path={meta['path']} mode={meta.get('mode')} family={meta.get('family')}"
             + (f" (prebuild off: {meta['prebuild_disabled']})" if meta.get("prebuild_disabled") else "")
         )
+    elif meta.get("backend"):
+        lines.append(f"[System] llm route: backend={label} (offline)")
     if err is not None:
+        if meta.get("deepinfer_offline") and not fallback:
+            return lines  # the "deepinfer backend offline (…)" line is the answer
         lines.append(f"[System] llm offline: {err}")
         return lines
     if chatml_prebuild.looks_degenerate(reply or ""):
@@ -341,8 +422,9 @@ def handle_llm_sync(text: str) -> List[str]:
     reply, trims = clean_reply(reply or "")
     lines.extend(f"[System] llm: {n}" for n in trims)
     body = [ln for ln in reply.splitlines() if ln.strip()] or ["(empty reply)"]
+    prefix = llm_backend.reply_prefix(meta.get("backend"))  # never pass Qwen/fixture output off as DeepInfer
     for ln in body[:MAX_REPLY_LINES]:
-        lines.append(f"[Engine] llm: {ln}")
+        lines.append(f"[Engine] llm: {prefix}{ln}")
     return lines
 
 
