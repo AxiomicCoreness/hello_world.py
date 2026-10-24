@@ -30,7 +30,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/webapp/assets/ar_brain_bg.jpg` | Your AR fly-brain screenshot, resized to 1170 px wide, used as the dimmed background. |
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
-| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6669/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
+| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
 | `web/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; Option B hostname switch (loopback local/CI, `PAGES_WSS` on Pages); click-to-focus; skips game keys while typing. |
 | `irc/PythonIdeCli.java` | Offline `/py` · `/ide` help/list/pointer + traceback-shaped errors; live toolkit via bridge. |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
@@ -399,7 +399,7 @@ doubling and all three voice lines with each of the four fly modes (no misses).
 ## LLM chat (/llm, GGUF on loopback)
 
 The left CLI has an LLM mode. `/llm <text>` goes over the same CLI socket as
-everything else (Option B unchanged: `ws://127.0.0.1:6669/cli` locally,
+everything else (Option B unchanged: `ws://127.0.0.1:6680/cli` locally,
 `wss://bridge.axiomiccoreness.com/cli` on Pages) to the Python bridge
 (`sovereign-irc-bridge/src/llm_chat.py`), which forwards it to llama.cpp's
 `llama-server` OpenAI-compatible endpoint on `127.0.0.1`. The browser never
@@ -449,7 +449,7 @@ offline: … unreachable`. Neither crashes the chat.
    curl -s http://127.0.0.1:8081/health      # {"status":"ok"}
    ```
 
-2. Start the bridge (binds 127.0.0.1:6669 only; exits with `FATAL: Cosmic
+2. Start the bridge (binds 127.0.0.1:6680 only; exits with `FATAL: Cosmic
    Alignment` if `CLI_BIND_HOST` or `LLM_URL` is not loopback):
 
    ```bash
@@ -469,13 +469,12 @@ offline: … unreachable`. Neither crashes the chat.
    #   /llm what are the lanes doing?
    ```
 
-   Chrome and Firefox block port 6669 (IRC range 6665-6669) as an "unsafe
-   port", so the local `ws://127.0.0.1:6669/cli` dial only connects with
-   Chrome started with `--explicitly-allowed-ports=6669` (Firefox:
-   `network.security.ports.banned.override = 6669`). The Pages WSS path on 443
-   is not affected.
+   The local bridge port is **6680** (moved off 6669: Chrome and Firefox
+   block the IRC range 6665-6669 and 6697 as "unsafe ports"). 6680 is on
+   neither browser's restricted list, so plain Chrome/Firefox connect with no
+   flags or prefs. The Pages WSS path on 443 is unchanged.
 
-4. Optional end-to-end check (headless Chrome, all three services running):
+4. Optional end-to-end check (plain headless Chrome, no extra flags; all three services running):
    `node --experimental-websocket tools/llm_chat_e2e.mjs http://127.0.0.1:8092/`
 
 ## Debug Oracle panel (team v1)

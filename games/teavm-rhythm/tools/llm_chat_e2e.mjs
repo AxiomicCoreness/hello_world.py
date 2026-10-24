@@ -1,6 +1,6 @@
 // End-to-end check of the CLI /llm chat in real headless Chrome (CDP). Needs, all on loopback:
 //   llama-server -m <any.gguf> --host 127.0.0.1 --port 8081
-//   (cd sovereign-irc-bridge && python -m src.cli_loopback)       # ws://127.0.0.1:6669/cli
+//   (cd sovereign-irc-bridge && python -m src.cli_loopback)       # ws://127.0.0.1:6680/cli
 //   python3 -m http.server 8092 --bind 127.0.0.1 -d target/webapp
 // Usage: node tools/llm_chat_e2e.mjs http://127.0.0.1:8092/ [cdpPort]
 // Plays bembe with the LIF autoplayer, triggers one real /py traceback, sends /llm and waits for
@@ -16,8 +16,8 @@ const profile = mkdtempSync(join(tmpdir(), 'rhythm-llm-'));
 const chrome = spawn(process.env.CHROME || 'google-chrome', ['--headless=new', '--no-sandbox', '--disable-gpu',
   `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run',
   '--autoplay-policy=no-user-gesture-required',
-  // Chrome blocks 6665-6669 (IRC) as unsafe ports; the loopback CLI contract is :6669.
-  '--explicitly-allowed-ports=6669', 'about:blank'], { stdio: 'ignore' });
+  // No --explicitly-allowed-ports: the loopback CLI bridge is :6680, outside Chrome's unsafe-port list.
+  'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let fail = 0;
 const expect = (name, cond, got) => { console.log((cond ? 'PASS ' : 'FAIL ') + name + (got !== undefined ? '  [' + got + ']' : '')); if (!cond) fail++; };
@@ -38,7 +38,7 @@ try {
   await send('Page.enable'); await send('Runtime.enable');
   await send('Page.navigate', { url: base + '?rhythm=bembe&bpm=90' });
   for (let i = 0; i < 50; i++) { if (await ev('!!(window.__rhythmDebug && /connected ws:/.test(document.getElementById("chat-history").textContent))')) break; await sleep(200); }
-  expect('chat connected to loopback bridge', /connected ws:\/\/127\.0\.0\.1:6669\/cli/.test(await hist()));
+  expect('chat connected to loopback bridge', /connected ws:\/\/127\.0\.0\.1:6680\/cli/.test(await hist()));
   await ev('document.activeElement && document.activeElement.blur()');
   await key('b', 'KeyB', 66);
   expect('LIF autoplayer on', (await ev('window.__rhythmDebug.mode()')) === 'lif');

@@ -734,6 +734,15 @@ const CHART = '?chart=charts/sample_chart.json';
   expect('U: smoothed clock: monotonic, sd < 1 ms, every step 0.9x..1.1x of 16.7 ms', js.mono && js.sd < 1 && js.min >= 15 && js.max <= 18.4, fmtJ(js));
   expect('U: smoothed clock stays on the audio (within 25 ms of true time at 5 s)', Math.abs(js.end - 300 * 1000 / 60) < 25, (js.end - 5000).toFixed(1));
 
+  // V: local CLI bridge port is 6680 (off the browsers' unsafe-port list: IRC 6665-6669, 6679 FF, 6697).
+  const cliJs = fs.readFileSync(path, 'utf8');
+  const cliHtml = fs.readFileSync(require('path').join(require('path').dirname(path), 'index.html'), 'utf8');
+  const unsafe = [6665, 6666, 6667, 6668, 6669, 6679, 6697];
+  expect('V: compiled loopback CLI URL is ws://127.0.0.1:6680/cli', cliJs.includes('ws://127.0.0.1:6680/cli') && !cliJs.includes('127.0.0.1:6669'));
+  expect('V: Pages WSS unchanged', cliJs.includes('wss://bridge.axiomiccoreness.com/cli'));
+  expect('V: page CLI title names 127.0.0.1:6680', cliHtml.includes('127.0.0.1:6680') && !cliHtml.includes('127.0.0.1:6669'));
+  expect('V: 6680 is not a browser-restricted port', !unsafe.includes(6680));
+
   console.log(fail === 0 ? 'SMOKE OK' : 'SMOKE FAILED (' + fail + ')');
   process.exit(fail === 0 ? 0 : 1);
 })().catch((e) => { console.log('FAIL exception ' + (e && e.stack || e)); process.exit(1); });
