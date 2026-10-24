@@ -104,9 +104,9 @@ payload:
       change: all 5 actions/checkout submodules recursive -> submodules false
 ci:
   measured_commit: 6614a86219d2474fd8b5775c72356ec3333269af
-  source: GitHub Actions API, runs on main at head_sha 6614a862, read 2026-10-24T15:35Z
+  source: GitHub Actions API, runs on main at head_sha 6614a862, read 2026-10-24T15:35Z (dual-gate 3061 re-read 2026-10-24T15:40Z)
   runs_on_measured_commit:
-  - {workflow: 'Pytest · dual-gate ledger', run_id: 40107388603, run_number: 3061, event: push, conclusion: 'in_progress when read'}
+  - {workflow: 'Pytest · dual-gate ledger', run_id: 40107388603, run_number: 3061, event: push, conclusion: success}
   - {workflow: 'Sovereign CI/CD', run_id: 40107388589, run_number: 989, event: push, conclusion: success}
   - {workflow: 'Sovereign Python Package', run_id: 40107388604, run_number: 2290, event: push, conclusion: success}
   - {workflow: 'Python Package', run_id: 40107388590, run_number: 3997, event: push, conclusion: success}
