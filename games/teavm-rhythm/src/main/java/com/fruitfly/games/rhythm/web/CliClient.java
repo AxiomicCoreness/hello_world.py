@@ -2,7 +2,11 @@ package com.fruitfly.games.rhythm.web;
 
 import com.fruitfly.games.rhythm.irc.CliLines;
 import com.fruitfly.games.rhythm.irc.IrcBridgeConfig;
+import com.fruitfly.games.rhythm.irc.LlmCli;
 import com.fruitfly.games.rhythm.irc.PythonIdeCli;
+import com.fruitfly.games.rhythm.irc.TracebackFeedback;
+import java.util.Collections;
+import java.util.function.Supplier;
 import org.teavm.jso.dom.events.Event;
 import org.teavm.jso.dom.events.MessageEvent;
 import org.teavm.jso.dom.html.HTMLDocument;
@@ -33,6 +37,10 @@ public final class CliClient {
     private HTMLElement column;
     private WebSocket socket;
     private boolean open;
+    /** Recent traceback reports — the /llm feedback signal. */
+    private final TracebackFeedback feedback = new TracebackFeedback();
+    /** Live neuron snapshot JSON from Main (null until wired). */
+    private Supplier<String> neuronSnapshot;
 
     /** Resolve dial URL from browser hostname (Option B). */
     public CliClient() {
@@ -53,6 +61,11 @@ public final class CliClient {
 
     public String wsUrl() {
         return wsUrl;
+    }
+
+    /** Main wires the live LIF-RK4 spike snapshot used by {@code /llm}. */
+    public void setNeuronSnapshot(Supplier<String> supplier) {
+        this.neuronSnapshot = supplier;
     }
 
     public boolean isOpen() {
@@ -120,6 +133,7 @@ public final class CliClient {
                 "pythonIDE: /py help · /py list · /py call <cap> · /py pointer"));
         appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
                 "demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"));
+        appendRaw(LlmCli.helpLine());
         appendRaw(CliLines.pagesHttpsHint());
     }
 
@@ -193,6 +207,11 @@ public final class CliClient {
     /** Append a User line; IDE commands run offline and/or over the loopback WS. */
     public void sendUser(String text) {
         append(CliLines.KIND_USER, text);
+        if (LlmCli.isLlmLine(text)) {
+            sendLlm(text);
+            scrollToEnd();
+            return;
+        }
         if (PythonIdeCli.isIdeLine(text)) {
             // Live toolkit + full Python traceback when the bridge is up.
             // Offline: local help/list/pointer + traceback-shaped errors (no duplicate).
@@ -228,11 +247,40 @@ public final class CliClient {
         scrollToEnd();
     }
 
+    /** /llm: prompt + live spike snapshot + traceback feedback → bridge → llama-server. */
+    private void sendLlm(String text) {
+        if (socket == null || !open) {
+            appendRaw(LlmCli.offlineLine());
+            return;
+        }
+        String neuro = null;
+        if (neuronSnapshot != null) {
+            try {
+                neuro = neuronSnapshot.get();
+            } catch (Throwable t) {
+                feedback.add("SnapshotError", String.valueOf(t),
+                        Collections.singletonList("CliClient.sendLlm"), "teavm");
+            }
+        }
+        String wire = LlmCli.wire(text, neuro, feedback.toJson());
+        try {
+            socket.send(wire);
+            append(CliLines.KIND_SYSTEM, "llm → bridge (" + (neuro == null ? "no" : "with")
+                    + " neuron snapshot, " + feedback.size() + " traceback report(s))");
+        } catch (Throwable t) {
+            for (String line : PythonIdeCli.formatTraceback(
+                    "CliClient.sendLlm", "SendError", String.valueOf(t))) {
+                appendRaw(line);
+            }
+        }
+    }
+
     public void append(String kind, String body) {
         appendRaw(CliLines.format(kind, body));
     }
 
     private void appendRaw(String line) {
+        feedback.accept(line);
         if (history == null) {
             return;
         }
