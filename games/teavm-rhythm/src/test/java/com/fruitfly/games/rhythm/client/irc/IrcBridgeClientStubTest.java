@@ -1,9 +1,10 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.irc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fruitfly.games.rhythm.client.transport.IrcBridgeConfig;
 import org.junit.jupiter.api.Test;
 
 class IrcBridgeClientStubTest {

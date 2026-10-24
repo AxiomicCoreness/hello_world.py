@@ -30,9 +30,9 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/webapp/assets/ar_brain_bg.jpg` | Your AR fly-brain screenshot, resized to 1170 px wide, used as the dimmed background. |
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
-| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
-| `web/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; Option B hostname switch (loopback local/CI, `PAGES_WSS` on Pages); click-to-focus; skips game keys while typing. |
-| `irc/PythonIdeCli.java` | Offline `/py` · `/ide` help/list/pointer + traceback-shaped errors; live toolkit via bridge. |
+| `client/transport/IrcBridgeConfig`, `client/irc/MtlsToolCall`, `client/irc/IrcBridgeClientStub`, `client/irc/IrcChatCli`, `client/CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
+| `client/transport/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; Option B hostname switch (loopback local/CI, `PAGES_WSS` on Pages); click-to-focus; skips game keys while typing. |
+| `client/ide/PythonIdeCli.java` | Offline `/py` · `/ide` help/list/pointer + traceback-shaped errors; live toolkit via bridge. |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
 | `src/test/java/.../logic/` | JUnit 5 tests (166: the original 74, 55 for the draft, 9 for `InputRouter` / the picker row, 12 for the Euclidean songs and their docs, 12 for the MIDI parser and the music sources, 4 for label / HUD / blocks-cut sync) for hit windows, scoring, combo reset, chart determinism, the LIF port, its parity with the real `LIFRK4`, the autoplayer, the JSON loader, the song clock and the click track. |
 | `tools/gen_click_track.py` | Writes the same click track as a `.wav` (and `.ogg` with `--ogg`, via ffmpeg) for use outside the page. |
@@ -40,7 +40,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `tools/LifGoldenTraceGen.java`, `tools/regen-lif-traces.sh` | Trace generator. It compiles against the root `src/` LIFRK4 and isn't part of the Maven build. |
 | `tools/smoke.js` | Headless Node smoke test for the compiled `classes.js`, using a stubbed DOM. |
 | `tools/chrome_smoke.mjs` | Real headless Chrome (CDP) check of a served build: `window.__rhythmDebug`, `?debug=notes`, pause on a hidden tab, and clock jitter with Safari-like 40 ms `currentTime` steps. `node tools/chrome_smoke.mjs http://127.0.0.1:8092/` |
-| `irc/LlmCli`, `irc/TracebackFeedback`, `logic/NeuronSnapshot`, `logic/SpikeWindow`, `logic/Json` | `/llm` chat mode: wire format, the traceback-report feedback block, and the compact LIF-RK4 spike snapshot (pure Java, JVM-tested). See "LLM chat (/llm, GGUF on loopback)" below. |
+| `client/llm/LlmCli`, `client/ide/TracebackFeedback`, `logic/NeuronSnapshot`, `logic/SpikeWindow`, `logic/Json` | `/llm` chat mode: wire format, the traceback-report feedback block, and the compact LIF-RK4 spike snapshot (pure Java, JVM-tested). See "LLM chat (/llm, GGUF on loopback)" below. |
 | `tools/llm_chat_e2e.mjs` | Real headless Chrome check of `/llm` against a running `llama-server` + bridge: plays bembe with the LIF fly, triggers one `/py` traceback, sends `/llm` and waits for the model's reply. |
 
 ## Rules
@@ -422,7 +422,7 @@ Each `/llm` frame carries two JSON blocks next to the prompt:
   circuit neuron (`CircuitSim.lastSpikeSubstep` / `spikeCount`) in connectome
   modes. With the control mode off the snapshot is `"brain":"idle"` with no
   lanes.
-- **Feedback** (`irc/TracebackFeedback`): the "carrot on the stick" is
+- **Feedback** (`client/ide/TracebackFeedback`): the "carrot on the stick" is
   traceback reports, not a reward signal (the game has no dopamine/reward
   variable). Every `[Traceback]` run that reaches the chat history (bridge
   pythonIDE tracebacks and `PythonIdeCli`'s offline ones) becomes one report

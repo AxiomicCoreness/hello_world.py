@@ -25,7 +25,7 @@ Nothing in this repo deploys it automatically. The host admin does these steps:
 - The bridge stays bound to `127.0.0.1:6680` (Cosmic Alignment, never `0.0.0.0`).
   nginx on 443 is the only public listener.
 - The Pages client already dials `wss://bridge.axiomiccoreness.com/cli`
-  (see `irc/CliLines.java`). Local play still uses `ws://127.0.0.1:6680/cli`.
+  (see `client/CliLines.java`). Local play still uses `ws://127.0.0.1:6680/cli`.
 - `/llm` is a chat command sent over the `/cli` socket, so it has no `location` of its own.
 - cors-anywhere (`127.0.0.1:8080`) stays internal on purpose. Publishing it
   would make the host an open relay.

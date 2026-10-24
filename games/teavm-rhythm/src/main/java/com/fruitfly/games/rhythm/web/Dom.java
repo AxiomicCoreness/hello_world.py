@@ -12,7 +12,7 @@ import org.teavm.jso.dom.html.HTMLElement;
  * Every helper tolerates a missing API (headless smoke test, old browsers)
  * and returns 0 / null instead of throwing.
  */
-final class Dom {
+public final class Dom {
     private Dom() {
     }
 
@@ -31,7 +31,7 @@ final class Dom {
      */
     @JSBody(script = "if (typeof window === 'undefined' || !window.location) return '';"
             + "return String(window.location.hostname || '');")
-    static native String locationHostname();
+    public static native String locationHostname();
 
     /** CSS size via style (when present); backing store already set by the caller. */
     @JSBody(params = {"c", "w", "h"}, script = "if (c && c.style) { c.style.width = w + 'px'; c.style.height = h + 'px'; }")
@@ -152,7 +152,7 @@ final class Dom {
 
     /** True when {@code el} is document.activeElement. */
     @JSBody(params = {"el"}, script = "return !!(el && typeof document !== 'undefined' && document.activeElement === el);")
-    static native boolean isActive(HTMLElement el);
+    public static native boolean isActive(HTMLElement el);
 
     /**
      * True when keyboard focus is in a text field or inside {@code #cli-column}.
@@ -165,14 +165,14 @@ final class Dom {
             + "if (a.id === 'chat-input') return true;"
             + "var col = document.getElementById('cli-column');"
             + "return !!(col && typeof col.contains === 'function' && col.contains(a));")
-    static native boolean isTypingTarget();
+    public static native boolean isTypingTarget();
 
     /** Focus an element (chat input); swallow focus errors. */
     @JSBody(params = {"el"}, script = "if (!el || typeof el.focus !== 'function') return;"
             + "try { el.focus({preventScroll: true}); } catch (e) { try { el.focus(); } catch (e2) {} }")
-    static native void focus(HTMLElement el);
+    public static native void focus(HTMLElement el);
 
     /** Scroll an element to its bottom (chat scrollback). */
     @JSBody(params = {"el"}, script = "if (el) { el.scrollTop = el.scrollHeight; }")
-    static native void scrollTopMax(HTMLElement el);
+    public static native void scrollTopMax(HTMLElement el);
 }

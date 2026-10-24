@@ -1,5 +1,6 @@
 package com.fruitfly.games.rhythm.web;
 
+import com.fruitfly.games.rhythm.client.transport.CliClient;
 import com.fruitfly.games.rhythm.logic.AssistArbiter;
 import com.fruitfly.games.rhythm.logic.ChartJson;
 import com.fruitfly.games.rhythm.logic.Circuit;

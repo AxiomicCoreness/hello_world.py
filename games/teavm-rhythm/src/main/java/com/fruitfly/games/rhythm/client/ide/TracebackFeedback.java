@@ -1,5 +1,6 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.ide;
 
+import com.fruitfly.games.rhythm.client.CliLines;
 import com.fruitfly.games.rhythm.logic.Json;
 import java.util.ArrayList;
 import java.util.List;
@@ -163,7 +164,7 @@ public final class TracebackFeedback {
         return out;
     }
 
-    static String trim(String s, int max) {
+    public static String trim(String s, int max) {
         if (s == null) {
             return "";
         }

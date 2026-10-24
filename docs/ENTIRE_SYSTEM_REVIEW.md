@@ -109,7 +109,7 @@ Paths checked with `git ls-files` at `83ad9e47`. No row removed.
 | Connectome Loader ("fly code") | `src/main/java/com/fruitfly/brain/ConnectomeLoader.java` + `src/main/resources/HHMIJaneliaMap.xml` (mirror under `skills/hhmi/java/`) | — | ✅ present; `ConnectomeLoaderTest` 11 passing |
 | DarkState / Float Safety | `celestial/quadratic_daemon.py`, `E2E` | 9297 | ⚠️ `math.isclose` not found in `celestial/quadratic_daemon.py`; not re-verified |
 | HHMI Telemetry & Argo | `games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/logic/CircuitSim.java`, `argocd/` | 9298 | ⚠️ files present; no φ-mean / Prometheus emission found in `CircuitSim.java`. `rollout-hhmi-schema.yaml` and `analysis-phi-mean.yaml` — **not found at this path (as of 83ad9e47)**; real manifests: `argocd/rollout-sovereign-garden*.yaml`, `argocd/analysis-health.yaml` |
-| Loopback CLI bridge | `sovereign-irc-bridge/src/cli_loopback.py`, `games/teavm-rhythm/.../irc/CliLines.java` | 9304 | ✅ new — see §11.2 |
+| Loopback CLI bridge | `sovereign-irc-bridge/src/cli_loopback.py`, `games/teavm-rhythm/.../client/CliLines.java` | 9304 | ✅ new — see §11.2 |
 | `/llm` chat + reply guard | `sovereign-irc-bridge/src/llm_chat.py`, `chatml_prebuild.py`, `.../logic/NeuronSnapshot.java` | #132 / #133 / #135 | ✅ new — see §11.3–11.4 |
 | DeepInfer LLM backend | `sovereign-irc-bridge/src/llm_backend.py` | `7d5d90d1`, `83ad9e47` | ✅ new — see §11.5 |
 | CORS Anywhere (loopback) | `tools/cors-anywhere/` | #129 | ✅ new — see §11.7 |
@@ -267,7 +267,7 @@ The CD combinator applies a catalogued Rollout when **EKS/GKE cluster secrets ar
 | Relay | Adjusts heal loop parameters, anomaly thresholds, phase lock (v8.3: Python relay not found; see `src/self_improvement_relay.ts`) |
 | Gemini daemon | Periodically checks codespace health; hands off alerts to Gemini API |
 | CircuitSim Telemetry | Emits phi-mean mod firing to Prometheus for Argo canary gating — **v8.3: not found**. `CircuitSim.java` has no φ-mean / Prometheus code at `83ad9e47`; it exposes `lastSpikeSubstep` / `spikeCount` used by the `/llm` neuron snapshot |
-| Traceback feedback (v8.3) | `irc/TracebackFeedback` + bridge `mvn-test` surefire reports feed the last errors to `/llm` (no reward signal) |
+| Traceback feedback (v8.3) | `client/ide/TracebackFeedback` + bridge `mvn-test` surefire reports feed the last errors to `/llm` (no reward signal) |
 
 ---
 
@@ -355,7 +355,7 @@ Witness chain (v8.3): `9296` → `9297` → `9298` → `9299` → `9300` → `93
 ### 11.3 `/llm` neuron-snapshot chat (#132, #133)
 - **#132 (`879e2b45`):** `/llm <text>` goes over the CLI socket to `sovereign-irc-bridge/src/llm_chat.py`.
   - Each frame carries a **neuron snapshot** (`logic/NeuronSnapshot`, `SpikeWindow`). Per lane it includes spikes and rate in the last 2000 ms of brain time, the last spike, `LifNeuron.v()`, total spikes, and the most recently active neurons.
-  - Each frame also carries **traceback feedback** (`irc/TracebackFeedback`, capped at 1200 chars; the bridge adds `mvn-test` surefire failures and re-caps at 1500).
+  - Each frame also carries **traceback feedback** (`client/ide/TracebackFeedback`, capped at 1200 chars; the bridge adds `mvn-test` surefire failures and re-caps at 1500).
   - The game has no reward variable.
 - **#133 (`f43a0c6f`), snapshot anchor:**
   - While chart cues are pending, the spike window ends at the brain's clock (`window_anchor: "brain"`).

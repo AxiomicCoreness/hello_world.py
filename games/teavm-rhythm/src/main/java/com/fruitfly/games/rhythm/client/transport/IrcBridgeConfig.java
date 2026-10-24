@@ -1,4 +1,6 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.transport;
+
+import com.fruitfly.games.rhythm.client.CliLines;
 
 /**
  * TeaVM → IRC bridge constants. Browser TeaVM never dials IRC TCP directly;

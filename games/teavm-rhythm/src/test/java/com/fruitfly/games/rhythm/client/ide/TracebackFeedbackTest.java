@@ -1,4 +1,4 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.ide;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

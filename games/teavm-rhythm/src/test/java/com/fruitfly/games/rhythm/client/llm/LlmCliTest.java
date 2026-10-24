@@ -1,9 +1,10 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.llm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fruitfly.games.rhythm.client.ide.PythonIdeCli;
 import org.junit.jupiter.api.Test;
 
 class LlmCliTest {

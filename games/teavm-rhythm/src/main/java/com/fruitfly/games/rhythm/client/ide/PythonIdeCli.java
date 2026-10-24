@@ -1,5 +1,6 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.ide;
 
+import com.fruitfly.games.rhythm.client.CliLines;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

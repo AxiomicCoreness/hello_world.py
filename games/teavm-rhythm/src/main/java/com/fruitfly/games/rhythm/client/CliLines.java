@@ -1,4 +1,4 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client;
 
 /**
  * Pure formatting for the TeaVM left CLI (System / Engine / User).

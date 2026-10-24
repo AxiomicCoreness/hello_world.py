@@ -1,4 +1,6 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.irc;
+
+import com.fruitfly.games.rhythm.client.transport.IrcBridgeConfig;
 
 /**
  * Java-side {@code /mtls} tool call for TeaVM debug-oracle / rhythm clients.

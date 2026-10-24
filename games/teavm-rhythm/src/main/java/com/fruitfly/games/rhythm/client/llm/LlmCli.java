@@ -1,4 +1,8 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.llm;
+
+import com.fruitfly.games.rhythm.client.CliLines;
+import com.fruitfly.games.rhythm.client.ide.TracebackFeedback;
+import com.fruitfly.games.rhythm.client.transport.IrcBridgeConfig;
 
 /**
  * {@code /llm <text>} chat mode for the TeaVM left CLI. The browser never

@@ -1,4 +1,6 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.client.irc;
+
+import com.fruitfly.games.rhythm.client.transport.IrcBridgeConfig;
 
 /**
  * TeaVM-side IRC bridge client <em>stub</em>. Records the intended WebSocket

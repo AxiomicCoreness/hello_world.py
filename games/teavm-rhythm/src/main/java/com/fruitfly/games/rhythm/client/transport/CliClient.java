@@ -1,10 +1,10 @@
-package com.fruitfly.games.rhythm.web;
+package com.fruitfly.games.rhythm.client.transport;
 
-import com.fruitfly.games.rhythm.irc.CliLines;
-import com.fruitfly.games.rhythm.irc.IrcBridgeConfig;
-import com.fruitfly.games.rhythm.irc.LlmCli;
-import com.fruitfly.games.rhythm.irc.PythonIdeCli;
-import com.fruitfly.games.rhythm.irc.TracebackFeedback;
+import com.fruitfly.games.rhythm.client.CliLines;
+import com.fruitfly.games.rhythm.client.ide.PythonIdeCli;
+import com.fruitfly.games.rhythm.client.ide.TracebackFeedback;
+import com.fruitfly.games.rhythm.client.llm.LlmCli;
+import com.fruitfly.games.rhythm.web.Dom;
 import java.util.Collections;
 import java.util.function.Supplier;
 import org.teavm.jso.dom.events.Event;
