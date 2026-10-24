@@ -2,10 +2,8 @@ package com.fruitfly.games.rhythm.logic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Tiny pure-Java reader for the project-local connectome XML
@@ -123,12 +121,16 @@ public final class ConnectomeXml {
             throw err("content after </hemibrain>");
         }
         int n = ids.size();
-        List<List<double[]>> rows = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            rows.add(new ArrayList<>());
-        }
-        Set<Long> seen = new HashSet<>();
-        for (String[] c : conns) {
+        int m = conns.size();
+        // Validate in document order (first bad connection wins, as before), then
+        // build CSR with a stable counting sort by source: O(V + E) overall.
+        int[] pres = new int[m];
+        int[] posts = new int[m];
+        double[] ws = new double[m];
+        double[] ds = new double[m];
+        PairSet seen = new PairSet(m);
+        for (int e = 0; e < m; e++) {
+            String[] c = conns.get(e);
             Integer pre = index.get(c[0]);
             if (pre == null) {
                 throw new IllegalArgumentException(c[4] + " references unknown source neuron '" + c[0] + "'");
@@ -137,32 +139,37 @@ public final class ConnectomeXml {
             if (post == null) {
                 throw new IllegalArgumentException(c[4] + " references unknown target neuron '" + c[1] + "'");
             }
-            double w = number(c[2], "weight", c[4]);
-            double d = c[3] == null ? DEFAULT_DELAY_MS : number(c[3], "delayMs", c[4]);
-            if (!(d > 0.0)) {
-                throw new IllegalArgumentException(c[4] + " delayMs must be > 0, got " + d);
+            double we = number(c[2], "weight", c[4]);
+            double de = c[3] == null ? DEFAULT_DELAY_MS : number(c[3], "delayMs", c[4]);
+            if (!(de > 0.0)) {
+                throw new IllegalArgumentException(c[4] + " delayMs must be > 0, got " + de);
             }
-            if (!seen.add(((long) pre << 32) | post)) {
+            if (!seen.add(pre, post)) {
                 throw new IllegalArgumentException("duplicate connection " + c[0] + " -> " + c[1]);
             }
-            rows.get(pre).add(new double[] {post, w, d});
+            pres[e] = pre;
+            posts[e] = post;
+            ws[e] = we;
+            ds[e] = de;
         }
-        int nnz = seen.size();
         int[] rowPtr = new int[n + 1];
-        int[] col = new int[nnz];
-        double[] w = new double[nnz];
-        double[] d = new double[nnz];
-        int k = 0;
-        for (int i = 0; i < n; i++) {
-            rowPtr[i] = k;
-            for (double[] syn : rows.get(i)) {
-                col[k] = (int) syn[0];
-                w[k] = syn[1];
-                d[k] = syn[2];
-                k++;
-            }
+        for (int e = 0; e < m; e++) {
+            rowPtr[pres[e] + 1]++;
         }
-        rowPtr[n] = k;
+        for (int i = 0; i < n; i++) {
+            rowPtr[i + 1] += rowPtr[i];
+        }
+        int[] fill = new int[n];
+        System.arraycopy(rowPtr, 0, fill, 0, n);
+        int[] col = new int[m];
+        double[] w = new double[m];
+        double[] d = new double[m];
+        for (int e = 0; e < m; e++) {
+            int k = fill[pres[e]]++;
+            col[k] = posts[e];
+            w[k] = ws[e];
+            d[k] = ds[e];
+        }
         return new Circuit(ids, regions, rowPtr, col, w, d);
     }
 
@@ -435,6 +442,51 @@ public final class ConnectomeXml {
             }
         }
         return i == n;
+    }
+
+    /**
+     * Set of (pre, post) index pairs, open addressing on plain int arrays.
+     * Replaces a HashSet&lt;Long&gt; keyed (pre &lt;&lt; 32 | post): Long.hashCode is
+     * pre ^ post, which collides massively for local wiring (a 10k-neuron ring
+     * with 20 out-synapses each has only 235 distinct hashes for 200k keys).
+     * The JVM's HashMap treeifies such buckets; TeaVM's does not, so in the
+     * browser every add walked a long chain of emulated-long equals: O(E^2).
+     */
+    static final class PairSet {
+        private final int[] pre;
+        private final int[] post;
+        private final int mask;
+
+        PairSet(int expected) {
+            int cap = 16;
+            while (cap < expected * 2) {
+                cap <<= 1;
+            }
+            pre = new int[cap];
+            post = new int[cap];
+            mask = cap - 1;
+            java.util.Arrays.fill(pre, -1);
+        }
+
+        /** Adds (a, b), both &gt;= 0; false if already present. */
+        boolean add(int a, int b) {
+            int h = a * 0x9E3779B1 + b;
+            h ^= h >>> 16;
+            h *= 0x85EBCA6B;
+            h ^= h >>> 13;
+            h *= 0xC2B2AE35;
+            h ^= h >>> 16;
+            int i = h & mask;
+            while (pre[i] >= 0) {
+                if (pre[i] == a && post[i] == b) {
+                    return false;
+                }
+                i = (i + 1) & mask;
+            }
+            pre[i] = a;
+            post[i] = b;
+            return true;
+        }
     }
 
     private IllegalArgumentException err(String msg) {
