@@ -55,7 +55,7 @@ class _Chat(BaseHTTPRequestHandler):
 
 @pytest.fixture(autouse=True)
 def _env(monkeypatch):
-    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_DEEPSEEK_URL", "LLM_URL",
+    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_DEEPSEEK_URL", "LLM_URL", "LLM_ABLITERATED_URL",
               "DEEPINFER_REPROBE_S", "DEEPINFER_CONNECT_TIMEOUT", "LLM_PROMPT_MODE"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
@@ -86,6 +86,7 @@ def test_default_backend_is_deepinfer():
     assert llm_backend.DEFAULT_DEEPINFER_URL == "http://127.0.0.1:8090/v1/chat/completions"
     assert llm_backend.DEFAULT_DEEPSEEK_URL == "http://127.0.0.1:8082/v1/chat/completions"
     assert llm_backend.fallback() == ""
+    assert llm_backend.DEFAULT_ABLITERATED_URL == "http://127.0.0.1:8083/v1/chat/completions"
 
 
 def test_unknown_backend_and_fallback_rejected():
@@ -94,9 +95,12 @@ def test_unknown_backend_and_fallback_rejected():
     with pytest.raises(llm_backend.BackendConfigError):
         llm_backend.fallback("deepinfer")
     assert llm_backend.fallback("deepseek-fixture") == "deepseek-fixture"
+    assert llm_backend.fallback("gguf-abliterated") == "gguf-abliterated"
+    assert llm_backend.backend("gguf-abliterated") == "gguf-abliterated"
 
 
-@pytest.mark.parametrize("name,env", [("DEEPINFER_URL", "DEEPINFER_URL"), ("LLM_DEEPSEEK_URL", "LLM_DEEPSEEK_URL")])
+@pytest.mark.parametrize("name,env", [("DEEPINFER_URL", "DEEPINFER_URL"), ("LLM_DEEPSEEK_URL", "LLM_DEEPSEEK_URL"),
+                                      ("LLM_ABLITERATED_URL", "LLM_ABLITERATED_URL")])
 def test_backend_urls_loopback_enforced(monkeypatch, name, env):
     for bad in ("http://0.0.0.0:8090/v1/chat/completions", "http://10.0.0.5:8090/x",
                 "http://api.example.com/v1/chat/completions"):
@@ -105,6 +109,8 @@ def test_backend_urls_loopback_enforced(monkeypatch, name, env):
     monkeypatch.setenv(env, "http://0.0.0.0:8090/v1/chat/completions")
     if env == "LLM_DEEPSEEK_URL":
         monkeypatch.setenv("LLM_BACKEND", "deepseek-fixture")
+    if env == "LLM_ABLITERATED_URL":
+        monkeypatch.setenv("LLM_BACKEND", "gguf-abliterated")
     lines = llm_chat.handle_llm_sync(WIRE)
     assert lines[-1].startswith(f"[System] llm offline: {name} must be")
 
@@ -213,6 +219,57 @@ def test_gguf_fallback_is_labeled_qwen(monkeypatch, chat_stub, caplog):
     assert rec[-1]["backend"] == "qwen" and rec[-1]["fallback_from"] == "deepinfer"
     _, err, meta = llm_chat.complete_routed([{"role": "user", "content": "x"}])
     assert err is None and meta["backend"] == "qwen"
+
+
+def test_gguf_abliterated_fallback_is_labeled(monkeypatch, chat_stub, caplog):
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_FALLBACK", "gguf-abliterated")
+    monkeypatch.setenv("LLM_ABLITERATED_URL", url)
+    # Plain Qwen points at a dead port: the abliterated server must be the one answering.
+    monkeypatch.setenv("LLM_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
+    with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
+        lines = llm_chat.handle_llm_sync(WIRE)
+    assert any(x.startswith("[System] llm: deepinfer backend offline (") for x in lines)
+    assert ("[System] llm route: backend=qwen-abliterated (gguf-abliterated fallback from deepinfer) "
+            "path=/v1/chat/completions mode=auto family=chatml") in lines
+    engine = [x for x in lines if x.startswith("[Engine]")]
+    assert engine == ["[Engine] llm: [Fallback: Qwen2.5-1.5B abliterated] Lane L3 is busiest."]
+    assert not any("backend=deepinfer" in x or "backend=qwen " in x for x in lines)
+    assert not any("[Fallback: Qwen] " in x for x in lines)
+    assert llm_backend.ABLITERATED_FALLBACK_LOG in caplog.text
+    rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
+    assert rec[-1]["backend"] == "qwen-abliterated" and rec[-1]["fallback_from"] == "deepinfer"
+    body = stub.posts[-1]["body"]
+    assert body["model"] == "qwen2.5-1.5b-instruct-abliterated"
+    assert "<|im_end|>" in body["stop"]
+    _, err, meta = llm_chat.complete_routed([{"role": "user", "content": "x"}])
+    assert err is None and meta["backend"] == "qwen-abliterated"
+
+
+def test_gguf_abliterated_backend_direct_is_labeled(monkeypatch, chat_stub, caplog):
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_BACKEND", "gguf-abliterated")
+    monkeypatch.setenv("LLM_ABLITERATED_URL", url)
+    with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
+        lines = llm_chat.handle_llm_sync(WIRE)
+    assert "[System] llm route: backend=qwen-abliterated path=/v1/chat/completions mode=auto family=chatml" in lines
+    assert [x for x in lines if x.startswith("[Engine]")] == [
+        "[Engine] llm: [Fallback: Qwen2.5-1.5B abliterated] Lane L3 is busiest."]
+    assert not any("deepinfer" in x.lower() for x in lines)
+    rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
+    assert rec[-1]["backend"] == "qwen-abliterated" and rec[-1]["fallback_from"] is None
+
+
+def test_gguf_abliterated_startup_and_health(monkeypatch):
+    monkeypatch.setenv("LLM_FALLBACK", "gguf-abliterated")
+    line = llm_backend.startup_probe("http://127.0.0.1:8081/v1/chat/completions")
+    assert "deepinfer OFFLINE" in line
+    assert line.endswith("→ fallback gguf-abliterated (Qwen2.5-1.5B abliterated at 127.0.0.1:8083)")
+    blob = llm_backend.health_blob()
+    assert blob["fallback"] == "gguf-abliterated"
+    assert blob["abliterated_url"] == "http://127.0.0.1:8083/v1/chat/completions"
+    assert llm_backend.reply_prefix("qwen-abliterated") == "[Fallback: Qwen2.5-1.5B abliterated] "
+    assert llm_backend.reply_prefix("qwen-abliterated") != llm_backend.reply_prefix("qwen")
 
 
 def test_deepseek_fixture_backend_labeled_and_template(monkeypatch, chat_stub, caplog):

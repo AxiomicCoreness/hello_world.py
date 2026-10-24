@@ -1,16 +1,21 @@
-"""Which model server answers `/llm`: DeepInfer (default), Qwen GGUF, or the DeepSeek-V4 fixture.
+"""Which model server answers `/llm`: DeepInfer (default), Qwen GGUF, abliterated Qwen GGUF, or the DeepSeek-V4 fixture.
 
-LLM_BACKEND=deepinfer|gguf|deepseek-fixture (default deepinfer)
+LLM_BACKEND=deepinfer|gguf|gguf-abliterated|deepseek-fixture (default deepinfer)
   deepinfer         DEEPINFER_URL, default http://127.0.0.1:8090/v1/chat/completions
   gguf              LLM_URL, default http://127.0.0.1:8081/v1/chat/completions
                     (llama.cpp llama-server; Qwen2.5-1.5B-Instruct is the recommended GGUF)
   deepseek-fixture  LLM_DEEPSEEK_URL, default http://127.0.0.1:8082/v1/chat/completions
                     (llama-server running RalphSeek-V4-Flash, a 122M deepseek4-architecture
                     test fixture; its author says it is NOT a usable language model)
-LLM_FALLBACK=gguf|deepseek-fixture (unset = no fallback)
+  gguf-abliterated  LLM_ABLITERATED_URL, default http://127.0.0.1:8083/v1/chat/completions
+                    (llama-server running Qwen2.5-1.5B-Instruct-abliterated Q4_K_M; "abliterated"
+                    means its safety-refusal behaviour was removed; manual override or fallback)
+LLM_FALLBACK=gguf|gguf-abliterated|deepseek-fixture (unset = no fallback)
   Only when this is set does an unreachable DeepInfer hand the turn to another
   server. Provenance is always labeled, never shown as DeepInfer:
     gguf fallback       backend "qwen", reply lines prefixed ``[Fallback: Qwen]``
+    gguf-abliterated    backend "qwen-abliterated", reply lines prefixed
+                        ``[Fallback: Qwen2.5-1.5B abliterated]`` (direct or fallback)
     deepseek-fixture    backend "deepseek-fixture", reply lines prefixed
                         ``[DeepSeek-V4 fixture: RalphSeek 122M — not a real model]``
                         (direct or fallback)
@@ -52,13 +57,15 @@ from urllib.parse import urlsplit
 
 logger = logging.getLogger("sovereign-irc-bridge.llm")
 
-BACKENDS: Final = ("deepinfer", "gguf", "deepseek-fixture")
-FALLBACKS: Final = ("", "gguf", "deepseek-fixture")
+BACKENDS: Final = ("deepinfer", "gguf", "gguf-abliterated", "deepseek-fixture")
+FALLBACKS: Final = ("", "gguf", "gguf-abliterated", "deepseek-fixture")
 DEFAULT_BACKEND: Final = "deepinfer"
 DEFAULT_DEEPINFER_URL: Final = "http://127.0.0.1:8090/v1/chat/completions"
 DEFAULT_DEEPINFER_MODEL: Final = "deepinfer"
 DEFAULT_DEEPSEEK_URL: Final = "http://127.0.0.1:8082/v1/chat/completions"
 DEFAULT_DEEPSEEK_MODEL: Final = "ralphseek-v4-flash"
+DEFAULT_ABLITERATED_URL: Final = "http://127.0.0.1:8083/v1/chat/completions"
+DEFAULT_ABLITERATED_MODEL: Final = "qwen2.5-1.5b-instruct-abliterated"
 # The fixture's DeepSeek-V4 template opens <think> unless thinking is off; with it
 # off the prompt ends "<｜Assistant｜></think>", as the fixture's README shows.
 DEEPSEEK_FIXTURE_EXTRA: Final = {"chat_template_kwargs": {"enable_thinking": False}}
@@ -70,10 +77,13 @@ LABEL_DEEPINFER: Final = "deepinfer"
 LABEL_GGUF: Final = "gguf"
 LABEL_FALLBACK: Final = "qwen"           # GGUF llama-server answering for an offline DeepInfer
 LABEL_FIXTURE: Final = "deepseek-fixture"
+LABEL_ABLITERATED: Final = "qwen-abliterated"  # abliterated Qwen GGUF, direct or fallback
 FALLBACK_PREFIX: Final = "[Fallback: Qwen] "
+ABLITERATED_PREFIX: Final = "[Fallback: Qwen2.5-1.5B abliterated] "
 FIXTURE_PREFIX: Final = "[DeepSeek-V4 fixture: RalphSeek 122M — not a real model] "
 FALLBACK_LOG: Final = "DeepInfer unreachable, falling back to Qwen"
 FIXTURE_FALLBACK_LOG: Final = "DeepInfer unreachable, falling back to DeepSeek-V4 fixture (RalphSeek 122M)"
+ABLITERATED_FALLBACK_LOG: Final = "DeepInfer unreachable, falling back to Qwen2.5-1.5B abliterated"
 # Modules the DeepInfer V4 code imports (see deepinfer/model_executor/models/v4_modules).
 CAPABILITY_MODULES: Final = ("deep_gemm", "deep_ep", "flash_mla", "torch", "deepinfer._C")
 
@@ -92,7 +102,7 @@ def backend(raw: Optional[str] = None) -> str:
 def fallback(raw: Optional[str] = None) -> str:
     v = (raw if raw is not None else os.environ.get("LLM_FALLBACK", "")).strip().lower()
     if v not in FALLBACKS:
-        raise BackendConfigError(f"LLM_FALLBACK must be unset or 'gguf', got {v!r}")
+        raise BackendConfigError(f"LLM_FALLBACK must be unset or one of {', '.join(f for f in FALLBACKS if f)}, got {v!r}")
     return v
 
 
@@ -112,9 +122,18 @@ def deepseek_model() -> str:
     return os.environ.get("LLM_DEEPSEEK_MODEL", DEFAULT_DEEPSEEK_MODEL)
 
 
+def abliterated_url_raw() -> str:
+    return os.environ.get("LLM_ABLITERATED_URL", DEFAULT_ABLITERATED_URL)
+
+
+def abliterated_model() -> str:
+    return os.environ.get("LLM_ABLITERATED_MODEL", DEFAULT_ABLITERATED_MODEL)
+
+
 def reply_prefix(label: Optional[str]) -> str:
     """Visible provenance prefix for each reply line ("" for deepinfer and direct gguf)."""
-    return {LABEL_FALLBACK: FALLBACK_PREFIX, LABEL_FIXTURE: FIXTURE_PREFIX}.get(label or "", "")
+    return {LABEL_FALLBACK: FALLBACK_PREFIX, LABEL_FIXTURE: FIXTURE_PREFIX,
+            LABEL_ABLITERATED: ABLITERATED_PREFIX}.get(label or "", "")
 
 
 def connect_timeout() -> float:
@@ -254,6 +273,10 @@ def status_line(name: str, url: str, server: Tuple[bool, str], caps: Optional[Di
     if name == "gguf":
         state = "online" if ok else "OFFLINE"
         return f"[System] llm backend: gguf {state} (llama-server at {hostport(url)}; {detail})"
+    if name == LABEL_ABLITERATED:
+        state = "online" if ok else "OFFLINE"
+        return (f"[System] llm backend: gguf-abliterated {state} (Qwen2.5-1.5B-Instruct-abliterated, "
+                f"safety refusals removed; llama-server at {hostport(url)}; {detail})")
     if name == LABEL_FIXTURE:
         state = "online" if ok else "OFFLINE"
         return (f"[System] llm backend: deepseek-fixture {state} (RalphSeek-V4-Flash 122M test fixture, "
@@ -270,6 +293,9 @@ def startup_probe(llm_url: str) -> str:
         b, f = backend(), fallback()
         if b == "gguf":
             line = status_line("gguf", llm_url, probe_server(llm_url, timeout=3.0))
+        elif b == "gguf-abliterated":
+            u = abliterated_url_raw()
+            line = status_line(LABEL_ABLITERATED, u, probe_server(u, timeout=3.0))
         elif b == "deepseek-fixture":
             u = deepseek_url_raw()
             line = status_line(LABEL_FIXTURE, u, probe_server(u, timeout=3.0))
@@ -281,6 +307,9 @@ def startup_probe(llm_url: str) -> str:
                 if f == "gguf":
                     line += f" → fallback gguf (Qwen at {hostport(llm_url)})"
                     logger.warning("%s (%s)", FALLBACK_LOG, detail)
+                elif f == "gguf-abliterated":
+                    line += f" → fallback gguf-abliterated (Qwen2.5-1.5B abliterated at {hostport(abliterated_url_raw())})"
+                    logger.warning("%s (%s)", ABLITERATED_FALLBACK_LOG, detail)
                 elif f == "deepseek-fixture":
                     line += f" → fallback deepseek-fixture (RalphSeek 122M at {hostport(deepseek_url_raw())}, not a real model)"
                     logger.warning("%s (%s)", FIXTURE_FALLBACK_LOG, detail)
@@ -302,6 +331,7 @@ def health_blob() -> Dict[str, Any]:
     hit = _STATE.get(url)
     return {"backend": b, "fallback": f or None, "deepinfer_url": url,
             "deepseek_fixture_url": deepseek_url_raw(),
+            "abliterated_url": abliterated_url_raw(),
             "deepinfer_online": None if hit is None else hit[0],
             "deepinfer_detail": None if hit is None else hit[1]}
 
