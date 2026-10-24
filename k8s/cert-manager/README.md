@@ -1,10 +1,12 @@
-# k8s/cert-manager — Nexus = GGUF
+# k8s/cert-manager — Nexus = GGUF (DeepInfer-style single loadable unit)
 
 This directory is a **single loadable identity** for the cert-manager PKI
-that backs the Port-380 gate (Layer 314). Like a GGUF file, it is
-self-describing: the manifest, the seal, the objects, and the apply
-protocol are all contained here. No external documentation is required
-to bring it up.
+that backs the Port-380 gate (Layer 314). It is self-describing the way a
+GGUF file is self-describing for a DeepInfer-style loader (cf. `deepinfer/`
+and `deepinfer/model_executor/models/v4_modules/`): where a GGUF file packs
+header metadata, the tensors, and everything needed to load them into one
+unit, this folder bundles the manifest, the seal, the objects, and the apply
+protocol. No external documentation is required to bring it up.
 
 ## Contents
 
