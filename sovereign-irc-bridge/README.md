@@ -42,3 +42,13 @@ TeaVM `CliClient` dials that URL from the rhythm page left column. Pages HTTPS
 needs a `wss://` tunnel; the local contract stays `ws://127.0.0.1:6669/cli`.
 Set `CLI_LIVE_IRC=1` to open plain TCP to `irc.abjects.net:6669` from the
 bridge process (browser still never dials abjects). Default is stub echo.
+
+### `/llm` → GGUF (llama-server on loopback)
+
+`/llm <text>` lines (plus the TeaVM `#neuro` spike snapshot and `#feedback`
+traceback block) go to `src/llm_chat.py`, which posts an OpenAI-style chat
+request to `LLM_URL` (default `http://127.0.0.1:8081/v1/chat/completions`,
+loopback only; `LLM_MODEL` default `local-gguf`). A down model server returns
+`[System] llm offline: …`. Tests: `pytest src/test_llm_chat.py` (stub server,
+no model download). Full run steps: `games/teavm-rhythm/README.md`,
+"LLM chat (/llm, GGUF on loopback)".
