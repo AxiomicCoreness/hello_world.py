@@ -30,7 +30,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/webapp/assets/ar_brain_bg.jpg` | Your AR fly-brain screenshot, resized to 1170 px wide, used as the dimmed background. |
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
-| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6669/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
+| `irc/IrcBridgeConfig`, `MtlsToolCall`, `IrcBridgeClientStub`, `IrcChatCli`, `CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
 | `web/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; Option B hostname switch (loopback local/CI, `PAGES_WSS` on Pages); click-to-focus; skips game keys while typing. |
 | `irc/PythonIdeCli.java` | Offline `/py` · `/ide` help/list/pointer + traceback-shaped errors; live toolkit via bridge. |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
@@ -40,6 +40,8 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `tools/LifGoldenTraceGen.java`, `tools/regen-lif-traces.sh` | Trace generator. It compiles against the root `src/` LIFRK4 and isn't part of the Maven build. |
 | `tools/smoke.js` | Headless Node smoke test for the compiled `classes.js`, using a stubbed DOM. |
 | `tools/chrome_smoke.mjs` | Real headless Chrome (CDP) check of a served build: `window.__rhythmDebug`, `?debug=notes`, pause on a hidden tab, and clock jitter with Safari-like 40 ms `currentTime` steps. `node tools/chrome_smoke.mjs http://127.0.0.1:8092/` |
+| `irc/LlmCli`, `irc/TracebackFeedback`, `logic/NeuronSnapshot`, `logic/SpikeWindow`, `logic/Json` | `/llm` chat mode: wire format, the traceback-report feedback block, and the compact LIF-RK4 spike snapshot (pure Java, JVM-tested). See "LLM chat (/llm, GGUF on loopback)" below. |
+| `tools/llm_chat_e2e.mjs` | Real headless Chrome check of `/llm` against a running `llama-server` + bridge: plays bembe with the LIF fly, triggers one `/py` traceback, sends `/llm` and waits for the model's reply. |
 
 ## Rules
 
@@ -393,6 +395,87 @@ and `?voice=fly|count|solfege` pick from the URL.
 
 `MusicSourceTest` plays a MIDI scale, a two-channel MIDI riff with octave
 doubling and all three voice lines with each of the four fly modes (no misses).
+
+## LLM chat (/llm, GGUF on loopback)
+
+The left CLI has an LLM mode. `/llm <text>` goes over the same CLI socket as
+everything else (Option B unchanged: `ws://127.0.0.1:6680/cli` locally,
+`wss://bridge.axiomiccoreness.com/cli` on Pages) to the Python bridge
+(`sovereign-irc-bridge/src/llm_chat.py`), which forwards it to llama.cpp's
+`llama-server` OpenAI-compatible endpoint on `127.0.0.1`. The browser never
+talks to the model, and nothing binds or dials a non-loopback address.
+
+Each `/llm` frame carries two JSON blocks next to the prompt:
+
+```
+/llm what are the lanes doing?
+#neuro {"v":1,"mode":"lif","brain":"lif","song_ms":5230,"brain_ms":5200,"window_ms":2000,"lanes":[{"lane":0,"label":"antennal lobe","spikes":1,"rate_hz":0.5,"last_ms":4961,"v_mv":-51.9,"total":6},...],"total_spikes":24,"top":[{"id":"lane2","region":"lateral horn","spikes":7,"ms_since":12},...]}
+#feedback {"kind":"traceback","reports":[{"type":"CapabilityError","message":"unknown capability 'zz'","origin":"cli","frames":["toolkit.py:88 in call"]}],"dropped":0}
+```
+
+- **Neuron snapshot** (`logic/NeuronSnapshot`): built only from state the
+  simulators keep. Per lane: spikes and rate in the last 2000 ms of brain
+  time (from `SpikeWindow`, which `LifAutoplayer` and `ConnectomeAutoplayer`
+  fill when a lane neuron spikes, observation only), last spike time, the
+  lane neuron's membrane voltage `LifNeuron.v()` and its total spikes. `top`
+  lists the most recently active neurons: the four LIF lane neurons, or any
+  circuit neuron (`CircuitSim.lastSpikeSubstep` / `spikeCount`) in connectome
+  modes. With the control mode off the snapshot is `"brain":"idle"` with no
+  lanes.
+- **Feedback** (`irc/TracebackFeedback`): the "carrot on the stick" is
+  traceback reports, not a reward signal (the game has no dopamine/reward
+  variable). Every `[Traceback]` run that reaches the chat history (bridge
+  pythonIDE tracebacks and `PythonIdeCli`'s offline ones) becomes one report
+  trimmed to exception type, message (<= 200 chars) and the last 3 frames;
+  the last 3 reports are kept and the block is capped at 1200 chars. The
+  bridge adds failing JUnit tests from the last local `mvn` run
+  (`target/surefire-reports/*.txt`, origin `mvn-test`; `LLM_BUILD_FEEDBACK=0`
+  turns that off) and re-caps the block (5 reports, 1500 chars). The system
+  prompt tells the model to address errors in the feedback first.
+
+If the bridge isn't connected the chat says `llm offline — bridge not
+connected`; if `llama-server` is down the bridge answers `[System] llm
+offline: … unreachable`. Neither crashes the chat.
+
+### Run it
+
+1. Serve any GGUF model with llama.cpp on loopback (prebuilt `llama-server`
+   from the llama.cpp releases page, or your own build). For a quick CPU test a
+   ~100 MB model is enough, e.g. SmolLM2-135M-Instruct Q4_K_M:
+
+   ```bash
+   curl -L -o smol.gguf https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF/resolve/main/SmolLM2-135M-Instruct-Q4_K_M.gguf
+   llama-server -m smol.gguf --host 127.0.0.1 --port 8081 -c 2048
+   curl -s http://127.0.0.1:8081/health      # {"status":"ok"}
+   ```
+
+2. Start the bridge (binds 127.0.0.1:6680 only; exits with `FATAL: Cosmic
+   Alignment` if `CLI_BIND_HOST` or `LLM_URL` is not loopback):
+
+   ```bash
+   cd sovereign-irc-bridge
+   pip install -e .
+   LLM_URL=http://127.0.0.1:8081/v1/chat/completions LLM_MODEL=local-gguf python -m src.cli_loopback
+   ```
+
+   `LLM_TIMEOUT_S` (default 60) and `LLM_MAX_TOKENS` (default 256) are optional.
+
+3. Build and serve the game, then open it on `127.0.0.1`:
+
+   ```bash
+   cd games/teavm-rhythm && mvn clean package
+   python3 -m http.server 8092 --bind 127.0.0.1 -d target/webapp
+   # open http://127.0.0.1:8092/ , press B (LIF fly), Space, then type in the left chat:
+   #   /llm what are the lanes doing?
+   ```
+
+   The local bridge port is **6680** (moved off 6669: Chrome and Firefox
+   block the IRC range 6665-6669 and 6697 as "unsafe ports"). 6680 is on
+   neither browser's restricted list, so plain Chrome/Firefox connect with no
+   flags or prefs. The Pages WSS path on 443 is unchanged.
+
+4. Optional end-to-end check (plain headless Chrome, no extra flags; all three services running):
+   `node --experimental-websocket tools/llm_chat_e2e.mjs http://127.0.0.1:8092/`
 
 ## Debug Oracle panel (team v1)
 

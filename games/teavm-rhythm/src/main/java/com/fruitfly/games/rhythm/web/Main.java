@@ -21,6 +21,7 @@ import com.fruitfly.games.rhythm.logic.ClickTrack;
 import com.fruitfly.games.rhythm.logic.InputRouter;
 import com.fruitfly.games.rhythm.logic.Judgement;
 import com.fruitfly.games.rhythm.logic.LifAutoplayer;
+import com.fruitfly.games.rhythm.logic.NeuronSnapshot;
 import com.fruitfly.games.rhythm.logic.LoadedChart;
 import com.fruitfly.games.rhythm.logic.Note;
 import com.fruitfly.games.rhythm.logic.NoteChart;
@@ -70,7 +71,7 @@ import org.teavm.jso.dom.html.HTMLElement;
  * assets/ar_brain_bg.jpg, dimmed; ?camera=1: live camera, else the AR shot), the 3D stage (StageRenderer:
  * grid, origin anchor, fly-brain object), lanes and notes, then the HUD as
  * an HTML overlay (#hud-l, #hud-r, #hud-c; canvas text if those are absent).
- * Left of the stage: #cli-column (CliClient → ws://127.0.0.1:6669/cli → irc.abjects.net:6669).
+ * Left of the stage: #cli-column (CliClient → ws://127.0.0.1:6680/cli → irc.abjects.net:6669).
  * The canvas is sized by StageLayout (iPhone 12: 390x844 CSS px;
  * ?device=iphone12 forces it) with a devicePixelRatio backing store
  * (1170x2532 at DPR 3).
@@ -165,7 +166,7 @@ public final class Main {
     private static boolean pausedHidden;
     private static boolean resumePending;
     static final String PAUSED_TEXT = "paused (tab hidden)";
-    /** Left CLI → ws://127.0.0.1:6669/cli (Cosmic Alignment loopback). */
+    /** Left CLI → ws://127.0.0.1:6680/cli (Cosmic Alignment loopback). */
     private static CliClient cliClient;
 
     private Main() {
@@ -187,6 +188,7 @@ public final class Main {
         // Cosmic Alignment CLI: loopback WS only (never browser→abjects).
         cliClient = new CliClient();
         cliClient.mount(doc);
+        cliClient.setNeuronSnapshot(Main::neuronSnapshot);
         hudL = (HTMLElement) doc.getElementById("hud-l");
         hudR = (HTMLElement) doc.getElementById("hud-r");
         hudC = (HTMLElement) doc.getElementById("hud-c");
@@ -898,6 +900,26 @@ public final class Main {
     private static String laneLabel(int l) {
         String r = ConnectomeAutoplayer.laneLabel(circuit, l);
         return r != null ? r : REGION_LABELS[l];
+    }
+
+    /** Live LIF-RK4 spike snapshot for the CLI's /llm chat (real simulator state only). */
+    private static String neuronSnapshot() {
+        String m = ControlMode.id(mode);
+        long now = clock == null ? 0 : songTime();
+        if (brain == null || wired == null || flyLif == null || flyWired == null) {
+            return NeuronSnapshot.idle(m, now);
+        }
+        String[] labels = new String[RhythmGame.LANES];
+        for (int l = 0; l < labels.length; l++) {
+            labels[l] = laneLabel(l);
+        }
+        switch (mode) {
+            case MODE_LIF: return NeuronSnapshot.fromLif(m, now, brain, labels);
+            case MODE_CONNECTOME: return NeuronSnapshot.fromConnectome(m, now, wired, labels);
+            case MODE_ASSIST_LIF: return NeuronSnapshot.fromLif(m, now, flyLif, labels);
+            case MODE_ASSIST_CONNECTOME: return NeuronSnapshot.fromConnectome(m, now, flyWired, labels);
+            default: return NeuronSnapshot.idle(m, now);
+        }
     }
 
     /** ms since each neuron's last spike in the connectome autoplayer (-1 = never); null unless that mode is on. */

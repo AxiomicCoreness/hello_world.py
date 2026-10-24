@@ -35,10 +35,26 @@ TeaVM panel `games/teavm-rhythm/.../debug-oracle` understands `/stokes`, `/flux`
 ```bash
 # MUST bind 127.0.0.1 only — never 0.0.0.0
 python -m src.cli_loopback
-# → ws://127.0.0.1:6669/cli  →  (label) irc.abjects.net:6669
+# → ws://127.0.0.1:6680/cli  →  (label) irc.abjects.net:6669
 ```
 
 TeaVM `CliClient` dials that URL from the rhythm page left column. Pages HTTPS
-needs a `wss://` tunnel; the local contract stays `ws://127.0.0.1:6669/cli`.
+needs a `wss://` tunnel; the local contract stays `ws://127.0.0.1:6680/cli`.
 Set `CLI_LIVE_IRC=1` to open plain TCP to `irc.abjects.net:6669` from the
 bridge process (browser still never dials abjects). Default is stub echo.
+
+The local CLI port moved from 6669 to **6680**: Chrome and Firefox refuse
+WebSocket dials to their "unsafe port" list (IRC 6665-6669, 6697), so the
+old port only worked with `--explicitly-allowed-ports`. 6680 needs no browser
+flags. `CLI_BIND_PORT` still overrides it; the bind stays loopback-only and a
+non-loopback `CLI_BIND_HOST` exits with `FATAL: Cosmic Alignment`.
+
+### `/llm` → GGUF (llama-server on loopback)
+
+`/llm <text>` lines (plus the TeaVM `#neuro` spike snapshot and `#feedback`
+traceback block) go to `src/llm_chat.py`, which posts an OpenAI-style chat
+request to `LLM_URL` (default `http://127.0.0.1:8081/v1/chat/completions`,
+loopback only; `LLM_MODEL` default `local-gguf`). A down model server returns
+`[System] llm offline: …`. Tests: `pytest src/test_llm_chat.py` (stub server,
+no model download). Full run steps: `games/teavm-rhythm/README.md`,
+"LLM chat (/llm, GGUF on loopback)".

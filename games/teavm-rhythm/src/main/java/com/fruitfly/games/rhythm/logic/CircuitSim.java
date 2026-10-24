@@ -26,6 +26,7 @@ public final class CircuitSim {
     private final double[][] pending;
     private final int[] synSlots;
     private final long[] lastSpike;
+    private final long[] perNeuron;
     private int head;
     private long substeps;
     private long spikes;
@@ -45,6 +46,7 @@ public final class CircuitSim {
         }
         pending = new double[n][max + 2];
         lastSpike = new long[n];
+        perNeuron = new long[n];
         Arrays.fill(lastSpike, Long.MIN_VALUE);
     }
 
@@ -73,6 +75,7 @@ public final class CircuitSim {
             }
             spikes++;
             lastSpike[i] = substeps;
+            perNeuron[i]++;
             for (int k = circuit.rowStart(i); k < circuit.rowEnd(i); k++) {
                 pending[circuit.target(k)][(head + 1 + synSlots[k]) % h] += circuit.weight(k);
             }
@@ -104,5 +107,10 @@ public final class CircuitSim {
     /** Substep index of neuron i's last spike, or Long.MIN_VALUE if it never spiked. */
     public long lastSpikeSubstep(int i) {
         return lastSpike[i];
+    }
+
+    /** Spikes neuron i has fired so far. */
+    public long spikeCount(int i) {
+        return perNeuron[i];
     }
 }
