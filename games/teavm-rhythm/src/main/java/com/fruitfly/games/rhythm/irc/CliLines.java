@@ -7,7 +7,7 @@ package com.fruitfly.games.rhythm.irc;
  * <p>Cosmic Alignment (Option B):
  * <ul>
  *   <li>local / CI ({@code 127.0.0.1}, {@code localhost}):
- *       {@code UI → ws://127.0.0.1:6669/cli → bridge → irc.abjects.net:6669}</li>
+ *       {@code UI → ws://127.0.0.1:6680/cli → bridge → irc.abjects.net:6669}</li>
  *   <li>GitHub Pages / production host:
  *       {@code UI → wss://bridge.axiomiccoreness.com/cli → bridge → irc.abjects.net:6669}</li>
  * </ul>
@@ -21,7 +21,7 @@ public final class CliLines {
     public static final String KIND_TRACEBACK = "Traceback";
 
     /** Contract URL for the loopback CLI (TeaVM local/CI; never 0.0.0.0). */
-    public static final String LOOPBACK_WS = "ws://127.0.0.1:6669/cli";
+    public static final String LOOPBACK_WS = "ws://127.0.0.1:6680/cli";
     /** Pages / production WSS bridge (Option B). Exact URL only. */
     public static final String PAGES_WSS = "wss://bridge.axiomiccoreness.com/cli";
     /** Remote IRC label behind the bridge (UI ports slot 6669). */
@@ -71,8 +71,8 @@ public final class CliLines {
         }
         String u = url.trim();
         return u.equals(LOOPBACK_WS)
-                || u.startsWith("ws://127.0.0.1:6669/")
-                || u.startsWith("ws://[::1]:6669/");
+                || u.startsWith("ws://127.0.0.1:6680/")
+                || u.startsWith("ws://[::1]:6680/");
     }
 
     /**

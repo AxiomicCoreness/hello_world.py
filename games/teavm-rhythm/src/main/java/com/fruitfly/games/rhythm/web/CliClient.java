@@ -53,7 +53,7 @@ public final class CliClient {
     public CliClient(String wsUrl) {
         if (!CliLines.isAllowedCliUrl(wsUrl)) {
             throw new IllegalArgumentException(
-                    "CliClient requires loopback ws://127.0.0.1:6669/… or "
+                    "CliClient requires loopback ws://127.0.0.1:6680/… or "
                             + CliLines.PAGES_WSS + ", got: " + wsUrl);
         }
         this.wsUrl = wsUrl;
@@ -170,7 +170,7 @@ public final class CliClient {
         });
         socket.onError(evt -> {
             open = false;
-            append(CliLines.KIND_SYSTEM, "WS error (is loopback bridge on 127.0.0.1:6669?)");
+            append(CliLines.KIND_SYSTEM, "WS error (is loopback bridge on 127.0.0.1:6680?)");
             appendRaw(CliLines.pagesHttpsHint());
         });
         socket.onClose(evt -> {
@@ -242,7 +242,7 @@ public final class CliClient {
                 }
             }
         } else {
-            append(CliLines.KIND_SYSTEM, "not connected — start bridge on 127.0.0.1:6669 (/cli)");
+            append(CliLines.KIND_SYSTEM, "not connected — start bridge on 127.0.0.1:6680 (/cli)");
         }
         scrollToEnd();
     }

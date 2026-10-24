@@ -20,7 +20,7 @@ public final class IrcBridgeConfig {
     public static final int[] PORTS_UI = {6666, 6667, 6668, 6669};
     /** Cosmic Alignment: TeaVM dials loopback only; bridge may reach PORTS_UI[3]. */
     public static final String LOOPBACK_CLI_WS = CliLines.LOOPBACK_WS;
-    public static final int LOOPBACK_CLI_PORT = 6669;
+    public static final int LOOPBACK_CLI_PORT = 6680;
     public static final String LOOPBACK_CLI_HOST = "127.0.0.1";
 
     /** Env / PEM path names expected by the bridge (not shipped in git). */
