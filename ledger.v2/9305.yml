@@ -1,0 +1,225 @@
+entry_index: 9305
+event: /ledger_reseal_and_cors_harden
+status: SEALED
+timestamp: '2026-10-24T11:42:35Z'
+hash_algo: sha3_256
+measured_at_commit: 10cd128e3559710063fcac8bad7dd31adfd1d814
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: false
+prev_hash: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+witness_chain: 9304 -> 9305
+note: 'New append-only entry (9304.yml and every other ledger file untouched). Sealed on approval by Clarke Yoursa Tee
+  ("Seal approved", 2026-10-24). Records the state of main at 10cd128e3559710063fcac8bad7dd31adfd1d814 (#138) after 9304:
+  PR #130 re-seal of ledger.v2/9297-9304 under the 2026-10-23 one-time append-only override (merge 1f3cb95d); PR #128
+  /healthz CORS hardening (af355ceb); the GGUF/DeepInfer comment rewire and the 9304 Option 1 refresh merged via #131
+  (0005ecde); #132-#136, the two direct DeepInfer pushes 7d5d90d1 and 83ad9e47 (one-time owner authorizations), the
+  ENTIRE_SYSTEM_REVIEW v8.3.0 rewrite (#137) and cryptography>=50.0.2 in requirements.txt (#138). Two pushed branches
+  without a merged PR are listed with on_main false. CI is recorded only as measured via the GitHub Actions API; no Argo
+  CI run exists on the measured commit and none is claimed. Immutable Band stays 0000-9297. No invented witnesses.
+  Signed-off-by: Clarke Yoursa Tee.'
+payload:
+  ledger_reseal_9297_9304:
+    status: MERGED
+    pr: 130
+    merge_commit: 1f3cb95d82ad9ccf4118130fce15b57bd8fa1123
+    scope: ledger.v2/9297-9304 only
+    override: one-time append-only override, authorized by Clarke Yoursa Tee, 2026-10-23
+    regime: B(event)
+    seal_9304: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+    note_9304_as_merged_by_130: measured_at_commit fc2f6c66f38b0c6422699ca479178ccbf30897f8; healthz_cors_hardening recorded OPEN
+    note_9304_refresh: 'merged via #131 (0005ecde2fc5fec0cc66f370c1c4667d45473d3f, branch commit 2230642cca57389de46996f37061c4d1dc1da077):
+      measured_at_commit 1f3cb95d82ad9ccf4118130fce15b57bd8fa1123 and #128 MERGED; seal 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8 unchanged'
+  healthz_cors_hardening:
+    status: MERGED
+    pr: 128
+    branch: feat/harden-cors-healthz
+    merge_commit: af355ceb9639864e4bfbd2da29ca6878706b5809
+    on_main: true
+    files:
+    - .github/workflows/sovereign-engine-final.yml
+    - mcp/port380_mcp.py
+    - port380_mcp.py
+    - tests/test_port380_cors_healthz.py
+    scope: 'port380_mcp.py + mcp/port380_mcp.py: Cross-Origin-Resource-Policy cross-origin only on GET /health and /healthz (global CORP unchanged); allowlist-only CORS, no wildcard, no Origin reflection'
+  sovereign_engine_final_smoke_fix:
+    commit: d5bbbd28e06f0fabec515a542be38fc3f07ec4bd
+    subject: 'fix(ci): compare MCP_CONTRACT surface keys in FastAPI smoke'
+    file: .github/workflows/sovereign-engine-final.yml
+    change: assert list(MCP_CONTRACT["surface"]) == ["/healthz"] (surface is a {path:[methods]} dict)
+    on_main: 'yes, via squash merge af355ceb (#128); d5bbbd28 itself is not an ancestor of main'
+  gguf_deepinfer_comment_rewire:
+    status: MERGED
+    pr: 131
+    branch: chore/gguf-deepinfer-comments-9305-draft
+    commit: 142c19b8e3c39163e9a8ee04f79d119fe88a73c4
+    branch_head: 2230642cca57389de46996f37061c4d1dc1da077
+    merge_commit: 0005ecde2fc5fec0cc66f370c1c4667d45473d3f
+    merged_at: '2026-10-24T00:50:33Z'
+    on_main: true
+    files:
+    - k8s/cert-manager/README.md
+    - k8s/cert-manager/install.sh
+    - ledger.v2/9304.yml
+    change: comment-only in k8s/cert-manager; "Nexus = GGUF" tied to the way a GGUF file is self-describing for a DeepInfer-style loader; plus the 9304 Option 1 refresh (seal unchanged)
+    deepinfer_gguf_loader_in_repo: false
+    install_sh_seal: 'header carries the literal placeholder <digest>, no 64-hex digest; install.sh --verify only checks *.yaml'
+  teavm_gguf_neuron_chat:
+    status: MERGED
+    pr: 132
+    branch: feat/teavm-gguf-neuron-chat
+    branch_head: 1b6207920eedcc952e1e13dcc6f7ac0381f7b14c
+    merge_commit: 879e2b456f7bdea5ebbe3dd22277347c5b87c1e0
+    merged_at: '2026-10-24T00:53:42Z'
+    on_main: true
+    scope: /llm chat command in the TeaVM CLI (LlmCli, NeuronSnapshot, SpikeWindow, TracebackFeedback) and bridge llm_chat.py; 27 files, +1625 -36
+  teavm_snapshot_lane_spikes:
+    status: MERGED
+    pr: 133
+    branch: fix/teavm-snapshot-lane-spikes
+    branch_head: a9a12e2e693ea5e14022f0d2f94da87e59ac71aa
+    merge_commit: f43a0c6f63e2540807a5aaa142e718d9072b2f08
+    merged_at: '2026-10-24T01:18:01Z'
+    on_main: true
+    scope: /llm snapshot keeps real lane spikes after the last cue; llm ctx line reports window end, anchor and total spikes; 7 files, +233 -9
+  empty_direct_pushes_after_133:
+    on_main: true
+    commits:
+    - 508354e5fd27b2b201430316d43bfb9a5b981d77
+    - 08b531488f57e83da916f518e206e6b8ab8cbdfd
+    tree: 53e58737531d23b5e9bd9913ecf9ac4d3031d594
+    change: none; both commits carry the tree of f43a0c6f (#133) unchanged (empty commits, subjects only)
+  aklt_e2e_concurrency_summary:
+    status: MERGED
+    pr: 134
+    branch: ci/aklt-e2e-concurrency-summary
+    branch_head: c3b214ea82a5cca4419d991e97ca10f144f5f1c8
+    merge_commit: 297809db43f579e92ee5d5e311a166985faff522
+    merged_at: '2026-10-24T01:48:47Z'
+    on_main: true
+    scope: .github/workflows/aklt-e2e.yml concurrency group, cancel-in-progress, summary step reports the real hard-assert outcome (PASS / FAIL / NOT RUN)
+  llm_reply_guard_qwen:
+    status: MERGED
+    pr: 135
+    branch: fix/llm-reply-guard-qwen
+    branch_head: d3b108057893103571661b5905d2f96ab1274585
+    merge_commit: b0a38669e867565bc1dfa293c24a04e3a69b4e2e
+    merged_at: '2026-10-24T01:50:53Z'
+    on_main: true
+    scope: bridge reply guard, template-aware routing (chatml_prebuild.py), Qwen2.5-1.5B docs; 7 files, +673 -26
+  deepinfer_direct_pushes:
+    on_main: true
+    authorization: one-time direct-to-main push authorizations by Clarke Yoursa Tee (both used; normal PR workflow otherwise)
+    commits:
+    - sha: 7d5d90d1f0d82ee6b449c0d20cfd1b66bfb33cec
+      subject: 'feat(llm-bridge): DeepInfer backend module, DeepSeek-V4 template family, READMEs (1/2)'
+    - sha: 83ad9e47d85a5e843734e99493c8ac222cc321a9
+      subject: 'feat(llm-bridge): wire DeepInfer default with labeled Qwen / DeepSeek-V4 fixture fallbacks (2/2)'
+    tree_after: 3384115b472fe0e3a17a68d1358ef70dda1c07fd
+    llm_chain: DeepInfer 127.0.0.1:8090 (0.5 s fast-fail) -> RalphSeek fixture (default fallback) -> Qwen (manual override); provenance labels on every reply
+  llm_deepinfer_backend_pr:
+    status: MERGED
+    pr: 136
+    branch: feat/llm-deepinfer-backend
+    branch_head: b21802fab715c62ded776e1afd5d1f515d5b8052
+    merge_commit: 981b20c4aff340bdebc7f373b470296a22c22c4d
+    merged_at: '2026-10-24T03:12:46Z'
+    on_main: true
+    change: none to the tree; 981b20c4 tree 3384115b472fe0e3a17a68d1358ef70dda1c07fd equals 83ad9e47 (the direct pushes already carried the same files)
+  system_review_v8_3:
+    status: MERGED
+    pr: 137
+    branch: docs/system-review-v8.3
+    branch_head: 9d89207e672cbec92e83aa72ae5a4f632573401c
+    merge_commit: a0efd834345fd2f0c5cd830809a129350e3553ed
+    merged_at: '2026-10-24T11:27:21Z'
+    on_main: true
+    file: docs/ENTIRE_SYSTEM_REVIEW.md
+    version: v8.3.0
+    base_commit: 83ad9e47d85a5e843734e99493c8ac222cc321a9
+    test_counts: TeaVM 236, root mvn 55, bridge 61
+    review_seal_line: 'UNSEALED as merged; the review text says it awaits 9305 and the owner, and carries no hash'
+  requirements_cryptography:
+    status: MERGED
+    pr: 138
+    branch: deps/requirements-cryptography
+    branch_head: cfe141e4f52c1b7885428c8367521114e88249af
+    merge_commit: 10cd128e3559710063fcac8bad7dd31adfd1d814
+    merged_at: '2026-10-24T11:28:22Z'
+    on_main: true
+    file: requirements.txt
+    line: cryptography>=50.0.2
+    note: the repo's own cryptography/ package shadows PyPI cryptography from the repo root; run scripts with python -P
+  symplectic_status_bot_commit:
+    commit: 1f1639a7e4140334dae73ec0564e759a1722cbc6
+    author: github-actions[bot]
+    file: symplectic_status.json
+    on_main: true
+  unmerged_branches:
+    perf_connectome_load:
+      branch: perf/connectome-load
+      head: c09b725197ee4cae5509d72f68b2b8f0d367e2ed
+      on_main: false
+      pr: not found
+      commits:
+      - ead63109aac785ae76a274841753bec601966da1
+      - c09b725197ee4cae5509d72f68b2b8f0d367e2ed
+      scope: O(V+E) ConnectomeXml parse (drops the HashSet<Long> duplicate check that went O(E^2) under TeaVM); CircuitSim.step() spike array reuse
+    llm_qwen_abliterated:
+      branch: feat/llm-qwen-abliterated
+      head: b3516a9b1e6ddece212d06570d8cb0a328baee81
+      on_main: false
+      pr: not found
+      commits:
+      - c33c2f0ded8959851f2cb9a18eeab49e5b287b2c
+      - b3516a9b1e6ddece212d06570d8cb0a328baee81
+      scope: opt-in labeled gguf-abliterated /llm fallback tier
+      model: mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF
+      model_revision: 36d335ab94cb641e885c327f110600342663eee2
+      file: Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf
+      sha256: 59aa9f44bde5349dbe292d7024d197db605f422b8baf65f3246a59abbde4e8e9
+      serve: llama-server --jinja --host 127.0.0.1 --port 8083
+ci:
+  measured_commit: 10cd128e3559710063fcac8bad7dd31adfd1d814
+  source: GitHub Actions API, runs on main at head_sha 10cd128e, all completed
+  runs_on_measured_commit:
+  - {workflow: 'Pytest · dual-gate ledger', run_id: 40090040191, run_number: 3046, event: push, conclusion: success}
+  - {workflow: 'Sovereign CI/CD', run_id: 40090040146, run_number: 974, event: push, conclusion: success}
+  - {workflow: 'Sovereign Stack CI — app · mcp · k8s · kubernetes', run_id: 40090040269, run_number: 154, event: push, conclusion: success}
+  - {workflow: 'Python Package', run_id: 40090040145, run_number: 3983, event: push, conclusion: success}
+  - {workflow: 'Sovereign Python Package', run_id: 40090040133, run_number: 2280, event: push, conclusion: success}
+  - {workflow: 'Dual CI venv', run_id: 40090040144, run_number: 40, event: push, conclusion: success}
+  - {workflow: 'Docker image from main only', run_id: 40090040303, run_number: 295, event: push, conclusion: success}
+  - {workflow: debug-environment, run_id: 40090040148, run_number: 1486, event: push, conclusion: success}
+  - {workflow: debug-environment, run_id: 40090040124, run_number: 579, event: push, conclusion: success}
+  - {workflow: 'Automatic Dependency Submission (Maven)', run_id: 40090055084, run_number: 443, event: dynamic, conclusion: success}
+  - {workflow: 'Graph Update: pip in /.', run_id: 40090043316, run_number: 29, event: dynamic, conclusion: success}
+  dual_gate_url: https://github.com/AxiomicCoreness/hello_world.py/actions/runs/40090040191
+  argo_ci_on_measured_commit: not found
+  argo_ci_latest_main:
+    workflow: .github/workflows/argo-ci.yml
+    run_id: 40040594219
+    run_number: 76
+    event: workflow_dispatch
+    head_sha: 1f3cb95d82ad9ccf4118130fce15b57bd8fa1123
+    conclusion: success
+    url: https://github.com/AxiomicCoreness/hello_world.py/actions/runs/40040594219
+  argo_hard_gate_local: 'python -P .github/scripts/verify_ledger.py --mode hard on ledger.v2 entries >= 9286 including 9305, run locally on this branch before push'
+  policy: 'NO-GHOST-PASS: only runs that exist on the measured commit are cited'
+chain:
+  prev_entry: 9304
+  prev_hash: 1ae2fe918a6eb5c6f51b40e16217ea6769df9bbed45299ceb0ab4cc3bf2c1cb8
+  prev_hash_source: ledger.v2/9304.yml seal_sha3_256 on main 10cd128e3559710063fcac8bad7dd31adfd1d814 (Regime B)
+  witness_chain: 9304 -> 9305
+  immutable_band: 0000-9297
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''),
+  ASCII payload; the digest commits to entry_index and event only, not to the body'
+regime_b_event_domain_sha3_256: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9305|/ledger_reseal_and_cors_harden|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+terminal_hex: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+seal: ∀∞φ² · LEDGER_RESEAL_AND_CORS_HARDEN_9305 · WOOD_DRAGON_0.91 · SEALED · eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+seal_sha3_256: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
