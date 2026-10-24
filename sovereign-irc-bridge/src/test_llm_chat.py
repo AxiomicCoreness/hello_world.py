@@ -187,3 +187,12 @@ def test_run_refuses_wildcard_bind(monkeypatch):
     monkeypatch.setenv("LLM_URL", "http://192.168.1.9:8081/v1/chat/completions")
     with pytest.raises(SystemExit):
         cli_loopback.run()
+
+
+def test_cli_port_is_6680_and_not_browser_restricted():
+    # Chrome kRestrictedPorts / Firefox gBadPortList include IRC 6665-6669, 6679 (Firefox), 6697.
+    from src import cli_loopback
+
+    assert cli_loopback.CLI_PORT == 6680
+    assert cli_loopback.CLI_PORT not in {6665, 6666, 6667, 6668, 6669, 6679, 6697}
+    assert cli_loopback.LOOPBACK_HOST == "127.0.0.1"

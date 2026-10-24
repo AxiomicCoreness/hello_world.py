@@ -1,8 +1,8 @@
 """TeaVM CLI WebSocket — Cosmic Alignment loopback bind.
 
-Binds **127.0.0.1:6669** only (never 0.0.0.0). Path {@code /cli}.
+Binds **127.0.0.1:6680** only (never 0.0.0.0). Path {@code /cli}.
 
-Browser contract: {@code ws://127.0.0.1:6669/cli}
+Browser contract: {@code ws://127.0.0.1:6680/cli}
 Remote label behind this bridge: {@code irc.abjects.net:6669}
 
 Default mode is local echo / Engine stubs (no outbound IRC) so CI stays
@@ -52,7 +52,7 @@ except ModuleNotFoundError:  # optional until serve time
     FastAPIWebSocket = None  # type: ignore[assignment,misc]
 
 LOOPBACK_HOST: Final = "127.0.0.1"
-CLI_PORT: Final = 6669
+CLI_PORT: Final = 6680
 REMOTE_IRC: Final = "irc.abjects.net:6669"
 ALLOWED_BIND: Final = frozenset({"127.0.0.1", "::1"})
 

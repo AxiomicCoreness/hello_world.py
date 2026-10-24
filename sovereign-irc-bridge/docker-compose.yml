@@ -20,15 +20,15 @@ services:
       timeout: 3s
       retries: 3
 
-  # Cosmic Alignment: TeaVM CliClient → ws://127.0.0.1:6669/cli
+  # Cosmic Alignment: TeaVM CliClient → ws://127.0.0.1:6680/cli
   # Published ONLY on host loopback (never 0.0.0.0).
   cli-loopback:
     build: .
     command: ["python", "-m", "src.cli_loopback"]
     environment:
       CLI_BIND_HOST: "127.0.0.1"
-      CLI_BIND_PORT: "6669"
+      CLI_BIND_PORT: "6680"
       CLI_LIVE_IRC: "0"
     ports:
-      - "127.0.0.1:6669:6669"
+      - "127.0.0.1:6680:6680"
 
