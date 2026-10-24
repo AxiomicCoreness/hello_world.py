@@ -8,7 +8,10 @@ The TeaVM chatbox sends one WebSocket frame::
 
 This module turns that into an OpenAI-style chat request for llama.cpp's
 ``llama-server`` (``/v1/chat/completions``) on 127.0.0.1 and returns chat
-lines. The feedback signal is traceback reports (plus local surefire test
+lines. It always sends role messages (system + user), never a hand-built
+``<|im_start|>`` prompt: llama-server renders them with the GGUF's own chat
+template (jinja, on by default; ``--jinja`` makes it explicit). The reply goes
+through ``clean_reply`` (stop sequences, role-echo cut, 3-gram loop cut). The feedback signal is traceback reports (plus local surefire test
 failures when present) — never a dopamine / reward variable.
 
 Env:
@@ -24,6 +27,7 @@ never an exception.
 from __future__ import annotations
 
 import asyncio
+import logging
 import json
 import os
 import re
@@ -32,6 +36,10 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, Final, List, Optional, Tuple
 from urllib.parse import urlsplit
+
+from src import chatml_prebuild
+
+logger = logging.getLogger("sovereign-irc-bridge.llm")
 
 DEFAULT_LLM_URL: Final = "http://127.0.0.1:8081/v1/chat/completions"
 DEFAULT_LLM_MODEL: Final = "local-gguf"
@@ -46,6 +54,15 @@ MAX_REPORTS: Final = 5
 MAX_FRAMES: Final = 3
 MAX_MESSAGE: Final = 200
 MAX_REPLY_LINES: Final = 40
+
+# Reply guard. Small GGUF models sometimes stop answering and start writing the
+# rest of a chat log ("User 1: … User 38: …") or loop on one sentence. The model
+# server is asked to stop there (per-template-family stop set + role-echo stops
+# and repeat penalties, see chatml_prebuild), and clean_reply() trims whatever
+# still gets through.
+STOP_SEQUENCES: Final = tuple(chatml_prebuild.stops_for("chatml"))
+MAX_NGRAM_REPEATS: Final = chatml_prebuild.MAX_NGRAM_REPEATS
+ROLE_ECHO_RE: Final = re.compile(r"(?im)^[ \t>*_-]*(user|assistant|system)\s*\d*\s*:")
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 SUREFIRE_DIR: Final = _REPO_ROOT / "games" / "teavm-rhythm" / "target" / "surefire-reports"
@@ -222,31 +239,66 @@ def _post(url: str, payload: Dict[str, Any], timeout: float) -> Dict[str, Any]:
 
 def complete(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[str]]:
     """→ (reply, None) or (None, offline-reason). Never raises."""
+    reply, err, _meta = complete_routed(messages)
+    return reply, err
+
+
+def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
+    """Like complete(), plus the route meta (path/mode/family) for telemetry."""
+    meta: Dict[str, Any] = {}
     try:
         url = llm_url()
-    except LlmConfigError as exc:
-        return None, str(exc)
-    payload = {
-        "model": llm_model(),
-        "messages": messages,
-        "max_tokens": int(os.environ.get("LLM_MAX_TOKENS", "256")),
-        "temperature": 0.4,
-        "stream": False,
-    }
+        base = chatml_prebuild.base_url(url)
+        path, payload, meta = chatml_prebuild.build_request(
+            messages, base, chatml_prebuild.prompt_mode(),
+            model=llm_model(),
+            max_tokens=int(os.environ.get("LLM_MAX_TOKENS", "256")),
+            chat_url=url,
+        )
+    except (LlmConfigError, chatml_prebuild.PromptConfigError) as exc:
+        return None, str(exc), meta
+    target = url if path == urlsplit(url).path else base + path
+    logger.info("llm route path=%s mode=%s family=%s reason=%s",
+                meta.get("path"), meta.get("mode"), meta.get("family"), meta.get("reason"))
     try:
-        data = _post(url, payload, float(os.environ.get("LLM_TIMEOUT_S", "60")))
+        data = _post(target, payload, float(os.environ.get("LLM_TIMEOUT_S", "60")))
     except urllib.error.HTTPError as exc:
-        return None, f"HTTP {exc.code} from {url}"
+        return None, f"HTTP {exc.code} from {target}", meta
     except (urllib.error.URLError, ConnectionError, TimeoutError, OSError) as exc:
         reason = getattr(exc, "reason", exc)
-        return None, f"{url} unreachable ({reason})"
+        return None, f"{target} unreachable ({reason})", meta
     except (ValueError, json.JSONDecodeError) as exc:
-        return None, f"bad JSON from {url} ({exc})"
-    try:
-        reply = data["choices"][0]["message"]["content"]
-    except (KeyError, IndexError, TypeError):
-        return None, f"unexpected response shape from {url}"
-    return str(reply or "").strip(), None
+        return None, f"bad JSON from {target} ({exc})", meta
+    reply = chatml_prebuild.extract_text(data)
+    if reply is None:
+        return None, f"unexpected response shape from {target}", meta
+    meta["finish_reason"] = chatml_prebuild.finish_reason(data)
+    return reply.strip(), None, meta
+
+
+def _cut_role_echo(text: str) -> Tuple[str, bool]:
+    m = ROLE_ECHO_RE.search(text)
+    if m is None:
+        return text, False
+    return text[: m.start()], True
+
+
+def _cut_repeats(text: str, limit: int = MAX_NGRAM_REPEATS) -> Tuple[str, bool]:
+    """Truncate at the first repeat of any word 3-gram that occurs more than ``limit`` times."""
+    return chatml_prebuild.truncate_degenerate(text, limit)
+
+
+def clean_reply(raw: str) -> Tuple[str, List[str]]:
+    """→ (reply, notes). Cuts role echoes and n-gram loops; a normal reply is returned unchanged."""
+    text = raw or ""
+    notes: List[str] = []
+    text, echoed = _cut_role_echo(text)
+    if echoed:
+        notes.append("reply trimmed at a role echo (model began writing other chat turns)")
+    text, looped = _cut_repeats(text)
+    if looped:
+        notes.append(f"reply trimmed at a repeat loop (a 3-word phrase recurred more than {MAX_NGRAM_REPEATS} times)")
+    return text.strip(), notes
 
 
 def _neuro_line(neuro: Optional[Dict[str, Any]]) -> str:
@@ -275,11 +327,20 @@ def handle_llm_sync(text: str) -> List[str]:
     lines = [f"[System] llm: {n}" for n in notes]
     lines.append(_neuro_line(neuro))
     lines.append(f"[System] llm ctx: feedback={len(feedback['reports'])} traceback report(s)")
-    reply, err = complete(build_messages(prompt, neuro, feedback))
+    reply, err, meta = complete_routed(build_messages(prompt, neuro, feedback))
+    if meta.get("path"):
+        lines.append(
+            f"[System] llm route: path={meta['path']} mode={meta.get('mode')} family={meta.get('family')}"
+            + (f" (prebuild off: {meta['prebuild_disabled']})" if meta.get("prebuild_disabled") else "")
+        )
     if err is not None:
         lines.append(f"[System] llm offline: {err}")
         return lines
-    body = [ln for ln in (reply or "").splitlines() if ln.strip()] or ["(empty reply)"]
+    if chatml_prebuild.looks_degenerate(reply or ""):
+        logger.warning("llm reply degenerate (3-gram loop); truncating, never fed back as context")
+    reply, trims = clean_reply(reply or "")
+    lines.extend(f"[System] llm: {n}" for n in trims)
+    body = [ln for ln in reply.splitlines() if ln.strip()] or ["(empty reply)"]
     for ln in body[:MAX_REPLY_LINES]:
         lines.append(f"[Engine] llm: {ln}")
     return lines

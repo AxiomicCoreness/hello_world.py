@@ -55,6 +55,10 @@ non-loopback `CLI_BIND_HOST` exits with `FATAL: Cosmic Alignment`.
 traceback block) go to `src/llm_chat.py`, which posts an OpenAI-style chat
 request to `LLM_URL` (default `http://127.0.0.1:8081/v1/chat/completions`,
 loopback only; `LLM_MODEL` default `local-gguf`). A down model server returns
-`[System] llm offline: …`. Tests: `pytest src/test_llm_chat.py` (stub server,
+`[System] llm offline: …`. Role messages only: llama-server applies the
+GGUF's chat template (recommended model Qwen2.5-1.5B-Instruct Q4_K_M, run with
+`--jinja`). Replies pass a guard (stop sequences, `repeat_penalty` /
+`frequency_penalty`, cut at role echoes like `User 1:` and at 3-gram loops),
+with a `[System] llm: reply trimmed …` line when it fires. Tests: `pytest src/test_llm_chat.py` (stub server,
 no model download). Full run steps: `games/teavm-rhythm/README.md`,
 "LLM chat (/llm, GGUF on loopback)".
