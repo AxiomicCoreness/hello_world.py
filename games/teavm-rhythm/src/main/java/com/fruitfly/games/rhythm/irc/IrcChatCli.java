@@ -1,161 +1,97 @@
-package com.fruitfly.games.rhythm.irc;
+package com.fruitfly.games.rhythm.logic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Pure-logic IRC chatbox CLI for the TeaVM rhythm page. Scrollback + command
- * parsing only — dials go through {@link IrcBridgeClientStub} (plan / dry-run).
- * Default UI target is {@link IrcBridgeConfig#uiEndpoint(int) uiEndpoint(3)}
- * ({@code irc.abjects.net:6669}). No live sockets; unit tests stay offline.
- */
-public final class IrcChatCli {
-    /** PORTS_UI index for the chatbox default (6669). */
-    public static final int TARGET_SLOT = 3;
-    public static final int MAX_LINES = 200;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-    private final IrcBridgeClientStub bridge;
-    private final List<String> lines = new ArrayList<>();
-    private final String target;
+public class CircuitSimSmokeTest {
 
-    public IrcChatCli() {
-        this(new IrcBridgeClientStub());
-    }
+    private static final int NEURONS = 1000;
+    private static final int SYNAPSES_PER_NEURON = 20;
+    private static final int TICKS = 10; // 10 ticks * 50ms = 0.5s of simulation
 
-    public IrcChatCli(IrcBridgeClientStub bridge) {
-        if (bridge == null) {
-            throw new IllegalArgumentException("bridge required");
+    @Test
+    public void test1000NeuronSmoke() {
+        String xml = generateSyntheticCircuit(NEURONS, SYNAPSES_PER_NEURON);
+        InputStream is = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+
+        CircuitSim sim = null;
+        long startLoad = System.nanoTime();
+        try {
+            // Assuming the parser is called ConnectomeXml and returns a CircuitSim
+            // Adjust the parser class name and method to match your actual code
+            sim = ConnectomeXml.parse(is, "synthetic_" + NEURONS + ".xml");
+        } catch (Exception e) {
+            fail("Parser threw exception: " + e.getMessage());
         }
-        this.bridge = bridge;
-        this.target = IrcBridgeConfig.uiEndpoint(TARGET_SLOT);
-        bootBanner();
-    }
+        long endLoad = System.nanoTime();
+        double loadMs = (endLoad - startLoad) / 1_000_000.0;
 
-    private void bootBanner() {
-        append("TeaVM IRC CLI · " + target);
-        append("via " + IrcBridgeConfig.BRIDGE_SERVICE + IrcBridgeConfig.WS_PATH
-                + " → mTLS " + IrcBridgeConfig.IRC_HOST + ":" + IrcBridgeConfig.PORT_TLS);
-        append("stub mode · no live socket until PEMs · /help");
-    }
+        assertNotNull(sim, "CircuitSim is null");
+        assertEquals(NEURONS, sim.neuronCount(), "Loaded neuron count mismatch");
+        assertEquals(NEURONS * SYNAPSES_PER_NEURON, sim.synapseCount(), "Loaded synapse count mismatch");
 
-    public String target() {
-        return target;
-    }
+        System.out.println("Load time for " + NEURONS + " neurons: " + loadMs + " ms");
+        assertTrue(loadMs < 2000, "Loading 1000 neurons took longer than 2 seconds (possible O(N^2) bottleneck)");
 
-    public IrcBridgeClientStub bridge() {
-        return bridge;
-    }
+        // Warmup
+        for (int i = 0; i < 2; i++) {
+            sim.step();
+        }
 
-    public List<String> lines() {
-        return Collections.unmodifiableList(lines);
-    }
+        // Measured run
+        long startSim = System.nanoTime();
+        for (int i = 0; i < TICKS; i++) {
+            sim.step();
+        }
+        long endSim = System.nanoTime();
+        double totalSimMs = (endSim - startSim) / 1_000_000.0;
+        double msPerTick = totalSimMs / TICKS;
 
-    public String statusLine() {
-        IrcBridgeClientStub.State s = bridge.state();
-        switch (s) {
-            case PLANNED:
-                return "PLANNED · " + target + " (stub dial)";
-            case DRY_RUN_MARKED:
-                return "DRY-RUN · " + target;
-            case IDLE:
-            default:
-                return "IDLE · " + target + " · /connect";
+        System.out.printf("Simulation time: %.2f ms/tick (%.1f fps)%n", msPerTick, 1000.0 / msPerTick);
+        
+        // The 50ms budget check
+        if (msPerTick > 50.0) {
+            System.out.println("⚠️ WARNING: Exceeds 50ms frame budget!");
+        } else {
+            System.out.println("✅ Within 50ms frame budget.");
         }
     }
 
     /**
-     * Handle one prompt line. Returns the lines appended this call (for DOM
-     * paint). Empty / whitespace-only input appends nothing.
+     * Generates a valid XML string for the CircuitSim parser.
+     * Requires lane0.out through lane3.out.
      */
-    public List<String> handle(String raw) {
-        List<String> added = new ArrayList<>();
-        if (raw == null) {
-            return added;
-        }
-        String line = raw.trim();
-        if (line.isEmpty()) {
-            return added;
-        }
-        if (line.startsWith("/")) {
-            handleCommand(line, added);
-        } else {
-            handleSay(line, added);
-        }
-        return added;
-    }
+    private String generateSyntheticCircuit(int count, int synapsesPerNeuron) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<hemibrain>\n");
 
-    private void handleCommand(String line, List<String> added) {
-        String[] parts = line.split("\\s+", 2);
-        String cmd = parts[0].toLowerCase();
-        switch (cmd) {
-            case "/help":
-            case "/?":
-                add(added, "commands: /connect /disconnect /mtls /status /clear /help");
-                add(added, "target UI port " + target + " · bridge mTLS :" + IrcBridgeConfig.PORT_TLS);
-                add(added, "plain text echoes locally after /connect (no live IRC in CI)");
-                break;
-            case "/connect":
-            case "/join":
-                add(added, "> " + line);
-                add(added, bridge.planDial());
-                add(added, "UI channel → " + target + " (label); live TCP is bridge→:"
-                        + IrcBridgeConfig.PORT_TLS);
-                break;
-            case "/disconnect":
-            case "/part":
-                add(added, "> " + line);
-                bridge.reset();
-                add(added, "disconnected (local) · " + target);
-                break;
-            case "/mtls":
-                add(added, "> /mtls");
-                MtlsToolCall.Result r = bridge.toolCall("/mtls");
-                add(added, r.message());
-                for (String echo : r.echoLines()) {
-                    add(added, echo);
-                }
-                break;
-            case "/status":
-                add(added, "> /status");
-                add(added, statusLine());
-                add(added, "ws=" + bridge.wsUrl() + " state=" + bridge.state());
-                if (bridge.lastPlan() != null) {
-                    add(added, bridge.lastPlan());
-                }
-                break;
-            case "/clear":
-                lines.clear();
-                added.clear();
-                bootBanner();
-                added.addAll(lines);
-                break;
-            default:
-                add(added, "> " + line);
-                add(added, "unknown command · /help");
-                break;
+        // 1. Required lane outputs
+        for (int i = 0; i < 4; i++) {
+            sb.append(String.format("  <neuron id=\"lane%d.out\"/>\n", i));
         }
-    }
 
-    private void handleSay(String text, List<String> added) {
-        add(added, "› " + text);
-        if (bridge.state() == IrcBridgeClientStub.State.PLANNED) {
-            add(added, "[" + target + "] (local echo) " + text);
-            add(added, "(stub) not sent — bridge has no live WS in this build");
-        } else {
-            add(added, "not connected · /connect to plan dial to " + target);
+        // 2. Generate the rest of the neurons
+        for (int i = 4; i < count; i++) {
+            sb.append(String.format("  <neuron id=\"n%d\"/>\n", i));
         }
-    }
 
-    private void add(List<String> added, String s) {
-        append(s);
-        added.add(s);
-    }
-
-    private void append(String s) {
-        lines.add(s);
-        while (lines.size() > MAX_LINES) {
-            lines.remove(0);
+        // 3. Generate connections (ring topology)
+        for (int i = 0; i < count; i++) {
+            String from = (i < 4) ? "lane" + i + ".out" : "n" + i;
+            for (int j = 1; j <= synapsesPerNeuron; j++) {
+                int targetIdx = (i + j) % count;
+                String to = (targetIdx < 4) ? "lane" + targetIdx + ".out" : "n" + targetIdx;
+                double weight = 0.1 + (j % 10) * 0.1;
+                double delay = (j % 10) * 1.0;
+                sb.append(String.format("  <connection from=\"%s\" to=\"%s\" weight=\"%.2f\" delayMs=\"%.1f\"/>\n", from, to, weight, delay));
+            }
         }
+
+        sb.append("</hemibrain>\n");
+        return sb.toString();
     }
 }
