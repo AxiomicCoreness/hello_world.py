@@ -1,0 +1,25 @@
+{
+  "name": "ClarkeYoursaTee",
+  "model": {
+    "file": "ClarkeYoursaTee-1.5B-Q4_K_M.gguf",
+    "bytes": 986052096,
+    "sha256": "982743f8000399cd1d674aa6f7a7578b1b91a0cc1f5308dc2fa6bda5a5753cb8",
+    "sha3_256": "a20c8db94d3db33c63143a9b85e18d981bc78f6ae1dede47e0f2671a027a8f5d"
+  },
+  "base": {
+    "file": "Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf",
+    "bytes": 986049088,
+    "sha256": "59aa9f44bde5349dbe292d7024d197db605f422b8baf65f3246a59abbde4e8e9",
+    "sha3_256": "599e9c2300056c0ea28ef223d961d4d8cdb9b1be2b28e18b177ef6de82abc719"
+  },
+  "base_provenance": {
+    "gguf_repo": "mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF",
+    "weights": "huihui-ai/Qwen2.5-1.5B-Instruct-abliterated",
+    "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "license": "apache-2.0"
+  },
+  "chat_template_sha256": "191b85ee8ba14eada8320da26ff1003a495638938f4047166871f8dbbc8cccc5",
+  "system_prompt_sha256": "d973818f0188aad7efa9b261af8a7b230d35bb6006b24cff48c08a93d79dc02c",
+  "fewshot_sha256": "f360284392ca153100b6c2bc380ce66fe218fe2d7bef08efe8b344e87cb5047b",
+  "change": "metadata only (general.name, general.description, default system prompt and few-shot turns); tensors byte-identical to base; not fine-tuned"
+}
