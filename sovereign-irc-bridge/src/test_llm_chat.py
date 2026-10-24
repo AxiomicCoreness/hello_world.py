@@ -46,6 +46,22 @@ class _Stub(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(out.encode())
 
+    # llama-server's GET /props: a ChatML template, so auto mode takes the chat route.
+    props = {"chat_template": "{% for m in messages %}<|im_start|>{{ m.role }}\n{{ m.content }}<|im_end|>\n{% endfor %}"}
+    gets: list = []
+
+    def do_GET(self):  # noqa: N802
+        type(self).gets.append(self.path)
+        if self.path != "/props":
+            self.send_response(404)
+            self.end_headers()
+            return
+        out = json.dumps(type(self).props)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(out.encode())
+
     def log_message(self, *a):  # silence
         pass
 
@@ -53,6 +69,7 @@ class _Stub(BaseHTTPRequestHandler):
 @pytest.fixture()
 def stub_llm(monkeypatch):
     _Stub.requests = []
+    _Stub.gets = []
     _Stub.status = 200
     srv = HTTPServer(("127.0.0.1", 0), _Stub)
     t = threading.Thread(target=srv.serve_forever, daemon=True)
@@ -204,3 +221,65 @@ def test_neuro_line_shows_window_end_and_song_total():
     assert "spikes[L0=0 L1=1 L2=2 L3=3]" in line
     assert line.endswith(" end=22400ms(last_spike) total=46")
     assert llm_chat._neuro_line(NEURO).endswith("spikes[L0=0 L1=1 L2=2 L3=3] total=46")
+
+
+USER_LOG_REPLY = "\n".join(f"User {i}: What are the lanes doing?" for i in range(1, 39))
+DARK_ROOM_REPLY = (
+    "The lanes are quiet right now. "
+    + "They are just sitting in a dark room. " * 9
+    + "The end."
+)
+NORMAL_REPLY = (
+    "Lobula is busiest with 7 spikes in the last 2 s; antennal lobe 4, lateral horn 5, mushroom body 3.\n"
+    "Fix: register capability 'zz' in toolkit.py before calling it."
+)
+
+
+def test_clean_reply_cuts_user_n_chat_log():
+    out, notes = llm_chat.clean_reply(USER_LOG_REPLY)
+    assert out == "" and len(notes) == 1 and "role echo" in notes[0]
+    out, notes = llm_chat.clean_reply("Lanes 2 and 3 fire most.\nUser 1: hi\nUser 2: hi")
+    assert out == "Lanes 2 and 3 fire most." and "role echo" in notes[0]
+    out, _ = llm_chat.clean_reply("ok\n  Assistant 2: more\nSystem: x")
+    assert out == "ok"
+
+
+def test_clean_reply_cuts_repeat_loop_keeping_first_copy():
+    out, notes = llm_chat.clean_reply(DARK_ROOM_REPLY)
+    assert out == "The lanes are quiet right now. They are just sitting in a dark room."
+    assert len(notes) == 1 and "repeat loop" in notes[0]
+    # four occurrences is still allowed (limit is "more than 4")
+    four = "a b c " * 2 + "x a b c a b c"
+    assert llm_chat.clean_reply(four) == (four, [])
+
+
+def test_clean_reply_leaves_normal_reply_unchanged():
+    assert llm_chat.clean_reply(NORMAL_REPLY) == (NORMAL_REPLY, [])
+    assert llm_chat.clean_reply("  " + NORMAL_REPLY + "\n") == (NORMAL_REPLY, [])
+
+
+def test_request_carries_stops_and_repeat_penalties(stub_llm):
+    llm_chat.handle_llm_sync(wire())
+    body = stub_llm.requests[-1]["body"]
+    for stop in ("<|im_end|>", "<|im_start|>", "User 1:", "\nUser:"):
+        assert stop in body["stop"]
+    assert body["repeat_penalty"] > 1.0 and body["frequency_penalty"] > 0
+    assert stub_llm.gets == ["/props"], "auto mode probes the template once per call"
+    assert stub_llm.requests[-1]["path"] == "/v1/chat/completions"
+    # role messages only; llama-server applies the GGUF's own chat template
+    assert [m["role"] for m in body["messages"]] == ["system", "user"]
+    assert "<|im_start|>" not in json.dumps(body["messages"])
+
+
+def test_guarded_reply_lines_through_bridge(stub_llm):
+    original = stub_llm.reply
+    stub_llm.reply = USER_LOG_REPLY
+    try:
+        lines = llm_chat.handle_llm_sync(wire())
+    finally:
+        stub_llm.reply = original
+    assert not any(x.startswith("[Engine] llm: User") for x in lines)
+    assert "[Engine] llm: (empty reply)" in lines
+    assert "[System] llm route: path=/v1/chat/completions mode=auto family=chatml" in lines
+    assert any(x.startswith("[System] llm: reply trimmed at a role echo") for x in lines)
+
