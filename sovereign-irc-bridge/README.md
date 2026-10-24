@@ -63,7 +63,7 @@ with a `[System] llm: reply trimmed …` line when it fires. Tests: `pytest src/
 no model download). Full run steps: `games/teavm-rhythm/README.md`,
 "LLM chat (/llm, GGUF on loopback)".
 
-### `/llm` backends: DeepInfer (default), Qwen GGUF, DeepSeek-V4 fixture
+### `/llm` backends: DeepInfer (default), Qwen GGUF, abliterated Qwen GGUF, DeepSeek-V4 fixture
 
 `src/llm_backend.py` picks the server; every path goes through the same
 `chatml_prebuild` routing and reply guard, and every reply says where it came from.
@@ -72,6 +72,7 @@ no model download). Full run steps: `games/teavm-rhythm/README.md`,
 |---|---|---|
 | `deepinfer` (default) | `DEEPINFER_URL` (`http://127.0.0.1:8090/v1/chat/completions`), `DEEPINFER_MODEL` (`deepinfer`) | `backend=deepinfer`, no prefix |
 | `gguf` | `LLM_URL` (`http://127.0.0.1:8081/v1/chat/completions`), `LLM_MODEL` | `backend=gguf` |
+| `gguf-abliterated` | `LLM_ABLITERATED_URL` (`http://127.0.0.1:8083/v1/chat/completions`), `LLM_ABLITERATED_MODEL` (`qwen2.5-1.5b-instruct-abliterated`) | `backend=qwen-abliterated`, prefix `[Fallback: Qwen2.5-1.5B abliterated]` |
 | `deepseek-fixture` | `LLM_DEEPSEEK_URL` (`http://127.0.0.1:8082/v1/chat/completions`), `LLM_DEEPSEEK_MODEL` | `backend=deepseek-fixture`, prefix `[DeepSeek-V4 fixture: RalphSeek 122M — not a real model]` |
 
 - **Offline DeepInfer.** With `LLM_FALLBACK` unset, `/llm` answers
@@ -82,7 +83,16 @@ no model download). Full run steps: `games/teavm-rhythm/README.md`,
   `"backend": "qwen"`. The log also says `DeepInfer unreachable, falling back to Qwen`.
 - **`LLM_FALLBACK=deepseek-fixture`** works the same way with the RalphSeek
   fixture: `backend=deepseek-fixture (fixture fallback from deepinfer)` plus the
-  fixture prefix. Neither fallback is ever shown as DeepInfer.
+  fixture prefix.
+- **`LLM_FALLBACK=gguf-abliterated`** hands the turn to the abliterated Qwen
+  server on 8083: `backend=qwen-abliterated (gguf-abliterated fallback from deepinfer)`,
+  each reply line starts with `[Fallback: Qwen2.5-1.5B abliterated]`, the JSON log
+  carries `"backend": "qwen-abliterated"`, and the log says
+  `DeepInfer unreachable, falling back to Qwen2.5-1.5B abliterated`. It uses the
+  Qwen (ChatML) template family and reply guard. `LLM_BACKEND=gguf-abliterated`
+  uses it directly, with the same label.
+- No fallback is ever shown as DeepInfer, and the abliterated model is never
+  shown as plain Qwen.
 - **Fast fail.** DeepInfer liveness is checked in two steps. First a socket
   `connect_ex` bounded by `DEEPINFER_CONNECT_TIMEOUT` (default **0.5 s**), then
   `GET /health`, falling back to `GET /v1/models`. The bridge probes at startup
@@ -95,7 +105,8 @@ no model download). Full run steps: `games/teavm-rhythm/README.md`,
   `torch.cuda.is_available()` when torch is installed. These describe the
   machine only; the bridge itself is an HTTP client and needs none of them.
   `python -m src.llm_backend` prints the same probe.
-- **Startup checks.** A non-loopback `DEEPINFER_URL` or `LLM_DEEPSEEK_URL`, or
+- **Startup checks.** A non-loopback `DEEPINFER_URL`, `LLM_DEEPSEEK_URL` or
+  `LLM_ABLITERATED_URL`, or
   an unknown `LLM_BACKEND` / `LLM_FALLBACK`, exits with `FATAL: Cosmic Alignment`,
   the same as `LLM_URL`.
 
@@ -138,6 +149,24 @@ LLM_URL=http://127.0.0.1:8081/v1/chat/completions python -m src.cli_loopback
 
 Qwen GGUF stays the CPU fallback for real answers: use `LLM_FALLBACK=gguf`, or
 `LLM_BACKEND=gguf` to use it directly.
+
+**Abliterated Qwen 1.5B.** "Abliterated" means the model's safety-refusal
+behaviour was removed by editing its weights, so it will answer prompts that
+stock Qwen2.5-1.5B-Instruct refuses. It is opt-in only (`LLM_FALLBACK=gguf-abliterated`
+or `LLM_BACKEND=gguf-abliterated`) and always labeled. The original
+`huihui-ai/Qwen2.5-1.5B-Instruct-abliterated` repo returns HTTP 401 (private or
+removed); the GGUF comes from
+[mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF](https://huggingface.co/mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF).
+The weights are **not** in git (no submodule, no LFS); download them next to
+llama-server and check the checksum:
+
+```bash
+curl -L -o Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf \
+  https://huggingface.co/mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF/resolve/36d335ab94cb641e885c327f110600342663eee2/Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf
+# HF repo commit 36d335ab94cb641e885c327f110600342663eee2
+# sha256 59aa9f44bde5349dbe292d7024d197db605f422b8baf65f3246a59abbde4e8e9 (986,049,088 bytes; equals the HF LFS oid)
+llama-server -m Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf --jinja --host 127.0.0.1 --port 8083 -c 4096
+```
 
 ## DeepInfer Server Requirements
 

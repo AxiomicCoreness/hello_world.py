@@ -480,7 +480,10 @@ offline: … unreachable`. Neither crashes the chat.
    needs SM100 GPUs. On a CPU box either set `LLM_BACKEND=gguf` as above, or keep
    the default and add `LLM_FALLBACK=gguf`. With the fallback, every reply is
    labeled `[Fallback: Qwen]`, and `LLM_FALLBACK=deepseek-fixture` uses the
-   RalphSeek DeepSeek-V4 test fixture instead. See
+   RalphSeek DeepSeek-V4 test fixture instead. `LLM_FALLBACK=gguf-abliterated`
+   uses Qwen2.5-1.5B-Instruct-abliterated on 127.0.0.1:8083 (safety refusals
+   removed; weights downloaded locally, not in git), labeled
+   `[Fallback: Qwen2.5-1.5B abliterated]`. See
    `sovereign-irc-bridge/README.md`, "`/llm` backends" and "DeepInfer Server
    Requirements".
 
