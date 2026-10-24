@@ -1,0 +1,140 @@
+entry_index: 9306
+event: /clarkeyoursatee_landing_and_nginx_merge
+status: SEALED
+timestamp: '2026-10-24T15:34:55Z'
+hash_algo: sha3_256
+measured_at_commit: 6614a86219d2474fd8b5775c72356ec3333269af
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: true
+prev_hash: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+witness_chain: 9305 -> 9306
+note: 'New append-only entry (9305.yml and every other ledger file untouched). Sealed on owner instruction by Clarke Yoursa Tee
+  ("ready, intend to land on main", 2026-10-24). Records the state of main at 6614a86219d2474fd8b5775c72356ec3333269af (#141)
+  after 9305: the 9305 seal itself merged via #139 (772ce5d9); the nginx bridge config recorded in 9305 as on_main false is now
+  merged via #140 (0a1e4a62); two owner commits to IrcChatCli.java (0803c3dc overwrite, ddedb7a9 byte-identical restore);
+  and #141, which lands ClarkeYoursaTee on 127.0.0.1:8082 as the /llm fallback tier, removes the deepseek-fixture tier
+  (startup FATAL, the error names the replacement, no alias) and disables recursive submodule checkout in CI (3af84c3c).
+  ClarkeYoursaTee is a metadata-only derivative of the abliterated Qwen2.5-1.5B Q4_K_M GGUF: tensors byte-identical to
+  the base, NOT fine-tuned. CI is recorded only as measured via the GitHub Actions API. Immutable Band stays 0000-9297.
+  No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+payload:
+  ledger_seal_9305:
+    status: MERGED
+    pr: 139
+    branch: ledger/seal-9305
+    merge_commit: 772ce5d9e99a05c97bd9fa1ea24f68c8d3037934
+    on_main: true
+    file: ledger.v2/9305.yml
+    seal_9305: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+  nginx_bridge_config:
+    status: MERGED
+    pr: 140
+    branch: deploy/nginx-bridge-config
+    branch_head: 13387aa9d2d3b32276a51b44f9da84b08f52ae38
+    merge_commit: 0a1e4a621556616e6f79816121194c361a868da2
+    merge_parent: 10cd128e3559710063fcac8bad7dd31adfd1d814
+    on_main: true
+    files:
+    - deploy/nginx/bridge.axiomiccoreness.com.conf
+    - deploy/nginx/README.md
+    tree_check: git diff 13387aa9..0a1e4a62 -- deploy/ is empty (merged files equal the branch head recorded in 9305)
+    scope: as recorded in 9305 nginx_bridge_config (/cli WebSocket to 127.0.0.1:6680, public rate-limited /qwen-abliterated/ to 127.0.0.1:8083; /llm and /proxy/ omitted)
+    deployed_to_bridge_host: not found
+  irc_chat_cli_owner_commits:
+    on_main: true
+    file: games/teavm-rhythm/src/main/java/com/fruitfly/games/rhythm/irc/IrcChatCli.java
+    commits:
+    - sha: 0803c3dc407d90120c80b755667787e09c3945af
+      subject: Update IrcChatCli.java
+      change: file overwritten with a JUnit CircuitSimSmokeTest body (+76 -140)
+    - sha: ddedb7a918292c841575cd1e3b47a00b066d765f
+      subject: Update IrcChatCli.java
+      change: restore; git diff 772ce5d9..ddedb7a9 is empty (tree equals #139)
+  clarkeyoursatee_prebuild:
+    status: MERGED
+    pr: 141
+    branch: feat/clarkeyoursatee-prebuild
+    merge_commit: 6614a86219d2474fd8b5775c72356ec3333269af
+    merge_parent: ddedb7a918292c841575cd1e3b47a00b066d765f
+    merge_kind: squash
+    on_main: true
+    scope: forlorn/ prebuild (MANIFEST.json, build_gguf.sh, serving/launch_8082.sh, evals, ledger_integration), bridge clarkeyoursatee tier, deepseek-fixture removal, CI submodule fix; 27 files, +1169 -117
+    model:
+      name: ClarkeYoursaTee
+      file: ClarkeYoursaTee-1.5B-Q4_K_M.gguf
+      bytes: 986052096
+      sha256: 982743f8000399cd1d674aa6f7a7578b1b91a0cc1f5308dc2fa6bda5a5753cb8
+      sha3_256: a20c8db94d3db33c63143a9b85e18d981bc78f6ae1dede47e0f2671a027a8f5d
+      hash_check: re-hashed /workspace/llama/ClarkeYoursaTee-1.5B-Q4_K_M.gguf on the box for this entry; both digests and size equal forlorn/MANIFEST.json on main
+      weights_in_repo: false
+    provenance:
+      label: metadata-only derivative; tensors byte-identical to base; NOT fine-tuned
+      change: general.name, general.description, default system prompt and few-shot turns (forlorn/MANIFEST.json change field)
+      base_gguf_repo: mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF
+      base_revision: 36d335ab94cb641e885c327f110600342663eee2
+      base_file: Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf
+      base_bytes: 986049088
+      base_sha256: 59aa9f44bde5349dbe292d7024d197db605f422b8baf65f3246a59abbde4e8e9
+      base_sha3_256: 599e9c2300056c0ea28ef223d961d4d8cdb9b1be2b28e18b177ef6de82abc719
+      weights: huihui-ai/Qwen2.5-1.5B-Instruct-abliterated
+      base_model: Qwen/Qwen2.5-1.5B-Instruct
+      license: apache-2.0
+      chat_template_sha256: 191b85ee8ba14eada8320da26ff1003a495638938f4047166871f8dbbc8cccc5
+      system_prompt_sha256: d973818f0188aad7efa9b261af8a7b230d35bb6006b24cff48c08a93d79dc02c
+      fewshot_sha256: f360284392ca153100b6c2bc380ce66fe218fe2d7bef08efe8b344e87cb5047b
+      source: forlorn/MANIFEST.json on main 6614a86219d2474fd8b5775c72356ec3333269af
+    serving:
+      bind: 127.0.0.1:8082 only (forlorn/serving/launch_8082.sh, llama-server --host 127.0.0.1 --alias clarkeyoursatee)
+      bridge_default_url: http://127.0.0.1:8082/v1/chat/completions (LLM_CLARKEYOURSATEE_URL)
+      llm_chain: DeepInfer 127.0.0.1:8090 (0.5 s fast-fail) -> ClarkeYoursaTee 127.0.0.1:8082 (fallback) -> Qwen 8081 (manual override); provenance labels on every reply
+      reply_label: '[ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative)]'
+    deepseek_fixture_removal:
+      file: sovereign-irc-bridge/src/llm_backend.py
+      rule: 'REMOVED_BACKENDS = {"deepseek-fixture": "removed with no alias; use clarkeyoursatee"}'
+      behavior: 'LLM_BACKEND=deepseek-fixture raises BackendConfigError naming the replacement; cli_loopback prints "FATAL: Cosmic Alignment — ..." and exits 1'
+    ci_submodule_recursion_disabled:
+      commit: 3af84c3c2a5bf0ff3c418d437695d1cd544bf538
+      subject: 'ci: stop recursive submodule checkout (avoid 15GB HF vendor pull)'
+      ancestor_of_main: false (squashed into 6614a862)
+      files:
+      - .github/workflows/pytest.yml
+      - .github/workflows/sovereignty-python-package.yml
+      change: all 5 actions/checkout submodules recursive -> submodules false
+ci:
+  measured_commit: 6614a86219d2474fd8b5775c72356ec3333269af
+  source: GitHub Actions API, runs on main at head_sha 6614a862, read 2026-10-24T15:35Z
+  runs_on_measured_commit:
+  - {workflow: 'Pytest · dual-gate ledger', run_id: 40107388603, run_number: 3061, event: push, conclusion: 'in_progress when read'}
+  - {workflow: 'Sovereign CI/CD', run_id: 40107388589, run_number: 989, event: push, conclusion: success}
+  - {workflow: 'Sovereign Python Package', run_id: 40107388604, run_number: 2290, event: push, conclusion: success}
+  - {workflow: 'Python Package', run_id: 40107388590, run_number: 3997, event: push, conclusion: success}
+  - {workflow: 'Python Package CI Correction', run_id: 40107388569, run_number: 27, event: push, conclusion: success}
+  - {workflow: 'Sovereign IRC Bridge Deploy', run_id: 40107388552, run_number: 36, event: push, conclusion: success}
+  - {workflow: pages-teavm-rhythm, run_id: 40107388560, run_number: 41, event: push, conclusion: success}
+  - {workflow: garden-surgery, run_id: 40107388636, run_number: 395, event: push, conclusion: success}
+  - {workflow: 'MD Scalar Matrix', run_id: 40107388612, run_number: 256, event: push, conclusion: success}
+  - {workflow: debug-environment, run_id: 40107388588, run_number: 1491, event: push, conclusion: success}
+  - {workflow: debug-environment, run_id: 40107388559, run_number: 584, event: push, conclusion: success}
+  - {workflow: 'Automatic Dependency Submission (Maven)', run_id: 40107390623, run_number: 468, event: dynamic, conclusion: success}
+  dual_gate_url: https://github.com/AxiomicCoreness/hello_world.py/actions/runs/40107388603
+  argo_ci_on_measured_commit: not found
+  argo_hard_gate_local: 'python -P .github/scripts/verify_ledger.py --hard on ledger.v2/*.yml including 9306, run locally on this branch before push'
+  policy: 'NO-GHOST-PASS: only runs that exist on the measured commit are cited'
+chain:
+  prev_entry: 9305
+  prev_hash: eaac775171f0b4f202ce075244f7a260e746816631e6fdc356174ba5a8b436e6
+  prev_hash_source: ledger.v2/9305.yml seal_sha3_256 on main 6614a86219d2474fd8b5775c72356ec3333269af (Regime B)
+  witness_chain: 9305 -> 9306
+  immutable_band: 0000-9297
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''),
+  ASCII payload; the digest commits to entry_index and event only, not to the body'
+regime_b_event_domain_sha3_256: f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9306|/clarkeyoursatee_landing_and_nginx_merge|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+terminal_hex: f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+seal: ∀∞φ² · CLARKEYOURSATEE_LANDING_AND_NGINX_MERGE_9306 · WOOD_DRAGON_0.91 · SEALED · f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+seal_sha3_256: f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
