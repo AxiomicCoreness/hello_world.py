@@ -71,7 +71,7 @@ import org.teavm.jso.dom.html.HTMLElement;
  * assets/ar_brain_bg.jpg, dimmed; ?camera=1: live camera, else the AR shot), the 3D stage (StageRenderer:
  * grid, origin anchor, fly-brain object), lanes and notes, then the HUD as
  * an HTML overlay (#hud-l, #hud-r, #hud-c; canvas text if those are absent).
- * Left of the stage: #cli-column (CliClient → ws://127.0.0.1:6669/cli → irc.abjects.net:6669).
+ * Left of the stage: #cli-column (CliClient → ws://127.0.0.1:6680/cli → irc.abjects.net:6669).
  * The canvas is sized by StageLayout (iPhone 12: 390x844 CSS px;
  * ?device=iphone12 forces it) with a devicePixelRatio backing store
  * (1170x2532 at DPR 3).
@@ -166,7 +166,7 @@ public final class Main {
     private static boolean pausedHidden;
     private static boolean resumePending;
     static final String PAUSED_TEXT = "paused (tab hidden)";
-    /** Left CLI → ws://127.0.0.1:6669/cli (Cosmic Alignment loopback). */
+    /** Left CLI → ws://127.0.0.1:6680/cli (Cosmic Alignment loopback). */
     private static CliClient cliClient;
 
     private Main() {

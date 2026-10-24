@@ -3,7 +3,7 @@ package com.fruitfly.games.rhythm.irc;
 /**
  * {@code /llm <text>} chat mode for the TeaVM left CLI. The browser never
  * talks to a model: it sends one WebSocket text frame to the loopback bridge
- * ({@code ws://127.0.0.1:6669/cli}, or the Pages WSS under Option B), and the
+ * ({@code ws://127.0.0.1:6680/cli}, or the Pages WSS under Option B), and the
  * bridge forwards to a GGUF model served by llama.cpp's {@code llama-server}
  * on {@code 127.0.0.1}.
  *

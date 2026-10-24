@@ -154,7 +154,7 @@ public final class PythonIdeCli {
                     } else {
                         out.add(CliLines.format(CliLines.KIND_SYSTEM,
                                 "offline stub · capability '" + name
-                                        + "' needs ws://127.0.0.1:6669/cli bridge for live toolkit"));
+                                        + "' needs ws://127.0.0.1:6680/cli bridge for live toolkit"));
                         out.add(CliLines.format(CliLines.KIND_ENGINE,
                                 "queued: call " + name
                                         + (parts.length > 2 ? " " + parts[2] : "")));
@@ -220,7 +220,7 @@ public final class PythonIdeCli {
 
     private static void deepinferOffline(List<String> out, String sub) {
         out.add(CliLines.format(CliLines.KIND_SYSTEM,
-                "offline stub · deepinfer needs ws://127.0.0.1:6669/cli bridge"));
+                "offline stub · deepinfer needs ws://127.0.0.1:6680/cli bridge"));
         out.add(CliLines.format(CliLines.KIND_ENGINE,
                 "queued: /py deepinfer"
                         + (sub == null || sub.isEmpty() ? "" : " " + sub)
