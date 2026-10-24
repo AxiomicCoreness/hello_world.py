@@ -9,6 +9,11 @@ pandas>=2.0
 # app/main.py, scripts/uvicorn_range.py and port380_mcp.py serve with these
 fastapi>=0.109.0
 uvicorn>=0.27.0
+# key_rotation_macro.py, quantum/mtls_cert_lifecycle.py, core/diffuse_kl_cache.py and
+# .github/scripts/verify_510510_genesis.py import the PyPI package (ed25519, x509).
+# The repo's own cryptography/ folder shadows it when run from the repo root;
+# run those scripts with `python -P` so the installed package is used.
+cryptography>=50.0.2
 # stdlib imports - do not pip-install
 # hmac
 
