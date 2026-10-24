@@ -739,7 +739,9 @@ const CHART = '?chart=charts/sample_chart.json';
   const cliHtml = fs.readFileSync(require('path').join(require('path').dirname(path), 'index.html'), 'utf8');
   const unsafe = [6665, 6666, 6667, 6668, 6669, 6679, 6697];
   expect('V: compiled loopback CLI URL is ws://127.0.0.1:6680/cli', cliJs.includes('ws://127.0.0.1:6680/cli') && !cliJs.includes('127.0.0.1:6669'));
-  expect('V: Pages WSS unchanged', cliJs.includes('wss://bridge.axiomiccoreness.com/cli'));
+  expect('V: dead bridge.axiomiccoreness.com not compiled in (NXDOMAIN)', !cliJs.includes('axiomiccoreness.com'));
+  expect('V: remote page without override reports "remote bridge not configured"', cliJs.includes('remote bridge not configured'));
+  expect('V: page declares <meta name="cli-bridge">', cliHtml.includes('<meta name="cli-bridge"'));
   expect('V: page CLI title names 127.0.0.1:6680', cliHtml.includes('127.0.0.1:6680') && !cliHtml.includes('127.0.0.1:6669'));
   expect('V: 6680 is not a browser-restricted port', !unsafe.includes(6680));
 

@@ -30,7 +30,7 @@ The Garden is a self‑improving, φ‑harmonic sovereign engine integrating:
 - **Connectome Loader & XSD** — the "fly code" (Strict XML validation, XXE hardened)
 - **LAM / Master Equation** (Bitwise \(H_0\) construction, speedup from 1 hr to 0.22s)
 - **Argo Rollouts** (Gateway API canary; v8.2.0 said "tied to φ-mean telemetry" — no φ-mean metric or `analysis-phi-mean.yaml` was found at `83ad9e47`; the shipped analysis is `argocd/analysis-health.yaml`)
-- **Loopback CLI bridge** (`ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`) — new in v8.3
+- **Loopback CLI bridge** (`ws://127.0.0.1:6680/cli`; remote pages need an explicit `?bridge=wss://…` / `<meta name="cli-bridge">`) — new in v8.3
 - **`/llm` neuron-snapshot chat** with reply guard, `chatml_prebuild`, and DeepInfer default backend with labeled fallbacks — new in v8.3
 - **Private loopback CORS Anywhere** (`tools/cors-anywhere/`, 127.0.0.1 + whitelist) — new in v8.3
 
@@ -348,7 +348,7 @@ Witness chain (v8.3): `9296` → `9297` → `9298` → `9299` → `9300` → `93
 
 ### 11.2 Loopback CLI bridge
 - UI → `ws://127.0.0.1:6680/cli` → `sovereign-irc-bridge` → `irc.abjects.net:6669` (`CliLines.java`, `cli_loopback.py`).
-- On GitHub Pages, `CliClient` routes by hostname to `wss://bridge.axiomiccoreness.com/cli` (`CliLines.resolveCliWsUrl`, recorded in `ledger.v2/9304.yml`).
+- On GitHub Pages, `CliClient` no longer dials a hardcoded host (the former `bridge.axiomiccoreness.com` is NXDOMAIN). `CliLines.resolveBridge` uses a `?bridge=` / `<meta name="cli-bridge">` ws(s):// override, else loopback for 127.0.0.1/localhost/::1/`file:`, else stays disconnected with "remote bridge not configured". (The old hostname routing is recorded in `ledger.v2/9304.yml`.)
 - The bridge binds `127.0.0.1:6680` only. If `CLI_BIND_HOST` or any LLM URL is not loopback, it exits with `FATAL: Cosmic Alignment`.
 - The browser never connects to abjects directly.
 

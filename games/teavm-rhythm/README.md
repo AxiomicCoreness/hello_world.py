@@ -30,7 +30,7 @@ workflow (which watches the repo-root `src/**` and `pom.xml`) don't see it.
 | `src/main/webapp/assets/ar_brain_bg.jpg` | Your AR fly-brain screenshot, resized to 1170 px wide, used as the dimmed background. |
 | `src/main/java/com/fruitfly/games/rhythm/web/AudioSync.java` | Wraps one HTML5 `<audio>` element as the song clock source. |
 | `src/main/webapp/index.html` | Page that loads `classes.js`, calls `main()`, and shows the scoring formulas in KaTeX 0.16.11 (CDN, pinned with SRI hashes; plain-text fallback if it can't load). |
-| `client/transport/IrcBridgeConfig`, `client/irc/MtlsToolCall`, `client/irc/IrcBridgeClientStub`, `client/irc/IrcChatCli`, `client/CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment Option B: local/CI → `ws://127.0.0.1:6680/cli`; Pages → `wss://bridge.axiomiccoreness.com/cli`; bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
+| `client/transport/IrcBridgeConfig`, `client/irc/MtlsToolCall`, `client/irc/IrcBridgeClientStub`, `client/irc/IrcChatCli`, `client/CliLines` | Bridge stubs + CLI line tags. Cosmic Alignment: `?bridge=ws(s)://…` or `<meta name="cli-bridge">` override first; loopback/`file:` page → `ws://127.0.0.1:6680/cli`; other pages with no override stay disconnected ("remote bridge not configured"); bridge → `irc.abjects.net:6669`. Never `0.0.0.0` or browser-direct abjects. |
 | `client/transport/CliClient.java` | TeaVM WebSocket CLI on `#cli-column` / `#chat-history` / `#chat-input`; Option B hostname switch (loopback local/CI, `PAGES_WSS` on Pages); click-to-focus; skips game keys while typing. |
 | `client/ide/PythonIdeCli.java` | Offline `/py` · `/ide` help/list/pointer + traceback-shaped errors; live toolkit via bridge. |
 | `src/main/webapp/charts/sample_chart.json` | Sample 6-note chart, "Fruit Fly Heartbeat". |
@@ -399,8 +399,8 @@ doubling and all three voice lines with each of the four fly modes (no misses).
 ## LLM chat (/llm, GGUF on loopback)
 
 The left CLI has an LLM mode. `/llm <text>` goes over the same CLI socket as
-everything else (Option B unchanged: `ws://127.0.0.1:6680/cli` locally,
-`wss://bridge.axiomiccoreness.com/cli` on Pages) to the Python bridge
+everything else (`ws://127.0.0.1:6680/cli` locally; on Pages only when a
+`?bridge=wss://…` or `<meta name="cli-bridge">` override is set) to the Python bridge
 (`sovereign-irc-bridge/src/llm_chat.py`), which forwards it to llama.cpp's
 `llama-server` OpenAI-compatible endpoint on `127.0.0.1`. The browser never
 talks to the model, and nothing binds or dials a non-loopback address.
