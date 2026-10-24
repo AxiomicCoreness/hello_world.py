@@ -18,8 +18,10 @@ note: 'New append-only entry (9304.yml and every other ledger file untouched). S
   ENTIRE_SYSTEM_REVIEW v8.3.0 rewrite (#137) and cryptography>=50.0.2 in requirements.txt (#138). Two pushed branches
   without a merged PR are listed with on_main false. CI is recorded only as measured via the GitHub Actions API; no Argo
   CI run exists on the measured commit and none is claimed. Wired to 9305 on owner instruction ("Wire to 9305"): the
-  nginx TLS/WebSocket config for bridge.axiomiccoreness.com on branch deploy/nginx-bridge-config (eee8163b, not on main,
-  PR not yet opened) is recorded as nginx_bridge_config; /cli only, /llm and /proxy/ intentionally omitted. The neuron
+  nginx TLS/WebSocket config for bridge.axiomiccoreness.com on branch deploy/nginx-bridge-config (eee8163b, head 13387aa9,
+  not on main, PR not yet opened) is recorded as nginx_bridge_config: /cli WebSocket, plus a public unauthenticated
+  /qwen-abliterated/ route to llama-server on 127.0.0.1:8083 added by the owner''s explicit choice (rate-limited 6r/m,
+  GET/POST only); /llm and /proxy/ intentionally omitted. The neuron
   simulation is Java LIF/RK4 (logic/LifNeuron); the LLM tiers (DeepInfer, fixture, Qwen) only answer /llm chat. Immutable
   Band stays 0000-9297. No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
 payload:
@@ -162,8 +164,11 @@ payload:
     on_main: true
   nginx_bridge_config:
     branch: deploy/nginx-bridge-config
-    commit: eee8163b3f4cf478a26fc7cbfb9ae74f7716537f
-    parent: 10cd128e3559710063fcac8bad7dd31adfd1d814
+    head_commit: 13387aa9d2d3b32276a51b44f9da84b08f52ae38
+    commits:
+    - eee8163b3f4cf478a26fc7cbfb9ae74f7716537f
+    - 13387aa9d2d3b32276a51b44f9da84b08f52ae38
+    base: 10cd128e3559710063fcac8bad7dd31adfd1d814
     on_main: false
     pr: not yet opened
     files:
@@ -174,13 +179,39 @@ payload:
     omitted_on_purpose:
     - /llm (a chat command sent over the /cli socket, not an HTTP path)
     - /proxy/ (cors-anywhere stays loopback-only on 127.0.0.1:8080; publishing it would make an open relay)
-    cosmic_alignment: bridge stays bound to 127.0.0.1:6680; nginx on 443 is the only public listener
+    cosmic_alignment: bridge stays bound to 127.0.0.1:6680 and llama-server to 127.0.0.1:8083; nginx on 443 is the only public listener
+    qwen_abliterated_public_route:
+      commit: 13387aa9d2d3b32276a51b44f9da84b08f52ae38
+      decision: owner's explicit choice (answered card "Expose the abliterated Qwen on 8083 publicly through nginx")
+      location: /qwen-abliterated/ -> http://127.0.0.1:8083/ (trailing slash strips the prefix)
+      public_url: https://bridge.axiomiccoreness.com/qwen-abliterated/v1/chat/completions
+      model: Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf (mradermacher/Qwen2.5-1.5B-Instruct-abliterated-GGUF@36d335ab94cb641e885c327f110600342663eee2)
+      authentication: none (owner's choice); conf and README warn it is public and unauthenticated and recommend llama-server --api-key with the key kept on the host, never in the repo
+      rate_limit: limit_req zone qwen_abliterated (limit_req_zone $binary_remote_addr, 10m, rate 6r/m, defined in http {}), burst 5 nodelay, limit_req_status 429
+      methods: GET/POST only (limit_except GET POST deny all; GET also admits HEAD)
+      proxy_buffering: 'off'
+      proxy_read_timeout: 300s
+      client_max_body_size: 1m
+      llama_server_bind: 127.0.0.1:8083
+      bridge_llm_tier: the /llm gguf-abliterated tier is on unmerged feat/llm-qwen-abliterated (on_main false)
+      validation:
+        nginx_version: 1.26.3
+        nginx_t: ok, no warnings
+        loopback_tls_smoke_127_0_0_1_18443:
+          get_qwen_abliterated_health: 200
+          post_chat_completions: 200 (reply 'Hi!', model Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf)
+          cli: 101
+          proxy_x: 404
+          delete: 403
+          rate_limit: 200 x4 then 429 x4
+        validation_source: run on the box by the session that made 13387aa9; not re-run for this entry
     deployed_to_bridge_host: not found
     validation:
       nginx_version: 1.26.3
       nginx_t: ok
       local_tls_smoke: 127.0.0.1:18443 -> /cli 101 Switching Protocols, /proxy/x 404
       validation_source: run on the box by the session that made eee8163b (nginx -t and the /cli 101 are also stated in its commit message and README); not re-run for this entry
+      applies_to: eee8163b3f4cf478a26fc7cbfb9ae74f7716537f
     ci:
     - {workflow: 'Automatic Dependency Submission (Maven)', check: submit-maven, run_id: 40091141228, run_number: 445, head_sha: eee8163b3f4cf478a26fc7cbfb9ae74f7716537f, conclusion: success}
   unmerged_branches:
