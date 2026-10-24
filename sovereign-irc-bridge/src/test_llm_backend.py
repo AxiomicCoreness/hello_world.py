@@ -55,7 +55,7 @@ class _Chat(BaseHTTPRequestHandler):
 
 @pytest.fixture(autouse=True)
 def _env(monkeypatch):
-    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_DEEPSEEK_URL", "LLM_URL",
+    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_URL", "LLM_ABLITERATED_URL",
               "DEEPINFER_REPROBE_S", "DEEPINFER_CONNECT_TIMEOUT", "LLM_PROMPT_MODE"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
@@ -84,8 +84,9 @@ def chat_stub():
 def test_default_backend_is_deepinfer():
     assert llm_backend.backend() == "deepinfer"
     assert llm_backend.DEFAULT_DEEPINFER_URL == "http://127.0.0.1:8090/v1/chat/completions"
-    assert llm_backend.DEFAULT_DEEPSEEK_URL == "http://127.0.0.1:8082/v1/chat/completions"
+    assert llm_backend.DEFAULT_CLARKEYOURSATEE_URL == "http://127.0.0.1:8082/v1/chat/completions"
     assert llm_backend.fallback() == ""
+    assert llm_backend.DEFAULT_ABLITERATED_URL == "http://127.0.0.1:8083/v1/chat/completions"
 
 
 def test_unknown_backend_and_fallback_rejected():
@@ -93,18 +94,24 @@ def test_unknown_backend_and_fallback_rejected():
         llm_backend.backend("vllm")
     with pytest.raises(llm_backend.BackendConfigError):
         llm_backend.fallback("deepinfer")
-    assert llm_backend.fallback("deepseek-fixture") == "deepseek-fixture"
+    assert llm_backend.fallback("clarkeyoursatee") == "clarkeyoursatee"
+    assert llm_backend.backend("clarkeyoursatee") == "clarkeyoursatee"
+    assert llm_backend.fallback("gguf-abliterated") == "gguf-abliterated"
+    assert llm_backend.backend("gguf-abliterated") == "gguf-abliterated"
 
 
-@pytest.mark.parametrize("name,env", [("DEEPINFER_URL", "DEEPINFER_URL"), ("LLM_DEEPSEEK_URL", "LLM_DEEPSEEK_URL")])
+@pytest.mark.parametrize("name,env", [("DEEPINFER_URL", "DEEPINFER_URL"), ("LLM_CLARKEYOURSATEE_URL", "LLM_CLARKEYOURSATEE_URL"),
+                                      ("LLM_ABLITERATED_URL", "LLM_ABLITERATED_URL")])
 def test_backend_urls_loopback_enforced(monkeypatch, name, env):
     for bad in ("http://0.0.0.0:8090/v1/chat/completions", "http://10.0.0.5:8090/x",
                 "http://api.example.com/v1/chat/completions"):
         with pytest.raises(llm_chat.LlmConfigError, match=name):
             llm_chat.assert_loopback_url(bad, name)
     monkeypatch.setenv(env, "http://0.0.0.0:8090/v1/chat/completions")
-    if env == "LLM_DEEPSEEK_URL":
-        monkeypatch.setenv("LLM_BACKEND", "deepseek-fixture")
+    if env == "LLM_CLARKEYOURSATEE_URL":
+        monkeypatch.setenv("LLM_BACKEND", "clarkeyoursatee")
+    if env == "LLM_ABLITERATED_URL":
+        monkeypatch.setenv("LLM_BACKEND", "gguf-abliterated")
     lines = llm_chat.handle_llm_sync(WIRE)
     assert lines[-1].startswith(f"[System] llm offline: {name} must be")
 
@@ -215,40 +222,134 @@ def test_gguf_fallback_is_labeled_qwen(monkeypatch, chat_stub, caplog):
     assert err is None and meta["backend"] == "qwen"
 
 
-def test_deepseek_fixture_backend_labeled_and_template(monkeypatch, chat_stub, caplog):
+def test_gguf_abliterated_fallback_is_labeled(monkeypatch, chat_stub, caplog):
     stub, url = chat_stub
-    stub.template = DS_TPL
-    stub.reply = "</think>Clouds are pillows.<｜User｜>more"
-    monkeypatch.setenv("LLM_BACKEND", "deepseek-fixture")
-    monkeypatch.setenv("LLM_DEEPSEEK_URL", url)
+    monkeypatch.setenv("LLM_FALLBACK", "gguf-abliterated")
+    monkeypatch.setenv("LLM_ABLITERATED_URL", url)
+    # Plain Qwen points at a dead port: the abliterated server must be the one answering.
+    monkeypatch.setenv("LLM_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
     with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
         lines = llm_chat.handle_llm_sync(WIRE)
-    stub.template = _Chat.template = "{% for m in messages %}<|im_start|>{{ m.role }}{% endfor %}"
-    assert "[System] llm route: backend=deepseek-fixture path=/v1/chat/completions mode=auto family=deepseek" in lines
-    assert [x for x in lines if x.startswith("[Engine]")] == [
-        "[Engine] llm: [DeepSeek-V4 fixture: RalphSeek 122M — not a real model] Clouds are pillows."]
+    assert any(x.startswith("[System] llm: deepinfer backend offline (") for x in lines)
+    assert ("[System] llm route: backend=qwen-abliterated (gguf-abliterated fallback from deepinfer) "
+            "path=/v1/chat/completions mode=auto family=chatml") in lines
+    engine = [x for x in lines if x.startswith("[Engine]")]
+    assert engine == ["[Engine] llm: [Fallback: Qwen2.5-1.5B abliterated] Lane L3 is busiest."]
+    assert not any("backend=deepinfer" in x or "backend=qwen " in x for x in lines)
+    assert not any("[Fallback: Qwen] " in x for x in lines)
+    assert llm_backend.ABLITERATED_FALLBACK_LOG in caplog.text
+    rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
+    assert rec[-1]["backend"] == "qwen-abliterated" and rec[-1]["fallback_from"] == "deepinfer"
     body = stub.posts[-1]["body"]
-    assert body["chat_template_kwargs"] == {"enable_thinking": False}
-    assert "<｜end▁of▁sentence｜>" in body["stop"] and "<｜User｜>" in body["stop"]
-    assert body["model"] == "ralphseek-v4-flash"
+    assert body["model"] == "qwen2.5-1.5b-instruct-abliterated"
+    assert "<|im_end|>" in body["stop"]
+    _, err, meta = llm_chat.complete_routed([{"role": "user", "content": "x"}])
+    assert err is None and meta["backend"] == "qwen-abliterated"
+
+
+def test_gguf_abliterated_backend_direct_is_labeled(monkeypatch, chat_stub, caplog):
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_BACKEND", "gguf-abliterated")
+    monkeypatch.setenv("LLM_ABLITERATED_URL", url)
+    with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
+        lines = llm_chat.handle_llm_sync(WIRE)
+    assert "[System] llm route: backend=qwen-abliterated path=/v1/chat/completions mode=auto family=chatml" in lines
+    assert [x for x in lines if x.startswith("[Engine]")] == [
+        "[Engine] llm: [Fallback: Qwen2.5-1.5B abliterated] Lane L3 is busiest."]
     assert not any("deepinfer" in x.lower() for x in lines)
     rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
-    assert rec[-1]["backend"] == "deepseek-fixture" and rec[-1]["fallback_from"] is None
+    assert rec[-1]["backend"] == "qwen-abliterated" and rec[-1]["fallback_from"] is None
 
 
-def test_deepseek_fixture_fallback_from_deepinfer(monkeypatch, chat_stub, caplog):
-    stub, url = chat_stub
-    stub.template = DS_TPL
+def test_gguf_abliterated_startup_and_health(monkeypatch):
+    monkeypatch.setenv("LLM_FALLBACK", "gguf-abliterated")
+    line = llm_backend.startup_probe("http://127.0.0.1:8081/v1/chat/completions")
+    assert "deepinfer OFFLINE" in line
+    assert line.endswith("→ fallback gguf-abliterated (Qwen2.5-1.5B abliterated at 127.0.0.1:8083)")
+    blob = llm_backend.health_blob()
+    assert blob["fallback"] == "gguf-abliterated"
+    assert blob["abliterated_url"] == "http://127.0.0.1:8083/v1/chat/completions"
+    assert llm_backend.reply_prefix("qwen-abliterated") == "[Fallback: Qwen2.5-1.5B abliterated] "
+    assert llm_backend.reply_prefix("qwen-abliterated") != llm_backend.reply_prefix("qwen")
+
+
+CYT_PREFIX = "[ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative)] "
+
+
+def test_removed_deepseek_fixture_fails_loudly(monkeypatch):
+    # Removed with no alias: both env vars reject it with an error that names the replacement.
+    for fn in (llm_backend.backend, llm_backend.fallback):
+        with pytest.raises(llm_backend.BackendConfigError, match=r"deepseek-fixture.*removed with no alias; use clarkeyoursatee"):
+            fn("deepseek-fixture")
+    assert "deepseek-fixture" not in llm_backend.BACKENDS and "deepseek-fixture" not in llm_backend.FALLBACKS
     monkeypatch.setenv("LLM_FALLBACK", "deepseek-fixture")
-    monkeypatch.setenv("LLM_DEEPSEEK_URL", url)
-    with caplog.at_level("WARNING", logger="sovereign-irc-bridge.llm"):
+    lines = llm_chat.handle_llm_sync(WIRE)
+    assert lines[-1].startswith("[System] llm offline: LLM_FALLBACK must be unset or one of")
+    assert not any(x.startswith("[Engine]") for x in lines)
+    assert "error" in llm_backend.health_blob()
+
+
+def test_removed_deepseek_fixture_stops_cli_startup(monkeypatch, capsys):
+    import sys
+    import types
+
+    from src import cli_loopback
+
+    monkeypatch.setenv("LLM_BACKEND", "deepseek-fixture")
+    stub = types.ModuleType("uvicorn")
+    stub.run = lambda *a, **k: pytest.fail("bridge must not start with a removed backend")
+    monkeypatch.setitem(sys.modules, "uvicorn", stub)
+    with pytest.raises(SystemExit) as exc:
+        cli_loopback.run()
+    assert exc.value.code == 1
+    assert "FATAL: Cosmic Alignment" in capsys.readouterr().err
+
+
+def test_clarkeyoursatee_backend_direct_is_labeled(monkeypatch, chat_stub, caplog):
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_BACKEND", "clarkeyoursatee")
+    monkeypatch.setenv("LLM_CLARKEYOURSATEE_URL", url)
+    with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
         lines = llm_chat.handle_llm_sync(WIRE)
-    stub.template = _Chat.template = "{% for m in messages %}<|im_start|>{{ m.role }}{% endfor %}"
+    assert "[System] llm route: backend=clarkeyoursatee path=/v1/chat/completions mode=auto family=chatml" in lines
+    assert [x for x in lines if x.startswith("[Engine]")] == ["[Engine] llm: " + CYT_PREFIX + "Lane L3 is busiest."]
+    body = stub.posts[-1]["body"]
+    assert body["model"] == "clarkeyoursatee"
+    assert "chat_template_kwargs" not in body
+    assert "<|im_end|>" in body["stop"]
+    assert not any("deepinfer" in x.lower() for x in lines)
+    rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
+    assert rec[-1]["backend"] == "clarkeyoursatee" and rec[-1]["fallback_from"] is None
+
+
+def test_clarkeyoursatee_fallback_from_deepinfer(monkeypatch, chat_stub, caplog):
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_FALLBACK", "clarkeyoursatee")
+    monkeypatch.setenv("LLM_CLARKEYOURSATEE_URL", url)
+    # Plain Qwen points at a dead port: ClarkeYoursaTee must be the one answering.
+    monkeypatch.setenv("LLM_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
+    with caplog.at_level("INFO", logger="sovereign-irc-bridge.llm"):
+        lines = llm_chat.handle_llm_sync(WIRE)
     assert any(x.startswith("[System] llm: deepinfer backend offline (") for x in lines)
-    assert any(x.startswith("[System] llm route: backend=deepseek-fixture (fixture fallback from deepinfer)") for x in lines)
-    assert [x for x in lines if x.startswith("[Engine]")] == [
-        "[Engine] llm: [DeepSeek-V4 fixture: RalphSeek 122M — not a real model] Lane L3 is busiest."]
-    assert llm_backend.FIXTURE_FALLBACK_LOG in caplog.text
+    assert ("[System] llm route: backend=clarkeyoursatee (clarkeyoursatee fallback from deepinfer) "
+            "path=/v1/chat/completions mode=auto family=chatml") in lines
+    assert [x for x in lines if x.startswith("[Engine]")] == ["[Engine] llm: " + CYT_PREFIX + "Lane L3 is busiest."]
+    assert llm_backend.CLARKEYOURSATEE_FALLBACK_LOG in caplog.text
+    rec = [json.loads(r.getMessage().split(" ", 1)[1]) for r in caplog.records if r.getMessage().startswith("llm_reply ")]
+    assert rec[-1]["backend"] == "clarkeyoursatee" and rec[-1]["fallback_from"] == "deepinfer"
+
+
+def test_clarkeyoursatee_startup_and_health(monkeypatch):
+    monkeypatch.setenv("LLM_FALLBACK", "clarkeyoursatee")
+    monkeypatch.setenv("LLM_CLARKEYOURSATEE_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
+    line = llm_backend.startup_probe("http://127.0.0.1:8081/v1/chat/completions")
+    assert "deepinfer OFFLINE" in line
+    assert "→ fallback clarkeyoursatee (ClarkeYoursaTee, Qwen2.5-1.5B-Instruct-abliterated derivative at 127.0.0.1:" in line
+    blob = llm_backend.health_blob()
+    assert blob["fallback"] == "clarkeyoursatee" and "deepseek_fixture_url" not in blob
+    assert llm_backend.reply_prefix("clarkeyoursatee") == CYT_PREFIX
+    # The prefix keeps the true base model; it never claims to be DeepInfer.
+    assert "Qwen2.5-1.5B-Instruct-abliterated" in CYT_PREFIX and "deepinfer" not in CYT_PREFIX.lower()
 
 
 def test_deepinfer_online_reply_labeled_deepinfer(monkeypatch, chat_stub):

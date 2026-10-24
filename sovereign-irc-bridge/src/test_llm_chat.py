@@ -71,7 +71,7 @@ def _backend_env(monkeypatch):
     """Each test starts from the documented defaults: no fallback, empty liveness cache."""
     from src import llm_backend
 
-    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_DEEPSEEK_URL", "DEEPINFER_REPROBE_S",
+    for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_ABLITERATED_URL", "DEEPINFER_REPROBE_S",
               "DEEPINFER_CONNECT_TIMEOUT"):
         monkeypatch.delenv(k, raising=False)
     llm_backend.reset_state()

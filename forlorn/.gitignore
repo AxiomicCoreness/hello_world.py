@@ -1,0 +1,4 @@
+# Model weights are never committed; only their pinned hashes (MANIFEST.json).
+*.gguf
+build/
+__pycache__/

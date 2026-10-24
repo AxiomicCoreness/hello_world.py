@@ -35,7 +35,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          # Submodules disabled: vendor/ holds a ~15GB HF repo (Qwen); CI needs no model weights.
+          submodules: false
 
       - uses: actions/setup-python@v5
         with:
@@ -143,7 +144,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          # Submodules disabled: vendor/ holds a ~15GB HF repo (Qwen); CI needs no model weights.
+          submodules: false
 
       - uses: actions/setup-python@v5
         with:

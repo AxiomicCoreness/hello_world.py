@@ -3,7 +3,13 @@
 Backend selection (see :mod:`src.llm_backend`): LLM_BACKEND=deepinfer (default)
 posts to DEEPINFER_URL; LLM_BACKEND=gguf posts to LLM_URL (llama.cpp). With
 LLM_FALLBACK=gguf an offline DeepInfer hands the turn to the GGUF server and
-the reply is labeled ``backend=qwen`` / ``[Fallback: Qwen]``. Without it the
+the reply is labeled ``backend=qwen`` / ``[Fallback: Qwen]``; with
+LLM_FALLBACK=gguf-abliterated (or LLM_BACKEND=gguf-abliterated) it goes to
+LLM_ABLITERATED_URL and is labeled ``backend=qwen-abliterated`` /
+``[Fallback: Qwen2.5-1.5B abliterated]``; with LLM_FALLBACK=clarkeyoursatee (or
+LLM_BACKEND=clarkeyoursatee) it goes to LLM_CLARKEYOURSATEE_URL and is labeled
+``backend=clarkeyoursatee`` /
+``[ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative)]``. Without a fallback the
 turn ends with ``[System] llm: deepinfer backend offline (…)``.
 
 The TeaVM chatbox sends one WebSocket frame::
@@ -259,15 +265,18 @@ def complete(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[st
 def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
     """Like complete(), plus route meta. meta["backend"] is the provenance label:
     "deepinfer", "gguf" (LLM_BACKEND=gguf), "qwen" (GGUF fallback for an offline
-    DeepInfer) or "deepseek-fixture" (RalphSeek 122M fixture, direct or fallback)."""
+    DeepInfer), "qwen-abliterated" (abliterated Qwen GGUF, direct or fallback) or
+    "clarkeyoursatee" (ClarkeYoursaTee GGUF, direct or fallback)."""
     try:
         be, fb = llm_backend.backend(), llm_backend.fallback()
     except llm_backend.BackendConfigError as exc:
         return None, str(exc), {"backend": None}
     if be == "gguf":
         return _complete_gguf(messages, llm_backend.LABEL_GGUF)
-    if be == "deepseek-fixture":
-        return _complete_fixture(messages)
+    if be == "clarkeyoursatee":
+        return _complete_clarkeyoursatee(messages)
+    if be == "gguf-abliterated":
+        return _complete_abliterated(messages)
     try:
         url = deepinfer_url()
     except LlmConfigError as exc:
@@ -285,9 +294,12 @@ def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Opti
     if fb == "gguf":
         logger.warning("%s (%s)", llm_backend.FALLBACK_LOG, detail)
         reply, err, meta = _complete_gguf(messages, llm_backend.LABEL_FALLBACK)
-    elif fb == "deepseek-fixture":
-        logger.warning("%s (%s)", llm_backend.FIXTURE_FALLBACK_LOG, detail)
-        reply, err, meta = _complete_fixture(messages)
+    elif fb == "gguf-abliterated":
+        logger.warning("%s (%s)", llm_backend.ABLITERATED_FALLBACK_LOG, detail)
+        reply, err, meta = _complete_abliterated(messages)
+    elif fb == "clarkeyoursatee":
+        logger.warning("%s (%s)", llm_backend.CLARKEYOURSATEE_FALLBACK_LOG, detail)
+        reply, err, meta = _complete_clarkeyoursatee(messages)
     else:
         return None, offline, {"backend": llm_backend.LABEL_DEEPINFER, "deepinfer_offline": offline}
     meta.update(fallback_from="deepinfer", deepinfer_offline=offline)
@@ -300,11 +312,23 @@ def _complete_gguf(messages, label: str):
     return reply, err, meta
 
 
-def _complete_fixture(messages):
+def _complete_abliterated(messages):
+    # Same Qwen chat template family and reply guard as the plain gguf path,
+    # but its own server, model name and provenance label.
     reply, err, meta = _complete_at(
-        lambda: assert_loopback_url(llm_backend.deepseek_url_raw(), "LLM_DEEPSEEK_URL"),
-        llm_backend.deepseek_model(), messages, extra=llm_backend.DEEPSEEK_FIXTURE_EXTRA)
-    meta["backend"] = llm_backend.LABEL_FIXTURE
+        lambda: assert_loopback_url(llm_backend.abliterated_url_raw(), "LLM_ABLITERATED_URL"),
+        llm_backend.abliterated_model(), messages)
+    meta["backend"] = llm_backend.LABEL_ABLITERATED
+    return reply, err, meta
+
+
+def _complete_clarkeyoursatee(messages):
+    # Qwen ChatML family (ClarkeYoursaTee is a Qwen2.5 derivative); own server,
+    # model name and provenance label.
+    reply, err, meta = _complete_at(
+        lambda: assert_loopback_url(llm_backend.clarkeyoursatee_url_raw(), "LLM_CLARKEYOURSATEE_URL"),
+        llm_backend.clarkeyoursatee_model(), messages)
+    meta["backend"] = llm_backend.LABEL_CLARKEYOURSATEE
     return reply, err, meta
 
 
@@ -402,7 +426,8 @@ def handle_llm_sync(text: str) -> List[str]:
     if meta.get("deepinfer_offline"):
         lines.append(f"[System] llm: {meta['deepinfer_offline']}")
     fallback = bool(meta.get("fallback_from"))
-    via = {llm_backend.LABEL_FALLBACK: "gguf fallback", llm_backend.LABEL_FIXTURE: "fixture fallback"}
+    via = {llm_backend.LABEL_FALLBACK: "gguf fallback", llm_backend.LABEL_CLARKEYOURSATEE: "clarkeyoursatee fallback",
+           llm_backend.LABEL_ABLITERATED: "gguf-abliterated fallback"}
     label = f"{meta.get('backend')}" + (
         f" ({via.get(meta.get('backend'), 'fallback')} from deepinfer)" if fallback else "")
     if meta.get("path"):
@@ -422,7 +447,7 @@ def handle_llm_sync(text: str) -> List[str]:
     reply, trims = clean_reply(reply or "")
     lines.extend(f"[System] llm: {n}" for n in trims)
     body = [ln for ln in reply.splitlines() if ln.strip()] or ["(empty reply)"]
-    prefix = llm_backend.reply_prefix(meta.get("backend"))  # never pass Qwen/fixture output off as DeepInfer
+    prefix = llm_backend.reply_prefix(meta.get("backend"))  # never pass Qwen/abliterated/ClarkeYoursaTee output off as DeepInfer
     for ln in body[:MAX_REPLY_LINES]:
         lines.append(f"[Engine] llm: {prefix}{ln}")
     return lines
