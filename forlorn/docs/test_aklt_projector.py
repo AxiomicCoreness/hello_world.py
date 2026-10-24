@@ -1,4 +1,12 @@
-"""Numerical check of the AKLT projector P2 in aklt_projector_and_parse_timestamp.md."""
+"""Numerical check of the AKLT projector P2 in aklt_projector_and_parse_timestamp.md.
+
+Spin-1 matrices (basis m = +1, 0, -1):
+  Sx = (1/√2) [[0,1,0],[1,0,1],[0,1,0]]
+  Sy = (i/√2) [[0,-1,0],[1,0,-1],[0,1,0]]
+  Sz = diag(1, 0, -1)
+S1·S2 = Σ_a kron(Sa, Sa);  P2 = ((S1·S2)^2 + 3 S1·S2 + 2I) / 6.
+No exact float equality: every comparison uses allclose / isclose / rounding.
+"""
 from __future__ import annotations
 
 from collections import Counter
@@ -7,49 +15,42 @@ import pytest
 
 np = pytest.importorskip("numpy", reason="numpy not installed; AKLT projector check needs it")
 
+SX = (1 / np.sqrt(2)) * np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=complex)
+SY = (1j / np.sqrt(2)) * np.array([[0, -1, 0], [1, 0, -1], [0, 1, 0]], dtype=complex)
+SZ = np.diag([1, 0, -1]).astype(complex)
+SPIN1 = (SX, SY, SZ)
+I9 = np.eye(9)
 
-def _spin1():
-    r = np.sqrt(2.0) / 2.0
-    sx = r * np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=complex)
-    sy = r * np.array([[0, -1j, 0], [1j, 0, -1j], [0, 1j, 0]], dtype=complex)
-    sz = np.diag([1.0, 0.0, -1.0]).astype(complex)
-    return sx, sy, sz
-
-
-def _ops():
-    i3 = np.eye(3)
-    s1 = [np.kron(s, i3) for s in _spin1()]
-    s2 = [np.kron(i3, s) for s in _spin1()]
-    x = sum(a @ b for a, b in zip(s1, s2))                       # S1·S2
-    stot2 = sum((a + b) @ (a + b) for a, b in zip(s1, s2))       # (S1+S2)^2
-    p2 = (x @ x + 3 * x + 2 * np.eye(9)) / 6.0
-    return x, stot2, p2
+X = sum(np.kron(s, s) for s in SPIN1)                     # S1·S2
+P2 = (X @ X + 3 * X + 2 * I9) / 6.0
+I3 = np.eye(3)
+S_TOT = [np.kron(s, I3) + np.kron(I3, s) for s in SPIN1]  # S = S1 + S2
+S2_TOT = sum(s @ s for s in S_TOT)                        # S^2
 
 
-def test_spin1_algebra():
-    sx, sy, sz = _spin1()
-    assert np.allclose(sx @ sy - sy @ sx, 1j * sz)
-    assert np.allclose(sx @ sx + sy @ sy + sz @ sz, 2 * np.eye(3))   # s(s+1) = 2
+def test_spin1_matrices():
+    assert np.allclose(SX @ SY - SY @ SX, 1j * SZ)
+    assert np.allclose(SX @ SX + SY @ SY + SZ @ SZ, 2 * I3)   # s(s+1) = 2
+    for s in SPIN1:
+        assert np.allclose(s, s.conj().T)
 
 
-def test_p2_idempotent_hermitian_rank5():
-    _, _, p2 = _ops()
-    assert np.allclose(p2 @ p2, p2)
-    assert np.allclose(p2, p2.conj().T)
-    assert np.linalg.matrix_rank(p2) == 5
-    assert np.isclose(np.trace(p2).real, 5.0)
+def test_p2_rank_idempotent_trace_hermitian():
+    assert np.linalg.matrix_rank(P2) == 5
+    assert np.allclose(P2 @ P2, P2)
+    assert np.isclose(np.trace(P2), 5)
+    assert np.allclose(P2, P2.conj().T)
 
 
-def test_x_eigenvalues_and_formula():
-    x, stot2, _ = _ops()
-    ev = Counter(int(round(v)) for v in np.linalg.eigvalsh(x))
-    assert ev == {1: 5, -1: 3, -2: 1}
-    assert np.allclose(x, (stot2 - 4 * np.eye(9)) / 2.0)    # x = (S(S+1) - 4) / 2
+def test_x_eigenvalue_multiplicities():
+    ev = np.linalg.eigvalsh(X)
+    assert np.allclose(ev, np.round(ev))                    # integer spectrum, within tolerance
+    assert Counter(int(np.round(v)) for v in ev) == {1: 5, -1: 3, -2: 1}
+    assert np.allclose(X, (S2_TOT - 4 * I9) / 2.0)          # x = (S(S+1) - 4) / 2
 
 
-def test_p2_is_projector_onto_s2_sector():
-    _, stot2, p2 = _ops()
-    w, v = np.linalg.eigh(stot2)
-    sel = v[:, np.isclose(w, 6.0)]                           # S^2 = 6  <=>  S = 2
+def test_p2_matches_s2_eigenvalue_6_projector():
+    w, v = np.linalg.eigh(S2_TOT)
+    sel = v[:, np.isclose(w, 6.0)]                         # S^2 = 6  <=>  S = 2
     assert sel.shape[1] == 5
-    assert np.allclose(p2, sel @ sel.conj().T)
+    assert np.allclose(P2, sel @ sel.conj().T)

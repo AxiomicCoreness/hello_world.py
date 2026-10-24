@@ -14,6 +14,20 @@ $$
 3 \otimes 3 = 5 \oplus 3 \oplus 1 \qquad (S = 2,\ 1,\ 0).
 $$
 
+Spin-1 matrices in the basis $m = +1, 0, -1$:
+
+$$
+S_x = \frac{1}{\sqrt{2}}\begin{pmatrix}0&1&0\\1&0&1\\0&1&0\end{pmatrix},\qquad
+S_y = \frac{i}{\sqrt{2}}\begin{pmatrix}0&-1&0\\1&0&-1\\0&1&0\end{pmatrix},\qquad
+S_z = \begin{pmatrix}1&0&0\\0&0&0\\0&0&-1\end{pmatrix}.
+$$
+
+The two-site dot product is
+
+$$
+\mathbf{S}_1\cdot\mathbf{S}_2 = S_x\otimes S_x + S_y\otimes S_y + S_z\otimes S_z .
+$$
+
 The projector onto total spin $S = 2$ is
 
 $$
@@ -81,15 +95,19 @@ Tried in this order:
 
 ### Offset $\Phi$
 
-With $t$ the parsed instant in UTC and $n(t)$ = 12:00:00Z on $t$'s UTC day:
+With $t$ the parsed instant, $\mathcal{N}(t)$ its UTC normalisation (naive values taken as UTC) and
+$\mathrm{noon}(t)$ = 12:00:00Z on $t$'s UTC day, as (kind, offset in seconds):
 
 $$
-\Phi(\text{raw}) =
-\begin{cases}
-t - n(t)\ \text{(seconds)} & \text{kind} \in \{\texttt{strict}, \texttt{lenient}\} \\
-\texttt{None} & \text{kind} \in \{\texttt{date\_only}, \texttt{unparsed}\}
+\Phi(s)=\begin{cases}
+(\texttt{strict},\ t-\mathrm{noon}(t)) & s \text{ matches } \texttt{YYYY-MM-DDTHH:MM:SSZ}\\
+(\texttt{lenient},\ \mathcal{N}(t)-\mathrm{noon}(\mathcal{N}(t))) & \texttt{fromisoformat} \text{ parses and } s \text{ has T or a space}\\
+(\texttt{date\_only},\ \varnothing) & s \text{ contains } \texttt{YYYY-MM-DD}\\
+(\texttt{unparsed},\ \varnothing) & \text{otherwise, or } s \text{ empty}
 \end{cases}
 $$
+
+$\varnothing$ is `None`: a date-only value never gets a filled-in midnight.
 
 $\Phi \in [-43200, 43200)$: negative before noon, positive after.
 
