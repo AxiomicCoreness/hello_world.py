@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Breathing Manifold Tests - E10 Hyperbolic Integration
 Entry 8849 - Wood Dragon Gate 0.91

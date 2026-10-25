@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pentad rank {-2,-1,0,1,2} for the Port-380 FAL gate.
 
 -1/0/+1 must behave exactly as before (snapshot taken from main 7b51afd).

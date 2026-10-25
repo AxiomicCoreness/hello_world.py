@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """app.config ledger_head: derived from the highest ledger.v2/*.yml
 entry_index (raw text, base 10), LEDGER_HEAD env override, 'unknown'
 fallback instead of a hardcoded stale number."""

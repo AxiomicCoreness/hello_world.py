@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pinned sign convention. Baseline manifold dimension is 7.
 
 ω = Σ_i dq_i ∧ dp_i  ⇒  {q_i, p_j} = +δ_ij

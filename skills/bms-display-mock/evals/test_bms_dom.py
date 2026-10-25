@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Run evals/bms_dom_test.js (node + jsdom) against assets/demo.html.
 
 Set BMS_NODE_PATH to a node_modules folder that contains jsdom if it is not

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ RECONSTRUCTION OPERATOR — ℛ
 Materialises the abstract drift state (𝐗) into a concrete running service.

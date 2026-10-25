@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Fukui-Hatsugai-Suzuki Berry curvature and Chern numbers.
 
 Config and bin sit beside cambrian_stub.py. No daemon.

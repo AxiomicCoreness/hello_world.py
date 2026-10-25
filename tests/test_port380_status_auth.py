@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """GET /status split on port380_mcp (root and mcp/ copies).
 
 /status stays public but minimal (unauthenticated callers exist:

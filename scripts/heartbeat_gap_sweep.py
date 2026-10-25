@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """6CAVD tensor heartbeat gap sweep. Sparse dict, lexicographic order, stdlib only."""
 import itertools
 from datetime import date

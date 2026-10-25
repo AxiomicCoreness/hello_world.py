@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 /**
  * 🜁∀ src/cdp_distill.ts — CDP Distill Tree (Layer 379)
  *

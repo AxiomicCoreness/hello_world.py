@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/genitals.py — allowlist, root confinement, no symlinks.
 
 Generation organ: anything this anatomy creates is confined to the

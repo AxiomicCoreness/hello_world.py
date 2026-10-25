@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 garden_surgery/utc_1000_immutable_self_improvement_stub.py
 MCP stub for ledger entry 9009 – UTC 10:00 Immutable Self‑Improvement.

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Tests for producer_axiom (P₀ / ⊗)."""
 
 from producer_axiom.axiom import Product, Generator, Root, Stream, axiom_p0, VALENCE, AXIOM_TEXT

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ SIMD DEPLOY — ENTRY 8794
 #
 # Deploy / run SIMD batch step (orchestrator.simd_step)

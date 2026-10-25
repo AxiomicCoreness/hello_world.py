@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """JAX two-ball TOI step. Same kinematics as pythonIDE/toi_step.py.
 
 State s = [p1x, p1y, p2x, p2y, v1x, v1y, v2x, v2y]

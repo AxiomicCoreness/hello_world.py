@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Anomaly distance d_i — geometry, not a label. Narrative 8356 referenced, not rewritten."""
 
 from __future__ import annotations

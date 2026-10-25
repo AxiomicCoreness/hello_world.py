@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Build the BMS DISPLAY MOCK bookmarklet (demo/screenshot only).
 
 Reads bms_scripts/bms_display_mock.js, strips comments and whitespace with a

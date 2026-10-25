@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { forward, backward, roundTrip, replay, diff, eqTree } from "./exactness";
 const R: string[] = [];
 const t = (n: string, c: boolean) => R.push((c ? "PASS " : "FAIL ") + n);

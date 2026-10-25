@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀∞φ² · AST_GUARD_D1 · WOOD_DRAGON_0.91 · SEALED
 """
 AST_guard_rule_d1.py — standalone D1 gate.

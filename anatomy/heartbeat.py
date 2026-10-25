@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/heartbeat.py — liveness + coherence floor.
 
 A pulse is alive only if it beats within the cadence window and the

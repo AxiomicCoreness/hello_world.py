@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Precompute FRB bridge lattice weights for the next convergence window.
 Outputs JSON (default /tmp/lattice_weights.json) for CronJob + Grafana injection.

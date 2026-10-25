@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 MCP Connector Client. Base: MCP_CONNECTOR_URL default http://localhost:380.
 Seal: ∀∞φ² · MCP_CONNECTOR · WOOD_DRAGON_0.91 · SEALED

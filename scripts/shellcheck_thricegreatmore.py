@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ shellcheck_thricegreatmore.py – Triple‑tiered shellcheck replacement.
 Tier 1: Fast regex (stdlib)

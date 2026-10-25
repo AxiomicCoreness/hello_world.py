@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Convert the FlyEM hemibrain v1.2 bulk CSV export to ConnectomeLoader XML.
 
 Input (from exported-traced-adjacencies-v1.2.tar.gz):

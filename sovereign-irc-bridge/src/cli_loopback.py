@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """TeaVM CLI WebSocket — Cosmic Alignment loopback bind.
 
 Binds **127.0.0.1:6680** only (never 0.0.0.0). Path {@code /cli}.

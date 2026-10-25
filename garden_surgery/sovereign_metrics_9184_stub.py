@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Stub for 9184 metrics snapshot. Does not rewrite 9157 or combined_stubs.py."""
 
 FILLED = False

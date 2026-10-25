@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 /**
  * 🜁∀ src/self_improvement_relay.ts — ENTRY 8826
  *

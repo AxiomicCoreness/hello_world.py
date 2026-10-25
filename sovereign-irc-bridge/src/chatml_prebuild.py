@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Prompt routing for the `/llm` bridge: server-side chat template vs prebuilt ChatML.
 
 Default route is ``/v1/chat/completions`` with role messages: llama-server

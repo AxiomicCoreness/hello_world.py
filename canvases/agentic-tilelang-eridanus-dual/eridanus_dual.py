@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 ⴁ∀ ERIDANUS DUAL – SOVEREIGN FLOW FIELD ENGINE ∀ⴁ
 Entry 8226 SEALED – Eridanus Dual · Gravastar · ClarkeYoursaTee

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Loopback Dual ASGI only. Does not fill MCP.
 # Entry point: fastapi_flywheel_gearbox (local fastMCP package removed).
 set -euo pipefail

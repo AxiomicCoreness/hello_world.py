@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 import subprocess, sys, pathlib
 
 SCRIPT = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "begin_convergence.py"

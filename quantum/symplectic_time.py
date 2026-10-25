@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Symplectic-time quantities. Arithmetic only. No sovereignty label.
 
 100/φ is 61.803..., not 47. The closest simple form is 76/φ.

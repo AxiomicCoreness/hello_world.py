@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Base surface for the production layout.
 Bridges the sovereign PlanckEngine to the vendored DeepInfer GPU worker.
 """

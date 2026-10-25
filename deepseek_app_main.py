@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """ASGI name-seal: uvicorn deepseek_app_main:app --host 127.0.0.1 --port 8024
 
 Same object as fastapi_flywheel_gearbox:app. No second daemon.

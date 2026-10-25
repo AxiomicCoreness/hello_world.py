@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pydantic settings for the sovereign IRC bridge.
 
 mTLS paths are **required**. Missing ``IRC__MTLS_*`` (or nonexistent PEM files)

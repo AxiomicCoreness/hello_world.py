@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Untruncated SHA3-256 witness chain.
 
 witness_prefix (16 hex) is a label only. Integrity is the full 64-hex SHA3-256.

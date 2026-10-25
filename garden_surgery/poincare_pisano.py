@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Poincare dodecahedron to Pisano period. Geometry + named cutoffs."""
 from __future__ import annotations
 import json, math

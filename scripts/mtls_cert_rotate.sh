@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ MTLS CERT ROTATE — ENTRY 8821
 #
 # mTLS certificate rotation — Layer 314 / Port 380

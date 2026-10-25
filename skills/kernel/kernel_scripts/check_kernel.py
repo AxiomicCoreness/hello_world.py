@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Re-check the invariants of the repo's kernel/ directory (head 1e449302).
 
 Verdicts: [+] OK, [!] WARNING, [?] UNRECOGNISED.

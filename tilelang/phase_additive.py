@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Phase factor named in the 8226 paste. Not an element of T.
 
 t_phase(symbol) = exp(i * 2*pi * f / 144) is a complex multiplier.

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 pythonIDE/verify_hmac_chain.py — read-only HMAC chain verifier.
 Ledger policy: NO_LEDGER_WRITE. Precedent: 8206.

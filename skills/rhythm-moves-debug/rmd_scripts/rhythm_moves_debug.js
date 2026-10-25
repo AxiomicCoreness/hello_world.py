@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 /*
  * rhythm-moves-debug v1.0.0: read-only overlay for the teavm-rhythm moves list.
  *

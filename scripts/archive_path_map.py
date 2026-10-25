@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Map kernel/ to op_kernel/. Does not copy the Ascend plugin.
 
 Longer prefix wins: kernel/arch35/ -> op_kernel/arch35/, then kernel/ -> op_kernel/.

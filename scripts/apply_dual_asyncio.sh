@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Alias name requested 2026-09-04. Body matches 9188 wrapper.
 # Does not rewrite k8s/dual-asyncio-cicd.yaml (9179).
 set -euo pipefail

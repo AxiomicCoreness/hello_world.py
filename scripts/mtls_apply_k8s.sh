@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ MTLS APPLY KUBERNETES — ENTRY 8820
 #
 # Apply rotated mTLS material to Kubernetes secret in namespace sovereign-garden (or $NS).

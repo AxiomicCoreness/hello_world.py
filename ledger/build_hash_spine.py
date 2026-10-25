@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Build untruncated SHA3-256 overlay for every ledger YAML.
 
 Does not rewrite historical YAML. Mutating those files changes git blob SHAs

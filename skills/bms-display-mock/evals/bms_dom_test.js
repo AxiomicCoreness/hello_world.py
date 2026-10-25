@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 /*
  * DOM tests for the BMS DISPLAY MOCK, run with node + jsdom.
  * Usage: node evals/bms_dom_test.js  (NODE_PATH may point at a node_modules that has jsdom)

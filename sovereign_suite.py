@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """sovereign_suite.py — L1 · 8-module Octonionic stack · numpy only
 
 Precision Floor: 1e-15 | dt=0.01 | Seal: 8F1A3D9C04B27E5E6A8F2DC47B59E330

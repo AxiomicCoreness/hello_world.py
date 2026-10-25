@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 sovereign_automaton_10_06.py — Clarke Yoursa Tee
 Reserved stub, not filled. The real implementation must land under its own

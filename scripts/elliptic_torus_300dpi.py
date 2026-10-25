@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")

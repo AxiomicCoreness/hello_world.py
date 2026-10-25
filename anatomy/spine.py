@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/spine.py — chain, uniqueness, prior pointer.
 
 Organ of the Sovereign Anatomy. Verifies witness-chain continuity:

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # .github/workflows/eridanus-dual-smoke.yml
 #
 # Read-only smoke test for the Eridanus Dual engine.

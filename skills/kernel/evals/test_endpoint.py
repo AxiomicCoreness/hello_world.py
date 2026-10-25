@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Live checks for the demo Java endpoint (kernel_scripts/run_endpoint.sh). Skipped when
 # nothing is listening on 127.0.0.1:8025.
 import json

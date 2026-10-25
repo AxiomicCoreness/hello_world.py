@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """port380_mcp (root and mcp/ copies): ledger_head is derived, not the
 hardcoded "8754", and the unverified "8754 -> 8755 — UNBROKEN" chain claim
 is gone from /status and /status/internal."""

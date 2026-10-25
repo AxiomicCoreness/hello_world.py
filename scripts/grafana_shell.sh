@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Grafana shell wrapper. Anonymous access. No password is read or set.
 set -eu
 export GF_AUTH_ANONYMOUS_ENABLED=true

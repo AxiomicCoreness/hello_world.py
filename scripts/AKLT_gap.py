@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 AKLT_gap.py — hard assertion that the spin-1 AKLT chain is gapped.
 Standard library + numpy. No matplotlib, no torch.

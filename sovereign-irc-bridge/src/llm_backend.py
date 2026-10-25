@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Which model server answers `/llm`: DeepInfer (default), ClarkeYoursaTee, Qwen GGUF or abliterated Qwen GGUF.
 
 LLM_BACKEND=deepinfer|gguf|gguf-abliterated|clarkeyoursatee (default deepinfer)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 scripts/mathematical_pipeline.py – Layer 253 formal verification.
 Verifies φ‑harmonic seed, duality theorem, entropy floor, and all invariants.

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 lumeris_seal.py — LUMERIS as a declared name-seal, not a runtime lock.
 Sealed at ledger reference: 9124 (chi‑umbral octet) and policy sections 12.1.

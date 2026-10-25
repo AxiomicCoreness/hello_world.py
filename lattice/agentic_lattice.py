@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 lattice/agentic_lattice.py – Agentic Lattice E₈×E₈ (40D→5D)
 with optional Bedrock verification and Unified Beryl Lattice axiom.

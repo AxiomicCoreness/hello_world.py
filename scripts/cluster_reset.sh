@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ CLUSTER RESET — ENTRY 8793
 #
 # Cluster reset after axiomic/sovereign-engine:latest push (ledger 8793)

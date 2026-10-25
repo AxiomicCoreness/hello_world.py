@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 name: Workflow parity
 
 # One tick every 15 minutes dispatches exactly one workflow.

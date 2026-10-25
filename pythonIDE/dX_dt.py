@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 dX_dt.py — Independent system equation permission context
 dX/dt = -Λ(X - X_target) + H(η) + Z(ζ) + P(A_trunc, ρ) + P_PID(e)

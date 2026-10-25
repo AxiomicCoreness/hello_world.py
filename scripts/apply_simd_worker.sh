@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # SIMD batch spec apply for k8s/clarke-yoursa-tee-worker.yaml (ledger 9199).
 # Default: client dry-run. Missing kubectl or cluster → exit 0.
 set -euo pipefail

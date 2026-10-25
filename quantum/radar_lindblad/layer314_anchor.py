@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Layer 314 Anchor — Context Layer 314 cryptographic constants.
 
 SHA-256 domain: GARDEN.LAYER314.ANCHOR.v1

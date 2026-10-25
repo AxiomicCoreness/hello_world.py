@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Alias of 9179 manifest contracts. Does not replace tests/test_k8s_dual_asyncio.py."""
 from pathlib import Path
 import yaml

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """JAX hopper optimizer. Init u < g so ground TOI fires. No uvicorn."""
 from __future__ import annotations
 

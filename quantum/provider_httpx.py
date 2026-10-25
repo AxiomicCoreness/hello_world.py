@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """OpenAI-compatible HTTP wrappers (Grok / DeepSeek / Mistral) via httpx.
 Keys: GROK_API_KEY or XAI_API_KEY, DEEPSEEK_API_KEY, MISTRAL_API_KEY.
 """

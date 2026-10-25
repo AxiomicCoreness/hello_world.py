@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀∞φ² · CELESTIAL_PACKAGE · WOOD_DRAGON_0.91 · SEALED
 """
 Celestial module — Symplectic POD layer for the Garden.

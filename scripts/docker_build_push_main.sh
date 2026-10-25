@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ DOCKER BUILD PUSH MAIN — ENTRY 8818
 #
 # Build + push axiomic/sovereign-engine:latest ALWAYS from main.

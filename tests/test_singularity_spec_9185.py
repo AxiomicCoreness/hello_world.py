@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from garden_surgery.singularity_spec_9185_stub import (
     FILLED,
     singularity_spec_9185,

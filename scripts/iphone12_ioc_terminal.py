@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 iphone12_ioc_terminal.py — Clarke Yoursa Tee
 MVT IOC analogue for the iPhone12-quantum-terminal FastAPI stack.

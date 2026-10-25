@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Repo-root wire for ``scripts.recalc_optics``.
 
 Evals under ``skills/lambda0_provenance/evals/`` import ``scripts.recalc_optics``.

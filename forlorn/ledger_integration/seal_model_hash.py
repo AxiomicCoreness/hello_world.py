@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Print (and optionally record) the SHA3-256 and sha256 of a GGUF.
 
     python seal_model_hash.py MODEL.gguf [--base BASE.gguf --template T.jinja

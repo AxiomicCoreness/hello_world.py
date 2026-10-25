@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀∞φ² · GARDEN_INSTALL · WOOD_DRAGON_0.91 · SEALED
 #
 # Sovereign Garden — installer

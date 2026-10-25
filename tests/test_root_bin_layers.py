@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Substantive pytest for root GARDEN.BIN.v1 layers (ledger 9167/9171).
 
 Does not execute bookmarklets. Does not spawn EXE. MCP stays unfilled.

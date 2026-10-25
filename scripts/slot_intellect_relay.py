@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Relay a named slot to the intellect operator. Does not advance the ledger.
 
 The intellect operator is not the inertia I. super_symplectic.py is not overwritten.

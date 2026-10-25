@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+
 import { PHI, PHI_INV, inBand, compose, atom, closure, buildLex,
   diff, replay, cherryPick } from "./closure_kernel";
 

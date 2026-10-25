@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from garden_surgery.autonomous_starfire_311 import (
     OMEGA_FIRE_DEG,
     OMEGA_FIRE_RAD,

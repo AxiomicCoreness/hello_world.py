@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+
 package com.fruitfly.games.rhythm.logic;
 
 /** One note: which lane it falls in and the time (ms from song start) it should be hit. */

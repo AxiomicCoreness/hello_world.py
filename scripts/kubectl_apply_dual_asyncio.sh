@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Specification apply for k8s/dual-asyncio-cicd.yaml (9179).
 # Default: client dry-run. Skip if kubectl or cluster is missing.
 set -euo pipefail

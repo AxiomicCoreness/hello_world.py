@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Eridanus dual — declared form only. Not executed. Not a seal.
 
 The paste writes Phi(x) = (i/phi) * (N tensor A - A tensor N) * x.

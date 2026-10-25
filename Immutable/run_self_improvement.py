@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Bounded 10:00 UTC runner for Immutable/self_improvement_trigger.py.
 
 That path is a sealed narrative + schema blob, not an importable module.

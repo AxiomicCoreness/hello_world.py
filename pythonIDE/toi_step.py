@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """2-ball TOI step fixture. Local numeric utility only.
 
 No uvicorn, no 8024 bind, no MCP fill, no sovereign_lattice.

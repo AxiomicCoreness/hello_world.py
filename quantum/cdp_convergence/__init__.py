@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """CDP Convergence quadrant — OAuth 2.0 gates websocket_ready + VOID-QCH.
 
 Public surface (name → submodule):

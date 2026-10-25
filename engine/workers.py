@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Worker role map for sovereign engine (Memory/Compute/Perception/Orchestration)."""
 from __future__ import annotations
 from dataclasses import dataclass

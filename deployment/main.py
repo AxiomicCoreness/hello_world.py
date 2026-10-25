@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from fastapi import FastAPI, Request
 from prometheus_client import make_asgi_app, Counter, Histogram, Gauge
 import time

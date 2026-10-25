@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 // End-to-end check of the CLI /llm chat in real headless Chrome (CDP). Needs, all on loopback:
 //   llama-server -m <any.gguf> --host 127.0.0.1 --port 8081
 //   (cd sovereign-irc-bridge && python -m src.cli_loopback)       # ws://127.0.0.1:6680/cli

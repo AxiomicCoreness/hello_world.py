@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Immunize: CORRECTED DM φ residual (ledger 8550 math_origin). Append-only; no seal rewrite."""
 from __future__ import annotations
 

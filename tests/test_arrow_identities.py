@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from garden_surgery.arrow_identities import VECTOR, arrow_identities, payload
 
 def test_arrow_product_is_phi2_plus_one():

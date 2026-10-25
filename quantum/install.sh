@@ -1,5 +1,7 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ SOVEREIGN GARDEN INSTALL SCRIPT — ENTRY 8910
 # 
 # Installs dependencies, configures environment, and starts the Garden web service.

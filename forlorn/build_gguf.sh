@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Build ClarkeYoursaTee-1.5B-Q4_K_M.gguf: a metadata-only derivative of the
 # abliterated Qwen2.5-1.5B-Instruct GGUF. Tensors are copied byte for byte;
 # only general.name, general.description and the chat template change.

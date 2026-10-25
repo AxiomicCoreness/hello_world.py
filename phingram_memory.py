@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 PhiNgramMemory — φ‑Harmonic N‑gram Memory (JSON persistence)
 Safe-by-default persistence (JSON) to avoid pickle deserialization RCE.

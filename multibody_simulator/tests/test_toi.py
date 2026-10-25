@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Head-on TOI + elastic swap."""
 import jax.numpy as jnp
 from multibody_simulator.two_ball_toi import step_with_toi, R

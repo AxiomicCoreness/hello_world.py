@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """beacons/sovereign_engine_deepseek.py delegates to beacons/sovereign_state_writer.py
 (one writer, no duplicate)."""
 import ast

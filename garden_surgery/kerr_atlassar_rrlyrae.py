@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Kerr / Atlassar / RR Lyrae documentation generator. 515/516 untouched."""
 from __future__ import annotations
 import hashlib, json, math

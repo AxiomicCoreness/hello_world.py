@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """ClarkeYoursaTee engine. SQLite and stdlib only. kubectl is not required.
 
 Running twice writes the same rows. A missing cluster is recorded, not applied.

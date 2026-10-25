@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """binary_artifacts.py — GARDEN.BIN.v1 worker deltas + pickle/msgpack/raw helpers.
 
 Ledger 9225 remains the first container seal.

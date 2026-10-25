@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Serve ClarkeYoursaTee on loopback only (Cosmic Alignment: never 0.0.0.0).
 set -euo pipefail
 # -np 1 --no-cache-prompt: one slot and no KV prompt reuse, so temperature-0 replies are

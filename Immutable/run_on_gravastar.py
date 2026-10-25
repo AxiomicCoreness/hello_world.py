@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Load Immutable/october_Q1 pinned at fe6156e and run a bounded slice.
 Invoked on every Trigger_Gravastar_ClarkeYoursaTee.

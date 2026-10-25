@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from garden_surgery.kerr_atlassar_rrlyrae import (
     FORMULA_Q, PISANO_MOD10, audit_9032, audit_9033, audit_9034,
     pisano_period, report_payload, w_of_q,

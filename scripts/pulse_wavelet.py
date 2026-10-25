@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pulse wavelet. The position label is the sample index, not a date.
 
 Nearly admissible Morlet at ω0 = 2π/φ, corrected by the Torrence–Compo
