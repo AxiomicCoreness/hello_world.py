@@ -370,7 +370,8 @@ jobs:
           if-no-files-found: warn
 
       - name: Commit ledger entry 8925
-        if: steps.decide.outputs.write_needed == 'true'
+        # Seal only on main; a PR run that pushes back to its own branch re-triggers itself.
+        if: steps.decide.outputs.write_needed == 'true' && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal DeepSeek NDJSON stream entry 8925 (sha3_256, write-on-change)"

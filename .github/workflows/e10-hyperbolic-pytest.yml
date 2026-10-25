@@ -212,7 +212,8 @@ jobs:
           if-no-files-found: warn
 
       - name: Commit ledger entry 8974
-        if: success()
+        # Seal only on main; a PR run that pushes back to its own branch re-triggers itself.
+        if: success() && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal E10 hyperbolic entry 8974 (sha3_256)"
