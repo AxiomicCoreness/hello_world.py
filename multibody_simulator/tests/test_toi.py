@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Head-on TOI + elastic swap."""
 import jax.numpy as jnp
 from multibody_simulator.two_ball_toi import step_with_toi, R
@@ -21,7 +23,11 @@ def test_no_hit_short_dt():
     u = jnp.array([0.0, 3.0])
     _, tau, hit, _, _ = step_with_toi(s, u, 0.05)
     assert not bool(hit)
-    assert float(tau) == 0.05
+    # No hit => tau is exactly dt, in tau's own dtype. JAX defaults to float32,
+    # so float(tau) is float32(0.05) = 0.05000000074505806, never the Python
+    # double 0.05. Compare exactly against dt cast to the same dtype.
+    assert tau.dtype == jnp.asarray(0.05).dtype
+    assert bool(tau == jnp.asarray(0.05, dtype=tau.dtype))
 
 
 if __name__ == "__main__":

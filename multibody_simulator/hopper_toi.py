@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 1D hopper: height + velocity. Ground TOI is a quadratic root.
 
@@ -8,6 +10,7 @@ Sovereign Constants:
     G = 9.81 (gravitational acceleration, m/s²)
     E = 0.8 (coefficient of restitution)
     EPS = 1e-12 (numerical epsilon for root solving)
+    g_const = G (alias exported by the package)
 """
 
 from __future__ import annotations
@@ -20,6 +23,10 @@ G = 9.81          # gravitational acceleration (m/s²)
 E = 0.8           # coefficient of restitution (elasticity)
 EPS = 1e-12       # numerical epsilon for root solving
 PHI = (1 + 5**0.5) / 2  # golden ratio (sovereign invariant)
+
+# Public alias re-exported by multibody_simulator/__init__.py (same value as the
+# g_const fixture in tests/conftest.py). Must stay identical to G.
+g_const = G
 
 
 @jit
