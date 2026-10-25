@@ -20,6 +20,11 @@ on:
       - "quantum/e10_hyperbolic.py"
       - ".github/workflows/e10_hyperbolic_pytest.yml"
   workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Rewrite an existing ledger entry (default: no backfill)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # required to commit ledger/8974.yaml
@@ -151,8 +156,26 @@ jobs:
       # ────────────────────────────────────────────────────────────
       # 4. SEAL LEDGER ENTRY 8974 (SHA3-256)
       # ────────────────────────────────────────────────────────────
-      - name: Seal ledger entry 8974 (SHA3-256)
+      # No backfill by default: an existing ledger/8974.yaml is never
+      # rewritten unless a manual run sets backfill=true. Parity
+      # dispatches pass no inputs, so they never rewrite it.
+      - name: Decide whether 8974 may be written
+        id: decide
         if: success()
+        env:
+          BACKFILL: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill == true }}
+        run: |
+          set -euo pipefail
+          if [ ! -f ledger/8974.yaml ]; then
+            echo "write_needed=true" >> "$GITHUB_OUTPUT"; echo "8974 absent: first write"
+          elif [ "$BACKFILL" = "true" ]; then
+            echo "write_needed=true" >> "$GITHUB_OUTPUT"; echo "backfill=true on manual run: rewriting 8974"
+          else
+            echo "write_needed=false" >> "$GITHUB_OUTPUT"; echo "8974 exists and backfill is off: not rewriting"
+          fi
+
+      - name: Seal ledger entry 8974 (SHA3-256)
+        if: success() && steps.decide.outputs.write_needed == 'true'
         env:
           E10_PASSED: ${{ steps.e10.outputs.e10_passed }}
         run: |
@@ -192,7 +215,7 @@ jobs:
           PY
 
       - name: Verify ledger entry 8974 (SHA3-256)
-        if: success()
+        if: success() && hashFiles('ledger/8974.yaml') != ''
         run: |
           set -euo pipefail
           python .github/scripts/verify_ledger.py ledger/8974.yaml
@@ -213,7 +236,7 @@ jobs:
 
       - name: Commit ledger entry 8974
         # Seal only on main; a PR run that pushes back to its own branch re-triggers itself.
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && steps.decide.outputs.write_needed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal E10 hyperbolic entry 8974 (sha3_256)"
