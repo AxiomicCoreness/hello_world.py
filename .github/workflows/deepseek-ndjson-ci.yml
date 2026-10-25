@@ -9,16 +9,15 @@ name: DeepSeek NDJSON Stream CI
 # Witness: 8924 → 8925 — UNBROKEN
 # hash_algo: sha3_256 (FIPS 202) — mandatory for all ledger entries
 #
-# ledger_policy: WRITE_ON_CHANGE
+# ledger_policy: NO_BACKFILL
 #   - ledger/8925.yaml is written only when:
-#       (a) the trigger is push / pull_request / workflow_dispatch, OR
-#       (b) the file is absent, OR
-#       (c) the current stream_seal differs from the recorded one.
+#       (a) the file is absent, OR
+#       (b) a manual workflow_dispatch run sets backfill=true.
+#     Default is no backfill: a differing stream_seal only raises a warning.
 #     A scheduled run with no product-code change and no stream-digest
 #     change exits green without touching 8925 or committing.
-#   - 8925 is therefore a *mutable tip*, not an immutable historical
-#     entry. Every rewrite preserves the witness text "8924 → 8925"
-#     because the chain slot does not advance.
+#   - 8925 is written once. A backfill rewrite keeps the witness text
+#     "8924 → 8925" because the chain slot does not advance.
 
 on:
   push:
@@ -34,6 +33,11 @@ on:
       - "tests/test_deepseek_ndjson.py"
       - ".github/workflows/deepseek_ndjson_ci.yml"
   workflow_dispatch:
+    inputs:
+      backfill:
+        description: "Rewrite an existing ledger entry (default: no backfill)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write   # only used when write_needed=true
@@ -50,7 +54,7 @@ env:
 
 jobs:
   stream:
-    name: NDJSON Stream · Verify · Seal (Entry 8925, write-on-change)
+    name: NDJSON Stream · Verify · Seal (Entry 8925, no-backfill)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -231,6 +235,7 @@ jobs:
         env:
           STREAM_SEAL: ${{ env.STREAM_SEAL }}
           TARGET_ENTRY: ${{ env.TARGET_ENTRY }}
+          BACKFILL: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill == true }}
         run: |
           set -euo pipefail
           python - <<'PY' >> "$GITHUB_OUTPUT"
@@ -244,31 +249,29 @@ jobs:
           write_needed = False
           reason = ""
 
-          # (a) non-schedule triggers always write
-          if trigger != "schedule":
-              write_needed = True
-              reason = f"trigger={trigger} (non-schedule always writes)"
+          backfill = os.environ.get("BACKFILL", "false") == "true"
 
-          # (b) target absent → write
-          elif not target.exists():
+          # No backfill by default. An existing entry is rewritten only when
+          # a manual run sets backfill=true; any trigger may write it if absent.
+          if not target.exists():
               write_needed = True
-              reason = f"{target} absent"
-
-          # (c) scheduled run, target present → compare digests
+              reason = f"{target} absent (first write, trigger={trigger})"
+          elif backfill:
+              write_needed = True
+              reason = "backfill=true on manual run"
           else:
+              write_needed = False
               try:
                   prev = yaml.safe_load(target.read_text()) or {}
-              except Exception as e:
-                  write_needed = True
-                  reason = f"{target} unreadable: {e}"
-              else:
                   prev_seal = str(prev.get("stream_seal", "")).strip()
-                  if prev_seal != current:
-                      write_needed = True
-                      reason = f"stream_seal changed ({prev_seal[:16] or '<none>'} → {current[:16]})"
-                  else:
-                      write_needed = False
-                      reason = f"stream_seal unchanged ({current[:16]})"
+              except Exception as e:
+                  prev_seal = f"<unreadable: {e}>"
+              if prev_seal != current:
+                  reason = (f"stream_seal differs ({prev_seal[:16] or '<none>'} vs {current[:16]}) "
+                            "but backfill is off; run manually with backfill=true to rewrite")
+                  print(f"::warning::{reason}", file=sys.stderr)
+              else:
+                  reason = f"stream_seal unchanged ({current[:16]}); backfill off"
 
           print(f"write_needed={'true' if write_needed else 'false'}")
           print(f"write_reason={reason}")
@@ -333,7 +336,7 @@ jobs:
           path.write_text(yaml.dump(entry, sort_keys=False,
                                     default_flow_style=False,
                                     allow_unicode=True))
-          print(f"📋 Ledger entry {n} written (write-on-change).")
+          print(f"📋 Ledger entry {n} written (no-backfill policy).")
           print(f"✅ Sealed {n} · {HASH_ALGO}:{h[:16]}...")
           print(f"   stream_seal = {stream_seal[:16]}...")
           PY
@@ -373,10 +376,11 @@ jobs:
           if-no-files-found: warn
 
       - name: Commit ledger entry 8925
-        if: steps.decide.outputs.write_needed == 'true'
+        # Seal only on main; a PR run that pushes back to its own branch re-triggers itself.
+        if: steps.decide.outputs.write_needed == 'true' && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal DeepSeek NDJSON stream entry 8925 (sha3_256, write-on-change)"
+          commit_message: "chore: seal DeepSeek NDJSON stream entry 8925 (sha3_256, no-backfill)"
           file_pattern: ledger/8925.yaml
           commit_options: '--no-verify'
 
@@ -407,5 +411,5 @@ jobs:
             echo "📦 Stream seal (sha3_256): ${STREAM_SEAL:-pending}"
             echo "🧾 write_needed: ${WRITE_NEEDED:-unknown}"
             echo "🧾 write_reason: ${WRITE_REASON:-<none>}"
-            echo "📄 ledger_policy: WRITE_ON_CHANGE — 8925 is a mutable tip"
+            echo "📄 ledger_policy: NO_BACKFILL — 8925 is rewritten only by a manual backfill=true run"
           } >> "$GITHUB_STEP_SUMMARY"

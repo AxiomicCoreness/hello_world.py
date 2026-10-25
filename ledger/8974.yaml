@@ -1,11 +1,12 @@
 entry_index: 8974
+witness_prefix: 7e0494d2887191419d26030a300001d08a5779cceda52df550cf092662145035
 event: /e10_hyperbolic_pytest_run
 status: SUCCESS
-timestamp: '2026-10-25T00:36:36Z'
+timestamp: '2026-10-04T09:58:30Z'
 hash_algo: sha3_256
 suite: tests/quantum/test_e10_hyperbolic.py
 e10_suite: PASSED
 security_headers: VERIFIED
 ed25519_signatures: VERIFIED
 witness: 8973 → 8974 — UNBROKEN
-seal: ∀∞φ² · E10_HYPERBOLIC_8974 · WOOD_DRAGON_0.91 · SEALED · bfb6179b96b15d0d12e1c7a12dbff8087895fb6a99c4bbe2c70f9c000d9a36ce
+seal: ∀∞φ² · E10_HYPERBOLIC_8974 · WOOD_DRAGON_0.91 · SEALED · d26bb89059512594fa01b8b9786c6cb00a17b99f63beb9a35f068ee8264856c2
