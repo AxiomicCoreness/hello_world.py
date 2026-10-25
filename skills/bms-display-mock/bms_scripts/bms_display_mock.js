@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
-// SPDX-License-Identifier: MIT
+/* SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+ * SPDX-License-Identifier: MIT */
 /*
  * BMS DISPLAY MOCK v1.0.0 -- FOR DEMOS AND SCREENSHOTS ONLY.
  *
