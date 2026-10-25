@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """2-ball TOI step fixture. Local numeric utility only.
 
 No uvicorn, no 8024 bind, no MCP fill, no sovereign_lattice.
@@ -37,31 +39,96 @@ def integrate_free(p1, p2, v1, v2, u, t):
     return p1n, p2n, v1n, v2n
 
 
-def toi_quadratic(p1, p2, v1, v2, u, dt):
-    """Smallest t in (0, dt] with |p2-p1|=2R.
+NEWTON_ITERS = 32            # bracketed refinement iterations (value only)
+RESIDUAL_TOL = 1e-4 * DIAM2  # |f(tau)| tolerance for a converged root
+GRAZE_EPS = 1e-9             # |f'(tau)| below this counts as grazing
 
-    Closed-form quadratic on current relative kinematics (autograd-safe).
-    Acceleration during the interval is applied in integrate_free; TOI
-    uses v at the start of the interval so gamma stays in the graph.
+
+def _safe_den(x: torch.Tensor) -> torch.Tensor:
+    """Denominator that is never ~0 (sign kept); pair with a torch.where mask."""
+    one = torch.ones_like(x)
+    return torch.where(x.abs() > EPS, x, torch.where(x < 0, -one, one))
+
+
+def _contact_fn(t, rel_p, rel_v, rel_a):
+    """f(t) = |r(t)|^2 - (2R)^2 and f'(t), with r(t) from integrate_free."""
+    tt = t.unsqueeze(-1)
+    r = rel_p + rel_v * tt + 0.5 * rel_a * tt * tt
+    rd = rel_v + rel_a * tt
+    return (r * r).sum(-1) - DIAM2, 2.0 * (r * rd).sum(-1)
+
+
+def _smallest_root_in(a, b, c, dt):
+    """Smallest root of a t^2 + b t + c in (0, dt], else dt (stable form)."""
+    big = torch.ones_like(c) * (dt + 1.0)
+    t_lin = torch.where(b.abs() > EPS, -c / _safe_den(b), big)
+    t_lin = torch.where(t_lin > 0.0, t_lin, big)
+    disc = b * b - 4.0 * a * c
+    disc_ok = disc >= 0.0
+    sq = torch.where(disc_ok, torch.sqrt(torch.where(disc_ok, disc, torch.zeros_like(disc))),
+                     torch.zeros_like(disc))
+    sgn = torch.where(b >= 0.0, torch.ones_like(b), -torch.ones_like(b))
+    q = -0.5 * (b + sgn * sq)
+    r1 = torch.where(a.abs() > EPS, q / _safe_den(a), big)
+    r2 = torch.where(q.abs() > EPS, c / _safe_den(q), big)
+    r1 = torch.where(r1 > 0.0, r1, big)
+    r2 = torch.where(r2 > 0.0, r2, big)
+    t_quad = torch.where(disc_ok, torch.minimum(r1, r2), big)
+    t = torch.where(a.abs() > EPS, t_quad, t_lin)
+    return torch.where(t <= dt, t, torch.ones_like(t) * dt)
+
+
+def toi_quadratic(p1, p2, v1, v2, u, dt):
+    """Smallest t in (0, dt] with |p2(t)-p1(t)| = 2R under integrate_free.
+
+    Same algorithm as multibody_simulator/two_ball_toi.py (keep in sync).
+
+    Earlier versions deliberately solved the closed-form quadratic on
+    start-of-interval velocity only (acceleration ignored, u unused) so that
+    gamma stayed in the autograd graph. That TOI disagreed with the positions
+    integrate_free produces when u != 0: contacts inside a step could be
+    predicted after dt and then missed (tunnelling), which made the loss
+    discontinuous in u. Acceleration is now included, and gamma still stays
+    in the graph:
+      1. guess: gap along the start line of centres,
+         d(t) = d0 + v_n t + 1/2 a_n t^2, stable quadratic form, linear
+         fallback for a_n ~ 0, no root if disc < 0;
+      2. value-only bracketed Newton/bisection on the exact
+         f(t) = |r(t)|^2 - (2R)^2, r(t) = rel_p + rel_v t + 1/2 rel_a t^2;
+      3. one Newton step from the detached root with live inputs, so
+         dgamma = -f_theta / f_t (implicit-function gradient).
+    A hit needs separation at t=0 and either f(dt) <= 0 or a converged
+    entering root (f' < 0). Grazing (f' ~ 0) is not a hit.
     """
-    del u
     rel_p = p2 - p1
     rel_v = v2 - v1
-    aa = (rel_v * rel_v).sum(-1)
-    bb = (2.0 * rel_p * rel_v).sum(-1)
-    cc = (rel_p * rel_p).sum(-1) - DIAM2
-    disc = bb * bb - 4.0 * aa * cc
-    sqrt_disc = torch.sqrt(torch.clamp(disc, min=0.0) + EPS)
-    t_lin = torch.where(
-        aa.abs() > EPS,
-        (-bb - sqrt_disc) / (2.0 * aa + EPS),
-        torch.full_like(aa, dt),
-    )
-    t = torch.clamp(t_lin, min=0.0)
-    approaching = (rel_p * rel_v).sum(-1) < -EPS
-    hit = approaching & (disc > EPS) & (t > EPS) & (t <= dt)
-    t = torch.where(hit, t, torch.ones_like(t) * dt)
-    return t, hit
+    rel_a = torch.zeros_like(v2) - u / MASS  # a2 = 0, a1 = u / MASS
+    with torch.no_grad():
+        rp, rv, ra = rel_p.detach(), rel_v.detach(), rel_a.detach()
+        d0 = torch.sqrt((rp * rp).sum(-1))
+        n0 = rp / _safe_den(d0).unsqueeze(-1)
+        t = _smallest_root_in(0.5 * (n0 * ra).sum(-1), (n0 * rv).sum(-1), d0 - 2.0 * R, dt)
+        f0, _ = _contact_fn(torch.zeros_like(t), rp, rv, ra)
+        fdt, _ = _contact_fn(torch.ones_like(t) * dt, rp, rv, ra)
+        bracket = (f0 > 0.0) & (fdt <= 0.0)
+        lo = torch.zeros_like(t)
+        hi = torch.ones_like(t) * dt
+        for _ in range(NEWTON_ITERS):
+            fv, fp = _contact_fn(t, rp, rv, ra)
+            lo = torch.where(bracket & (fv > 0.0), t, lo)
+            hi = torch.where(bracket & (fv <= 0.0), t, hi)
+            t_n = t - fv / _safe_den(fp)
+            inside = (t_n > lo) & (t_n < hi) & (fp.abs() > EPS)
+            t_b = torch.where(inside, t_n, 0.5 * (lo + hi))
+            t_free = torch.where(fp.abs() > EPS, t_n, t).clamp(min=0.0, max=float(dt))
+            t = torch.where(bracket, t_b, t_free)
+        fv, fp = _contact_fn(t, rp, rv, ra)
+        entering = (fv.abs() <= RESIDUAL_TOL) & (fp < -GRAZE_EPS)
+        hit = (f0 > 0.0) & (t > 0.0) & (t <= dt) & (bracket | entering)
+    fv, fp = _contact_fn(t, rel_p, rel_v, rel_a)
+    t_hit = torch.where(fp.abs() > EPS, t - fv / _safe_den(fp), t)
+    gamma = torch.where(hit, t_hit.clamp(min=0.0, max=float(dt)), torch.ones_like(t) * dt)
+    return gamma, hit
 
 
 def elastic_equal_mass(p1, p2, v1, v2):
