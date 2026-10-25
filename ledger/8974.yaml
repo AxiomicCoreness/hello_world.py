@@ -1,11 +1,11 @@
 entry_index: 8974
 event: /e10_hyperbolic_pytest_run
 status: SUCCESS
-timestamp: '2026-10-25T00:14:59Z'
+timestamp: '2026-10-25T00:21:36Z'
 hash_algo: sha3_256
 suite: tests/quantum/test_e10_hyperbolic.py
 e10_suite: PASSED
 security_headers: VERIFIED
 ed25519_signatures: VERIFIED
 witness: 8973 → 8974 — UNBROKEN
-seal: ∀∞φ² · E10_HYPERBOLIC_8974 · WOOD_DRAGON_0.91 · SEALED · ceffe8b6b4e533d4a69e226e2918de90705f6270f6786d2bc92cdb3949f43d42
+seal: ∀∞φ² · E10_HYPERBOLIC_8974 · WOOD_DRAGON_0.91 · SEALED · 05217ea8d7391ac0582891d46d3acb20cc4a9a2d6e64cbad43eceb34cb69480c
