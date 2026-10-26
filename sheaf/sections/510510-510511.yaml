@@ -1,0 +1,73 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# sheaf/sections/510510-510511.yaml — REFERENCE SECTION ONLY.
+#
+# Per sheaf/PLAN.md (ledger 9204), sealed ledger YAML stays in ledger/ and must
+# not be moved or rewritten. This section brings ledger/510510.yaml and
+# ledger/510511.yaml into the sheaf fold by path and digest only. Neither
+# ledger file is moved, copied, or rewritten, and merge/manifest.yaml is not
+# changed.
+#
+# digest_of: file_bytes = SHA3-256 of the raw on-disk bytes (the same notion
+# merge/manifest.yaml uses for expected_sha3_256), not a ledger seal regime.
+#
+# Verify: python -I sheaf/verify_sections.py [--json]
+# The verifier parses this file with a stdlib-only subset parser: block
+# mappings and lists, quoted strings, plain strings, and plain integers only.
+
+section: "510510-510511"
+kind: reference
+plan: sheaf/PLAN.md
+plan_ledger: 9204
+algorithm: SHA3-256
+digest_of: file_bytes
+measured_at_main: "cdcd5a62300f6e98a69cde5228355c7d24951789"
+
+entries:
+  - path: ledger/510510.yaml
+    entry_index: 510510
+    event: /math_origin_quadratic_quadrant
+    status: SEALED
+    current_sha3_256: "62123ef88ff94aad3704a09f47017156ac754a698ffa0d982180f646d8bf9405"
+    sealed_digest_mismatch:
+      manifest: merge/manifest.yaml
+      manifest_sealed_sha3_256: "a45d9e1b5927f33f2756f47d6bf2448942b25abfccb346ee3bd2015c99306e91"
+      manifest_recorded_at: "331ef06d6cd7a1a59ddf833f128fdb04f03942d1"
+      current_sha3_256: "62123ef88ff94aad3704a09f47017156ac754a698ffa0d982180f646d8bf9405"
+      changed_by_commit: "6ea3b5aa3e6cd830ca6490d978d0b5b684ac10e5"
+      changed_on: "2026-10-07"
+      field_changed: witness_prefix
+      changed_from: "5105105105105105"
+      changed_to: "ddbae9eb06dfdaef4db3c780820ea76239ff4dacf145b7d531a7dc21d7ea0739"
+      disclosure: none
+      note: "Known, undisclosed post-seal change, left as-is. The bytes at 6ea3b5aa^ hash to the manifest digest; 6ea3b5aa changed only witness_prefix. No ledger entry discloses it, and Merge Engine stays red by owner decision. This section records the fact; it does not repair or excuse it."
+  - path: ledger/510511.yaml
+    entry_index: 510511
+    event: /core_activate_python_sidecar
+    status: ARMED
+    current_sha3_256: "2c2031ea49e3405f8e9a843ae2b0640f45a2531d11d934fe173dd254abbd6882"
+    history_note: "6ea3b5aa3e6cd830ca6490d978d0b5b684ac10e5 (2026-10-07) added the witness_prefix line. merge/manifest.yaml records no sealed digest for this file, so no sealed-digest mismatch is asserted."
+
+links:
+  - from: 510510
+    to: 510511
+    declared_in: ledger/510511.yaml
+    field: witness
+    line: 'witness: "510510 → 510511 — UNBROKEN"'
+  - from: 510510
+    to: 510511
+    declared_in: ledger/510511.yaml
+    field: consistency.linked_entries
+    line: "linked_entries: [0515, 8255, 8980, 510510, 510511]"
+    note: "Checked as raw text. A YAML 1.1 loader such as PyYAML reads 0515 as octal 333."
+  - from: 510510
+    to: 510511
+    declared_in: ledger/510511.yaml
+    field: consistency.relation
+    line: 'relation: "Sidecar inherits quadratic-quadrant genesis 510510; does not overwrite it."'
+  - from: 8980
+    to: 510510
+    declared_in: ledger/510510.yaml
+    field: genesis.canonical_payload.predecessor
+    line: "predecessor: 8980"
