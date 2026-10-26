@@ -29,3 +29,7 @@ Do not reuse indices 9202 or 9203.
 | requirements-control.txt | sheaf/configs/ | |
 
 GitHub Actions cannot run from `sheaf/ci/`. Leave workflows under `.github/workflows/`.
+
+## Applied by reference
+
+- `sheaf/sections/510510-510511.yaml` references `ledger/510510.yaml` and `ledger/510511.yaml` by path and SHA3-256 (file bytes); both files stay in `ledger/`, unmoved and unrewritten. Verify with `python -I sheaf/verify_sections.py`.
