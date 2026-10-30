@@ -23,7 +23,6 @@ targets:
     sources:
       - path: ClarkePocket
       - path: Sources/PocketCore   # pure-Foundation core, also unit-tested by Package.swift
-        group: PocketCore
     dependencies:
       - package: LlamaBinary
         product: LlamaBinary
