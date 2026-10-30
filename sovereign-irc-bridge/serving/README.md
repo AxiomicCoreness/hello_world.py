@@ -16,9 +16,11 @@ logs, pid and lock files are runtime state and are git-ignored here; they are no
 | 8090 | DeepInfer | primary backend (`LLM_BACKEND=deepinfer`); currently offline |
 | 6680 | bridge | `/cli` WebSocket (`src/cli_loopback.py`) (`launch-6680-deepseek-r2.sh`) |
 
-deepseek-r2-1.5b GGUF: `deepseek-r2/deepseek-r2-1.5b-Q4_K_M.gguf`, 1,117,320,640 bytes,
+deepseek-r2-1.5b GGUF: `deepseek-r2-1.5b-Q4_K_M.gguf`, 1,117,320,640 bytes,
 sha256 `80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1`,
-from Kaggle `clarkeyoursatee/deepseek-r2-1-5b-q4-k-m`.
+from Kaggle `clarkeyoursatee/deepseek-r2-1-5b-q4-k-m`. Drop it into `models/` (see `models/README.md`);
+`launch-8085-deepseek-r2.sh` defaults `MODEL_DIR` to that folder and refuses to start if the file is
+missing or its sha256 does not match.
 
 ## Expected layout on the serving host
 
@@ -28,7 +30,7 @@ $MODEL_DIR/
 ├── clarkeyoursatee-v1-ft-Q4_K_M.gguf               → 8082
 ├── Qwen2.5-1.5B-Instruct-abliterated.Q4_K_M.gguf   → 8083
 ├── ClarkeYoursaTee-1.5B-Q4_K_M.gguf                → 8084
-└── deepseek-r2/deepseek-r2-1.5b-Q4_K_M.gguf        → 8085
+└── (8085's GGUF lives in serving/models/ by default)
 $RUN_DIR/
 ├── llm_history.jsonl        # LLM_HISTORY_PATH default
 ├── keepalive.pid / .lock / .log
@@ -36,7 +38,8 @@ $RUN_DIR/
 sovereign-irc-bridge/serving/  (this folder)
 ├── launch-8082-ft.sh
 ├── launch-8084-old.sh
-├── launch-8085-deepseek-r2.sh   # -c 4096, 127.0.0.1:8085
+├── launch-8085-deepseek-r2.sh   # -c 4096, 127.0.0.1:8085, sha256-checked
+├── models/                      # drop-in: deepseek-r2-1.5b-Q4_K_M.gguf (git-ignored)
 ├── launch-6680-deepseek-r2.sh   # bridge, fallback → 8085
 ├── launch-6680-revert-8082.sh   # bridge, fallback → 8082 (v1 fine-tune)
 ├── keepalive.sh                 # restarts 8085 and 6680 if their ports drop
@@ -56,7 +59,7 @@ Script paths (all optional, with defaults):
 
 | Var | Default | Used by |
 |-----|---------|---------|
-| `MODEL_DIR` | `$HOME/llama` | launch-808x |
+| `MODEL_DIR` | `./models` next to the script for launch-8085; `$HOME/llama` for launch-8082/8084 | launch-808x |
 | `LLAMA_SERVER` | `llama-server` (on PATH) | launch-808x |
 | `BRIDGE_DIR` | parent of this folder | launch-6680-* |
 | `PYTHON` | `python3` | launch-6680-* |
