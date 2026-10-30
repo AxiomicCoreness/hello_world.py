@@ -4,6 +4,9 @@
 import Foundation
 import XCTest
 @testable import PocketCore
+#if canImport(CryptoKit)
+import CryptoKit
+#endif
 
 final class VerifierTests: XCTestCase {
     var dir: URL!
