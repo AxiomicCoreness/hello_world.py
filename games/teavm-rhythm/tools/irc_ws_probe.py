@@ -65,6 +65,14 @@ def main():
         return asyncio.run(probe(url, origin, 25.0))
     except Exception as e:  # report the real failure (handshake status, TLS, timeout)
         print(f"{now()} RESULT FAIL: {type(e).__name__}: {e}", flush=True)
+        resp = getattr(e, "response", None)
+        if resp is not None:  # rejected handshake: show who refused it (CDN vs gateway)
+            for k in ("Server", "CF-RAY", "cf-mitigated", "Content-Type"):
+                if resp.headers.get(k):
+                    print(f"  {k}: {resp.headers.get(k)}")
+            body = (resp.body or b"").decode("utf-8", "replace")
+            title = body.split("<title>", 1)[1].split("</title>", 1)[0] if "<title>" in body else body[:200]
+            print(f"  body: {' '.join(title.split())[:200]}")
         return 1
 
 

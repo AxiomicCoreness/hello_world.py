@@ -27,6 +27,9 @@ jobs:
         include:
           - name: libera-default
             url: wss://web.libera.chat/webirc/websocket/
+          - name: libera-own-origin
+            url: wss://web.libera.chat/webirc/websocket/
+            origin: https://web.libera.chat
           - name: abjects-6680
             url: wss://irc.abjects.net:6680/
     steps:
@@ -39,4 +42,4 @@ jobs:
       - name: Install websockets
         run: python -m pip install "websockets==15.0.1"
       - name: Probe ${{ matrix.url }}
-        run: python -I games/teavm-rhythm/tools/irc_ws_probe.py "${{ matrix.url }}"
+        run: python -I games/teavm-rhythm/tools/irc_ws_probe.py "${{ matrix.url }}" "${{ matrix.origin || 'https://axiomiccoreness.github.io' }}"
