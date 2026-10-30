@@ -536,6 +536,31 @@ def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Opti
     return reply, err, meta
 
 
+def backend_order_line(meta: Dict[str, Any]) -> Optional[str]:
+    """Explicit backend order for LLM_BACKEND=deepinfer (env contract unchanged).
+
+    Primary is DeepInfer (https://github.com/deepseek-ai/DeepInfer, DEEPINFER_URL,
+    default 127.0.0.1:8090). Secondary is LLM_FALLBACK; the clarkeyoursatee
+    fallback is called the "deepseek tutor" only when LLM_CLARKEYOURSATEE_MODEL
+    names a deepseek model (deepseek-r2-1.5b on 127.0.0.1:8085 in production),
+    so the label never claims a model that is not being served.
+    """
+    be = meta.get("backend")
+    if meta.get("fallback_from") != llm_backend.LABEL_DEEPINFER and be != llm_backend.LABEL_DEEPINFER:
+        return None
+    if not meta.get("fallback_from"):
+        if meta.get("deepinfer_offline"):
+            return "[System] llm order: primary=deepinfer offline, no secondary (LLM_FALLBACK unset)"
+        return "[System] llm order: primary=deepinfer answered"
+    if be == llm_backend.LABEL_CLARKEYOURSATEE:
+        model = llm_backend.clarkeyoursatee_model()
+        name = "deepseek tutor" if "deepseek" in model.lower() else "clarkeyoursatee"
+        secondary = f"{name} ({model})"
+    else:
+        secondary = str(be)
+    return f"[System] llm order: primary=deepinfer offline → secondary: {secondary} answered"
+
+
 def _complete_gguf(messages, label: str):
     reply, err, meta = _complete_at(llm_url, llm_model(), messages)
     meta["backend"] = label
@@ -732,6 +757,10 @@ def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
         "session": session, "history_turns": len(trim_history(prior)), "spike_prompt": spike}))
     if meta.get("deepinfer_offline"):
         lines.append(f"[System] llm: {meta['deepinfer_offline']}")
+    order = backend_order_line(meta)
+    if order is not None:
+        lines.append(order)
+        logger.info("llm_order %s", order.removeprefix("[System] llm order: "))
     fallback = bool(meta.get("fallback_from"))
     via = {llm_backend.LABEL_FALLBACK: "gguf fallback", llm_backend.LABEL_CLARKEYOURSATEE: "clarkeyoursatee fallback",
            llm_backend.LABEL_ABLITERATED: "gguf-abliterated fallback"}
