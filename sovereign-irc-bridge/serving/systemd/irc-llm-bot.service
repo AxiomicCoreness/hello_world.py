@@ -2,8 +2,9 @@
 #   systemctl --user daemon-reload && systemctl --user enable --now irc-llm-bot
 #   loginctl enable-linger "$USER"   # keep running while logged out
 # Secrets live in ~/.config/sovereign-bridge/irc.env (chmod 600), never in the repo:
-#   IRC_OWNER=YourNick
-#   IRC_SASL_PASS=...           # NickServ password of the bot's registered nick
+#   (all optional on abjects, the default IRC_HOST)
+#   IRC_OWNER=YourNick          # admin in realname; required only with IRC_HOST=irc.libera.chat
+#   IRC_SASL_PASS=...           # only for Libera from cloud IPs: NickServ password of the bot's nick
 # The bot itself reconnects forever; Restart=always only covers a crash of the process.
 [Unit]
 Description=sovereign-irc-bridge IRC /llm bot (outbound only)
