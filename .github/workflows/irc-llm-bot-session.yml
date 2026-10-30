@@ -1,0 +1,140 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: IRC LLM bot session (manual, temporary)
+
+# TEMPORARY, NOT ALWAYS-ON. Manual trigger only (Actions → this workflow → Run workflow).
+# One run = one bot session of at most ~5.5 h (GitHub's hard cap per job is 6 h); when it ends
+# the bot sends QUIT and is gone until someone runs it again. For an always-on bot run
+# sovereign-irc-bridge/serving/launch-irc-bot.sh on your own PC (see serving/IRC_BOT.md).
+#
+# Not a gate: no push / pull_request / schedule trigger, no required check, nothing else depends on it.
+# The model (pinned deepseek-r2 GGUF, sha256-checked) runs on the runner's 127.0.0.1:8085 only;
+# the bot only makes an outgoing TLS connection to IRC.
+#
+# Libera.Chat: GitHub runners are cloud IPs, which Libera puts on SASL-only ranges. Register the bot's
+# nick with NickServ from a home connection first, verify the e-mail, then add the repository secret
+# IRC_SASL_PASS (and IRC_SASL_USER if the account name differs from the nick). The channel's operators
+# must allow the bot and the topic must say an LLM bot is present; you (irc_owner) must be in the channel.
+
+on:
+  workflow_dispatch:
+    inputs:
+      irc_owner:
+        description: "Your IRC nick (bot admin; you must be in the channel — Libera LLM policy)"
+        required: true
+        type: string
+      minutes:
+        description: "Session length in minutes (5-330; the job is capped below 6 h)"
+        required: true
+        default: "330"
+        type: string
+      irc_host:
+        description: "IRC server (TLS 6697)"
+        required: true
+        default: "irc.libera.chat"
+        type: string
+      irc_channel:
+        description: "Channel the bot joins (must have op permission + LLM disclosure in topic)"
+        required: true
+        default: "#axiomiccoreness"
+        type: string
+      irc_nick:
+        description: "Bot nick (registered with NickServ for SASL)"
+        required: true
+        default: "ClarkeTutorBot"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: irc-llm-bot-session  # never two bots with the same nick
+  cancel-in-progress: false
+
+jobs:
+  bot:
+    name: IRC bot session (temporary)
+    runs-on: ubuntu-latest
+    timeout-minutes: 350  # < 360 (GitHub's 6 h job limit); the bot itself stops at `minutes`
+    env:
+      LLAMA_TAG: b12015
+      LLAMA_ASSET: llama-b12015-bin-ubuntu-x64.tar.gz
+      LLAMA_SHA256: 25458e07a9eca87791b2c856bf7d1c457dcfda038d6bf2fa2bbb07f11c988ee6
+      IN_MINUTES: ${{ inputs.minutes }}
+      IRC_OWNER: ${{ inputs.irc_owner }}
+      IRC_HOST: ${{ inputs.irc_host }}
+      IRC_CHANNEL: ${{ inputs.irc_channel }}
+      IRC_NICK: ${{ inputs.irc_nick }}
+      IRC_TLS: "1"
+      IRC_PORT: "6697"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: sovereign-irc-bridge
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check inputs and secrets
+        env:
+          HAS_SASL: ${{ secrets.IRC_SASL_PASS != '' }}
+        run: |
+          case "$IN_MINUTES" in ''|*[!0-9]*) echo "::error::minutes must be a whole number"; exit 1;; esac
+          if [ "$IN_MINUTES" -lt 5 ] || [ "$IN_MINUTES" -gt 330 ]; then
+            echo "::error::minutes must be 5-330 (GitHub stops any job at 6 h)"; exit 1
+          fi
+          case "$IRC_HOST" in
+            *libera.chat)
+              if [ "$HAS_SASL" != "true" ]; then
+                echo "::error::Libera.Chat requires SASL from GitHub runners: add the repository secret IRC_SASL_PASS (bot nick's NickServ password)."
+                exit 1
+              fi;;
+          esac
+          echo "Session: ${IN_MINUTES} min as ${IRC_NICK} in ${IRC_CHANNEL} on ${IRC_HOST}, admin ${IRC_OWNER}"
+
+      - name: Install bridge
+        run: python -m pip install -q -e ./sovereign-irc-bridge
+
+      - name: Download pinned llama.cpp (sha256-checked)
+        run: |
+          mkdir -p "$RUNNER_TEMP/llama"
+          cd "$RUNNER_TEMP/llama"
+          curl -fsSL --retry 5 -o "$LLAMA_ASSET" "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_TAG}/${LLAMA_ASSET}"
+          echo "${LLAMA_SHA256}  ${LLAMA_ASSET}" | sha256sum -c -
+          tar xzf "$LLAMA_ASSET"
+          bin="$(find "$RUNNER_TEMP/llama" -type f -name llama-server | head -n1)"
+          test -x "$bin"
+          echo "LLAMA_SERVER=$bin" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$(dirname "$bin")" >> "$GITHUB_ENV"
+
+      - name: Download pinned GGUF from the release (sha256 per MODEL_PIN.json)
+        run: ./sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh
+
+      - name: Start llama-server on 127.0.0.1:8085
+        run: |
+          nohup ./sovereign-irc-bridge/serving/launch-8085-deepseek-r2.sh > "$RUNNER_TEMP/llama-8085.log" 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8085/health >/dev/null 2>&1; then echo "llama-server ready"; exit 0; fi
+            sleep 2
+          done
+          tail -n 50 "$RUNNER_TEMP/llama-8085.log"; echo "::error::llama-server did not come up"; exit 1
+
+      - name: Run the IRC bot (ends after `minutes`)
+        env:
+          IRC_SASL_USER: ${{ secrets.IRC_SASL_USER }}
+          IRC_SASL_PASS: ${{ secrets.IRC_SASL_PASS }}
+          IRC_NICKSERV_PASS: ${{ secrets.IRC_NICKSERV_PASS }}
+          RUN_DIR: ${{ runner.temp }}/bridge-state
+          PYTHON: python
+        run: |
+          set +e
+          timeout --signal=TERM --kill-after=30s "${IN_MINUTES}m" bash ./sovereign-irc-bridge/serving/launch-irc-bot.sh
+          rc=$?
+          if [ "$rc" -eq 124 ]; then echo "Session time reached; bot sent QUIT."; exit 0; fi
+          exit "$rc"
+
+      - name: llama-server log tail
+        if: always()
+        run: tail -n 30 "$RUNNER_TEMP/llama-8085.log" 2>/dev/null || true

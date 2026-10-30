@@ -1,0 +1,14 @@
+# Example user unit for the model the bot talks to (127.0.0.1:8085 only).
+#   systemctl --user enable --now llama-8085
+[Unit]
+Description=llama-server deepseek-r2-1.5b on 127.0.0.1:8085
+
+[Service]
+Type=simple
+Environment=LLAMA_SERVER=%h/llama.cpp/build/bin/llama-server
+ExecStart=%h/hello_world.py/sovereign-irc-bridge/serving/launch-8085-deepseek-r2.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

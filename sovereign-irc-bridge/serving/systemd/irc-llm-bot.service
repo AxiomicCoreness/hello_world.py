@@ -1,0 +1,23 @@
+# Example user unit: ~/.config/systemd/user/irc-llm-bot.service
+#   systemctl --user daemon-reload && systemctl --user enable --now irc-llm-bot
+#   loginctl enable-linger "$USER"   # keep running while logged out
+# Secrets live in ~/.config/sovereign-bridge/irc.env (chmod 600), never in the repo:
+#   IRC_OWNER=YourNick
+#   IRC_SASL_PASS=...           # NickServ password of the bot's registered nick
+# The bot itself reconnects forever; Restart=always only covers a crash of the process.
+[Unit]
+Description=sovereign-irc-bridge IRC /llm bot (outbound only)
+Wants=network-online.target llama-8085.service
+After=network-online.target llama-8085.service
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/sovereign-bridge/irc.env
+Environment=BRIDGE_DIR=%h/hello_world.py/sovereign-irc-bridge
+ExecStart=/bin/bash %h/hello_world.py/sovereign-irc-bridge/serving/launch-irc-bot.sh
+Restart=always
+RestartSec=10
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target
