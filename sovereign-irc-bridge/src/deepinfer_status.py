@@ -46,6 +46,8 @@ GGUF_NAME = "deepseek-r2-1.5b-Q4_K_M.gguf"
 GGUF_SHA256 = "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
 GGUF_SIZE = 1_117_320_640
 RELEASE_URL = "https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1"
+GGUF_URL = ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
+            "model-deepseek-r2-1.5b-q4km-v1/" + GGUF_NAME)
 PREFIX = "[System] deepinfer status: "
 
 _BRIDGE_DIR = Path(__file__).resolve().parents[1]
@@ -207,8 +209,9 @@ def status_lines(verify: bool = True, rep: Optional[Dict[str, Any]] = None) -> L
     if g["state"] == "verified":
         gl = f"GGUF {GGUF_NAME} verified at {g['path']} (sha256 {g['sha256']})"
     elif g["state"] == "missing":
-        gl = (f"GGUF {GGUF_NAME} missing at {g['path']} - reassemble with "
-              f"sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh ({RELEASE_URL})")
+        gl = (f"GGUF {GGUF_NAME} missing at {g['path']} - download {GGUF_URL} (sha256 {GGUF_SHA256}) "
+              f"or run sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh, which tries it "
+              f"first and falls back to the 42 parts ({RELEASE_URL})")
     elif g["state"] == "sha256 mismatch":
         gl = f"GGUF at {g['path']} sha256 MISMATCH: {g['sha256']} != {GGUF_SHA256}"
     else:

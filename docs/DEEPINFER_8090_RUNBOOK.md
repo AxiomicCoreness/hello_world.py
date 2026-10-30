@@ -15,7 +15,17 @@ python -I sovereign-irc-bridge/src/deepinfer_status.py status --json   # full re
 
 or type `/llm status` in the TeaVM CLI (same report, no model call).
 
-## Step 1 — reassemble the GGUF (secondary tutor, 127.0.0.1:8085)
+## Step 1 — fetch the GGUF (secondary tutor, 127.0.0.1:8085)
+
+Simplest: download the single verified file and check it:
+
+```sh
+curl -fL -o deepseek-r2-1.5b-Q4_K_M.gguf \
+  https://github.com/AxiomicCoreness/hello_world.py/releases/download/model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf
+echo "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1  deepseek-r2-1.5b-Q4_K_M.gguf" | sha256sum -c
+```
+
+`fetch-deepseek-r2.sh` does this automatically and falls back to the parts below if the single file is missing or mismatched.
 
 The model lives only as release assets (42 × 25 MiB parts of a `.tar.gz`), never in git history:
 <https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1>

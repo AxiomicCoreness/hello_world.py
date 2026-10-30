@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # fetch-deepseek-r2.sh — download the deepseek-r2-1.5b Q4_K_M GGUF from the
-# GitHub Release (25 MB chunks), verify every chunk, reassemble, extract,
-# and verify the final GGUF sha256. No tokens are used or required.
+# GitHub Release. Tries the single joined GGUF asset first and verifies its sha256;
+# if it is missing or does not match, falls back to the 42 x 25 MB chunks: verify every
+# chunk, reassemble, extract, and verify the final GGUF sha256. No tokens are used.
 #
 # Usage:
 #   ./fetch-deepseek-r2.sh                 # into this script's folder (serving/models/)
 #   DEST=/some/dir ./fetch-deepseek-r2.sh  # into another folder
 #   KEEP_PARTS=1 ./fetch-deepseek-r2.sh    # keep the downloaded chunks afterwards
+#   SKIP_SINGLE=1 ./fetch-deepseek-r2.sh   # skip the single-file asset, use the parts only
 set -euo pipefail
 
 REPO="${REPO:-AxiomicCoreness/hello_world.py}"
@@ -37,6 +39,23 @@ if [ -f "$DEST/$GGUF" ] && [ "$(sha256_of "$DEST/$GGUF")" = "$GGUF_SHA256" ]; th
   echo "OK: $DEST/$GGUF already present and verified"; exit 0
 fi
 
+# 1) single joined GGUF asset (uploaded by the join-gguf-release workflow)
+if [ "${SKIP_SINGLE:-0}" != "1" ]; then
+  echo "Trying single-file asset $URL_BASE/$GGUF"
+  if fetch "$GGUF"; then
+    got="$(sha256_of "$WORK/$GGUF")"
+    if [ "$got" = "$GGUF_SHA256" ]; then
+      mv -f "$WORK/$GGUF" "$DEST/$GGUF"
+      echo "OK: $DEST/$GGUF sha256 $got (single-file asset)"; exit 0
+    fi
+    echo "WARN: single-file $GGUF sha256 $got != $GGUF_SHA256; falling back to parts" >&2
+  else
+    echo "WARN: single-file $GGUF not downloadable; falling back to parts" >&2
+  fi
+  rm -f "$WORK/$GGUF"
+fi
+
+# 2) fallback: 42-part reassembly
 echo "Downloading SHA256SUMS from $URL_BASE"
 fetch SHA256SUMS
 
