@@ -11,7 +11,7 @@ let package = Package(
     targets: [
         .target(name: "AxiomicCorenessChat", path: "AxiomicCorenessChat",
                 // SwiftUI/Combine app files are built by Xcode, not by SwiftPM.
-                exclude: ["AxiomicCorenessChatApp.swift", "ChatView.swift", "LiberaIRCClient.swift", "Theme.swift"]),
+                exclude: ["AxiomicCorenessChatApp.swift", "ChatView.swift", "IRCClient.swift", "Theme.swift"]),
         .testTarget(name: "AxiomicCorenessChatTests", dependencies: ["AxiomicCorenessChat"],
                     path: "AxiomicCorenessChatTests"),
     ]
