@@ -12,17 +12,21 @@ name: IRC LLM bot session (manual, temporary)
 # The model (pinned deepseek-r2 GGUF, sha256-checked) runs on the runner's 127.0.0.1:8085 only;
 # the bot only makes an outgoing TLS connection to IRC.
 #
-# Libera.Chat: GitHub runners are cloud IPs, which Libera puts on SASL-only ranges. Register the bot's
-# nick with NickServ from a home connection first, verify the e-mail, then add the repository secret
-# IRC_SASL_PASS (and IRC_SASL_USER if the account name differs from the nick). The channel's operators
-# must allow the bot and the topic must say an LLM bot is present; you (irc_owner) must be in the channel.
+# Default network: abjects (irc.abjects.net, TLS 6697). No secret and no irc_owner are needed there;
+# IRC_SASL_PASS / IRC_NICKSERV_PASS are used only if you have set them.
+# Only if irc_host is *.libera.chat: GitHub runners are cloud IPs, which Libera puts on SASL-only ranges.
+# Register the bot's nick with NickServ from a home connection first, verify the e-mail, then add the
+# repository secret IRC_SASL_PASS (and IRC_SASL_USER if the account name differs from the nick). The
+# channel's operators must allow the bot, the topic must say an LLM bot is present, and you (irc_owner)
+# must be in the channel. The job refuses to start on Libera without both.
 
 on:
   workflow_dispatch:
     inputs:
       irc_owner:
-        description: "Your IRC nick (bot admin; you must be in the channel — Libera LLM policy)"
-        required: true
+        description: "Your IRC nick (bot admin). Optional on abjects; required on Libera (must be in the channel)"
+        required: false
+        default: ""
         type: string
       minutes:
         description: "Session length in minutes (5-330; the job is capped below 6 h)"
@@ -30,17 +34,17 @@ on:
         default: "330"
         type: string
       irc_host:
-        description: "IRC server (TLS 6697)"
+        description: "IRC server (TLS 6697): irc.abjects.net, or irc.libera.chat (needs irc_owner + IRC_SASL_PASS)"
         required: true
-        default: "irc.libera.chat"
+        default: "irc.abjects.net"
         type: string
       irc_channel:
-        description: "Channel the bot joins (must have op permission + LLM disclosure in topic)"
+        description: "Channel the bot joins (say in the topic that an [LLM] bot is present)"
         required: true
         default: "#axiomiccoreness"
         type: string
       irc_nick:
-        description: "Bot nick (registered with NickServ for SASL)"
+        description: "Bot nick (on Libera: registered with NickServ for SASL)"
         required: true
         default: "ClarkeTutorBot"
         type: string
@@ -85,14 +89,19 @@ jobs:
           if [ "$IN_MINUTES" -lt 5 ] || [ "$IN_MINUTES" -gt 330 ]; then
             echo "::error::minutes must be 5-330 (GitHub stops any job at 6 h)"; exit 1
           fi
-          case "$IRC_HOST" in
-            *libera.chat)
+          host="$(printf '%s' "$IRC_HOST" | tr '[:upper:]' '[:lower:]')"; host="${host%.}"
+          case "$host" in
+            libera.chat|*.libera.chat)
               if [ "$HAS_SASL" != "true" ]; then
                 echo "::error::Libera.Chat requires SASL from GitHub runners: add the repository secret IRC_SASL_PASS (bot nick's NickServ password)."
                 exit 1
+              fi
+              if [ -z "$IRC_OWNER" ]; then
+                echo "::error::Libera.Chat requires irc_owner (your nick, present in the channel)."
+                exit 1
               fi;;
           esac
-          echo "Session: ${IN_MINUTES} min as ${IRC_NICK} in ${IRC_CHANNEL} on ${IRC_HOST}, admin ${IRC_OWNER}"
+          echo "Session: ${IN_MINUTES} min as ${IRC_NICK} in ${IRC_CHANNEL} on ${IRC_HOST}, admin ${IRC_OWNER:-none}"
 
       - name: Install bridge
         run: python -m pip install -q -e ./sovereign-irc-bridge

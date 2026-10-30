@@ -164,23 +164,40 @@ def privmsgs(srv, target=None):
 
 # ------------------------------------------------------------------ config
 
-def test_config_defaults():
-    c = BotConfig.from_env({"IRC_OWNER": "ClarkeYoursaTee"})
+def test_config_defaults_are_abjects_tls_no_owner_no_sasl():
+    c = BotConfig.from_env({})  # abjects: IRC_OWNER and SASL are optional
     assert (c.host, c.port, c.tls, c.nick, c.channel) == (
-        "irc.libera.chat", 6697, True, "ClarkeTutorBot", "#axiomiccoreness")
+        "irc.abjects.net", 6697, True, "ClarkeTutorBot", "#axiomiccoreness")
     assert c.tls_verify is True and c.llm_tag == "[LLM]" and c.send_interval_s == 2.0
+    assert c.rate_s == 15.0 and c.max_lines == 4 and c.max_lines_pm == 25
+    assert c.owner == "" and c.require_owner is False and c.sasl_pass == "" and c.sasl_user == ""
+    owned = BotConfig.from_env({"IRC_OWNER": "ClarkeYoursaTee"})
+    assert owned.owner == "ClarkeYoursaTee" and owned.require_owner is False  # no owner gating on abjects
+    opted = BotConfig.from_env({"IRC_OWNER": "ClarkeYoursaTee", "IRC_REQUIRE_OWNER": "1"})
+    assert opted.require_owner is True  # still available as an explicit opt-in
+    plain = BotConfig.from_env({"IRC_TLS": "0"})  # plaintext only with an explicit IRC_TLS=0
+    assert (plain.host, plain.tls, plain.port) == ("irc.abjects.net", False, 6669)
+    assert plain.require_owner is False
+
+
+def test_libera_requires_an_owner_nick_and_gates_on_presence():
+    lib = {"IRC_HOST": "irc.libera.chat"}
+    with pytest.raises(ConfigError, match="IRC_OWNER"):
+        BotConfig.from_env(lib)
+    with pytest.raises(ConfigError, match="IRC_OWNER"):
+        BotConfig.from_env({**lib, "IRC_OWNER": "ClarkeTutorBot"})
+    c = BotConfig.from_env({**lib, "IRC_OWNER": "ClarkeYoursaTee"})
+    assert (c.host, c.port, c.tls) == ("irc.libera.chat", 6697, True)
     assert c.require_owner is True and c.owner == "ClarkeYoursaTee"
-    plain = BotConfig.from_env({"IRC_HOST": "irc.abjects.net", "IRC_TLS": "0"})
-    assert (plain.host, plain.tls, plain.port) == ("irc.abjects.net", False, 6667)
-    assert plain.require_owner is False  # no owner set → nothing to require
-
-
-def test_libera_requires_an_owner_nick():
+    assert BotConfig.from_env({"IRC_HOST": "irc.eu.libera.chat", "IRC_OWNER": "me"}).require_owner is True
     with pytest.raises(ConfigError, match="IRC_OWNER"):
-        BotConfig.from_env({})
-    with pytest.raises(ConfigError, match="IRC_OWNER"):
-        BotConfig.from_env({"IRC_OWNER": "ClarkeTutorBot"})
+        BotConfig.from_env({"IRC_HOST": "irc.libera.chat.", "IRC_TLS": "0"})
+    assert BotConfig.from_env({"IRC_HOST": "irc.libera.chat", "IRC_TLS": "0", "IRC_OWNER": "me"}).port == 6667
+    # abjects (and other networks): no owner requirement
     assert BotConfig.from_env({"IRC_HOST": "irc.abjects.net"}).owner == ""
+    assert BotConfig.from_env({"IRC_HOST": "irc.example.org"}).owner == ""
+    assert bot_mod.is_libera("irc.libera.chat") and not bot_mod.is_libera("notlibera.chat")
+    assert bot_mod.is_abjects("irc.us.abjects.net") and not bot_mod.is_abjects("irc.libera.chat")
 
 
 def test_sasl_user_defaults_to_nick_and_is_secret():
@@ -190,6 +207,7 @@ def test_sasl_user_defaults_to_nick_and_is_secret():
 
 @pytest.mark.parametrize("env, msg", [
     ({"IRC_PORT": "6667"}, "IRC_TLS=0"),
+    ({"IRC_PORT": "6669"}, "IRC_TLS=0"),  # abjects plaintext port needs an explicit IRC_TLS=0
     ({"IRC_TLS": "maybe"}, "IRC_TLS"),
     ({"IRC_PORT": "abc"}, "IRC_PORT"),
     ({"IRC_NICK": "bad nick"}, "IRC_NICK"),
@@ -546,7 +564,7 @@ def test_bang_llm_goes_through_bridge_llm_chat_with_history(monkeypatch, tmp_pat
     assert {r["session"] for r in rows} == {"irc-alice"} and len(rows) == 4
 
 
-# ------------------------------------------------------------------ Libera.Chat etiquette
+# ------------------------------------------------------------------ etiquette (all networks; owner gating Libera-only)
 
 def test_realname_labels_bot_and_admin():
     async def go():
@@ -591,6 +609,23 @@ def test_answers_in_channel_only_while_owner_present():
         await until(lambda: b.owner_present)
         await srv.send(f":Owner!o@h NICK Owner_away")
         await until(lambda: not b.owner_present)
+        await finish(srv, b, task)
+    run(go())
+
+
+def test_abjects_env_answers_without_owner_or_sasl():
+    """abjects defaults (from_env): owner absent and no SASL; still answers, still [LLM]-tagged."""
+    async def go():
+        env_cfg = BotConfig.from_env({"IRC_OWNER": "Owner"})
+        assert env_cfg.host == "irc.abjects.net" and env_cfg.require_owner is False
+        srv, b, llm, task = await started(owner="Owner", require_owner=env_cfg.require_owner,
+                                          server_kw={"names": "+someone"})
+        assert not any(l.startswith("CAP REQ") for l in srv.lines)  # no SASL without IRC_SASL_PASS
+        assert b.owner_present  # nothing to require on abjects
+        await srv.send(f":alice!a@h PRIVMSG {CHAN} :!llm hello")
+        await until(lambda: len(llm.calls) == 1)
+        await until(lambda: privmsgs(srv, CHAN))
+        assert all(l.split(" :", 1)[1].startswith("[LLM] ") for l in privmsgs(srv, CHAN))
         await finish(srv, b, task)
     run(go())
 

@@ -69,8 +69,8 @@ sovereign-irc-bridge/serving/  (this folder)
 ## IRC bot mode
 
 `launch-irc-bot.sh` runs `python -m src.irc_llm_bot`: the same `/llm` path, answered as `!llm` in
-one IRC channel (default `#axiomiccoreness` on irc.libera.chat, TLS 6697). It only connects out, so
-it needs no domain, `wss://` or open ports. Setup, Libera.Chat rules, systemd/Windows/macOS notes
+one IRC channel (default `#axiomiccoreness` on irc.abjects.net, TLS 6697). It only connects out, so
+it needs no domain, `wss://` or open ports. Setup, Libera.Chat opt-in rules, systemd/Windows/macOS notes
 and the temporary GitHub Actions session are in [IRC_BOT.md](IRC_BOT.md).
 
 ## Environment variables

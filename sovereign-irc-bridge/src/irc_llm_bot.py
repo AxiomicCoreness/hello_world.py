@@ -23,20 +23,23 @@ bridge's ``[A-Za-z0-9_-]{1,64}`` session rule), so ``!llm reset`` only clears
 that nick's turns.
 
 Env (all optional):
-  IRC_HOST            irc.libera.chat (irc.abjects.net and other networks via env)
-  IRC_PORT            6697 (TLS); 6667 when IRC_TLS=0
+  IRC_HOST            irc.abjects.net (irc.libera.chat and other networks via env)
+  IRC_PORT            6697 (TLS; abjects' documented SSL port, /server irc.abjects.net:+6697);
+                      plaintext needs an explicit IRC_TLS=0 and then defaults to 6669 on abjects
+                      (the bridge's known port), 6667 elsewhere
   IRC_TLS             1. Plaintext only with an explicit IRC_TLS=0.
   IRC_TLS_VERIFY      1. 0 accepts any server certificate (logged as a warning).
   IRC_NICK            ClarkeTutorBot
   IRC_CHANNEL         #axiomiccoreness
   IRC_CHANNEL_KEY     channel key (+k), if the channel has one
   IRC_OWNER           your own IRC nick: shown in the bot's realname as its admin, and
-                      (by default) the bot only answers in the channel while you are in it.
-                      Required on Libera.Chat (bot + LLM policy).
-  IRC_REQUIRE_OWNER   1 when IRC_OWNER is set: channel answers only while IRC_OWNER is present
+                      on Libera.Chat the bot only answers in the channel while you are in it.
+                      Required on Libera.Chat (bot + LLM policy); optional on abjects.
+  IRC_REQUIRE_OWNER   default 1 on Libera.Chat (IRC_OWNER must be present for channel answers),
+                      0 elsewhere; set 1 with IRC_OWNER to opt in on abjects
   IRC_LLM_TAG         [LLM]  prefix on every line the bot sends (LLM output must be marked)
-  IRC_SASL_USER       SASL PLAIN account (default: IRC_NICK). Libera requires SASL from
-  IRC_SASL_PASS       cloud ranges (e.g. GitHub Actions); never logged
+  IRC_SASL_USER       SASL PLAIN account (default: IRC_NICK). Optional everywhere in the bot;
+  IRC_SASL_PASS       Libera requires SASL from cloud ranges (e.g. GitHub Actions); never logged
   IRC_NICKSERV_PASS   sent to NickServ as IDENTIFY after registration when SASL is not set; never logged
   IRC_SEND_INTERVAL_S 2.0   flood control (Libera: one message every two seconds): seconds between outgoing lines
   IRC_MAX_LINES       4     lines per reply in the channel, then "…(truncated, ask in PM for more)"
@@ -46,7 +49,8 @@ Env (all optional):
   IRC_BACKOFF_MAX_S   300   reconnect backoff cap (1, 2, 4 … 300 s, forever)
   IRC_PING_TIMEOUT_S  240   silence before the bot PINGs the server; twice that → reconnect
 
-Network etiquette (Libera.Chat bot/LLM policy, https://libera.chat/policies/#bots):
+Network etiquette (kept on every network; modelled on the Libera.Chat bot/LLM policy,
+https://libera.chat/policies/#bots, whose admin-present rule is enforced only on Libera):
 the bot joins only IRC_CHANNEL (never on INVITE, never because of model output),
 does not rejoin after a KICK, labels itself as a bot with its admin in the realname,
 marks every line with IRC_LLM_TAG, sends only the ``!llm`` lines and PMs addressed
@@ -74,14 +78,17 @@ from typing import Awaitable, Callable, Dict, List, Mapping, Optional, Tuple
 
 logger = logging.getLogger("sovereign-irc-bridge.irc-bot")
 
-DEFAULT_HOST = "irc.libera.chat"
-ABJECTS_HOST = "irc.abjects.net"  # still selectable: IRC_HOST=irc.abjects.net
-DEFAULT_TLS_PORT = 6697
+ABJECTS_HOST = "irc.abjects.net"
+LIBERA_HOST = "irc.libera.chat"  # still selectable: IRC_HOST=irc.libera.chat
+DEFAULT_HOST = ABJECTS_HOST
+DEFAULT_TLS_PORT = 6697  # abjects FAQ: /server irc.abjects.net:+6697 (MOTD: SSL 6697, 6699)
 DEFAULT_PLAIN_PORT = 6667
+ABJECTS_PLAIN_PORT = 6669  # the bridge's known abjects port; only with an explicit IRC_TLS=0
+PLAINTEXT_PORTS = (6666, 6667, 6668, 6669, 7000)  # abjects MOTD "standard" ports; 6667 everywhere
 DEFAULT_NICK = "ClarkeTutorBot"
 DEFAULT_CHANNEL = "#axiomiccoreness"
 TRIGGER = "!llm"
-DEFAULT_LLM_TAG = "[LLM]"  # Libera.Chat policy: LLM-generated content must be explicitly marked
+DEFAULT_LLM_TAG = "[LLM]"  # LLM-generated content is explicitly marked on every network
 IRC_LINE_MAX = 512  # bytes, including the trailing CRLF (RFC 1459 §2.3)
 # Room the server adds when it relays our PRIVMSG: ":nick!user@host " (host ≤ 63).
 RELAY_PREFIX_RESERVE = 1 + 1 + 1 + 10 + 1 + 63 + 1
@@ -98,6 +105,20 @@ _PROV_RE = re.compile(r"^\[[^\]]*\] ")
 _THINK_MARK_RE = re.compile(r"\[(/?)thinking\]")
 
 LlmHandler = Callable[[str, str], Awaitable[List[str]]]
+
+
+def _host_is(host: str, domain: str) -> bool:
+    h = host.lower().rstrip(".")
+    return h == domain or h.endswith("." + domain)
+
+
+def is_libera(host: str) -> bool:
+    """True for Libera.Chat hosts (libera.chat and *.libera.chat): Libera-only rules apply."""
+    return _host_is(host, "libera.chat")
+
+
+def is_abjects(host: str) -> bool:
+    return any(_host_is(host, d) for d in ("abjects.net", "abjects.org", "abjects.com", "abjects.us"))
 
 
 class ConfigError(ValueError):
@@ -170,9 +191,9 @@ class BotConfig:
             if not 1 <= port <= 65535:
                 raise ConfigError(f"IRC_PORT out of range: {port}")
         else:
-            port = DEFAULT_TLS_PORT if tls else DEFAULT_PLAIN_PORT
-        if tls and port == DEFAULT_PLAIN_PORT:
-            raise ConfigError("IRC_PORT=6667 is the plaintext port; set IRC_TLS=0 to allow plaintext, "
+            port = DEFAULT_TLS_PORT if tls else (ABJECTS_PLAIN_PORT if is_abjects(host) else DEFAULT_PLAIN_PORT)
+        if tls and port in PLAINTEXT_PORTS:
+            raise ConfigError(f"IRC_PORT={port} is a plaintext port; set IRC_TLS=0 to allow plaintext, "
                               "or use 6697 with TLS")
         nick = (env.get("IRC_NICK") or DEFAULT_NICK).strip()
         if not NICK_RE.fullmatch(nick):
@@ -189,7 +210,8 @@ class BotConfig:
             raise ConfigError(f"IRC_OWNER is not a valid IRC nick: {owner!r}")
         if owner and owner.lower() == nick.lower():
             raise ConfigError("IRC_OWNER must be a person, not the bot's own nick")
-        if host.lower().rstrip(".").endswith("libera.chat") and not owner:
+        libera = is_libera(host)
+        if libera and not owner:
             raise ConfigError("Libera.Chat requires a bot to name a reachable admin: set IRC_OWNER to your own nick "
                               "(and be in the channel with the bot)")
         tag = (env.get("IRC_LLM_TAG") if env.get("IRC_LLM_TAG") is not None else DEFAULT_LLM_TAG).strip()
@@ -202,7 +224,7 @@ class BotConfig:
         return cls(
             host=host, port=port, tls=tls, tls_verify=_flag(env, "IRC_TLS_VERIFY", True),
             nick=nick, channel=channel, channel_key=key, nickserv_pass=pw,
-            owner=owner, require_owner=_flag(env, "IRC_REQUIRE_OWNER", bool(owner)) and bool(owner),
+            owner=owner, require_owner=_flag(env, "IRC_REQUIRE_OWNER", libera) and bool(owner),
             llm_tag=tag, sasl_user=sasl_user, sasl_pass=sasl_pass,
             send_interval_s=_number(env, "IRC_SEND_INTERVAL_S", 2.0, 0.0, 60.0),
             max_lines=int(_number(env, "IRC_MAX_LINES", 4, 1, 50)),
