@@ -2,3 +2,7 @@
 *.pid
 *.lock
 tunnel.log
+# Owner decision 2026-10-30: commit the serving snapshot (root .gitignore ignores these globally)
+!llm_history.jsonl
+!keepalive.log
+!llama-8085.log
