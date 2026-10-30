@@ -506,6 +506,41 @@ offline: … unreachable`. Neither crashes the chat.
 4. Optional end-to-end check (plain headless Chrome, no extra flags; all three services running):
    `node --experimental-websocket tools/llm_chat_e2e.mjs http://127.0.0.1:8092/`
 
+## Direct IRC chat on Pages (IRC over WebSocket)
+
+A static page can't open raw TCP, so on GitHub Pages the left chatbox speaks IRC
+straight to an IRC network's own **wss://** gateway (`client/irc/IrcWsProtocol`,
+`client/irc/IrcWsSession`, wired in `CliClient`). Defaults:
+
+| Setting | Default | Override |
+|---|---|---|
+| Gateway | `wss://web.libera.chat/webirc/websocket/` (Libera.Chat, the URL its Gamja webchat uses) | `?irc=wss://host[:port][/path]` |
+| Channel | `#axiomiccoreness` | `?channel=name` (the `#` is added; a URL `#` would be a fragment) |
+| Nick | `Guest` + 5 random digits | `?nick=YourNick` |
+| Off | — | `?irc=off` (old "remote bridge not configured") |
+
+Mode choice: `?bridge=` / `<meta name="cli-bridge">` → the existing bridge path
+(`/llm` + live `/py`), even if `?irc=` is set; an explicit `?irc=` wins over the
+loopback default; a loopback/`file:` page with neither stays on
+`ws://127.0.0.1:6680/cli`; any other page (Pages) uses direct IRC.
+
+In direct mode: text → `PRIVMSG <channel>`; `/llm <text>` is sent to the channel
+as-is for the IRC LLM bot (when it's running and in the channel); `/me`, `/nick`,
+`/join`, `/msg`, `/names`, `/quit`, `/reconnect`; `/py` stays local (offline
+toolkit). `PING` → `PONG`, `001` → `JOIN`, nick-in-use retries with `_`. There is
+no raw-line passthrough, and every outbound line goes through
+`IrcWsProtocol.clean` (CR / LF / NUL → space, 400-char cap), so typed text can't
+inject a second IRC command. Only `wss://` is accepted (plain `ws://` only to
+loopback, for local tests); `0.0.0.0` and userinfo URLs are rejected.
+
+Libera.Chat notes: guests need no account, but the channel should be registered
+with ChanServ by its owner, and Libera's policy requires an LLM bot to be
+opted in by the channel's operators (topic must say LLMs may be present), labelled
+as a bot, and accompanied by its human admin in the channel. Channels set `+r`
+answer `477` (shown in the chat) to unregistered guests.
+
+Tests (offline, no sockets): `IrcWsProtocolTest`, `IrcWsSessionTest`.
+
 ## Debug Oracle panel (team v1)
 
 Browser debug shell served with the TeaVM webapp:

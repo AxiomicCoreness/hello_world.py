@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+# Live probe of the IRC-over-WebSocket gateways the Pages chatbox can dial (handshake
+# with the Pages Origin + 001 welcome, then QUIT; never joins or speaks). Manual, or when
+# this workflow / the probe script changes. Not part of the offline test gates.
+name: "IRC wss probe (live)"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/irc-wss-probe.yml"
+      - "games/teavm-rhythm/tools/irc_ws_probe.py"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: probe ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: libera-default
+            url: wss://web.libera.chat/webirc/websocket/
+          - name: abjects-6680
+            url: wss://irc.abjects.net:6680/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install websockets
+        run: python -m pip install "websockets==15.0.1"
+      - name: Probe ${{ matrix.url }}
+        run: python -I games/teavm-rhythm/tools/irc_ws_probe.py "${{ matrix.url }}"
