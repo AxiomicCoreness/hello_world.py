@@ -1,0 +1,5 @@
+*.gguf
+*.jsonl
+*.log
+*.pid
+*.lock
