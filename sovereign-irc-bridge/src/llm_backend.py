@@ -142,9 +142,18 @@ def abliterated_model() -> str:
 
 
 def reply_prefix(label: Optional[str]) -> str:
-    """Visible provenance prefix for each reply line ("" for deepinfer and direct gguf)."""
-    return {LABEL_FALLBACK: FALLBACK_PREFIX, LABEL_CLARKEYOURSATEE: CLARKEYOURSATEE_PREFIX,
-            LABEL_ABLITERATED: ABLITERATED_PREFIX}.get(label or "", "")
+    """Visible provenance prefix for each reply line ("" for deepinfer and direct gguf).
+
+    ClarkeYoursaTee uses the configured ``LLM_CLARKEYOURSATEE_MODEL`` when it
+    differs from the default alias, so a deepseek-r2 serve is not labeled as the
+    Qwen2.5-1.5B-Instruct-abliterated derivative.
+    """
+    if label == LABEL_CLARKEYOURSATEE:
+        model = clarkeyoursatee_model()
+        if model != DEFAULT_CLARKEYOURSATEE_MODEL:
+            return f"[ClarkeYoursaTee ({model})] "
+        return CLARKEYOURSATEE_PREFIX
+    return {LABEL_FALLBACK: FALLBACK_PREFIX, LABEL_ABLITERATED: ABLITERATED_PREFIX}.get(label or "", "")
 
 
 def connect_timeout() -> float:

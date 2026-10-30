@@ -34,6 +34,16 @@ Env:
   LLM_TIMEOUT_S  default 60
   LLM_MAX_TOKENS default 256
   LLM_BUILD_FEEDBACK  "0" disables reading surefire reports into feedback
+  LLM_RAW_REPLY  default "1": send the full model text (incl. reasoning) with no
+                 line-cap, role-echo cut, or n-gram trim. "0" restores the guard.
+  LLM_HISTORY_PATH  default /workspace/bridge-serving/llm_history.jsonl
+                 (JSONL of user/assistant turns; reloaded every request so a
+                 keepalive restart still has context). Empty string disables.
+  LLM_HISTORY_MAX_TOKENS  default 2500 (chars/4 estimate); newest turns kept.
+  LLM_SYSTEM_PROMPT  "spike" forces the TeaVM neuron/traceback system prompt;
+                 otherwise that prompt only applies when a #neuro snapshot or
+                 traceback feedback is attached. Plain /llm questions get a
+                 direct assistant prompt.
 
 If the model server is down the caller gets ``[System] llm offline: …``,
 never an exception.
@@ -45,6 +55,7 @@ import logging
 import json
 import os
 import re
+from datetime import datetime, timezone
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -68,6 +79,13 @@ MAX_REPORTS: Final = 5
 MAX_FRAMES: Final = 3
 MAX_MESSAGE: Final = 200
 MAX_REPLY_LINES: Final = 40
+DEFAULT_HISTORY_PATH: Final = "/workspace/bridge-serving/llm_history.jsonl"
+DEFAULT_HISTORY_MAX_TOKENS: Final = 2500
+PLAIN_SYSTEM_PROMPT: Final = (
+    "You are a helpful assistant. Answer the user's question directly and clearly. "
+    "Do not invent neuron snapshots, spike counts, or traceback reports unless the "
+    "user message actually includes them."
+)
 
 # Reply guard. Small GGUF models sometimes stop answering and start writing the
 # rest of a chat log ("User 1: … User 38: …") or loop on one sentence. The model
@@ -96,6 +114,122 @@ SYSTEM_PROMPT: Final = (
     "suggest a concrete fix first. Only describe neuron activity that the snapshot shows; "
     "if brain is idle say so. Be brief (under 120 words)."
 )
+
+
+
+
+def raw_reply_enabled() -> bool:
+    """LLM_RAW_REPLY defaults on: show the full model text, including garbled bits."""
+    return os.environ.get("LLM_RAW_REPLY", "1").strip().lower() not in ("0", "false", "no", "off")
+
+
+def history_path() -> Optional[Path]:
+    raw = os.environ.get("LLM_HISTORY_PATH", DEFAULT_HISTORY_PATH)
+    if raw is None or str(raw).strip() == "":
+        return None
+    return Path(str(raw).strip())
+
+
+def history_max_tokens() -> int:
+    try:
+        return max(0, int(os.environ.get("LLM_HISTORY_MAX_TOKENS", DEFAULT_HISTORY_MAX_TOKENS)))
+    except ValueError:
+        return DEFAULT_HISTORY_MAX_TOKENS
+
+
+def _est_tokens(text: str) -> int:
+    return max(1, (len(text or "") + 3) // 4)
+
+
+def load_history(path: Optional[Path] = None) -> List[Dict[str, str]]:
+    """Read JSONL turns (role/content). Missing or empty file → []. Never raises."""
+    path = history_path() if path is None else path
+    if path is None or not path.is_file():
+        return []
+    turns: List[Dict[str, str]] = []
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(row, dict):
+                continue
+            role, content = row.get("role"), row.get("content")
+            if role in ("user", "assistant") and isinstance(content, str) and content.strip():
+                turns.append({"role": role, "content": content})
+    except OSError as exc:
+        logger.warning("llm history read failed (%s): %s", path, exc)
+    return turns
+
+
+def trim_history(turns: List[Dict[str, str]], budget: Optional[int] = None) -> List[Dict[str, str]]:
+    """Keep the newest turns that fit ``budget`` tokens (chars/4). Prefer whole pairs."""
+    budget = history_max_tokens() if budget is None else budget
+    if budget <= 0 or not turns:
+        return []
+    kept: List[Dict[str, str]] = []
+    used = 0
+    for turn in reversed(turns):
+        cost = _est_tokens(turn["content"])
+        if kept and used + cost > budget:
+            break
+        if not kept and cost > budget:
+            # single oversized turn: still keep a tail so the model has something
+            kept.append({"role": turn["role"], "content": turn["content"][-(budget * 4):]})
+            break
+        kept.append(turn)
+        used += cost
+    kept.reverse()
+    # Drop a leading orphan assistant so the first history role is user when possible
+    if kept and kept[0]["role"] == "assistant":
+        kept = kept[1:]
+    return kept
+
+
+def append_history(user: str, assistant: str, path: Optional[Path] = None) -> None:
+    """Append one user/assistant pair as JSONL. Never raises."""
+    path = history_path() if path is None else path
+    if path is None:
+        return
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            for role, content in (("user", user), ("assistant", assistant)):
+                fh.write(json.dumps({"role": role, "content": content, "ts": datetime.now(timezone.utc).isoformat()},
+                                    ensure_ascii=False) + "\n")
+    except OSError as exc:
+        logger.warning("llm history append failed (%s): %s", path, exc)
+
+
+def archive_history(path: Optional[Path] = None) -> Optional[Path]:
+    """Rename the history file to ``*.reset-<utc>`` instead of deleting. → archive path or None."""
+    path = history_path() if path is None else path
+    if path is None or not path.is_file():
+        return None
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dest = path.with_name(f"{path.name}.reset-{stamp}")
+    try:
+        path.rename(dest)
+        return dest
+    except OSError as exc:
+        logger.warning("llm history archive failed (%s): %s", path, exc)
+        return None
+
+
+def use_spike_prompt(neuro: Optional[Dict[str, Any]], feedback: Dict[str, Any]) -> bool:
+    force = os.environ.get("LLM_SYSTEM_PROMPT", "").strip().lower()
+    if force in ("spike", "neuro", "traceback"):
+        return True
+    if force in ("plain", "direct", "none"):
+        return False
+    if neuro:
+        return True
+    reports = feedback.get("reports") if isinstance(feedback, dict) else None
+    return bool(reports)
 
 
 class LlmConfigError(RuntimeError):
@@ -234,15 +368,26 @@ def merge_feedback(cli: Optional[Dict[str, Any]], build: List[Dict[str, Any]]) -
     return block
 
 
-def build_messages(prompt: str, neuro: Optional[Dict[str, Any]], feedback: Dict[str, Any]) -> List[Dict[str, str]]:
-    neuro_txt = json.dumps(neuro, separators=(",", ":")) if neuro else "none (client sent no snapshot)"
-    fb_txt = json.dumps(feedback, separators=(",", ":"), ensure_ascii=False)
-    user = (
-        f"NEURON_SNAPSHOT: {neuro_txt}\n"
-        f"FEEDBACK: {fb_txt}\n"
-        f"USER: {prompt or '(empty — summarise the brain state and any feedback)'}"
-    )
-    return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]
+def build_messages(prompt: str, neuro: Optional[Dict[str, Any]], feedback: Dict[str, Any],
+                   history: Optional[List[Dict[str, str]]] = None) -> List[Dict[str, str]]:
+    """System + trimmed prior turns + current user. Spike prompt only with neuro/feedback (or force)."""
+    spike = use_spike_prompt(neuro, feedback)
+    if spike:
+        neuro_txt = json.dumps(neuro, separators=(",", ":")) if neuro else "none (client sent no snapshot)"
+        fb_txt = json.dumps(feedback, separators=(",", ":"), ensure_ascii=False)
+        user = (
+            f"NEURON_SNAPSHOT: {neuro_txt}\n"
+            f"FEEDBACK: {fb_txt}\n"
+            f"USER: {prompt or '(empty — summarise the brain state and any feedback)'}"
+        )
+        system = SYSTEM_PROMPT
+    else:
+        user = prompt or "(empty)"
+        system = PLAIN_SYSTEM_PROMPT
+    msgs: List[Dict[str, str]] = [{"role": "system", "content": system}]
+    msgs.extend(trim_history(history or []))
+    msgs.append({"role": "user", "content": user})
+    return msgs
 
 
 def _post(url: str, payload: Dict[str, Any], timeout: float) -> Dict[str, Any]:
@@ -367,7 +512,24 @@ def _complete_at(url_fn, model: str, messages: List[Dict[str, str]],
     if reply is None:
         return None, f"unexpected response shape from {target}", meta
     meta["finish_reason"] = chatml_prebuild.finish_reason(data)
+    reasoning = _extract_reasoning(data)
+    if reasoning:
+        meta["reasoning"] = reasoning
     return reply.strip(), None, meta
+
+
+def _extract_reasoning(data: Any) -> Optional[str]:
+    """OpenAI-style ``message.reasoning_content`` (DeepSeek-R1 / llama-server)."""
+    if not isinstance(data, dict):
+        return None
+    try:
+        raw = data["choices"][0]["message"].get("reasoning_content")
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return None
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    return text or None
 
 
 def _cut_role_echo(text: str) -> Tuple[str, bool]:
@@ -415,16 +577,74 @@ def _neuro_line(neuro: Optional[Dict[str, Any]]) -> str:
     return line
 
 
+def _format_reply_lines(reply: str, meta: Dict[str, Any], *, raw: bool) -> Tuple[List[str], List[str], str]:
+    """→ (engine_lines, system_notes, plain_assistant_text_for_history).
+
+    When ``raw`` is True the full text (and any reasoning) is shown with no
+    line cap and without role-echo / n-gram cuts. Reasoning is wrapped in
+    ``[thinking]`` / ``[/thinking]`` markers so the chat can keep it.
+    """
+    notes: List[str] = []
+    reasoning = (meta.get("reasoning") or "").strip()
+    text = reply or ""
+    if raw:
+        # Keep bare <think> tags visible; still strip nothing of substance.
+        body_src = text
+    else:
+        if chatml_prebuild.looks_degenerate(text):
+            logger.warning("llm reply degenerate (3-gram loop); truncating, never fed back as context")
+        body_src, trims = clean_reply(text)
+        notes.extend(trims)
+        reasoning = THINK_TAG_RE.sub("", reasoning).strip() if reasoning else ""
+    prefix = llm_backend.reply_prefix(meta.get("backend"))
+    engine: List[str] = []
+    hist_parts: List[str] = []
+    if reasoning:
+        engine.append(f"[Engine] llm: {prefix}[thinking]")
+        hist_parts.append("[thinking]")
+        for ln in reasoning.splitlines() or [reasoning]:
+            engine.append(f"[Engine] llm: {prefix}{ln}" if ln.strip() else f"[Engine] llm: {prefix}")
+            hist_parts.append(ln)
+        engine.append(f"[Engine] llm: {prefix}[/thinking]")
+        hist_parts.append("[/thinking]")
+    body = [ln for ln in body_src.splitlines()] if raw else [ln for ln in body_src.splitlines() if ln.strip()]
+    if not body and not reasoning:
+        body = ["(empty reply)"]
+    limit = None if raw else MAX_REPLY_LINES
+    for ln in (body if limit is None else body[:limit]):
+        engine.append(f"[Engine] llm: {prefix}{ln}" if (ln or raw) else f"[Engine] llm: {prefix}")
+        hist_parts.append(ln)
+    if limit is not None and len(body) > limit:
+        notes.append(f"reply truncated to {MAX_REPLY_LINES} lines (set LLM_RAW_REPLY=1 for the full text)")
+    plain = "\n".join(hist_parts).strip() or "(empty reply)"
+    return engine, notes, plain
+
+
 def handle_llm_sync(text: str) -> List[str]:
     prompt, neuro, cli_fb, notes = parse_wire(text)
+    # /llm reset — archive the on-disk history so a cold start starts clean.
+    if prompt.strip().lower() == "reset":
+        archived = archive_history()
+        if archived is None:
+            return ["[System] llm: history already empty (nothing to reset)"]
+        return [f"[System] llm: history archived to {archived}"]
+
     feedback = merge_feedback(cli_fb, collect_build_feedback())
     lines = [f"[System] llm: {n}" for n in notes]
-    lines.append(_neuro_line(neuro))
-    lines.append(f"[System] llm ctx: feedback={len(feedback['reports'])} traceback report(s)")
-    reply, err, meta = complete_routed(build_messages(prompt, neuro, feedback))
+    spike = use_spike_prompt(neuro, feedback)
+    if spike or neuro is not None:
+        lines.append(_neuro_line(neuro))
+        lines.append(f"[System] llm ctx: feedback={len(feedback['reports'])} traceback report(s)")
+    else:
+        lines.append("[System] llm ctx: plain (no neuron snapshot / traceback; spike prompt off)")
+
+    prior = load_history()
+    messages = build_messages(prompt, neuro, feedback, history=prior)
+    reply, err, meta = complete_routed(messages)
     logger.info("llm_reply %s", json.dumps({
         "backend": meta.get("backend"), "fallback_from": meta.get("fallback_from"),
-        "path": meta.get("path"), "ok": err is None}))
+        "path": meta.get("path"), "ok": err is None, "raw": raw_reply_enabled(),
+        "history_turns": len(trim_history(prior)), "spike_prompt": spike}))
     if meta.get("deepinfer_offline"):
         lines.append(f"[System] llm: {meta['deepinfer_offline']}")
     fallback = bool(meta.get("fallback_from"))
@@ -444,15 +664,16 @@ def handle_llm_sync(text: str) -> List[str]:
             return lines  # the "deepinfer backend offline (…)" line is the answer
         lines.append(f"[System] llm offline: {err}")
         return lines
-    if chatml_prebuild.looks_degenerate(reply or ""):
-        logger.warning("llm reply degenerate (3-gram loop); truncating, never fed back as context")
-    reply, trims = clean_reply(reply or "")
+
+    engine, trims, plain = _format_reply_lines(reply or "", meta, raw=raw_reply_enabled())
     lines.extend(f"[System] llm: {n}" for n in trims)
-    body = [ln for ln in reply.splitlines() if ln.strip()] or ["(empty reply)"]
-    prefix = llm_backend.reply_prefix(meta.get("backend"))  # never pass Qwen/abliterated/ClarkeYoursaTee output off as DeepInfer
-    for ln in body[:MAX_REPLY_LINES]:
-        lines.append(f"[Engine] llm: {prefix}{ln}")
+    lines.extend(engine)
+    # Persist the turn the model actually saw (plain user text, not the snapshot wrapper)
+    # so cold-start reloads stay useful for ordinary chat.
+    append_history(prompt or "(empty)", plain)
     return lines
+
+
 
 
 async def handle_llm(text: str) -> List[str]:
