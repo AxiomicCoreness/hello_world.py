@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import random
+import sys
 import threading
 import time
 from collections.abc import Callable, Generator
@@ -12,6 +13,10 @@ import pytest
 
 torch = pytest.importorskip("torch", reason="torch not installed")
 # Prevent CI failure if deepinfer isn't installed in the base environment
+if sys.version_info < (3, 12):
+    # deepinfer/__init__.py (upstream pin 9bd9cf24, requires-python >=3.12) raises ImportError here;
+    # pytest.importorskip only skips ModuleNotFoundError, so skip explicitly with the real reason.
+    pytest.skip("deepinfer (upstream DeepInfer pin) requires Python >= 3.12", allow_module_level=True)
 deepinfer = pytest.importorskip("deepinfer", reason="deepinfer package not importable")
 pytest.importorskip("deepinfer.utils", reason="deepinfer.utils (vendored at the DeepInfer pin) needs GPU-host deps: psutil, deep_cluster")
 from deepinfer.utils import _sync_debug_arbiter, allow_cuda_sync, forbid_cuda_sync
