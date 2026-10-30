@@ -17,10 +17,11 @@ import org.junit.jupiter.api.Test;
 class IrcWsProtocolTest {
 
     @Test
-    void defaultsAreLiberaChannelAndGuestNick() {
+    void defaultsAreAbjectsChannelAndGuestNick() {
         IrcWsProtocol.Config c = IrcWsProtocol.resolve(null, null, null, "48151");
         assertTrue(c.enabled());
-        assertEquals("wss://web.libera.chat/webirc/websocket/", c.url);
+        assertEquals("wss://irc.abjects.net:6680/", c.url);
+        assertEquals("abjects", IrcWsProtocol.DEFAULT_NETWORK);
         assertEquals("#axiomiccoreness", c.channel);
         assertEquals("Guest48151", c.nick);
         assertTrue(c.notes.isEmpty());
@@ -46,6 +47,14 @@ class IrcWsProtocolTest {
         assertEquals(IrcWsProtocol.DEFAULT_CHANNEL, c.channel);
         assertEquals("Guest12345", c.nick);
         assertEquals(3, c.notes.size());
+    }
+
+    @Test
+    void liberaStaysSelectableViaIrcParam() {
+        IrcWsProtocol.Config c = IrcWsProtocol.resolve(IrcWsProtocol.LIBERA_URL, null, null, "48151");
+        assertTrue(c.enabled());
+        assertEquals("wss://web.libera.chat/webirc/websocket/", c.url);
+        assertTrue(c.notes.isEmpty());
     }
 
     @Test
