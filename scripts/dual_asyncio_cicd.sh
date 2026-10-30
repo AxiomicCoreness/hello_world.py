@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # dual_asyncio_cicd.sh
 # Artifact 9220 - Dual ASGI CI/CD deployment verification.
 # Policy: BIND_HOST=127.0.0.1:8024 only; never all-interfaces bind.

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Debug Oracle shell — structured directory + hex-emergent chat (UI labels only).
 
 Team endpoints labeled irc.abjects.net:6666-6669. Never opens IRC sockets.

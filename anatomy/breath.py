@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/breath.py — cadence, 6h default, jitter bound.
 
 Cadence governor for scheduled pulses. Default period 6h.

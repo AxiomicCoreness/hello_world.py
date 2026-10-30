@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """October 39, 2025 as code — syntactic literal, not datetime. Full 64-hex digests."""
 from __future__ import annotations
 import hashlib, json

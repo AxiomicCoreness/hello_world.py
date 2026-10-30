@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Write a metronome click track as a mono 16-bit PCM WAV, optionally an .ogg.
 
 Same samples as logic/ClickTrack.java (the page synthesises its own copy, so

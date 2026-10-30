@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Dual asyncio CI/CD loops (ledger 9174). No socket bind. MCP unfilled."""
 from __future__ import annotations
 

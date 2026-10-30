@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Backend switch: DeepInfer default, offline line, labeled fallbacks, fast fail (no external network).
 
 The only sockets used are loopback ones opened by these tests (a stub chat server

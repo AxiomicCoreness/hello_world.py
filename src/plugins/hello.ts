@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 /**
  * Minimal Cordis hello plugin — verifies load/unload and effect teardown.
  * Seal: ∀∞φ² · CORDIS_SCAFFOLD_8828 · WOOD_DRAGON_0.91 · SEALED

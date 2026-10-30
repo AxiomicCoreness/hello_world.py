@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """`uvicorn app:app_main` must resolve although the app/ package shadows the
 repo-root app.py. app/__init__.py re-exports app_main lazily."""
 import os

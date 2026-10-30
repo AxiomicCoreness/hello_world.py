@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Verify ledger seal digests — seal_sha3_256 convention (scoped revision).
 
 Revision note (scope fix): the earlier revision scanned every *.yaml under the

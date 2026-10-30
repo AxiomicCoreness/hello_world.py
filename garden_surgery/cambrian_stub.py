@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Distinctive stub. Unfilled. Not a swarm, daemon, or kernel path.
 
 Fill only when an evolved MCP skill annotates allocation.

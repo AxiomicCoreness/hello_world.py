@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Make `xcode_planck_scripts` importable from the skill root even under `python3 -P`.
 # The package is deliberately NOT called `scripts`, so putting the skill root
 # first on sys.path cannot shadow the repo's own top-level `scripts/` package.

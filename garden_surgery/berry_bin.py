@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Bin next to cambrian_stub.py. Prints config demo stats. No fire."""
 
 from garden_surgery.berry_chern import demo_from_config, load_config

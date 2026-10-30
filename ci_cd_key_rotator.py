@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Minimal state carrier for the CI/CD key rotation lane. Rev 3.
 
 Offline-first, evolution-capable (the "federate works offline yet

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Make `bms_scripts` importable from the skill root even under `python -P`
 # (safe-path mode drops the working directory from sys.path). The package is
 # `bms_scripts`, not `scripts`, so it cannot shadow the repo's top-level `scripts/`.

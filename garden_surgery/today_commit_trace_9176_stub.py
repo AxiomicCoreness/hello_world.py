@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # === Entry 9176 – Today Commit Trace Backfill ===
 """Append-only stub. Does not rewrite ledger/9176.yaml. MCP unfilled."""
 from __future__ import annotations

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Actionable theorems — only identities that must hold in IEEE float.
 
 These are *tests*, not seals. A failed assert here is a real failure.

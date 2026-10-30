@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Update local .venv for dual CI (control lane + bin-layer lane).
 # Does not commit .venv. Does not bind 0.0.0.0. MCP stays unfilled.
 set -euo pipefail

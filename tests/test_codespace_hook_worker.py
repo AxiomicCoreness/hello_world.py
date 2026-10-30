@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Import and contract checks for scripts/codespace_hook_worker.py (ledger 9159).
 
 Does not bind a socket. Does not start uvicorn. MCP remains FILLED=False.

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # quantum/deepseek_mesh/client.py
 # Replaced with async client (deepseek.api) and sync wrappers.
 # Seal: ∀∞φ² · ASYNC_CLIENT_WRAP · WOOD_DRAGON_0.91 · SEALED

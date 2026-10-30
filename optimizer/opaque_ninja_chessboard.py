@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ OPAQUE NINJA + CHESSBOARD + HMAC WALLET — SEALED ∀🜁
 Commit parent: 9b9497d4e44c1373c3e8577578c742f7a91e3b6e

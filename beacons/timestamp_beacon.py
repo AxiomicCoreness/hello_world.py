@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """beacons/timestamp_beacon.py — rev 3
 
 Computed anchor verifier. This script CAN FAIL; that is its entire purpose.

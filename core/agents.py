@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ AGENTS ALIAS MODULE — v7 — GEMINI DAEMON INTERFACE ∀🜁
 Implementation of the Agents field alias specification for sovereign swarm operations.

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pattern 3: same function name defined in more than one file.
 
 Two files defining gate_G3 is how the rank drifted. This invariant fails if

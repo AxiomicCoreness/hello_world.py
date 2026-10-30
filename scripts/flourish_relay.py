@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Idempotent flourish relay. Standard library only.
 
 P(t) = Ω⁹⁺ · φ⁷ · ∫_0^t e^{φ τ} dτ = Ω⁹⁺ · φ⁶ · (e^{φ t} - 1)

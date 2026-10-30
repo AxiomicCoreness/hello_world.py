@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Minimal producer: hand off the smoke catalogue to scenario workers.
 
 Reads docs/smoke_catalogue.json (produced by scripts/catalogue_smoke_tests.py,

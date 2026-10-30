@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Name-seal for DeepSeek 2.2.2(4). Not a live API daemon.
 
 quantum/gemini_daemon.py and ledger/8953.yaml are not rewritten.

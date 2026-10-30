@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Make `hhmi_scripts` importable from the skill root even under `python -P`
 # (safe-path mode drops the working directory from sys.path).
 # The package is deliberately NOT called `scripts`, so putting the skill root

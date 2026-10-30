@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Regenerate logic/ToyCircuitXml.java from src/main/webapp/connectomes/toy_lane_circuit.xml.
 
 The browser build can't read files from the classpath, so the toy circuit is

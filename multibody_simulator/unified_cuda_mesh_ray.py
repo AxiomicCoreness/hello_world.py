@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Unified CUDA Mesh Ray: JAX TOI Benchmark + DeepInfer GPU Cache
 Combines the two-ball time-of-impact physics simulation with the DeepInfer 

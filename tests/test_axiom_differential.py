@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Triune differential — operators called, not plain Fraction identities."""
 
 from terminal_axiom.axiom import Propagation, Root as TRoot, axiom_t0, Location

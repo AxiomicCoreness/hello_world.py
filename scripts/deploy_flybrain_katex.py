@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Deploys a 20-neuron flybrain mesh, wired to the KaTeX macro registry.
 Neuron state is driven by macro domain loads (garden, math, physics).

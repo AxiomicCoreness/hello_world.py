@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/crown.py — canonical body, SHA3-256, seal verify.
 
 The seal must commit to the canonical body (POLICY.md Art. 25.2, 28.1):

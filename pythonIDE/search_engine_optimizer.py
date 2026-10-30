@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Local search-engine optimizer stub for ledger 9229.
 
 No crawl, no bind, no MCP fill. Ranks an in-memory corpus with phi weights.

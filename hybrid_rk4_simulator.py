@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ HYBRID RK4 SIMULATOR – Q8.24 FIXED‑POINT & FLOAT
    Supports both fixed‑point (Q8.24) and standard floating‑point

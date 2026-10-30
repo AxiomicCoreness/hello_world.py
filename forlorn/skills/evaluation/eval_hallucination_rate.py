@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Hallucination eval: asked for DeepGEMM things that do not exist, the model must decline, not invent.
 
 Each prompt names a DeepGEMM function, flag or file that does not exist. A pass

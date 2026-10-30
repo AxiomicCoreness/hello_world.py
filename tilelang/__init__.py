@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """tilelang — string tile set plus declared additives.
 
 T is the affine rewrite in docs/agentic-tilelang-T.yaml.

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Compile com.fruitfly.brain with the hhmi loader overlaid and run JUnit 5.
 #
 #   bash run_java_tests.sh            reuse /workspace/connectome_loader as the base tree

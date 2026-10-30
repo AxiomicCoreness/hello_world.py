@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 import pytest
 
 pytest.importorskip("scripts.hook_branch_policy", reason="scripts.hook_branch_policy not importable")

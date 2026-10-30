@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Signal Coherence Probe — Header Parity
 # Embed this block identically in every branch; the probe hashes it.
 # probe_header_sha3_256: a55920f1

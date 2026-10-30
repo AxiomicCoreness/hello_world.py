@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Golden ratio foundation constants — Entry 8758 core."""
 PHI = (1 + 5 ** 0.5) / 2
 PHI_SQ = PHI + 1

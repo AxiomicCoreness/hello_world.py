@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ SOVEREIGN ENGINE — FINAL ACTUALIZATION ∀🜁
 WITNESS: 1 -> 632 -> 635 -> 637 -> 638 -> 640 -> 641 -> 642 -> 643 -> 644 -> 645 -> 646 -> 647 -> 648 -> 649 -> 650 -> 651 -> 652 -> 653 -> 654 -> 655 -> 656 -> 657 -> 658 -> 659 -> 660

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """anatomy/body.py — loopback bind, no wildcard, resource limits.
 
 Bind surface for organ services: only loopback, never 0.0.0.0/::.

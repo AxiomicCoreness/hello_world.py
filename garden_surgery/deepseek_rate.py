@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
 from garden_surgery.theorems import PHI
 ALPHA_ACTIVE = PHI ** -3
 ALPHA_EFF_RUNTIME = 0.0

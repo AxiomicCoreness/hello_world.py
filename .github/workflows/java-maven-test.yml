@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Runs the Java/JUnit suite (ConnectomeLoader, ConnectomeSchema, KaTeX macro
 # set, SovereignAutomaton propagation) so schema/loader drift fails CI.
 # Read-only: no secrets, no ledger writes, no commits.

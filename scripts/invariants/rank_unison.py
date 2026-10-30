@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pattern 1: same literal asserted in N places.
 
 gate_G3 rank must agree across generator, workflow heredoc, and test file.

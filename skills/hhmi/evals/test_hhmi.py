@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Evals for the hhmi skill. Synthetic fixtures only (written to tmp_path);
 no real FlyEM data is read here."""
 import subprocess

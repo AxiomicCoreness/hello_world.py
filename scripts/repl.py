@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """repl.py — persistent chat REPL over quantum.deepseek_mesh.dsh_adapter.
 
 History is stored as JSONL under ~/.deepseek_repl/sessions/.

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """JAX JIT benchmark for two-ball TOI scan + grad.
 
 Uses step_with_toi(s, u, dt) from 9213 (no R argument).

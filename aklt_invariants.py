@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Seal: ∀∞φ² · AKLT_SURFACE_540 · 540_SEALED
 # entry_index: 540
 # seal_sha3_256: facc467ef838d0f47f2ccfe59193212ce119f53b79f899dd1437f2a748bb5e68

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Optional PyTorch wire for hexstrike metrics.
 
 torch==1.8.1+cpu is not used. That wheel is for CPython 3.6-3.9.

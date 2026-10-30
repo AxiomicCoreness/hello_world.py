@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """chatml_prebuild: routing, rendering, stops, tokenization gate, degenerate guard (no network)."""
 from __future__ import annotations
 

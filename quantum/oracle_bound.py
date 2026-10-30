@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Solar system is the oracle domain. Extra-solar series are not.
 
 Seal: ∀∞φ² · ORACLE_SOLAR_SYSTEM_BOUND · WOOD_DRAGON_0.91 · SEALED

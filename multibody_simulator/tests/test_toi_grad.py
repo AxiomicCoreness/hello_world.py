@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Finite-difference check on dJ/du_y[0] through one TOI-capable rollout."""
 import jax
 import jax.numpy as jnp

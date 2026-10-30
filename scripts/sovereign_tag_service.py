@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ SOVEREIGN TAG SERVICE — EXCLUSIVE SET + LEDGER SEALING + PROMETHEUS FUSION 🜁∀
 Entry 8326 → 8327 (FUSION COMPLETE)

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 // RenderClient.swift: fetch a 300 dpi PNG from the demo Java endpoint (GET /render).
 // The server binds 127.0.0.1:8025 by default. On an iPhone, 127.0.0.1 is the phone
 // itself, so the phone must reach the server over the network: start it with

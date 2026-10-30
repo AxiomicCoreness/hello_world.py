@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # ---------------------------------------------------------------------------
 # init_deepinfer_vendors.sh — clone DeepInfer + kernels at pinned SHAs
 # ---------------------------------------------------------------------------

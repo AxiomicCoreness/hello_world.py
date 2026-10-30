@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """WebSocket-to-TCP byte pump (mTLS IRC).
 
 Actively forwards raw WebSocket bytes ↔ TCP after ``IRCClient.connect()``.

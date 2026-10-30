@@ -1,5 +1,7 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ KUBERNETES INSTALL — ENTRY 8845
 #
 # DEPRECATED - Entry 8845

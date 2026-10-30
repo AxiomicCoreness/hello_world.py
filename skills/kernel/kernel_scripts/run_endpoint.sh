@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Compile Endpoint.java to /tmp/endpoint_classes and start it on 127.0.0.1:8025 in the background.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"

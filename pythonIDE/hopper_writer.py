@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Write hopper optimizer readout. No uvicorn. No 0.0.0.0. No ledger rewrite."""
 from __future__ import annotations
 

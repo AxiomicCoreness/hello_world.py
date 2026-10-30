@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # quantum/deepseek_mesh/__init__.py
 # DeepSeek Mesh Quadrant - Entry 8844/8845 + harness lattice
 # DeepSeek client, MCP endpoint, DeepSeek-only adapter (deepseek_http)

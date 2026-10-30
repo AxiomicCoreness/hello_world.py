@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """celestial.strike_ix — Strike IX/X drafts. Does not replace live celestial.* APIs.
 
 Signitorial: Clarke Yoursa Tee

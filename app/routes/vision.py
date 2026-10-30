@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Vision / fleck paste surface — ledger 9130 catalog (stub, FILLED=False)."""
 from __future__ import annotations
 

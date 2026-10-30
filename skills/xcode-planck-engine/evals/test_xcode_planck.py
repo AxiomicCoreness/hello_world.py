@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Evals for the xcode-planck-engine skill. Reads repo sources; no network.
 
 Numeric anchors come from executing PlanckEngine.run() on the bae409d0 tree.

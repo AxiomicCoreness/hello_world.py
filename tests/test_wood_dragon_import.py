@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Import-hygiene test for the top-level wood_dragon_technique.py.
 
 Imports the module in a fresh ``python -I`` subprocess with a temporary HOME

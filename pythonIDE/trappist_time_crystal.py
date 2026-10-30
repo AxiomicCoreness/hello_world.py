@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 pythonIDE/trappist_time_crystal.py
 Artifact 9214: Trappist 𝕋₇ — 7-fold Resonance Chain + Blue Neon Ocean Gradient

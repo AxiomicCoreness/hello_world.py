@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # 🜁∀ ACTIVATE WORKLOAD DISPATCH — AUTONOMOUS BOOTSTRAP
 # Usage: ./activate_dispatch.sh [--force-bootstrap]
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Build the rhythm-moves-debug bookmarklet (read-only moves overlay).
 
 Reads rmd_scripts/rhythm_moves_debug.js, strips comments and whitespace with a

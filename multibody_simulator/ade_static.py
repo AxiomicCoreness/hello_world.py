@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """ADE surface singularities and the static quadratic-program split.
 
 Research extract. Not a measurement, not a seal, not a vendored OSQP build.

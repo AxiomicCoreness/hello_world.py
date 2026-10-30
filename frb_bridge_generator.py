@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 FRB Bridge Generator — φ-harmonic lattice between FRB 20190520b timing
 and the Garden backend worker schedule (CronJob / charge-fire / handshake).

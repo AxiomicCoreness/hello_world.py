@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 scripts/hmac_chain.py – HMAC chain verification for Layer 252.
 Verifies that each ledger entry's prev_hmac and curr_hmac form an unbroken chain.

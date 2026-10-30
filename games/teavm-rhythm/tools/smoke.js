@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 // Headless smoke test for the TeaVM output: stubs just enough DOM (canvas 2D
 // context, keydown listener, requestAnimationFrame, location.search) to boot
 // classes.js under Node, play the first notes of seed 2026 and read the HUD,

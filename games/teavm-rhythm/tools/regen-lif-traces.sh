@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Regenerate src/test/resources/lif_rk4_golden_traces.txt from the REAL root
 # LIFRK4 (src/main/java/com/fruitfly/brain/LIFRK4.java). Run from anywhere in
 # the repo, with JDK 17 on PATH. Then run `mvn -B test` in games/teavm-rhythm:

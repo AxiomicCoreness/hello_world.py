@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Read-only loader for the data-only beacons/sovereign_state.py.
 
 beacons/sovereign_state_writer.py:write_sovereign_state() writes

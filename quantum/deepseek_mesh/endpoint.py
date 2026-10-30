@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ DeepSeek Mesh MCP Gate — Layer 314 — Entry 8756+
 mTLS + OAuth2 CDP + FAL pentad rank (−2..+2) + VOID-QCH + Prometheus /metrics.

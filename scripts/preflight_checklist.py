@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Pre-flight checklist. Names the four local checks. Does not store a password.
 
 Grafana login comes from GRAFANA_USER and GRAFANA_PASSWORD. If unset, the

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Excavate Immutable/self_improvement_trigger.py — no MCP.
 
 The sealed path is mostly narrative + a fenced Flask stub.

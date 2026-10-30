@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Codespace / local loopback for app_main:app.
 # Does not rewrite app_main.py (historical 0.0.0.0 docstring stays).
 # Dual ASGI for this launch: 127.0.0.1:8024.

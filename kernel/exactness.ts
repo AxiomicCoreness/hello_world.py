@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 // ─── exactness.ts — Δ_B ⊣ ⊕_B, with room for paradox ──────────────────────
 // THEOREM (typed):
 //   Forward  (free):   C(s1) = C(s2)  =>  Δ_B(s1) = Δ_B(s2)

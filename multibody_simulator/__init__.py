@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Differentiable multibody simulator with TOI‑Velocity.
 Sovereign Lattice Integration — Hopper & Two-Ball Support.

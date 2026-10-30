@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # =====================================================================
 # MACHINE LEARNING INITIALIZATION — SOVEREIGN LAYER
 # Multi-block transformer stack whose widths are derived from the

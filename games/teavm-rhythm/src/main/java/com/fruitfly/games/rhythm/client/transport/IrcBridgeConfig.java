@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+
 package com.fruitfly.games.rhythm.client.transport;
 
 import com.fruitfly.games.rhythm.client.CliLines;

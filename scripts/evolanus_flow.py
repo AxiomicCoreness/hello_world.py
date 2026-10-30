@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """evolanus_flow.py: dense small-n construction of H0 and an exact unitary step.
 
 Relation to other files on main (checked, not assumed):

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Idempotent JDK 17 install. Tries apt openjdk-17-jdk-headless first; Debian 13
 # (trixie) does not ship it, so it falls back to an Eclipse Temurin 17 tarball in /opt.
 set -euo pipefail

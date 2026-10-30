@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Repo-root pytest bootstrap: put the repository root on ``sys.path``.
 
 Ensures imports like ``scripts.recalc_optics`` resolve when collecting deep

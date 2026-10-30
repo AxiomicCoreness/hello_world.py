@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 🜁∀ SOVEREIGN ENGINE – COMPLETE & UNIFIED (Deepseek Edition) + OPTION 51 (610 PHASE)
 FULL MERGE: Options 0‑51, Autonomous Phase, Seal Handler, φ‑Predictor Daemon,

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+
 package com.fruitfly.games.rhythm.logic;
 
 /** Small 3D helpers for the stage: vectors, oriented boxes, and capsule (segment + radius) vs cube tests. */

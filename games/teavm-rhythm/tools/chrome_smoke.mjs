@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
 // Real headless Chrome check of a served build (CDP over WebSocket; node >= 20 with
 // --experimental-websocket, or >= 22). Usage:
 //   node --experimental-websocket tools/chrome_smoke.mjs http://127.0.0.1:8092/ [port]

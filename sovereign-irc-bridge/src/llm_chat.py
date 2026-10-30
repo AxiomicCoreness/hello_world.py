@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """`/llm` chat path for the TeaVM CLI bridge — DeepInfer or GGUF, loopback only.
 
 Backend selection (see :mod:`src.llm_backend`): LLM_BACKEND=deepinfer (default)

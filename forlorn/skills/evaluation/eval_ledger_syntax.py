@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Ledger syntax eval: the model must emit a YAML mapping that parses and carries exact values.
 
 Every case must pass (exit 0). No retries, no partial credit.

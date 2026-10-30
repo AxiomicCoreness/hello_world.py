@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Stub contract for 9174. Does not rewrite ledger/9174.yaml."""
 from garden_surgery.dual_asyncio_cicd_9174_stub import (
     FILLED,

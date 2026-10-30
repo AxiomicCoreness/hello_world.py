@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """Hook policy (9181). Observer only. Does not rewrite branches.
 
 The 9159 hook worker stays FILLED=False on 127.0.0.1:8091.

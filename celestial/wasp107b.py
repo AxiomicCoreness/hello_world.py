@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Wasp-107b Celestial Model
 0.12 Mⱼ, 0.94 Rⱼ, 5.72-day orbit — atmospheric escape + φ-resonance.

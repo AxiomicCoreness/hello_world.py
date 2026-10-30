@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 # Specification apply for k8s/agent-service.yaml (ledger 9164).
 # Without a reachable cluster, exit 0 after recording the spec.
 set -euo pipefail

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
 """ARGO-facing sink — Section IV stub. No runtime binding. MCP FILLED=False."""
 from __future__ import annotations
 from typing import Any, Dict
