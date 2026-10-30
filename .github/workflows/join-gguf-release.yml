@@ -1,0 +1,63 @@
+name: join-gguf-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag holding the split GGUF parts
+        required: true
+        default: model-deepseek-r2-1.5b-q4km-v1
+
+permissions:
+  contents: write
+
+jobs:
+  join:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      ARCHIVE_SHA256: 22715bf886eeb22f74292f22574b816588f27ed41e5896bd81a07ebae5f08bce
+      GGUF_SHA256: 80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1
+      GGUF_SIZE: "1117320640"
+      GGUF: deepseek-r2-1.5b-Q4_K_M.gguf
+      ARCHIVE: deepseek-r2-1.5b-Q4_K_M.tar.gz
+    steps:
+      - name: Download parts and SHA256SUMS
+        run: |
+          set -euo pipefail
+          mkdir work && cd work
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" \
+            -p "${ARCHIVE}.part-*" -p SHA256SUMS
+          ls -l
+      - name: Verify parts
+        working-directory: work
+        run: |
+          set -euo pipefail
+          grep "${ARCHIVE}.part-" SHA256SUMS > parts.sums
+          test "$(wc -l < parts.sums)" -gt 0
+          test "$(ls ${ARCHIVE}.part-* | wc -l)" -eq "$(wc -l < parts.sums)"
+          sha256sum -c --strict parts.sums
+      - name: Join and verify archive
+        working-directory: work
+        run: |
+          set -euo pipefail
+          ls ${ARCHIVE}.part-* | LC_ALL=C sort | xargs cat > "$ARCHIVE"
+          echo "${ARCHIVE_SHA256}  ${ARCHIVE}" | sha256sum -c --strict
+          rm -f ${ARCHIVE}.part-*
+      - name: Extract and verify GGUF
+        working-directory: work
+        run: |
+          set -euo pipefail
+          tar -xzf "$ARCHIVE"
+          rm -f "$ARCHIVE"
+          size=$(stat -c %s "$GGUF")
+          test "$size" = "$GGUF_SIZE" || { echo "size $size != $GGUF_SIZE"; exit 1; }
+          echo "${GGUF_SHA256}  ${GGUF}" | sha256sum -c --strict
+          echo "${GGUF_SHA256}  ${GGUF}" > "${GGUF}.sha256"
+      - name: Upload single GGUF to release
+        working-directory: work
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" --clobber \
+            "$GGUF" "${GGUF}.sha256"

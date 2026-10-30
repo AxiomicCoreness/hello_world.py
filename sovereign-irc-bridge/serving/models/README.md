@@ -38,3 +38,10 @@ Then start the server (127.0.0.1:8085 only):
 ```
 
 The launch script checks the file exists and its sha256 matches, and exits with an error otherwise.
+
+## Single-file download
+
+Once the `join-gguf-release` workflow (Actions tab, `workflow_dispatch`) has run, the release
+`model-deepseek-r2-1.5b-q4km-v1` also carries the joined `deepseek-r2-1.5b-Q4_K_M.gguf`
+(sha256 `80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1`) plus a
+`.gguf.sha256` file. It can be downloaded directly, e.g. to an iPhone for PocketPal AI, with no reassembly.
