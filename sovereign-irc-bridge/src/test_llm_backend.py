@@ -11,6 +11,7 @@ import json
 import socket
 import threading
 import time
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
@@ -18,6 +19,8 @@ import pytest
 from src import chatml_prebuild, llm_backend, llm_chat
 
 WIRE = "/llm what is the brain doing?"
+# The real default, captured before any fixture swaps in the tripwire.
+LIVE_DEFAULT_HISTORY = Path(llm_chat.DEFAULT_HISTORY_PATH)
 DS_TPL = "{% for m in messages %}<｜User｜>{{ m.content }}<｜Assistant｜>{% endfor %}"
 
 
@@ -56,11 +59,19 @@ class _Chat(BaseHTTPRequestHandler):
 
 
 @pytest.fixture(autouse=True)
-def _env(monkeypatch):
+def _env(monkeypatch, tmp_path):
     for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_URL", "LLM_ABLITERATED_URL",
               "DEEPINFER_REPROBE_S", "DEEPINFER_CONNECT_TIMEOUT", "LLM_PROMPT_MODE"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
+    # History goes to this test's tmp dir, never the live bridge file. Without this,
+    # every handle_llm_sync() that got a stub reply appended a "what is the brain
+    # doing?" / "Lane L3 is busiest." pair to /workspace/bridge-serving/llm_history.jsonl.
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(tmp_path / "llm_history.jsonl"))
+    # Tripwire: if anything still falls back to the default path, it lands here
+    # (inside tmp_path) and the test fails below instead of touching the live file.
+    tripwire = tmp_path / "DEFAULT_HISTORY_PATH_TRIPWIRE.jsonl"
+    monkeypatch.setattr(llm_chat, "DEFAULT_HISTORY_PATH", str(tripwire))
     # DeepInfer always points at a refused loopback port: no real server is ever contacted.
     monkeypatch.setenv("DEEPINFER_URL", f"http://127.0.0.1:{_free_port()}/v1/chat/completions")
     llm_backend.reset_state()
@@ -68,6 +79,7 @@ def _env(monkeypatch):
     yield
     llm_backend.reset_state()
     chatml_prebuild._PREBUILD_CHECK.clear()
+    assert not tripwire.exists(), "test wrote llm history to the default (live) path"
 
 
 @pytest.fixture()
@@ -377,3 +389,21 @@ def test_clean_reply_cuts_deepseek_turn_and_think_tags():
     text, notes = llm_chat.clean_reply("</think>Clouds are pillows.\n<｜User｜>Tell me more<｜Assistant｜>")
     assert text == "Clouds are pillows." and len(notes) == 1
     assert llm_chat.clean_reply("A normal reply.") == ("A normal reply.", [])
+
+
+# ---------------------------------------------------------------- history isolation guard
+
+def test_history_never_targets_live_default_path(chat_stub, monkeypatch, tmp_path):
+    """Guard: these tests must write history under tmp_path, never the live default file."""
+    live = LIVE_DEFAULT_HISTORY
+    assert llm_chat.history_path() is not None
+    assert llm_chat.history_path() != live
+    assert tmp_path in llm_chat.history_path().parents
+    stub, url = chat_stub
+    monkeypatch.setenv("LLM_BACKEND", "gguf")
+    monkeypatch.setenv("LLM_URL", url)
+    llm_chat.handle_llm_sync(WIRE)
+    hist = tmp_path / "llm_history.jsonl"
+    rows = [json.loads(x) for x in hist.read_text(encoding="utf-8").splitlines()]
+    assert [r["content"] for r in rows] == ["what is the brain doing?", "Lane L3 is busiest."]
+    assert not (tmp_path / "DEFAULT_HISTORY_PATH_TRIPWIRE.jsonl").exists()
