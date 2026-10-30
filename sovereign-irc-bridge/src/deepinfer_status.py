@@ -43,8 +43,24 @@ GPU_DEPS: Tuple[str, ...] = (
 )
 COMPILED_EXT = "deepinfer._C"
 GGUF_NAME = "deepseek-r2-1.5b-Q4_K_M.gguf"
+# Fallbacks; serving/models/MODEL_PIN.json overrides them when present.
 GGUF_SHA256 = "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
 GGUF_SIZE = 1_117_320_640
+MODEL_PIN_PATH = Path(__file__).resolve().parents[1] / "serving" / "models" / "MODEL_PIN.json"
+
+
+def load_model_pin(path: Path = MODEL_PIN_PATH) -> Dict[str, Any]:
+    try:
+        import json as _json
+        return _json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+_PIN = load_model_pin()
+if _PIN.get("file", GGUF_NAME) == GGUF_NAME:
+    GGUF_SHA256 = str(_PIN.get("gguf_sha256", GGUF_SHA256))
+    GGUF_SIZE = int(_PIN.get("size", GGUF_SIZE))
 RELEASE_URL = "https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1"
 GGUF_URL = ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
             "model-deepseek-r2-1.5b-q4km-v1/" + GGUF_NAME)
