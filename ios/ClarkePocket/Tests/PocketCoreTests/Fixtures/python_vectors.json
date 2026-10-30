@@ -1,0 +1,216 @@
+{
+ "normalize": [
+  {
+   "in": "plain text",
+   "out": "plain text"
+  },
+  {
+   "in": "Euler: \\(e^{i\\pi}+1=0\\) and \\[\\int_0^1 x\\,dx=\\tfrac12\\]",
+   "out": "Euler: \\(e^{i\\pi}+1=0\\) and $$\\int_0^1 x\\,dx=\\tfrac12$$"
+  },
+  {
+   "in": "Display \\[\na^2+b^2=c^2\n\\] done",
+   "out": "Display $$a^2+b^2=c^2$$ done"
+  },
+  {
+   "in": "Price is \\$5 and $x$ stays",
+   "out": "Price is \\$5 and \\(x\\) stays"
+  },
+  {
+   "in": "Code `\\(not math\\)` here",
+   "out": "Code `\\(not math\\)` here"
+  },
+  {
+   "in": "```python\nprint('\\\\(x\\\\)')\n```\nafter \\(y\\)",
+   "out": "```python\nprint('\\\\(x\\\\)')\n```\nafter \\(y\\)"
+  },
+  {
+   "in": "~~~\n\\[z\\]\n~~~\n",
+   "out": "~~~\n\\[z\\]\n~~~\n"
+  },
+  {
+   "in": "mixed $$\\sum_i i$$ and \\(\\alpha\\)\n\n- list \\(b\\)",
+   "out": "mixed $$\\sum_i i$$ and \\(\\alpha\\)\n\n- list \\(b\\)"
+  },
+  {
+   "in": "unicode φ → ψ 😀 \\(\\phi\\)",
+   "out": "unicode φ → ψ 😀 \\(\\phi\\)"
+  },
+  {
+   "in": "",
+   "out": ""
+  },
+  {
+   "in": "  \n  ",
+   "out": "  \n  "
+  },
+  {
+   "in": "\\\\(escaped\\\\) backslashes",
+   "out": "\\\\(escaped\\\\) backslashes"
+  },
+  {
+   "in": "line1\r\nline2 \\(q\\)\r\n",
+   "out": "line1\r\nline2 \\(q\\)\r\n"
+  },
+  {
+   "in": "nested `code with \\[x\\]` and ``double `tick` \\(y\\)``",
+   "out": "nested `code with \\[x\\]` and ``double `tick` \\(y\\)``"
+  },
+  {
+   "in": "unclosed \\(x and \\[y",
+   "out": "unclosed \\(x and \\[y"
+  },
+  {
+   "in": "```\nunclosed fence \\(x\\)",
+   "out": "```\nunclosed fence \\(x\\)"
+  }
+ ],
+ "split": [
+  {
+   "in": "<think>\nreason\n</think>\n\nAnswer **bold**",
+   "answer": "Answer **bold**",
+   "thinking": "reason"
+  },
+  {
+   "in": "pre-opened reasoning</think>answer",
+   "answer": "answer",
+   "thinking": "pre-opened reasoning"
+  },
+  {
+   "in": "no tags at all",
+   "answer": "no tags at all",
+   "thinking": ""
+  },
+  {
+   "in": "<think>still thinking",
+   "answer": "",
+   "thinking": "still thinking"
+  },
+  {
+   "in": "a <think>t1</think> b <think>t2</think> c",
+   "answer": "a  b  c",
+   "thinking": "t1\n\nt2"
+  },
+  {
+   "in": "<think></think>empty think",
+   "answer": "empty think",
+   "thinking": ""
+  },
+  {
+   "in": "",
+   "answer": "",
+   "thinking": ""
+  }
+ ],
+ "entry": [
+  {
+   "answer": "  \\(x\\)  ",
+   "thinking": " t ",
+   "out": {
+    "content": "\\(x\\)",
+    "thinking": "t"
+   }
+  },
+  {
+   "answer": "",
+   "thinking": "",
+   "out": {
+    "content": "(empty reply)",
+    "thinking": null
+   }
+  },
+  {
+   "answer": "x",
+   "thinking": "  ",
+   "out": {
+    "content": "x",
+    "thinking": null
+   }
+  }
+ ],
+ "rows": [
+  {
+   "role": "user",
+   "content": "hi \"there\" \\ back\nslash\ttab\u0001\u001f é 😀  ",
+   "format": null,
+   "thinking": null,
+   "session": "pocket",
+   "ts": "2026-10-30T17:40:00-04:00",
+   "json": "{\"role\": \"user\", \"content\": \"hi \\\"there\\\" \\\\ back\\nslash\\ttab\\u0001\\u001f é 😀  \", \"session\": \"pocket\", \"ts\": \"2026-10-30T17:40:00-04:00\"}"
+  },
+  {
+   "role": "assistant",
+   "content": "**ans** $x$",
+   "format": "markdown",
+   "thinking": "thought\nmore",
+   "session": "pocket",
+   "ts": "2026-10-30T17:40:00-04:00",
+   "json": "{\"role\": \"assistant\", \"content\": \"**ans** $x$\", \"format\": \"markdown\", \"thinking\": \"thought\\nmore\", \"session\": \"pocket\", \"ts\": \"2026-10-30T17:40:00-04:00\"}"
+  },
+  {
+   "role": "assistant",
+   "content": "ans",
+   "format": "markdown",
+   "thinking": "   ",
+   "session": "pocket",
+   "ts": "2026-10-30T17:40:00-04:00",
+   "json": "{\"role\": \"assistant\", \"content\": \"ans\", \"format\": \"markdown\", \"session\": \"pocket\", \"ts\": \"2026-10-30T17:40:00-04:00\"}"
+  },
+  {
+   "role": "assistant",
+   "content": "legacy",
+   "format": null,
+   "thinking": null,
+   "session": "pocket",
+   "ts": "2026-10-30T17:40:00-04:00",
+   "json": "{\"role\": \"assistant\", \"content\": \"legacy\", \"session\": \"pocket\", \"ts\": \"2026-10-30T17:40:00-04:00\"}"
+  },
+  {
+   "role": "user",
+   "content": "\b\f\r end",
+   "format": null,
+   "thinking": null,
+   "session": "s_1-x",
+   "ts": "2026-10-30T17:40:00-04:00",
+   "json": "{\"role\": \"user\", \"content\": \"\\b\\f\\r end\", \"session\": \"s_1-x\", \"ts\": \"2026-10-30T17:40:00-04:00\"}"
+  }
+ ],
+ "session": [
+  {
+   "in": "pocket",
+   "out": "pocket"
+  },
+  {
+   "in": " ok_1 ",
+   "out": "ok_1"
+  },
+  {
+   "in": "bad session",
+   "out": "default"
+  },
+  {
+   "in": "",
+   "out": "default"
+  },
+  {
+   "in": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "out": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "in": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "out": "default"
+  },
+  {
+   "in": "émoji",
+   "out": "default"
+  },
+  {
+   "in": null,
+   "out": "default"
+  },
+  {
+   "in": "a-b_C9",
+   "out": "a-b_C9"
+  }
+ ]
+}

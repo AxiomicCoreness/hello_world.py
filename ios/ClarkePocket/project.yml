@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# XcodeGen spec (https://github.com/yonaskolb/XcodeGen, tested with 2.46.0):
+#   brew install xcodegen && cd ios/ClarkePocket && xcodegen generate && open ClarkePocket.xcodeproj
+# The .xcodeproj is generated, not committed.
+name: ClarkePocket
+options:
+  bundleIdPrefix: io.github.axiomiccoreness
+  deploymentTarget:
+    iOS: "16.4"          # llama.xcframework b11960 is built with MinimumOSVersion 16.4
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+packages:
+  LlamaBinary:
+    path: LlamaBinary     # binaryTarget → llama.cpp b11960 xcframework (checksum-pinned)
+targets:
+  ClarkePocket:
+    type: application
+    platform: iOS
+    sources:
+      - path: ClarkePocket
+      - path: Sources/PocketCore   # pure-Foundation core, also unit-tested by Package.swift
+        group: PocketCore
+    dependencies:
+      - package: LlamaBinary
+        product: LlamaBinary
+    info:
+      path: ClarkePocket/Info.plist
+      properties:
+        CFBundleDisplayName: Clarke Pocket
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIRequiredDeviceCapabilities: [arm64, metal]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        LSRequiresIPhoneOS: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.clarkepocket   # change if Xcode says it is taken
+        PRODUCT_NAME: ClarkePocket
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTED_PLATFORMS: iphoneos     # the xcframework has no simulator slice
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGN_STYLE: Automatic        # pick your (free) Personal Team in Signing & Capabilities
+        ENABLE_BITCODE: NO
+        # Optional, off by default (see README): CODE_SIGN_ENTITLEMENTS: Optional/IncreasedMemoryLimit.entitlements
