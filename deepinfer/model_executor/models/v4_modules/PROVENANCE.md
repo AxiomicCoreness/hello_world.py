@@ -29,7 +29,7 @@ does **not** replace Sovereign PlanckEngine.
 
 See listing under `model_executor/models/v4_modules/`.
 
-## Parent modules (2026-10-30)
+## Parent modules (added 2026-10-30T13:11:37-04:00)
 
 The in-package modules these 24 files import are now vendored too, byte-identical at the same pin.
 Full list, reasons and the two header-plus-upstream `__init__.py` files: `deepinfer/PROVENANCE.md`.
