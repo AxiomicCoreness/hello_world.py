@@ -1,0 +1,183 @@
+entry_index: 9307
+event: /model_pinning_and_release_verification
+status: SEALED
+timestamp: '2026-10-30T14:53:42-04:00'
+hash_algo: sha3_256
+measured_at_commit: a4c94f1eddbf1736dfb1c73f9e004a27082654c4
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: false
+prev_hash: f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+witness_chain: 9306 -> 9307
+note: 'New append-only entry (9306.yml and every other ledger file untouched). Records the deepseek-r2-1.5b Q4_K_M release verification
+  and model pin on main at a4c94f1eddbf1736dfb1c73f9e004a27082654c4 (#161 merge), after #157, #158, #159 and #160. Every fact re-checked
+  via the GitHub API or a local re-hash at writing time. CI recorded only as measured via the GitHub Actions API on the measured commit.
+  Immutable Band stays 0000-9297. No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+payload:
+  release:
+    tag: model-deepseek-r2-1.5b-q4km-v1
+    single_asset:
+      name: deepseek-r2-1.5b-Q4_K_M.gguf
+      uploader: github-actions[bot]
+      created_at: '2026-10-30T13:56:03-04:00'
+      size: 1117320640
+      sha256: 80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1
+      api_digest: sha256:80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1
+      hash_check: re-hashed /workspace/gguf-single/deepseek-r2-1.5b-Q4_K_M.gguf (earlier download of this asset) for this entry; sha256
+        equals the API digest and MODEL_PIN.json
+    join_run:
+      workflow: join-gguf-release
+      run_id: 41102479206
+      head_sha: 6584c600043c8d952b7dadc0aa163b8a7ff56066
+      conclusion: success
+    archive_sha256: 22715bf886eeb22f74292f22574b816588f27ed41e5896bd81a07ebae5f08bce
+    archive_sha256_source: MODEL_PIN.json on main
+    parts: 42
+  prs:
+  - pr: 157
+    branch: feat/deepinfer-v4-wiring
+    state: MERGED
+    head: c15ef88bbfdc29e4770078db407446d8b67d9edb
+    merge_commit: 40de2c859109d5452ee36fb0c36ca402ff8888c7
+    merged_at: '2026-10-30T13:43:20-04:00'
+  - pr: 158
+    branch: feat/hexstrike-parse-and-iso8601
+    state: MERGED
+    head: f4cedbad76fbbb6d979ca235ea405b815b8b88da
+    merge_commit: 100bc4cb2c215efa527f0d5651db6851cdd3ca73
+    merged_at: '2026-10-30T14:01:31-04:00'
+  - pr: 159
+    branch: feat/release-join-gguf
+    state: MERGED
+    head: 1a822132aa9cf079f225a135ea0859cfa178aa9a
+    merge_commit: 6584c600043c8d952b7dadc0aa163b8a7ff56066
+    merged_at: '2026-10-30T13:54:35-04:00'
+  - pr: 160
+    branch: feat/wire-single-gguf
+    state: MERGED
+    head: f0e829a48af9051b6963360b53701f30b0732075
+    merge_commit: 88f456c499be1a31dc5d7e370f0e7f38268af83d
+    merged_at: '2026-10-30T14:26:55-04:00'
+    landed_commits:
+    - 0882fa33
+    - c40d56ed
+    - 88f456c4
+  - pr: 161
+    state: MERGED
+    merge_commit: a4c94f1eddbf1736dfb1c73f9e004a27082654c4
+    merged_at: '2026-10-30T14:47:24-04:00'
+    scope: training/lessons only; this entry is the measured commit
+  model_pin:
+    file: sovereign-irc-bridge/serving/models/MODEL_PIN.json
+    on_main: true
+    contents:
+      model: deepseek-r2-1.5b
+      quant: Q4_K_M
+      file: deepseek-r2-1.5b-Q4_K_M.gguf
+      release_tag: model-deepseek-r2-1.5b-q4km-v1
+      url: https://github.com/AxiomicCoreness/hello_world.py/releases/download/model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf
+      size: 1117320640
+      gguf_sha256: 80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1
+      archive_sha256: 22715bf886eeb22f74292f22574b816588f27ed41e5896bd81a07ebae5f08bce
+      parts: 42
+      pinned_at: '2026-10-30T14:12:31-04:00'
+ci:
+  measured_commit: a4c94f1eddbf1736dfb1c73f9e004a27082654c4
+  source: GitHub Actions API runs?head_sha=a4c94f1eddbf1736dfb1c73f9e004a27082654c4, read 2026-10-30T14:53:42-04:00
+  runs_on_measured_commit:
+  - workflow: Pytest · dual-gate ledger
+    run_id: 41109895798
+    run_number: 3125
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Sovereign CI/CD
+    run_id: 41109896167
+    run_number: 1061
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Sovereign Python Package
+    run_id: 41109895911
+    run_number: 2352
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Python Package
+    run_id: 41109895624
+    run_number: 4072
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Argo CI
+    run_id: 41109895740
+    run_number: 113
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Producer Axiom Verify
+    run_id: 41109895844
+    run_number: 150
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: garden-surgery
+    run_id: 41109895796
+    run_number: 435
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: debug-environment
+    run_id: 41109895717
+    run_number: 1513
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: debug-environment
+    run_id: 41109895881
+    run_number: 607
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Automatic Dependency Submission (Maven)
+    run_id: 41109892631
+    run_number: 555
+    event: dynamic
+    status: completed
+    conclusion: success
+  - workflow: Workflow parity
+    run_id: 41110321664
+    run_number: 156
+    event: schedule
+    status: completed
+    conclusion: success
+  - workflow: Sovereign Run
+    run_id: 41110336551
+    run_number: 4
+    event: workflow_dispatch
+    status: completed
+    conclusion: success
+  ledger_scan: 'not run on measured commit: ledger-scan is a job in ci-cd-stack.yml, whose push trigger is path-filtered (scripts/hexstrike.py
+    etc.); no ci-cd-stack run exists for this head_sha'
+  policy: 'NO-GHOST-PASS: only runs that exist on the measured commit are cited'
+chain:
+  prev_entry: 9306
+  prev_hash: f31b1d526ac30c5a1f9953639de23abb63234ec9667cabb1039829dbcf8c16ad
+  prev_hash_source: ledger.v2/9306.yml seal_sha3_256 on main a4c94f1eddbf1736dfb1c73f9e004a27082654c4, recomputed with verify_ledger.event_hash
+    (Regime B)
+  witness_chain: 9306 -> 9307
+  immutable_band: 0000-9297
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''),
+  ASCII payload; the digest commits to entry_index and event only, not to the body'
+regime_b_event_domain_sha3_256: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+math_origin: 'Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+
+  9307|/model_pinning_and_release_verification|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+
+  SHA3-256 = b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+
+  '
+terminal_hex: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+seal: ∀∞φ² · MODEL_PINNING_AND_RELEASE_VERIFICATION_9307 · WOOD_DRAGON_0.91 · SEALED · b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+seal_sha3_256: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
