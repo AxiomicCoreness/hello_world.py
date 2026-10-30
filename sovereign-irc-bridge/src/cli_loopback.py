@@ -4,7 +4,7 @@
 
 Binds **127.0.0.1:6680** only (never 0.0.0.0). Path {@code /cli}.
 
-Browser contract: {@code ws://127.0.0.1:6680/cli}
+Browser contract: {@code ws://127.0.0.1:6680/cli} (optional {@code ?session=<id>} — {@code [A-Za-z0-9_-]{1,64}}, else {@code default})
 Remote label behind this bridge: {@code irc.abjects.net:6669}
 
 Default mode is local echo / Engine stubs (no outbound IRC) so CI stays
@@ -41,6 +41,7 @@ from src.llm_chat import (
     assert_loopback_url,
     handle_llm,
     is_llm_line,
+    normalize_session,
 )
 
 logger = logging.getLogger("sovereign-irc-bridge.cli")
@@ -536,6 +537,7 @@ def create_app():
 
     @app.websocket("/cli")
     async def cli_socket(websocket: FastAPIWebSocket) -> None:
+        session = normalize_session(websocket.query_params.get("session"))
         try:
             await websocket.accept()
         except Exception as exc:  # noqa: BLE001
@@ -543,6 +545,7 @@ def create_app():
             logger.exception("cli websocket accept failed: %s", exc)
             return
         await websocket.send_text(f"[System] loopback CLI on {LOOPBACK_HOST}:{CLI_PORT}/cli")
+        await websocket.send_text(f"[System] llm session: {session}")
         await websocket.send_text(f"[Engine] path → {REMOTE_IRC} (browser never dials abjects)")
         await websocket.send_text(
             "[Engine] pythonIDE: /py help · /py list · /py call <cap> · /py pointer"
@@ -577,7 +580,7 @@ def create_app():
                     continue
                 if is_llm_line(text):
                     try:
-                        llm_lines = await handle_llm(text)
+                        llm_lines = await handle_llm(text, session=session)
                     except Exception as exc:  # noqa: BLE001 — chat must survive
                         llm_lines = [f"[System] llm offline: {type(exc).__name__}: {exc}"]
                     for line in llm_lines:

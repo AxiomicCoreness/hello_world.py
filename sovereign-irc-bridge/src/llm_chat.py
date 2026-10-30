@@ -37,8 +37,10 @@ Env:
   LLM_RAW_REPLY  default "1": send the full model text (incl. reasoning) with no
                  line-cap, role-echo cut, or n-gram trim. "0" restores the guard.
   LLM_HISTORY_PATH  default /workspace/bridge-serving/llm_history.jsonl
-                 (JSONL of user/assistant turns; reloaded every request so a
-                 keepalive restart still has context). Empty string disables.
+                 (JSONL of user/assistant turns keyed by session; reloaded
+                 every request so a keepalive restart still has context).
+                 Empty string disables. Rows carry a ``session`` field; legacy
+                 rows without it count as ``default``.
   LLM_HISTORY_MAX_TOKENS  default 2500 (chars/4 estimate); newest turns kept.
   LLM_SYSTEM_PROMPT  "spike" forces the TeaVM neuron/traceback system prompt;
                  otherwise that prompt only applies when a #neuro snapshot or
@@ -51,6 +53,7 @@ never an exception.
 from __future__ import annotations
 
 import asyncio
+import threading
 import logging
 import json
 import os
@@ -81,6 +84,9 @@ MAX_MESSAGE: Final = 200
 MAX_REPLY_LINES: Final = 40
 DEFAULT_HISTORY_PATH: Final = "/workspace/bridge-serving/llm_history.jsonl"
 DEFAULT_HISTORY_MAX_TOKENS: Final = 2500
+DEFAULT_SESSION: Final = "default"
+SESSION_RE: Final = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_HISTORY_LOCK: Final = threading.Lock()
 PLAIN_SYSTEM_PROMPT: Final = (
     "You are a helpful assistant. Answer the user's question directly and clearly. "
     "Do not invent neuron snapshots, spike counts, or traceback reports unless the "
@@ -141,12 +147,24 @@ def _est_tokens(text: str) -> int:
     return max(1, (len(text or "") + 3) // 4)
 
 
-def load_history(path: Optional[Path] = None) -> List[Dict[str, str]]:
-    """Read JSONL turns (role/content). Missing or empty file → []. Never raises."""
-    path = history_path() if path is None else path
-    if path is None or not path.is_file():
-        return []
-    turns: List[Dict[str, str]] = []
+def normalize_session(raw: Optional[str]) -> str:
+    """Validate ``?session=`` → ``[A-Za-z0-9_-]{1,64}``, else ``default``."""
+    s = (raw or "").strip()
+    if s and SESSION_RE.fullmatch(s):
+        return s
+    return DEFAULT_SESSION
+
+
+def _row_session(row: Dict[str, Any]) -> str:
+    """Legacy rows without a session field count as ``default``."""
+    s = row.get("session")
+    if isinstance(s, str) and SESSION_RE.fullmatch(s.strip()):
+        return s.strip()
+    return DEFAULT_SESSION
+
+
+def _read_all_rows(path: Path) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
     try:
         for line in path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
@@ -156,13 +174,40 @@ def load_history(path: Optional[Path] = None) -> List[Dict[str, str]]:
                 row = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if not isinstance(row, dict):
-                continue
-            role, content = row.get("role"), row.get("content")
-            if role in ("user", "assistant") and isinstance(content, str) and content.strip():
-                turns.append({"role": role, "content": content})
+            if isinstance(row, dict):
+                rows.append(row)
     except OSError as exc:
         logger.warning("llm history read failed (%s): %s", path, exc)
+    return rows
+
+
+def _atomic_rewrite(path: Path, rows: List[Dict[str, Any]]) -> None:
+    """Write JSONL via ``.tmp`` + ``os.replace`` (crash-safe). Caller holds the lock."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    payload = "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+    with tmp.open("w", encoding="utf-8") as fh:
+        fh.write(payload)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+def load_history(path: Optional[Path] = None, session: str = DEFAULT_SESSION) -> List[Dict[str, str]]:
+    """Read JSONL turns for ``session`` (legacy rows → default). Missing file → []."""
+    path = history_path() if path is None else path
+    session = normalize_session(session)
+    if path is None or not path.is_file():
+        return []
+    turns: List[Dict[str, str]] = []
+    with _HISTORY_LOCK:
+        rows = _read_all_rows(path)
+    for row in rows:
+        if _row_session(row) != session:
+            continue
+        role, content = row.get("role"), row.get("content")
+        if role in ("user", "assistant") and isinstance(content, str) and content.strip():
+            turns.append({"role": role, "content": content})
     return turns
 
 
@@ -190,34 +235,72 @@ def trim_history(turns: List[Dict[str, str]], budget: Optional[int] = None) -> L
     return kept
 
 
-def append_history(user: str, assistant: str, path: Optional[Path] = None) -> None:
-    """Append one user/assistant pair as JSONL. Never raises."""
+def append_history(user: str, assistant: str, path: Optional[Path] = None,
+                   session: str = DEFAULT_SESSION) -> None:
+    """Append one user/assistant pair as JSONL with ``session``; fsync. Never raises."""
     path = history_path() if path is None else path
+    session = normalize_session(session)
     if path is None:
         return
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("a", encoding="utf-8") as fh:
-            for role, content in (("user", user), ("assistant", assistant)):
-                fh.write(json.dumps({"role": role, "content": content, "ts": datetime.now(timezone.utc).isoformat()},
-                                    ensure_ascii=False) + "\n")
+        ts = datetime.now(timezone.utc).isoformat()
+        with _HISTORY_LOCK:
+            with path.open("a", encoding="utf-8") as fh:
+                for role, content in (("user", user), ("assistant", assistant)):
+                    fh.write(json.dumps(
+                        {"role": role, "content": content, "session": session, "ts": ts},
+                        ensure_ascii=False,
+                    ) + "\n")
+                fh.flush()
+                os.fsync(fh.fileno())
     except OSError as exc:
         logger.warning("llm history append failed (%s): %s", path, exc)
 
 
-def archive_history(path: Optional[Path] = None) -> Optional[Path]:
-    """Rename the history file to ``*.reset-<utc>`` instead of deleting. → archive path or None."""
+def archive_history(path: Optional[Path] = None, session: str = DEFAULT_SESSION) -> Optional[Path]:
+    """Archive only ``session`` rows to ``*.reset-<session>-<utc>``; leave others.
+
+    Remaining rows are rewritten atomically via ``.tmp`` + ``os.replace``.
+    → archive path, or None if that session had nothing to archive.
+    """
     path = history_path() if path is None else path
-    if path is None or not path.is_file():
+    session = normalize_session(session)
+    if path is None:
         return None
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    dest = path.with_name(f"{path.name}.reset-{stamp}")
+    dest = path.with_name(f"{path.name}.reset-{session}-{stamp}")
     try:
-        path.rename(dest)
+        with _HISTORY_LOCK:
+            if not path.is_file():
+                return None
+            rows = _read_all_rows(path)
+            keep = [r for r in rows if _row_session(r) != session]
+            archived = [r for r in rows if _row_session(r) == session]
+            if not archived:
+                return None
+            # Write archive first (atomic), then rewrite the live file.
+            _atomic_rewrite(dest, archived)
+            if keep:
+                _atomic_rewrite(path, keep)
+            else:
+                # No other sessions left — remove the live file.
+                try:
+                    path.unlink()
+                except FileNotFoundError:
+                    pass
+                # Drop a leftover .tmp if any prior crash left one.
+                tmp = path.with_name(path.name + ".tmp")
+                if tmp.exists():
+                    try:
+                        tmp.unlink()
+                    except OSError:
+                        pass
         return dest
     except OSError as exc:
         logger.warning("llm history archive failed (%s): %s", path, exc)
         return None
+
 
 
 def use_spike_prompt(neuro: Optional[Dict[str, Any]], feedback: Dict[str, Any]) -> bool:
@@ -620,17 +703,19 @@ def _format_reply_lines(reply: str, meta: Dict[str, Any], *, raw: bool) -> Tuple
     return engine, notes, plain
 
 
-def handle_llm_sync(text: str) -> List[str]:
+def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
+    session = normalize_session(session)
     prompt, neuro, cli_fb, notes = parse_wire(text)
-    # /llm reset — archive the on-disk history so a cold start starts clean.
+    # /llm reset — archive only this session's rows; other sessions stay put.
     if prompt.strip().lower() == "reset":
-        archived = archive_history()
+        archived = archive_history(session=session)
         if archived is None:
-            return ["[System] llm: history already empty (nothing to reset)"]
-        return [f"[System] llm: history archived to {archived}"]
+            return [f"[System] llm: history already empty for session={session} (nothing to reset)"]
+        return [f"[System] llm: session={session} history archived to {archived}"]
 
     feedback = merge_feedback(cli_fb, collect_build_feedback())
     lines = [f"[System] llm: {n}" for n in notes]
+    lines.append(f"[System] llm session: {session}")
     spike = use_spike_prompt(neuro, feedback)
     if spike or neuro is not None:
         lines.append(_neuro_line(neuro))
@@ -638,13 +723,13 @@ def handle_llm_sync(text: str) -> List[str]:
     else:
         lines.append("[System] llm ctx: plain (no neuron snapshot / traceback; spike prompt off)")
 
-    prior = load_history()
+    prior = load_history(session=session)
     messages = build_messages(prompt, neuro, feedback, history=prior)
     reply, err, meta = complete_routed(messages)
     logger.info("llm_reply %s", json.dumps({
         "backend": meta.get("backend"), "fallback_from": meta.get("fallback_from"),
         "path": meta.get("path"), "ok": err is None, "raw": raw_reply_enabled(),
-        "history_turns": len(trim_history(prior)), "spike_prompt": spike}))
+        "session": session, "history_turns": len(trim_history(prior)), "spike_prompt": spike}))
     if meta.get("deepinfer_offline"):
         lines.append(f"[System] llm: {meta['deepinfer_offline']}")
     fallback = bool(meta.get("fallback_from"))
@@ -670,12 +755,12 @@ def handle_llm_sync(text: str) -> List[str]:
     lines.extend(engine)
     # Persist the turn the model actually saw (plain user text, not the snapshot wrapper)
     # so cold-start reloads stay useful for ordinary chat.
-    append_history(prompt or "(empty)", plain)
+    append_history(prompt or "(empty)", plain, session=session)
     return lines
 
 
 
 
-async def handle_llm(text: str) -> List[str]:
+async def handle_llm(text: str, session: str = DEFAULT_SESSION) -> List[str]:
     """Async wrapper so the WebSocket loop never blocks on the model."""
-    return await asyncio.to_thread(handle_llm_sync, text)
+    return await asyncio.to_thread(handle_llm_sync, text, normalize_session(session))
