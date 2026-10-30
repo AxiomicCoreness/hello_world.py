@@ -65,7 +65,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, List, Optional, Tuple
 from urllib.parse import urlsplit
 
-from src import chatml_prebuild, llm_backend
+from src import chatml_prebuild, deepinfer_status, llm_backend
 
 logger = logging.getLogger("sovereign-irc-bridge.llm")
 
@@ -731,6 +731,9 @@ def _format_reply_lines(reply: str, meta: Dict[str, Any], *, raw: bool) -> Tuple
 def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
     session = normalize_session(session)
     prompt, neuro, cli_fb, notes = parse_wire(text)
+    # /llm status — DeepInfer V4 missing deps, vendored-tree pin check, GGUF sha256 (no model call).
+    if prompt.strip().lower() == "status":
+        return deepinfer_status.status_lines()
     # /llm reset — archive only this session's rows; other sessions stay put.
     if prompt.strip().lower() == "reset":
         archived = archive_history(session=session)

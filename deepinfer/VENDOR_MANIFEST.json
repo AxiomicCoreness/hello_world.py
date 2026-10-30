@@ -1,0 +1,924 @@
+{
+ "upstream": "https://github.com/deepseek-ai/DeepInfer",
+ "commit": "9bd9cf243fc53ef9afbf8f04d391d989117d6ab9",
+ "license": "Apache-2.0",
+ "requires_python": ">=3.12",
+ "blob_sha_source": "gh api repos/deepseek-ai/DeepInfer/git/trees/9bd9cf243fc53ef9afbf8f04d391d989117d6ab9?recursive=1",
+ "closure": "transitive deepinfer.* imports (module-level, function-level and TYPE_CHECKING) starting from every deepinfer/model_executor/models/v4_modules/*.py at the pin",
+ "external_modules": [
+  "PIL",
+  "deep_cluster",
+  "deep_ep",
+  "deep_gemm",
+  "deep_select",
+  "einops",
+  "flash_attn",
+  "flash_mla",
+  "numpy",
+  "posix_ipc",
+  "psutil",
+  "pytest",
+  "safetensors",
+  "sympy",
+  "tabulate",
+  "tile_kernels",
+  "tilelang",
+  "tokenizers",
+  "torch",
+  "torch_npu",
+  "transformers",
+  "zmq"
+ ],
+ "excluded_in_package": [
+  "deepinfer._C (compiled C++/CUDA extension: deepinfer._C.engine, deepinfer._C.cuda_utils, deepinfer._C.graph_timer); never vendored, built upstream by ./build.sh"
+ ],
+ "repo_only_files": [
+  "deepinfer/PROVENANCE.md",
+  "deepinfer/VENDOR_MANIFEST.json",
+  "deepinfer/model_executor/models/v4_modules/PROVENANCE.md"
+ ],
+ "files": [
+  {
+   "path": "deepinfer/__init__.py",
+   "upstream_path": "deepinfer/__init__.py",
+   "blob_sha": "9ac3a71b2d229d253f35361ab57b231100fa57ce",
+   "size": 2369,
+   "mode": "repo_header_plus_upstream",
+   "role": "parent",
+   "marker": "# --- end repo header; upstream deepinfer/__init__.py follows byte-for-byte ---"
+  },
+  {
+   "path": "deepinfer/attrdict.py",
+   "upstream_path": "deepinfer/attrdict.py",
+   "blob_sha": "d21df9a80374948765f1d6c744be9a1a8c3913ad",
+   "size": 3628,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/config.py",
+   "upstream_path": "deepinfer/config.py",
+   "blob_sha": "c92d49a03cbb40e32d954c34fdba4521facb6c3b",
+   "size": 9535,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/distributed/__init__.py",
+   "upstream_path": "deepinfer/distributed/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/distributed/shm_broadcast.py",
+   "upstream_path": "deepinfer/distributed/shm_broadcast.py",
+   "blob_sha": "48523911ed778cdbe1ce0e797e934ec5f2a303a6",
+   "size": 20347,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/engine/__init__.py",
+   "upstream_path": "deepinfer/engine/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/engine/engine_type.py",
+   "upstream_path": "deepinfer/engine/engine_type.py",
+   "blob_sha": "7a7e839be7138b78ae460af0ca7b636142192e94",
+   "size": 450,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/environ.py",
+   "upstream_path": "deepinfer/environ.py",
+   "blob_sha": "332064a06c80cf290e28e791eb0c09d69bdd1b16",
+   "size": 8738,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/__init__.py",
+   "upstream_path": "deepinfer/hugging_face/__init__.py",
+   "blob_sha": "88ef257022cee74086ecb30c589fdadb2d208fb6",
+   "size": 2025,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/config.py",
+   "upstream_path": "deepinfer/hugging_face/config.py",
+   "blob_sha": "7cd6f46a51a4ce2c83fdde93ea881964d1d7dd58",
+   "size": 13018,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/loading.py",
+   "upstream_path": "deepinfer/hugging_face/loading.py",
+   "blob_sha": "5a89694ef636e3dfe8bd8f12c115e990cdd76358",
+   "size": 6046,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/names.py",
+   "upstream_path": "deepinfer/hugging_face/names.py",
+   "blob_sha": "417be357987b9452714b0570e8895e315563a3b9",
+   "size": 8421,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/parameters.py",
+   "upstream_path": "deepinfer/hugging_face/parameters.py",
+   "blob_sha": "b7eaa68860b0ffb68be166de61fba8c86fe5a900",
+   "size": 3081,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/processor.py",
+   "upstream_path": "deepinfer/hugging_face/processor.py",
+   "blob_sha": "646f6c80171cad5f33bc9b2504d419c2383b157a",
+   "size": 2956,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/tokenizer.py",
+   "upstream_path": "deepinfer/hugging_face/tokenizer.py",
+   "blob_sha": "53b26d798fc8c0fdd5deaca79e1cc86687641fce",
+   "size": 5958,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/hugging_face/weights.py",
+   "upstream_path": "deepinfer/hugging_face/weights.py",
+   "blob_sha": "8b61ade9234d97557b485ba7e5057c3926b018e6",
+   "size": 21932,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/load_class.py",
+   "upstream_path": "deepinfer/load_class.py",
+   "blob_sha": "26989d2d92c0940798b41b1c0a53b9d7fd0dffc0",
+   "size": 288,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/logger.py",
+   "upstream_path": "deepinfer/logger.py",
+   "blob_sha": "d3b05d8b2904c951788a5462cf071941da593886",
+   "size": 5980,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_config_loader.py",
+   "upstream_path": "deepinfer/model_config_loader.py",
+   "blob_sha": "60b49ff8f96d2cc042829f4ba892f07155c4d5cc",
+   "size": 886,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/__init__.py",
+   "upstream_path": "deepinfer/model_executor/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "repo_stub_kept",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/eplb/__init__.py",
+   "upstream_path": "deepinfer/model_executor/eplb/__init__.py",
+   "blob_sha": "21de4233b88f05117ca2c2369c31d34b33969738",
+   "size": 19270,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/eplb/policy.py",
+   "upstream_path": "deepinfer/model_executor/eplb/policy.py",
+   "blob_sha": "25e7877054e4604f1e3635f23a3e47bfd3246ecd",
+   "size": 7862,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/eplb/shuffle.py",
+   "upstream_path": "deepinfer/model_executor/eplb/shuffle.py",
+   "blob_sha": "0a85eaa0af6ed38962aa150a9d8bb190957169d8",
+   "size": 9718,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/input_metadata/__init__.py",
+   "upstream_path": "deepinfer/model_executor/input_metadata/__init__.py",
+   "blob_sha": "84bda52728bae97b7b759bd60cfc7d891de20725",
+   "size": 262,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/input_metadata/dflash.py",
+   "upstream_path": "deepinfer/model_executor/input_metadata/dflash.py",
+   "blob_sha": "86dab0e8cd96fe30398180a4fbf20e15feb357f8",
+   "size": 3403,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/input_metadata/input_metadata.py",
+   "upstream_path": "deepinfer/model_executor/input_metadata/input_metadata.py",
+   "blob_sha": "74687ef109f197a7732b0d3b9808600252f318c3",
+   "size": 26152,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/input_metadata/prepare_tensor_input_zos.py",
+   "upstream_path": "deepinfer/model_executor/input_metadata/prepare_tensor_input_zos.py",
+   "blob_sha": "919a5ceaad78f567871069ef1d489ac424fac2ea",
+   "size": 16182,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/input_metadata/yoco.py",
+   "upstream_path": "deepinfer/model_executor/input_metadata/yoco.py",
+   "blob_sha": "1bb14838cad68a2d6b10d7ed630ce671662b2736",
+   "size": 10478,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layer_utils.py",
+   "upstream_path": "deepinfer/model_executor/layer_utils.py",
+   "blob_sha": "e3d0434b97e4cbcc1381a25915939a885484dc90",
+   "size": 717,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/__init__.py",
+   "upstream_path": "deepinfer/model_executor/layers/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/attention_backend.py",
+   "upstream_path": "deepinfer/model_executor/layers/attention_backend.py",
+   "blob_sha": "84f25a42fa123de9a3e6b7b6951fc2224b85ae41",
+   "size": 6171,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/layernorm.py",
+   "upstream_path": "deepinfer/model_executor/layers/layernorm.py",
+   "blob_sha": "fbfd3e0f2a4eca193fa2b49a99a8f800ad7e3583",
+   "size": 2013,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/linear.py",
+   "upstream_path": "deepinfer/model_executor/layers/linear.py",
+   "blob_sha": "87ce96fcebe008b8c3bc8fe86e18e0a1cf1da3af",
+   "size": 6850,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/rotary_embedding.py",
+   "upstream_path": "deepinfer/model_executor/layers/rotary_embedding.py",
+   "blob_sha": "4666e2ab885ae22bc75b6a94320a8fed9560e572",
+   "size": 10410,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/__init__.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/cache_common.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/cache_common.py",
+   "blob_sha": "485563ee81d2f7a65c0bba517e9a1f76222d8be7",
+   "size": 18002,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/candidate_blocks.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/candidate_blocks.py",
+   "blob_sha": "3624a12e7b0ca60eeaba6345789bc63e6819be78",
+   "size": 14969,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/common.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/common.py",
+   "blob_sha": "694c72a552052fa5945166b5671c6bf4b0561a6e",
+   "size": 2254,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/compress.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/compress.py",
+   "blob_sha": "cc56b6d70efa92fa341c0793eabe282c6f1eff0b",
+   "size": 24341,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/flash_mla_utils.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/flash_mla_utils.py",
+   "blob_sha": "8277b86e7c2633c265ef5c9aad3ff28ee6f4c489",
+   "size": 3862,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/fused_transform.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/fused_transform.py",
+   "blob_sha": "736dc6a698a150acda3f58ac5c2eacb65120c9b8",
+   "size": 47640,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/gather.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/gather.py",
+   "blob_sha": "6a748411c201d4db6ef2f60f7d91335023eea456",
+   "size": 4324,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/gather_engram_tokens_zos.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/gather_engram_tokens_zos.py",
+   "blob_sha": "7058c7063accb6c3dac49e38b69f510944602c70",
+   "size": 9730,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/gather_input_ids_zos.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/gather_input_ids_zos.py",
+   "blob_sha": "b6b05adb83df0d401e7b18c09a9a0ac960ee19be",
+   "size": 7522,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/get_kv_index.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/get_kv_index.py",
+   "blob_sha": "bbba22a5f64ef7bbff7429b96f563b60458f6480",
+   "size": 21991,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/kv_index_cat.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/kv_index_cat.py",
+   "blob_sha": "7a9dff899665d4a2b1be2d66aac15bb05c064f61",
+   "size": 3550,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/load_paged_kv_cache.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/load_paged_kv_cache.py",
+   "blob_sha": "1b7fd034175d07e92a6ce1b5674e02977deae886",
+   "size": 16499,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/norm.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/norm.py",
+   "blob_sha": "74af893af030c2b220bddb203a0093723e451542",
+   "size": 26521,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/ops.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/ops.py",
+   "blob_sha": "88546e6f75dd4390eecd0aaba11a9af8ce6edda7",
+   "size": 1278,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/prepare_cp_mirror.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/prepare_cp_mirror.py",
+   "blob_sha": "ac127ee826703d80a67d051b011d786a124cdbdd",
+   "size": 15669,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/prepare_v4_decode_metadata.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/prepare_v4_decode_metadata.py",
+   "blob_sha": "6f0b00e1ad16548f786ebca0faa7d35246ee1e92",
+   "size": 25411,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/state_cache.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/state_cache.py",
+   "blob_sha": "df102e986578309a96be84d58d3f99af373434ac",
+   "size": 7969,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/store_kv_cache.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/store_kv_cache.py",
+   "blob_sha": "3430a92d3b75418f024b77e3e4cd53076442425f",
+   "size": 16716,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/layers/tilelang_ops/swa_index.py",
+   "upstream_path": "deepinfer/model_executor/layers/tilelang_ops/swa_index.py",
+   "blob_sha": "e46be355b4cc3d578be63856937be86340572841",
+   "size": 4999,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/model_metadata_utils.py",
+   "upstream_path": "deepinfer/model_executor/model_metadata_utils.py",
+   "blob_sha": "25c83672c92f48d89a99de7ff28d467a1abaca63",
+   "size": 9821,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/models/__init__.py",
+   "upstream_path": "deepinfer/model_executor/models/__init__.py",
+   "blob_sha": "23ce7f3c9e633d472d34097ce5197d6f67a1c206",
+   "size": 863,
+   "mode": "repo_header_plus_upstream",
+   "role": "parent",
+   "marker": "# --- end repo header; upstream deepinfer/model_executor/models/__init__.py follows byte-for-byte ---"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/__init__.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/__init__.py",
+   "blob_sha": "3eb39925de5376a5170ae0fc5bd77cf093b06f35",
+   "size": 2472,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/attn.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/attn.py",
+   "blob_sha": "cbf375da5ce3ed88ba229ac4232fe989e48edba2",
+   "size": 46250,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/builder.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/builder.py",
+   "blob_sha": "6c1990bffc33aaf019229ebd9f4c02370689fbc4",
+   "size": 6576,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/compress.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/compress.py",
+   "blob_sha": "64b23d22069691e9825ceaca286a1dd40704f955",
+   "size": 6741,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/containers.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/containers.py",
+   "blob_sha": "acd478133de838875d831876e59f7fb160b05dda",
+   "size": 6122,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/cross_layer.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/cross_layer.py",
+   "blob_sha": "e8c03643fea6ab253e606e3c817d12abc9f458e2",
+   "size": 22604,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/engram.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/engram.py",
+   "blob_sha": "123f2acf41f89c7a525e258b7c284172f553f19e",
+   "size": 9812,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/engram_metadata.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/engram_metadata.py",
+   "blob_sha": "10c247e3730f8d49cfdad6947c154c622a827473",
+   "size": 5033,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/engram_parameters.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/engram_parameters.py",
+   "blob_sha": "8c373d726077978d2d29c414e27fdad5dabd20b1",
+   "size": 2993,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/hc.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/hc.py",
+   "blob_sha": "b23816df29946a604b03288d9b9604a3e4df9095",
+   "size": 18309,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/hc_blocks.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/hc_blocks.py",
+   "blob_sha": "90568f70079ab1572fdef14ba2567a3a4dfd2dca",
+   "size": 4718,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/hc_lazy.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/hc_lazy.py",
+   "blob_sha": "ade81dac81a6d41cea339eb6b45bdc993a4a61f6",
+   "size": 1212,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/heads.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/heads.py",
+   "blob_sha": "b4dd5a5c5a0dbb7aaa5784c64179929b54e0480e",
+   "size": 4365,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/index_attn.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/index_attn.py",
+   "blob_sha": "46cf9872dcaaeb02100796dacd9af5825f98591f",
+   "size": 26204,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/linear.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/linear.py",
+   "blob_sha": "1042b6a27397fff9c65f82f8671d49a04961726e",
+   "size": 1096,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/mhc_modeling.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/mhc_modeling.py",
+   "blob_sha": "1995fd38b88bd9389381773640391927e0e10103",
+   "size": 4924,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/mhc_ops.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/mhc_ops.py",
+   "blob_sha": "3c98eaebdecc9d965c2976f988672329558e221c",
+   "size": 5366,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/mla_attn.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/mla_attn.py",
+   "blob_sha": "90b66bb14d8aa8952300e5bbd1c8d3305675c55d",
+   "size": 11335,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/mlp.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/mlp.py",
+   "blob_sha": "e056539491d2d7768ee9c3d28d6774d101c9442b",
+   "size": 25524,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/moe.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/moe.py",
+   "blob_sha": "bcc5e4a61f93f507be88ff69e2562d9ce87cdae8",
+   "size": 4709,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/norm.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/norm.py",
+   "blob_sha": "3ff697cc7bc23be2df076e3ea6788d93c48b70df",
+   "size": 1178,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/rope.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/rope.py",
+   "blob_sha": "8f49bc78d11dfc3b02ba82dd145518ed67f63aed",
+   "size": 1750,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/utils.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/utils.py",
+   "blob_sha": "d8c9e951ab10c7652a9a3447baaf23176001e1b4",
+   "size": 5730,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/v4_modules/yoco.py",
+   "upstream_path": "deepinfer/model_executor/models/v4_modules/yoco.py",
+   "blob_sha": "806ed4e83003e5cc04851fffd09cee319f7cc0ff",
+   "size": 6540,
+   "mode": "byte_identical",
+   "role": "v4_modules"
+  },
+  {
+   "path": "deepinfer/model_executor/models/vision_encoder/__init__.py",
+   "upstream_path": "deepinfer/model_executor/models/vision_encoder/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/models/vision_encoder/mlp_projector.py",
+   "upstream_path": "deepinfer/model_executor/models/vision_encoder/mlp_projector.py",
+   "blob_sha": "896552f4586c235356eb242b986a83364112657b",
+   "size": 950,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/models/vision_encoder/vit.py",
+   "upstream_path": "deepinfer/model_executor/models/vision_encoder/vit.py",
+   "blob_sha": "ed56d46f477814063dded61f67fe451a0d714376",
+   "size": 9692,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/parallel_utils/__init__.py",
+   "upstream_path": "deepinfer/model_executor/parallel_utils/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/parallel_utils/communication_op.py",
+   "upstream_path": "deepinfer/model_executor/parallel_utils/communication_op.py",
+   "blob_sha": "af4ca5611a9955bf4e3c40ca8e698948b3a6675f",
+   "size": 3149,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/parallel_utils/cp.py",
+   "upstream_path": "deepinfer/model_executor/parallel_utils/cp.py",
+   "blob_sha": "0e13d9ebe53730fa0cbc246afaf8d4ee57f85b4c",
+   "size": 2097,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/parallel_utils/parallel_state.py",
+   "upstream_path": "deepinfer/model_executor/parallel_utils/parallel_state.py",
+   "blob_sha": "ec015d06985df79262642765d551264c27e0c936",
+   "size": 7537,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/parallel_utils/userbuffer.py",
+   "upstream_path": "deepinfer/model_executor/parallel_utils/userbuffer.py",
+   "blob_sha": "3dcffd8cc96b8f3c4c318660510565019ffb4408",
+   "size": 8707,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/model_executor/utils.py",
+   "upstream_path": "deepinfer/model_executor/utils.py",
+   "blob_sha": "552fd806427a3c28673d817c64d5fc6b42779052",
+   "size": 3246,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/multimodal_tokens.py",
+   "upstream_path": "deepinfer/multimodal_tokens.py",
+   "blob_sha": "755b42fd7a03c0a1324b9810bf122ad3274df65d",
+   "size": 1421,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/npu_ops/__init__.py",
+   "upstream_path": "deepinfer/npu_ops/__init__.py",
+   "blob_sha": "c1042fb27bb703b275a85bb02e85c9be3f5e0a1a",
+   "size": 298,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/npu_ops/patch_imports.py",
+   "upstream_path": "deepinfer/npu_ops/patch_imports.py",
+   "blob_sha": "06803f4d0c7e69fdd23414f1267e0fa2ee55ba3f",
+   "size": 5209,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/platform.py",
+   "upstream_path": "deepinfer/platform.py",
+   "blob_sha": "020390c1b1ba55e3737dd8a08506bf8104091ab8",
+   "size": 8809,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/sequence.py",
+   "upstream_path": "deepinfer/sequence.py",
+   "blob_sha": "48f1d5a368350c5d047a1fa94773866b4ea3c467",
+   "size": 11248,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/shared_memory.py",
+   "upstream_path": "deepinfer/shared_memory.py",
+   "blob_sha": "4d256e92819d08be74a8c1b3312c354d745503e7",
+   "size": 12381,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/testing.py",
+   "upstream_path": "deepinfer/testing.py",
+   "blob_sha": "b40fdf92251a892bb8ed37c358ecc5b924801469",
+   "size": 1002,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/timer.py",
+   "upstream_path": "deepinfer/timer.py",
+   "blob_sha": "d9f49093df2879d9e8866d392c11f2cca0824eee",
+   "size": 10382,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/utils.py",
+   "upstream_path": "deepinfer/utils.py",
+   "blob_sha": "10810c7710edfe3a1935bd358262d0ff1b5357db",
+   "size": 9803,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/__init__.py",
+   "upstream_path": "deepinfer/ve/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/prepare_tensor_input_vl.py",
+   "upstream_path": "deepinfer/ve/prepare_tensor_input_vl.py",
+   "blob_sha": "24a0b3f0b8393bdd2622c6905c18b9fafe9a63ab",
+   "size": 8740,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/processor/__init__.py",
+   "upstream_path": "deepinfer/ve/processor/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/processor/common.py",
+   "upstream_path": "deepinfer/ve/processor/common.py",
+   "blob_sha": "330b238dbb61918751a60f79f9ff8eb4f7b4bee8",
+   "size": 1335,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/processor/image_processor.py",
+   "upstream_path": "deepinfer/ve/processor/image_processor.py",
+   "blob_sha": "8ef6cea81debd547fc0bbaf88639df4b2efd0d80",
+   "size": 12525,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/processor/mm_processor.py",
+   "upstream_path": "deepinfer/ve/processor/mm_processor.py",
+   "blob_sha": "48ee4b3faac465ed96dbb2382f25f97884dcbfe4",
+   "size": 1262,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/processor/text_processor.py",
+   "upstream_path": "deepinfer/ve/processor/text_processor.py",
+   "blob_sha": "c1a01b19cc026bec7dcdca4ada59b119e5b34711",
+   "size": 524,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/ve/schema.py",
+   "upstream_path": "deepinfer/ve/schema.py",
+   "blob_sha": "581b992d34b463d6b2ffaf91b34301949c8d4dad",
+   "size": 3221,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/worker/__init__.py",
+   "upstream_path": "deepinfer/worker/__init__.py",
+   "blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "size": 0,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/worker/cache_engine.py",
+   "upstream_path": "deepinfer/worker/cache_engine.py",
+   "blob_sha": "c21a5351fd462da8eb73c8e87f9f77899f2a3385",
+   "size": 49243,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/worker/zos_status.py",
+   "upstream_path": "deepinfer/worker/zos_status.py",
+   "blob_sha": "4210f329d40f79062f4dc07f7bd8e0e602b2fef2",
+   "size": 1705,
+   "mode": "byte_identical",
+   "role": "parent"
+  },
+  {
+   "path": "deepinfer/LICENSE",
+   "upstream_path": "LICENSE",
+   "blob_sha": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+   "size": 11357,
+   "mode": "byte_identical",
+   "role": "license"
+  }
+ ]
+}
