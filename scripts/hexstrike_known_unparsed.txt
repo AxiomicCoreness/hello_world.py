@@ -6,6 +6,6 @@
 # KNOWN-UNPARSED line; hexstrike still prints it in text and --json output.
 # A missing PyYAML (yaml_unavailable) is never excused by this list.
 #
-# Added 2026-10-30T13:30:00-04:00 for owner review (keep, or remove to make
+# Added 2026-10-30T13:24:00-04:00 for owner review (keep, or remove to make
 # hexstrike exit 2 until the entry is superseded by a new append-only entry).
 ledger/9128.yaml  # line 43: `relations:` holds bare quoted scalars without `- ` (not a YAML list/mapping)
