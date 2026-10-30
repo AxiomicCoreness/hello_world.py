@@ -35,6 +35,9 @@ jobs:
           - name: abjects-6680-own-origin
             url: wss://irc.abjects.net:6680/
             origin: https://www.abjects.net
+          - name: abjects-6680-no-origin
+            url: wss://irc.abjects.net:6680/
+            origin: none  # what the iOS app (URLSessionWebSocketTask) sends
     steps:
       - uses: actions/checkout@v4
         with:

@@ -61,6 +61,8 @@ async def probe(url, origin, timeout):
 def main():
     url = sys.argv[1] if len(sys.argv) > 1 else "wss://irc.abjects.net:6680/"
     origin = sys.argv[2] if len(sys.argv) > 2 else ORIGIN
+    if origin == "none":  # native apps (iOS URLSessionWebSocketTask) send no Origin header
+        origin = None
     try:
         return asyncio.run(probe(url, origin, 25.0))
     except Exception as e:  # report the real failure (handshake status, TLS, timeout)
