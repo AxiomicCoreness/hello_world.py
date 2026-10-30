@@ -1,0 +1,67 @@
+// SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+// SPDX-License-Identifier: MIT
+//
+// Clarke Pocket: a small PocketPal-style app — a GGUF model running on the iPhone (llama.cpp,
+// Metal) plus an IRC client. Three tabs: Model, Chat, IRC. Everything stops cleanly in the
+// background (IRC says QUIT, the model is unloaded); nothing calls exit().
+
+import SwiftUI
+
+@main
+struct ClarkePocketApp: App {
+    @StateObject private var app = AppModel()
+
+    var body: some Scene {
+        WindowGroup {
+            RootView(app: app)
+        }
+    }
+}
+
+@MainActor
+final class AppModel: ObservableObject {
+    let model: ModelStore
+    let chat: ChatStore
+    let irc: IRCClient
+    let responder: IRCResponder
+
+    init() {
+        let m = ModelStore()
+        let c = IRCClient()
+        model = m
+        chat = ChatStore(model: m)
+        irc = c
+        responder = IRCResponder(model: m, client: c)
+    }
+}
+
+struct RootView: View {
+    @ObservedObject var app: AppModel
+    @AppStorage("selectedTab") private var tab = 0
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        TabView(selection: $tab) {
+            ModelView(model: app.model)
+                .tabItem { Label("Model", systemImage: "cpu") }.tag(0)
+            ChatView(chat: app.chat, model: app.model)
+                .tabItem { Label("Chat", systemImage: "bubble.left.and.text.bubble.right") }.tag(1)
+            IRCView(client: app.irc, responder: app.responder, model: app.model)
+                .tabItem { Label("IRC", systemImage: "number") }.tag(2)
+        }
+        .tint(Theme.accent)
+        .preferredColorScheme(.dark)
+        .onAppear { app.irc.start() }
+        .onChange(of: scenePhase) { phase in
+            switch phase {
+            case .active:
+                app.irc.start()            // reconnect on return (unless the user typed /quit)
+            case .background:
+                app.irc.stop()             // iOS would suspend the socket anyway
+                app.model.enteredBackground()
+            default:
+                break
+            }
+        }
+    }
+}

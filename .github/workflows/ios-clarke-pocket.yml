@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: iOS Clarke Pocket
+
+# Only for ios/ClarkePocket. Two jobs:
+#   core-linux  — `swift test` of the pure-Foundation core (pure-Swift SHA-256 path).
+#   app-macos   — `swift test` again with CryptoKit, then XcodeGen + an unsigned
+#                 xcodebuild for a generic iOS device (resolves the pinned llama.cpp
+#                 xcframework, compiles every SwiftUI and llama file). No signing, no .ipa.
+
+on:
+  push:
+    branches: [feat/ios-clarke-pocket]
+    paths:
+      - "ios/ClarkePocket/**"
+      - ".github/workflows/ios-clarke-pocket.yml"
+  pull_request:
+    paths:
+      - "ios/ClarkePocket/**"
+      - ".github/workflows/ios-clarke-pocket.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-clarke-pocket-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-linux:
+    name: core tests (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift version
+        run: swift --version
+      - name: swift test
+        working-directory: ios/ClarkePocket
+        run: swift test
+
+  app-macos:
+    name: core tests + iOS device build (macOS, unsigned)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: toolchain
+        run: |
+          set -eu
+          xcodebuild -version
+          swift --version
+      - name: swift test (CryptoKit)
+        working-directory: ios/ClarkePocket
+        run: swift test
+      - name: xcodegen
+        working-directory: ios/ClarkePocket
+        run: |
+          set -eu
+          brew install xcodegen
+          xcodegen --version
+          xcodegen generate
+      - name: xcodebuild (generic iOS device, no signing)
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ClarkePocket.xcodeproj \
+            -scheme ClarkePocket \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: check the llama framework is embedded
+        working-directory: ios/ClarkePocket
+        run: |
+          set -eu
+          app=build/dd/Build/Products/Debug-iphoneos/ClarkePocket.app
+          ls "$app/Frameworks"
+          test -f "$app/Frameworks/llama.framework/llama"
