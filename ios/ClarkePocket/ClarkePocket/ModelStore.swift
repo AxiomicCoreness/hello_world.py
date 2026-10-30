@@ -61,7 +61,7 @@ final class ModelStore: NSObject, ObservableObject {
     nonisolated static var customURL: URL { modelsDir.appendingPathComponent("custom.gguf") }
     nonisolated static var partialURL: URL { modelsDir.appendingPathComponent(ModelPin.fileName + ".partial") }
 
-    static func excludeFromBackup(_ url: inout URL) {
+    nonisolated static func excludeFromBackup(_ url: inout URL) {
         var v = URLResourceValues()
         v.isExcludedFromBackup = true
         try? url.setResourceValues(v)
