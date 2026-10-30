@@ -2,9 +2,9 @@
 <!-- SPDX-License-Identifier: MIT -->
 # AxiomicCoreness Chat (iOS, SwiftUI source)
 
-A small iPhone app that joins **`#axiomiccoreness` on Libera.Chat** and lets you talk to the
+A small iPhone app that joins **`#axiomiccoreness` on abjects** and lets you talk to the
 `!llm` bot (deepseek-r2-1.5b tutor, `sovereign-irc-bridge/src/irc_llm_bot.py`). The phone connects
-**straight to Libera's WebSocket gateway**, so your PC exposes nothing: no open port, no tunnel,
+**straight to abjects' WebSocket gateway**, so your PC exposes nothing: no open port, no tunnel,
 no all-interfaces bind. The bot runs wherever you run it (home PC / VPS) and answers in the same channel.
 
 This folder is **source only**. There is no `.ipa`: building one needs a Mac with Xcode and an
@@ -12,7 +12,7 @@ Apple signing identity. A free Apple ID is enough to put it on your own iPhone.
 
 | | |
 |---|---|
-| Gateway | `wss://web.libera.chat/webirc/websocket/` (constant `IRCConfig.gatewayURL`) |
+| Gateway | `wss://irc.abjects.net:6680/` (constant `IRCConfig.gatewayURL`; the URL abjects' own webchat uses, and the Pages chatbox default) |
 | Channel | `#axiomiccoreness` (`IRCConfig.channel`) |
 | Nick | `Clarke_iOS_<4 digits>`; a new number is tried if the nick is taken (433) |
 | Look | the TeaVM rhythm page's left chat column, colour for colour (`Theme.swift`) |
@@ -24,7 +24,7 @@ Apple signing identity. A free Apple ID is enough to put it on your own iPhone.
 |---|---|
 | `AxiomicCorenessChat/AxiomicCorenessChatApp.swift` | `@main` app entry |
 | `AxiomicCorenessChat/ChatView.swift` | title bar (status dot · RECONNECT) · history · `›` input row |
-| `AxiomicCorenessChat/LiberaIRCClient.swift` | WebSocket IRC client: registration, 001 → JOIN, 433 retry, PING/PONG, backoff |
+| `AxiomicCorenessChat/IRCClient.swift` | WebSocket IRC client (`IRCClient`): registration, 001 → JOIN, 433 retry, PING/PONG, backoff |
 | `AxiomicCorenessChat/IRCLine.swift` | pure-Foundation IRC line parser, frame splitter, outgoing sanitiser, `[thinking]` tracker |
 | `AxiomicCorenessChat/Theme.swift` | colours, font, radii, paddings from `games/teavm-rhythm/src/main/webapp/index.html`, each with its line |
 | `AxiomicCorenessChatTests/IRCLineTests.swift` | XCTest unit tests for `IRCLine.swift` |
@@ -84,9 +84,11 @@ SDK and are only compiled by Xcode.
 
 ## Troubleshooting
 
-- **Stays amber, then "receive failed … 403" / "bad response"**: Libera's gateway sits behind
-  Cloudflare, which refuses some networks (datacenter and some VPN / library IPs). Try mobile data or
-  another Wi-Fi.
+- **Stays amber, then "receive failed …"**: the network you are on blocks port 6680 or
+  WebSockets (some library / work Wi-Fi). Try mobile data or another Wi-Fi.
+- **Another network**: change `IRCConfig.gatewayURL` (and `networkName` / `gatewayLabel`), e.g.
+  Libera.Chat's `wss://web.libera.chat/webirc/websocket/`. Its Cloudflare front refused GitHub's
+  datacenter IPs with 403 in testing, and Libera's bot rules (channel opt-in, admin present) then apply.
 - **"nick … unavailable"**: handled automatically with a new number.
 - **No answer to `!llm`**: the bot is not in the channel. Start it on your PC (see
   `sovereign-irc-bridge/serving/IRC_BOT.md`); the app cannot start it for you.

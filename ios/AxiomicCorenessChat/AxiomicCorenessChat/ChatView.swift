@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct ChatView: View {
-    @StateObject private var client = LiberaIRCClient()
+    @StateObject private var client = IRCClient()
     @State private var inputText = ""
     @FocusState private var inputFocused: Bool
     @Environment(\.scenePhase) private var scenePhase
@@ -48,7 +48,7 @@ struct ChatView: View {
                 .frame(width: 8, height: 8)
                 .accessibilityLabel(statusText)
             (Text("CLI · ").foregroundColor(Theme.accent)
-             + Text("web.libera.chat").foregroundColor(Theme.remote)
+             + Text(IRCConfig.gatewayLabel).foregroundColor(Theme.remote)
              + Text(" → \(IRCConfig.channel.uppercased()) · !LLM").foregroundColor(Theme.accent))
                 .font(Theme.titleFont)
                 .tracking(Theme.titleTracking)
@@ -162,7 +162,7 @@ struct ChatView: View {
 
     private var statusText: String {
         switch client.status {
-        case .connected: return "Connected to Libera as \(client.nickname)"
+        case .connected: return "Connected to \(IRCConfig.networkName) as \(client.nickname)"
         case .connecting: return "Connecting"
         case .offline: return "Disconnected"
         }

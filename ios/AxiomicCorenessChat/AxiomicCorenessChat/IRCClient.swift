@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 // SPDX-License-Identifier: MIT
 //
-// Direct Libera.Chat client over WebSocket. The phone talks to Libera itself; nothing on the
-// user's PC is exposed (no open port, no tunnel, no all-interfaces bind). The !llm bot
+// Direct IRC client over WebSocket (abjects network by default). The phone talks to abjects
+// itself; nothing on the user's PC is exposed (no open port, no tunnel, no all-interfaces bind).
+// The !llm bot
 // (sovereign-irc-bridge/src/irc_llm_bot.py) sits in the same channel and answers there.
 //
 // Lifecycle: connect only while the app is in the foreground (ChatView drives this from
@@ -18,8 +19,12 @@ import FoundationNetworking   // Linux toolchain only (used for the offline harn
 #endif
 
 enum IRCConfig {
-    /// Libera's own web gateway — the `server.url` in https://web.libera.chat/gamja/config.json.
-    static let gatewayURL = URL(string: "wss://web.libera.chat/webirc/websocket/")!
+    /// abjects' browser WebSocket gateway — the URL its own webchat (https://www.abjects.net/chat.html)
+    /// dials, and the Pages chatbox default. Probed from GitHub runners: HTTP 101 + 001 welcome.
+    static let gatewayURL = URL(string: "wss://irc.abjects.net:6680/")!
+    /// Shown in the title bar and status text.
+    static let networkName = "abjects"
+    static let gatewayLabel = "irc.abjects.net"
     static let channel = "#axiomiccoreness"
     static let nickBase = "Clarke_iOS_"
     /// Backoff after a failed or dropped connection: 1, 2, 4 … seconds, never more than this.
@@ -51,7 +56,7 @@ struct ChatMessage: Identifiable, Equatable {
 }
 
 @MainActor
-final class LiberaIRCClient: ObservableObject {
+final class IRCClient: ObservableObject {
     enum Status: Equatable { case offline, connecting, connected }
 
     @Published private(set) var messages: [ChatMessage] = []
