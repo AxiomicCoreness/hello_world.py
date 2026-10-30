@@ -159,3 +159,8 @@ beacons/sovereign_state.py
 
 # scripts/t_rotator_graphs.py default output (generated, not ledger)
 t_rotator_out/
+
+# LLM bridge chat history (persisted across cold starts; local only)
+sovereign-irc-bridge/data/
+**/llm_history.jsonl
+**/llm_history.jsonl.reset-*

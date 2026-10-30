@@ -72,8 +72,12 @@ def _backend_env(monkeypatch):
     from src import llm_backend
 
     for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_ABLITERATED_URL", "DEEPINFER_REPROBE_S",
-              "DEEPINFER_CONNECT_TIMEOUT"):
+              "DEEPINFER_CONNECT_TIMEOUT", "LLM_RAW_REPLY", "LLM_SYSTEM_PROMPT", "LLM_HISTORY_MAX_TOKENS"):
         monkeypatch.delenv(k, raising=False)
+    # Keep unit tests off the live history file and on the legacy reply guard by default
+    # (raw/history behaviour is covered by dedicated tests below).
+    monkeypatch.setenv("LLM_HISTORY_PATH", "")
+    monkeypatch.setenv("LLM_RAW_REPLY", "0")
     llm_backend.reset_state()
     yield
     llm_backend.reset_state()
@@ -299,3 +303,91 @@ def test_guarded_reply_lines_through_bridge(stub_llm):
     assert "[System] llm route: backend=gguf path=/v1/chat/completions mode=auto family=chatml" in lines
     assert any(x.startswith("[System] llm: reply trimmed at a role echo") for x in lines)
 
+
+
+def test_raw_reply_keeps_multiline_and_skips_guard(stub_llm, monkeypatch):
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    stub_llm.reply = "line one\n\nline two\nUser 1: echoed"
+    lines = llm_chat.handle_llm_sync(wire("say anything"))
+    engine = [x for x in lines if x.startswith("[Engine] llm:")]
+    assert any("line one" in x for x in engine)
+    assert any("line two" in x for x in engine)
+    assert any("User 1: echoed" in x for x in engine)
+    assert not any("reply trimmed" in x for x in lines)
+
+
+def test_reply_prefix_uses_configured_model(monkeypatch):
+    from src import llm_backend
+    monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", "deepseek-r2-1.5b")
+    assert llm_backend.reply_prefix("clarkeyoursatee") == "[ClarkeYoursaTee (deepseek-r2-1.5b)] "
+    monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", llm_backend.DEFAULT_CLARKEYOURSATEE_MODEL)
+    assert llm_backend.reply_prefix("clarkeyoursatee") == llm_backend.CLARKEYOURSATEE_PREFIX
+
+
+def test_plain_prompt_without_neuro(stub_llm, monkeypatch):
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    lines = llm_chat.handle_llm_sync("/llm what is 2+2?")
+    req = stub_llm.requests[-1]["body"]["messages"]
+    assert req[0]["role"] == "system"
+    assert "fruit-fly" not in req[0]["content"]
+    assert req[-1]["content"] == "what is 2+2?"
+    assert any("plain (no neuron snapshot" in x for x in lines)
+
+
+def test_spike_prompt_forced_by_env(stub_llm, monkeypatch):
+    monkeypatch.setenv("LLM_SYSTEM_PROMPT", "spike")
+    lines = llm_chat.handle_llm_sync("/llm hi")
+    req = stub_llm.requests[-1]["body"]["messages"]
+    assert "fruit-fly" in req[0]["content"]
+    assert "NEURON_SNAPSHOT:" in req[-1]["content"]
+
+
+def test_history_persists_and_reloads(stub_llm, tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    monkeypatch.setenv("LLM_HISTORY_MAX_TOKENS", "2500")
+    stub_llm.reply = "Hello Clarke, I will remember."
+    llm_chat.handle_llm_sync("/llm my name is Clarke, remember it")
+    assert hist.is_file()
+    rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
+    assert rows[0]["role"] == "user" and "Clarke" in rows[0]["content"]
+    assert rows[1]["role"] == "assistant" and "remember" in rows[1]["content"].lower()
+    # Simulate cold start: new process would re-read the same file
+    stub_llm.requests.clear()
+    stub_llm.reply = "Your name is Clarke."
+    llm_chat.handle_llm_sync("/llm what is my name?")
+    msgs = stub_llm.requests[-1]["body"]["messages"]
+    roles = [m["role"] for m in msgs]
+    assert roles[:1] == ["system"]
+    assert "user" in roles[1:] and "assistant" in roles[1:]
+    assert any(m["role"] == "user" and "Clarke" in m["content"] for m in msgs[:-1])
+    assert msgs[-1]["content"] == "what is my name?"
+
+
+def test_history_budget_keeps_newest(tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    # tiny budget: only the newest short turn fits
+    turns = [
+        {"role": "user", "content": "AAAA " * 200},
+        {"role": "assistant", "content": "BBBB " * 200},
+        {"role": "user", "content": "newest user"},
+        {"role": "assistant", "content": "newest assistant"},
+    ]
+    hist.write_text("\n".join(json.dumps(t) for t in turns) + "\n", encoding="utf-8")
+    kept = llm_chat.trim_history(llm_chat.load_history(hist), budget=20)
+    assert kept
+    assert kept[-1]["content"] == "newest assistant" or "newest" in kept[-1]["content"]
+    assert all("AAAA" not in t["content"] for t in kept)
+
+
+def test_llm_reset_archives_history(tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    hist.write_text(json.dumps({"role": "user", "content": "hi"}) + "\n", encoding="utf-8")
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    lines = llm_chat.handle_llm_sync("/llm reset")
+    assert any("history archived" in x for x in lines)
+    assert not hist.exists()
+    archives = list(tmp_path.glob("llm_history.jsonl.reset-*"))
+    assert len(archives) == 1 and archives[0].read_text().startswith("{")
