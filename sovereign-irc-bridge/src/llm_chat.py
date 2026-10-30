@@ -40,7 +40,12 @@ Env:
                  (JSONL of user/assistant turns keyed by session; reloaded
                  every request so a keepalive restart still has context).
                  Empty string disables. Rows carry a ``session`` field; legacy
-                 rows without it count as ``default``.
+                 rows without it count as ``default``. New assistant rows also
+                 carry ``"format": "markdown"`` (content = Markdown answer, math
+                 as \\( … \\) inline / $$ … $$ display, see
+                 :mod:`src.llm_markdown`) and, when the model reasoned, a
+                 separate ``"thinking"`` field. Rows without ``format`` are
+                 legacy plain text (``[thinking]`` markers inline).
   LLM_HISTORY_MAX_TOKENS  default 2500 (chars/4 estimate); newest turns kept.
   LLM_SYSTEM_PROMPT  "spike" forces the TeaVM neuron/traceback system prompt;
                  otherwise that prompt only applies when a #neuro snapshot or
@@ -65,7 +70,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, List, Optional, Tuple
 from urllib.parse import urlsplit
 
-from src import chatml_prebuild, deepinfer_status, llm_backend
+from src import chatml_prebuild, deepinfer_status, llm_backend, llm_markdown
 
 logger = logging.getLogger("sovereign-irc-bridge.llm")
 
@@ -90,7 +95,8 @@ _HISTORY_LOCK: Final = threading.Lock()
 PLAIN_SYSTEM_PROMPT: Final = (
     "You are a helpful assistant. Answer the user's question directly and clearly. "
     "Do not invent neuron snapshots, spike counts, or traceback reports unless the "
-    "user message actually includes them."
+    "user message actually includes them. "
+    + llm_markdown.MATH_PROMPT
 )
 
 # Reply guard. Small GGUF models sometimes stop answering and start writing the
@@ -118,7 +124,8 @@ SYSTEM_PROMPT: Final = (
     "(recent traceback reports from the chat's Python tool calls and failing tests). "
     "FEEDBACK is your training signal: if it holds errors, explain the likely cause and "
     "suggest a concrete fix first. Only describe neuron activity that the snapshot shows; "
-    "if brain is idle say so. Be brief (under 120 words)."
+    "if brain is idle say so. Be brief (under 120 words). "
+    + llm_markdown.MATH_PROMPT
 )
 
 
@@ -236,8 +243,14 @@ def trim_history(turns: List[Dict[str, str]], budget: Optional[int] = None) -> L
 
 
 def append_history(user: str, assistant: str, path: Optional[Path] = None,
-                   session: str = DEFAULT_SESSION) -> None:
-    """Append one user/assistant pair as JSONL with ``session``; fsync. Never raises."""
+                   session: str = DEFAULT_SESSION, *,
+                   assistant_format: Optional[str] = None,
+                   thinking: Optional[str] = None) -> None:
+    """Append one user/assistant pair as JSONL with ``session``; fsync. Never raises.
+
+    ``assistant_format`` (e.g. ``"markdown"``) and a non-empty ``thinking`` are
+    added to the assistant row only; without them the row is the legacy shape.
+    """
     path = history_path() if path is None else path
     session = normalize_session(session)
     if path is None:
@@ -248,10 +261,13 @@ def append_history(user: str, assistant: str, path: Optional[Path] = None,
         with _HISTORY_LOCK:
             with path.open("a", encoding="utf-8") as fh:
                 for role, content in (("user", user), ("assistant", assistant)):
-                    fh.write(json.dumps(
-                        {"role": role, "content": content, "session": session, "ts": ts},
-                        ensure_ascii=False,
-                    ) + "\n")
+                    row: Dict[str, Any] = {"role": role, "content": content}
+                    if role == "assistant" and assistant_format:
+                        row["format"] = assistant_format
+                        if thinking and thinking.strip():
+                            row["thinking"] = thinking
+                    row.update(session=session, ts=ts)
+                    fh.write(json.dumps(row, ensure_ascii=False) + "\n")
                 fh.flush()
                 os.fsync(fh.fileno())
     except OSError as exc:
@@ -685,6 +701,24 @@ def _neuro_line(neuro: Optional[Dict[str, Any]]) -> str:
     return line
 
 
+def _markdown_history_entry(reply: str, meta: Dict[str, Any], *, raw: bool) -> Dict[str, Any]:
+    """Saved-reply fields for the assistant row: Markdown answer + separate thinking.
+
+    Mirrors what the chat shows (same guard when ``raw`` is off, same line cap),
+    but ``reasoning_content`` and any ``<think>…</think>`` go to ``thinking``
+    instead of the answer. Engine lines are not affected.
+    """
+    answer, inline_thinking = llm_markdown.split_thinking(reply or "")
+    if raw:
+        body = answer.splitlines()
+    else:
+        cleaned, _ = clean_reply(answer)
+        body = [ln for ln in cleaned.splitlines() if ln.strip()][:MAX_REPLY_LINES]
+    reasoning = THINK_TAG_RE.sub("", meta.get("reasoning") or "").strip()
+    thinking = "\n\n".join(t for t in (reasoning, inline_thinking) if t)
+    return llm_markdown.markdown_entry("\n".join(body), thinking)
+
+
 def _format_reply_lines(reply: str, meta: Dict[str, Any], *, raw: bool) -> Tuple[List[str], List[str], str]:
     """→ (engine_lines, system_notes, plain_assistant_text_for_history).
 
@@ -782,12 +816,16 @@ def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
         lines.append(f"[System] llm offline: {err}")
         return lines
 
-    engine, trims, plain = _format_reply_lines(reply or "", meta, raw=raw_reply_enabled())
+    raw = raw_reply_enabled()
+    engine, trims, _plain = _format_reply_lines(reply or "", meta, raw=raw)
     lines.extend(f"[System] llm: {n}" for n in trims)
     lines.extend(engine)
     # Persist the turn the model actually saw (plain user text, not the snapshot wrapper)
-    # so cold-start reloads stay useful for ordinary chat.
-    append_history(prompt or "(empty)", plain, session=session)
+    # so cold-start reloads stay useful for ordinary chat. The assistant row is
+    # Markdown (+ LaTeX math) with reasoning in its own ``thinking`` field.
+    entry = _markdown_history_entry(reply or "", meta, raw=raw)
+    append_history(prompt or "(empty)", entry["content"], session=session,
+                   assistant_format=entry["format"], thinking=entry.get("thinking"))
     return lines
 
 
