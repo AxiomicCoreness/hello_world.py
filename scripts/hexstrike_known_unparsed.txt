@@ -1,0 +1,11 @@
+# hexstrike --known-unparsed list (one repo-relative path per line, '# note' allowed).
+#
+# Entries here are sealed, append-only ledger files that are NOT valid YAML and
+# therefore cannot be scanned. They are never edited to make them parse.
+# Listing a file only downgrades its parse_error from exit 2 to a reported
+# KNOWN-UNPARSED line; hexstrike still prints it in text and --json output.
+# A missing PyYAML (yaml_unavailable) is never excused by this list.
+#
+# Added 2026-10-30T13:30:00-04:00 for owner review (keep, or remove to make
+# hexstrike exit 2 until the entry is superseded by a new append-only entry).
+ledger/9128.yaml  # line 43: `relations:` holds bare quoted scalars without `- ` (not a YAML list/mapping)
