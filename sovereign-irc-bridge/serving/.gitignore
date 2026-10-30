@@ -1,5 +1,4 @@
 *.gguf
-*.jsonl
-*.log
 *.pid
 *.lock
+tunnel.log

@@ -1,8 +1,17 @@
 # /llm serving layout (loopback only)
 
 Launch and supervisor scripts for the `/llm` chat command of the sovereign-irc-bridge.
-Every listener binds **127.0.0.1** only. Model weights (`*.gguf`), chat history (`*.jsonl`),
-logs, pid and lock files are runtime state and are git-ignored here; they are not in the repo.
+Every listener binds **127.0.0.1** only. Model weights (`*.gguf`, ~1 GiB) are git-ignored and never
+committed; pid/lock files and `tunnel.log` are also ignored.
+
+Committed snapshot (2026-10-30, from the serving host, scanned for tokens/secrets before commit):
+
+- `llm_history.jsonl` — `/llm` chat history at the time of commit (includes the alpha/beta/default
+  session test exchanges; the words "secret"/"token" in it are test prompts, not credentials).
+- `keepalive.log` — supervisor restart log.
+- `llama-8085.log` — deepseek-r2 llama-server startup/serving log (listening on 127.0.0.1:8085).
+
+The live runtime copies are written to `$RUN_DIR`, not to this folder.
 
 ## Port map
 
