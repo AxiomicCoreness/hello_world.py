@@ -595,7 +595,7 @@ class TestDeepSeekTutorAtomicHistory:
             assert any("llm session: default" in b for b in banner)
 
     def test_deepinfer_primary_and_gguf_fallback_share_session(self, stub_llm, tmp_path, monkeypatch):
-        """DeepInfer platform: primary (127.0.0.1:8090) and GGUF fallback write one session history.
+        """DeepInfer primary (127.0.0.1:8090), DeepSeek tutor secondary; one session history.
 
         Real: ``handle_llm_sync(session=)`` → ``complete_routed`` (llm_backend) → ``append_history``.
         Turn 1 is answered by DeepInfer (probe stubbed online); turn 2 by the ClarkeYoursaTee GGUF
@@ -618,6 +618,7 @@ class TestDeepSeekTutorAtomicHistory:
         monkeypatch.setattr(stub_llm, "reply", "DeepInfer says APPLE.")
         lines1 = llm_chat.handle_llm_sync("/llm remember APPLE", session="tutor")
         assert any(x.startswith("[System] llm route: backend=deepinfer ") for x in lines1)
+        assert "[System] llm order: primary=deepinfer answered" in lines1
         assert stub_llm.requests[-1]["body"]["model"] == "deepinfer"
 
         llm_backend.reset_state()
@@ -626,6 +627,12 @@ class TestDeepSeekTutorAtomicHistory:
         lines2 = llm_chat.handle_llm_sync("/llm what did I ask you to remember?", session="tutor")
         assert any(x.startswith("[System] llm: deepinfer backend offline (") for x in lines2)
         assert any("clarkeyoursatee fallback from deepinfer" in x for x in lines2)
+        assert ("[System] llm order: primary=deepinfer offline → secondary: deepseek tutor "
+                "(deepseek-r2-1.5b) answered") in lines2
+        # DeepInfer is always tried first: the offline note precedes the secondary's order line.
+        i_off = next(i for i, x in enumerate(lines2) if x.startswith("[System] llm: deepinfer backend offline ("))
+        i_ord = next(i for i, x in enumerate(lines2) if x.startswith("[System] llm order:"))
+        assert i_off < i_ord
         body = stub_llm.requests[-1]["body"]
         assert body["model"] == "deepseek-r2-1.5b"
         prior = [m["content"] for m in body["messages"][1:-1]]
@@ -636,3 +643,12 @@ class TestDeepSeekTutorAtomicHistory:
         assert [t["content"] for t in llm_chat.load_history(session="tutor")][::2] == [
             "remember APPLE", "what did I ask you to remember?"]
         assert llm_chat.load_history(session="default") == []
+
+    def test_order_label_never_claims_tutor_for_non_deepseek_model(self, monkeypatch):
+        """Provenance: the secondary is only called "deepseek tutor" when the configured model is deepseek."""
+        meta = {"backend": "clarkeyoursatee", "fallback_from": "deepinfer", "deepinfer_offline": "x"}
+        monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", "clarkeyoursatee")
+        assert llm_chat.backend_order_line(meta).endswith("secondary: clarkeyoursatee (clarkeyoursatee) answered")
+        monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", "deepseek-r2-1.5b")
+        assert llm_chat.backend_order_line(meta).endswith("secondary: deepseek tutor (deepseek-r2-1.5b) answered")
+        assert llm_chat.backend_order_line({"backend": "gguf"}) is None  # LLM_BACKEND=gguf: no order line
