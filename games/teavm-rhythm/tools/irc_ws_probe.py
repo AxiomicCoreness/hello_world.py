@@ -8,7 +8,7 @@ waits for 001 (RPL_WELCOME), then QUITs at once. Never joins a channel or speaks
 Prints the HTTP handshake result and every server line; exit 0 only on 001.
 Network tool, not a test: CI's offline suites never run it.
 
-    python3 tools/irc_ws_probe.py wss://web.libera.chat/webirc/websocket/
+    python3 tools/irc_ws_probe.py wss://irc.abjects.net:6680/
 """
 import asyncio
 import random
@@ -59,7 +59,7 @@ async def probe(url, origin, timeout):
 
 
 def main():
-    url = sys.argv[1] if len(sys.argv) > 1 else "wss://web.libera.chat/webirc/websocket/"
+    url = sys.argv[1] if len(sys.argv) > 1 else "wss://irc.abjects.net:6680/"
     origin = sys.argv[2] if len(sys.argv) > 2 else ORIGIN
     try:
         return asyncio.run(probe(url, origin, 25.0))

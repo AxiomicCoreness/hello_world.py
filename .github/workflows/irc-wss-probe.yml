@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 # SPDX-License-Identifier: MIT
-# Live probe of the IRC-over-WebSocket gateways the Pages chatbox can dial (handshake
-# with the Pages Origin + 001 welcome, then QUIT; never joins or speaks). Manual, or when
-# this workflow / the probe script changes. Not part of the offline test gates.
+# Live probe of the abjects IRC-over-WebSocket gateway the Pages chatbox dials by default
+# (handshake with the Pages Origin and with abjects' own origin, + 001 welcome, then QUIT;
+# never joins or speaks), plus abjects' TLS IRC port the IRC LLM bot dials. Manual, or when
+# this workflow / a probe script changes. Not part of the offline test gates.
+# Libera.Chat is still selectable on the page via ?irc= but is not probed: its Cloudflare
+# front answers 403 to GitHub-runner IPs, which says nothing about the page's code.
 name: "IRC wss probe (live)"
 
 on:
@@ -12,6 +15,7 @@ on:
     paths:
       - ".github/workflows/irc-wss-probe.yml"
       - "games/teavm-rhythm/tools/irc_ws_probe.py"
+      - "games/teavm-rhythm/tools/irc_tls_probe.py"
 
 permissions:
   contents: read
@@ -25,13 +29,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: libera-default
-            url: wss://web.libera.chat/webirc/websocket/
-          - name: libera-own-origin
-            url: wss://web.libera.chat/webirc/websocket/
-            origin: https://web.libera.chat
-          - name: abjects-6680
+          - name: abjects-6680-pages-origin
             url: wss://irc.abjects.net:6680/
+            origin: https://axiomiccoreness.github.io
+          - name: abjects-6680-own-origin
+            url: wss://irc.abjects.net:6680/
+            origin: https://www.abjects.net
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,3 +46,21 @@ jobs:
         run: python -m pip install "websockets==15.0.1"
       - name: Probe ${{ matrix.url }}
         run: python -I games/teavm-rhythm/tools/irc_ws_probe.py "${{ matrix.url }}" "${{ matrix.origin || 'https://axiomiccoreness.github.io' }}"
+
+  probe-tls:
+    name: probe abjects-tls-${{ matrix.port }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        port: [6697]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probe ircs://irc.abjects.net:${{ matrix.port }} (stdlib, verified TLS)
+        run: python -I games/teavm-rhythm/tools/irc_tls_probe.py irc.abjects.net ${{ matrix.port }}

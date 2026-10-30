@@ -12,8 +12,9 @@ import java.util.List;
  * Pure-logic IRC-over-WebSocket client for the TeaVM left chatbox (direct mode).
  *
  * <p>A static page (GitHub Pages) cannot open raw TCP, so the browser dials an
- * IRC network's own WebSocket gateway. Default: Libera.Chat's public gateway
- * {@link #DEFAULT_URL} (the one its Gamja webchat uses), channel
+ * IRC network's own WebSocket gateway. Default: the abjects network's browser
+ * gateway {@link #DEFAULT_URL} (live-probed from GitHub runners with the Pages
+ * Origin: HTTP 101 + 001 welcome), channel
  * {@link #DEFAULT_CHANNEL}, nick {@code Guest<5 digits>}. Every default is
  * overridable from the page URL: {@code ?irc=wss://…&channel=#…&nick=…};
  * {@code ?irc=off} disables direct mode.
@@ -25,9 +26,14 @@ import java.util.List;
  * offline ({@code IrcWsProtocolTest}).
  */
 public final class IrcWsProtocol {
-    /** Libera.Chat public WebSocket gateway (from web.libera.chat/gamja/config.json). */
-    public static final String DEFAULT_URL = "wss://web.libera.chat/webirc/websocket/";
-    public static final String DEFAULT_NETWORK = "Libera.Chat";
+    /** abjects IRC network's browser WebSocket gateway (the network the bridge already uses). */
+    public static final String DEFAULT_URL = "wss://irc.abjects.net:6680/";
+    public static final String DEFAULT_NETWORK = "abjects";
+    /**
+     * Libera.Chat's gateway (from web.libera.chat/gamja/config.json). Still selectable with
+     * {@code ?irc=}; not the default because its Cloudflare front answered 403 to GitHub-runner probes.
+     */
+    public static final String LIBERA_URL = "wss://web.libera.chat/webirc/websocket/";
     public static final String DEFAULT_CHANNEL = "#axiomiccoreness";
     public static final String NICK_PREFIX = "Guest";
     public static final String QUERY_URL = "irc";

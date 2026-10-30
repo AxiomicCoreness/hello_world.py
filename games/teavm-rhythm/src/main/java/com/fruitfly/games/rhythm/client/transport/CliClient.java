@@ -26,7 +26,7 @@ import org.teavm.jso.websocket.WebSocket;
  *   <li>{@code ?bridge=ws(s)://…} or {@code <meta name="cli-bridge" content="ws(s)://…">}</li>
  *   <li>loopback page / {@code file:} → {@link CliLines#LOOPBACK_WS}</li>
  *   <li>otherwise (e.g. GitHub Pages) <b>direct IRC-over-WebSocket</b> via
- *       {@link IrcWsSession}: default {@link IrcWsProtocol#DEFAULT_URL} (Libera.Chat),
+ *       {@link IrcWsSession}: default {@link IrcWsProtocol#DEFAULT_URL} (abjects),
  *       {@link IrcWsProtocol#DEFAULT_CHANNEL}, nick {@code Guest<digits>}; overridable by
  *       {@code ?irc=wss://…&channel=…&nick=…}. An explicit {@code ?irc=} also wins over the
  *       loopback default; {@code ?irc=off} restores {@link CliLines#REMOTE_NOT_CONFIGURED}.</li>

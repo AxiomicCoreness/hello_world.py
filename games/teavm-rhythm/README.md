@@ -514,7 +514,7 @@ straight to an IRC network's own **wss://** gateway (`client/irc/IrcWsProtocol`,
 
 | Setting | Default | Override |
 |---|---|---|
-| Gateway | `wss://web.libera.chat/webirc/websocket/` (Libera.Chat, the URL its Gamja webchat uses) | `?irc=wss://host[:port][/path]` |
+| Gateway | `wss://irc.abjects.net:6680/` (abjects, the same network the bridge uses) | `?irc=wss://host[:port][/path]`, e.g. Libera: `?irc=wss://web.libera.chat/webirc/websocket/` |
 | Channel | `#axiomiccoreness` | `?channel=name` (the `#` is added; a URL `#` would be a fragment) |
 | Nick | `Guest` + 5 random digits | `?nick=YourNick` |
 | Off | — | `?irc=off` (old "remote bridge not configured") |
@@ -533,11 +533,17 @@ no raw-line passthrough, and every outbound line goes through
 inject a second IRC command. Only `wss://` is accepted (plain `ws://` only to
 loopback, for local tests); `0.0.0.0` and userinfo URLs are rejected.
 
-Libera.Chat notes: guests need no account, but the channel should be registered
-with ChanServ by its owner, and Libera's policy requires an LLM bot to be
-opted in by the channel's operators (topic must say LLMs may be present), labelled
-as a bot, and accompanied by its human admin in the channel. Channels set `+r`
-answer `477` (shown in the chat) to unregistered guests.
+Why abjects: `.github/workflows/irc-wss-probe.yml` dials the gateway from GitHub
+runners with the Pages Origin (`https://axiomiccoreness.github.io`) and with
+abjects' own origin (`https://www.abjects.net`, whose `chat.html` webchat dials the same
+`wss://irc.abjects.net:6680/`); abjects answered HTTP 101 and the `001` welcome
+(2026-10-30T15:20:19-04:00 and 2026-10-30T15:23:31-04:00). Libera.Chat's gateway
+(`wss://web.libera.chat/webirc/websocket/`, the URL its Gamja webchat uses) answered a
+Cloudflare 403 to the same runners, so it is opt-in only via `?irc=`; a normal browser
+may still get through. If you pick Libera, its rules apply: the channel registered
+with ChanServ, LLM bots opted in by the channel operators (topic says LLMs may be
+present), labelled as bots, and their human admin present. Channels set `+r`
+answer `477` (shown in the chat) to unregistered guests on either network.
 
 Tests (offline, no sockets): `IrcWsProtocolTest`, `IrcWsSessionTest`.
 
