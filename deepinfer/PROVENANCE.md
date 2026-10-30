@@ -29,7 +29,7 @@ does **not** replace Sovereign PlanckEngine.
 
 See listing under `model_executor/models/v4_modules/`.
 
-## Parent modules vendored for v4_modules (added 2026-10-30)
+## Parent modules vendored for v4_modules (added 2026-10-30T13:11:37-04:00)
 
 **Why.** `v4_modules` imports `deepinfer` (AttrDict / PLATFORM / envs), `parallel_utils`, `layers` +
 `tilelang_ops`, `input_metadata`, `engine.engine_type`, `timer`, `model_executor.utils`, `worker.cache_engine`,
