@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-import deepinfer_status as ds
+from src import deepinfer_status as ds
 
 MODELS = Path(__file__).resolve().parents[1] / "serving" / "models"
 PIN = json.loads((MODELS / "MODEL_PIN.json").read_text(encoding="utf-8"))
