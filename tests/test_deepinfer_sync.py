@@ -13,7 +13,7 @@ import pytest
 torch = pytest.importorskip("torch", reason="torch not installed")
 # Prevent CI failure if deepinfer isn't installed in the base environment
 deepinfer = pytest.importorskip("deepinfer", reason="deepinfer package not importable")
-pytest.importorskip("deepinfer.utils", reason="deepinfer.utils absent in sparse deepinfer/ skeleton (GPU sync helpers)")
+pytest.importorskip("deepinfer.utils", reason="deepinfer.utils (vendored at the DeepInfer pin) needs GPU-host deps: psutil, deep_cluster")
 from deepinfer.utils import _sync_debug_arbiter, allow_cuda_sync, forbid_cuda_sync
 
 """
