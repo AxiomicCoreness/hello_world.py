@@ -27,7 +27,9 @@ The live runtime copies are written to `$RUN_DIR`, not to this folder.
 
 deepseek-r2-1.5b GGUF: `deepseek-r2-1.5b-Q4_K_M.gguf`, 1,117,320,640 bytes,
 sha256 `80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1`,
-from Kaggle `clarkeyoursatee/deepseek-r2-1-5b-q4-k-m`. Drop it into `models/` (see `models/README.md`);
+from Kaggle `clarkeyoursatee/deepseek-r2-1-5b-q4-k-m`.
+Direct single-file download (phones / PocketPal AI, or any machine): https://github.com/AxiomicCoreness/hello_world.py/releases/download/model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf
+`models/fetch-deepseek-r2.sh` uses that file first and falls back to the 42-part reassembly. Drop it into `models/` (see `models/README.md`);
 `launch-8085-deepseek-r2.sh` defaults `MODEL_DIR` to that folder and refuses to start if the file is
 missing or its sha256 does not match.
 

@@ -75,6 +75,7 @@ def test_status_lines_render_blockers_and_gguf(monkeypatch: pytest.MonkeyPatch, 
     assert all(ln.startswith(ds.PREFIX) for ln in lines)
     text = "\n".join(lines)
     assert "missing at" in text and "fetch-deepseek-r2.sh" in text
+    assert ds.GGUF_URL in text and ds.GGUF_SHA256 in text
     assert "127.0.0.1:8085" in text and "0.0.0.0" not in text
     assert "verdict:" in lines[-1]
 
@@ -98,3 +99,8 @@ def test_cli_runs_isolated_without_src_on_path(tmp_path: Path) -> None:
     rep = json.loads(out.stdout)
     assert rep["gguf"]["state"] == "missing"
     assert rep["vendor"]["missing"] == [] and rep["vendor"]["drifted"] == []
+
+
+def test_single_file_gguf_url() -> None:
+    assert ds.GGUF_URL == ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
+                           "model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf")
