@@ -70,7 +70,7 @@ class _Stub(BaseHTTPRequestHandler):
 
 
 @pytest.fixture(autouse=True)
-def _backend_env(monkeypatch):
+def _backend_env(monkeypatch, tmp_path):
     """Each test starts from the documented defaults: no fallback, empty liveness cache."""
     from src import llm_backend
 
@@ -81,9 +81,13 @@ def _backend_env(monkeypatch):
     # (raw/history behaviour is covered by dedicated tests below).
     monkeypatch.setenv("LLM_HISTORY_PATH", "")
     monkeypatch.setenv("LLM_RAW_REPLY", "0")
+    # Tripwire: a test that unsets LLM_HISTORY_PATH falls back here, not to the live file.
+    tripwire = tmp_path / "DEFAULT_HISTORY_PATH_TRIPWIRE.jsonl"
+    monkeypatch.setattr(llm_chat, "DEFAULT_HISTORY_PATH", str(tripwire))
     llm_backend.reset_state()
     yield
     llm_backend.reset_state()
+    assert not tripwire.exists(), "test wrote llm history to the default (live) path"
 
 
 @pytest.fixture()
@@ -652,3 +656,128 @@ class TestDeepSeekTutorAtomicHistory:
         monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", "deepseek-r2-1.5b")
         assert llm_chat.backend_order_line(meta).endswith("secondary: deepseek tutor (deepseek-r2-1.5b) answered")
         assert llm_chat.backend_order_line({"backend": "gguf"}) is None  # LLM_BACKEND=gguf: no order line
+
+
+# ---------------------------------------------------------------------------
+# Markdown + LaTeX saved replies ("format": "markdown") and the history guard
+# ---------------------------------------------------------------------------
+
+LIVE_DEFAULT_HISTORY = Path("/workspace/bridge-serving/llm_history.jsonl")
+
+
+def _rows(hist: Path) -> list:
+    return [json.loads(x) for x in hist.read_text(encoding="utf-8").splitlines() if x.strip()]
+
+
+def test_default_history_path_constant_unchanged():
+    # The documented production default stays the same (tripwire only swaps it in tests).
+    import importlib.util
+    spec = importlib.util.find_spec("src.llm_chat")
+    assert 'DEFAULT_HISTORY_PATH: Final = "/workspace/bridge-serving/llm_history.jsonl"' in Path(spec.origin).read_text()
+
+
+def test_guard_history_path_is_never_live_default(monkeypatch, tmp_path):
+    """Guard: under the autouse fixture no test can resolve the live history file."""
+    assert llm_chat.history_path() is None  # LLM_HISTORY_PATH="" disables history
+    monkeypatch.delenv("LLM_HISTORY_PATH")
+    assert llm_chat.history_path() != LIVE_DEFAULT_HISTORY
+    assert tmp_path in llm_chat.history_path().parents
+
+
+def test_saved_reply_is_markdown_with_latex(stub_llm, tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    stub_llm.reply = ("The golden ratio is $\\varphi = \\frac{1+\\sqrt5}{2}$, and\n"
+                      "\\[ \\varphi^2 = \\varphi + 1 \\]\n"
+                      "Code stays: `$x$` and\n```python\nprint('$y$')\n```")
+    lines = llm_chat.handle_llm_sync("/llm golden ratio?")
+    # Raw reply output (engine lines) is unchanged: still the model's own delimiters.
+    engine = [x for x in lines if x.startswith("[Engine] llm:")]
+    assert "[Engine] llm: The golden ratio is $\\varphi = \\frac{1+\\sqrt5}{2}$, and" in engine
+    assert "[Engine] llm: \\[ \\varphi^2 = \\varphi + 1 \\]" in engine
+    user, asst = _rows(hist)
+    assert set(user) == {"role", "content", "session", "ts"}  # user rows keep the legacy shape
+    assert asst["format"] == "markdown" and "thinking" not in asst
+    assert asst["content"] == ("The golden ratio is \\(\\varphi = \\frac{1+\\sqrt5}{2}\\), and\n"
+                               "$$\\varphi^2 = \\varphi + 1$$\n"
+                               "Code stays: `$x$` and\n```python\nprint('$y$')\n```")
+    assert list(asst) == ["role", "content", "format", "session", "ts"]
+
+
+def test_saved_reply_thinking_is_separate_field(stub_llm, tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    stub_llm.reply = "<think>\n$a+b$ first\n</think>\nSo \\(a+b=3\\)."
+    lines = llm_chat.handle_llm_sync("/llm add")
+    assert "[Engine] llm: <think>" in lines  # raw output keeps the tags visible
+    asst = _rows(hist)[1]
+    assert asst["content"] == "So \\(a+b=3\\)."
+    assert asst["thinking"] == "\\(a+b\\) first"
+    assert "[thinking]" not in asst["content"]
+
+
+def test_reasoning_content_goes_to_thinking_and_engine_unchanged(tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    monkeypatch.setenv("LLM_RAW_REPLY", "1")
+    meta = {"backend": "gguf", "reasoning": "step $x=1$", "path": "/v1/chat/completions"}
+    monkeypatch.setattr(llm_chat, "complete_routed", lambda msgs: ("Answer: $x$", None, dict(meta)))
+    lines = llm_chat.handle_llm_sync("/llm q")
+    engine = [x for x in lines if x.startswith("[Engine] llm:")]
+    assert engine == ["[Engine] llm: [thinking]", "[Engine] llm: step $x=1$",
+                      "[Engine] llm: [/thinking]", "[Engine] llm: Answer: $x$"]
+    asst = _rows(hist)[1]
+    assert asst == {**asst, "content": "Answer: \\(x\\)", "format": "markdown", "thinking": "step \\(x=1\\)"}
+    # Reasoning is not replayed as context next turn; the Markdown answer is.
+    seen = []
+    monkeypatch.setattr(llm_chat, "complete_routed", lambda msgs: (seen.append(msgs), ("ok", None, dict(meta)))[1])
+    llm_chat.handle_llm_sync("/llm again")
+    assert {"role": "assistant", "content": "Answer: \\(x\\)"} in seen[0]
+    assert not any("step" in m["content"] for m in seen[0][1:])
+
+
+def test_guarded_mode_saves_cleaned_markdown(stub_llm, tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))  # LLM_RAW_REPLY=0 from the fixture
+    stub_llm.reply = "Area is $\\pi r^2$.\nUser 1: echoed"
+    llm_chat.handle_llm_sync("/llm area")
+    asst = _rows(hist)[1]
+    assert asst["content"] == "Area is \\(\\pi r^2\\)." and asst["format"] == "markdown"
+
+
+def test_legacy_rows_without_format_read_as_plain(tmp_path, monkeypatch):
+    from src import llm_markdown
+    hist = tmp_path / "llm_history.jsonl"
+    legacy = {"role": "assistant", "content": "[thinking]\nhm\n[/thinking]\n$x$", "session": "default",
+              "ts": "2026-10-30T15:25:55.833414+00:00"}
+    hist.write_text(json.dumps({"role": "user", "content": "q"}) + "\n" + json.dumps(legacy) + "\n", encoding="utf-8")
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    view = llm_markdown.read_entry(_rows(hist)[1])
+    assert view["format"] == "plain" and view["content"] == legacy["content"] and view["thinking"] is None
+    # load_history still returns legacy content untouched (old + new rows mix).
+    assert llm_chat.load_history()[1]["content"] == legacy["content"]
+    llm_chat.append_history("u", "a")  # direct callers without a format still write the legacy shape
+    assert "format" not in _rows(hist)[-1]
+
+
+def test_system_prompts_ask_for_latex_delimiters(stub_llm, monkeypatch):
+    llm_chat.handle_llm_sync("/llm what is 2+2?")
+    sys_plain = stub_llm.requests[-1]["body"]["messages"][0]["content"]
+    monkeypatch.setenv("LLM_SYSTEM_PROMPT", "spike")
+    llm_chat.handle_llm_sync("/llm hi")
+    sys_spike = stub_llm.requests[-1]["body"]["messages"][0]["content"]
+    for prompt in (sys_plain, sys_spike):
+        assert "Markdown" in prompt and "\\( ... \\)" in prompt and "$$ ... $$" in prompt
+
+
+def test_reset_and_status_unchanged_with_markdown_rows(stub_llm, tmp_path, monkeypatch):
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+    stub_llm.reply = "$1+1=2$"
+    llm_chat.handle_llm_sync("/llm sum")
+    lines = llm_chat.handle_llm_sync("/llm reset")
+    assert any("session=default history archived" in x for x in lines)
+    (arch,) = tmp_path.glob("llm_history.jsonl.reset-default-*")
+    assert _rows(arch)[1]["format"] == "markdown"
