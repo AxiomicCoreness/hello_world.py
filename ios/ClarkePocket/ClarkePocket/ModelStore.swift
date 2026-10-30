@@ -49,7 +49,7 @@ final class ModelStore: NSObject, ObservableObject {
     private let cancelVerify = Flag()
     private var memoryObserver: NSObjectProtocol?
 
-    static let modelsDir: URL = {
+    nonisolated static let modelsDir: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = base.appendingPathComponent("Models", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -57,9 +57,9 @@ final class ModelStore: NSObject, ObservableObject {
         excludeFromBackup(&d)
         return dir
     }()
-    static var pinnedURL: URL { modelsDir.appendingPathComponent(ModelPin.fileName) }
-    static var customURL: URL { modelsDir.appendingPathComponent("custom.gguf") }
-    static var partialURL: URL { modelsDir.appendingPathComponent(ModelPin.fileName + ".partial") }
+    nonisolated static var pinnedURL: URL { modelsDir.appendingPathComponent(ModelPin.fileName) }
+    nonisolated static var customURL: URL { modelsDir.appendingPathComponent("custom.gguf") }
+    nonisolated static var partialURL: URL { modelsDir.appendingPathComponent(ModelPin.fileName + ".partial") }
 
     static func excludeFromBackup(_ url: inout URL) {
         var v = URLResourceValues()
