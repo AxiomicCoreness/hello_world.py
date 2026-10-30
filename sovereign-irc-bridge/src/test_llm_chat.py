@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -396,124 +397,242 @@ def test_llm_reset_archives_history(tmp_path, monkeypatch):
     assert len(archives) == 1 and archives[0].read_text().startswith("{")
 
 
-def test_normalize_session():
-    assert llm_chat.normalize_session(None) == "default"
-    assert llm_chat.normalize_session("") == "default"
-    assert llm_chat.normalize_session("abc_12-Z") == "abc_12-Z"
-    assert llm_chat.normalize_session("bad/id") == "default"
-    assert llm_chat.normalize_session("x" * 65) == "default"
-    assert llm_chat.normalize_session("ok" * 32) == "ok" * 32  # exactly 64
+# ---------------------------------------------------------------------------
+# DeepSeek tutor + DeepInfer atomic history rewrite (PR #155)
+#
+# The DeepSeek tutor suggested a ``chat/history_manager.py`` HistoryManager, a
+# ``chat/capability.py`` module and an HTTP ``/llm`` route in
+# ``api/module_routes.py``. None of those paths exist in this repo: ``/llm`` is
+# a command on the ``/cli`` WebSocket (cli_loopback.py, 127.0.0.1:6680). Each
+# suggestion is mapped onto the real code in ``src/llm_chat.py`` and
+# ``src/cli_loopback.py``; every test below names the suggestion it covers.
+# ---------------------------------------------------------------------------
 
 
-def test_session_isolation(tmp_path, monkeypatch):
-    hist = tmp_path / "llm_history.jsonl"
-    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
-    llm_chat.append_history("alpha-user", "alpha-asst", session="alpha")
-    llm_chat.append_history("beta-user", "beta-asst", session="beta")
-    a = llm_chat.load_history(session="alpha")
-    b = llm_chat.load_history(session="beta")
-    d = llm_chat.load_history(session="default")
-    assert [t["content"] for t in a] == ["alpha-user", "alpha-asst"]
-    assert [t["content"] for t in b] == ["beta-user", "beta-asst"]
-    assert d == []
-    rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
-    assert all("session" in r for r in rows)
+class TestDeepSeekTutorAtomicHistory:
+    """DeepSeek tutor history suggestions, as implemented in llm_chat.py / cli_loopback.py."""
 
+    def test_session_id_validation(self):
+        """Tutor: per-session HistoryManager keyed by a session id.
 
-def test_legacy_rows_map_to_default(tmp_path, monkeypatch):
-    hist = tmp_path / "llm_history.jsonl"
-    # Pre-session format (no session field) + one explicit other session
-    hist.write_text(
-        json.dumps({"role": "user", "content": "legacy hi"}) + "\n"
-        + json.dumps({"role": "assistant", "content": "legacy bye"}) + "\n"
-        + json.dumps({"role": "user", "content": "other", "session": "s2"}) + "\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
-    assert [t["content"] for t in llm_chat.load_history(session="default")] == ["legacy hi", "legacy bye"]
-    assert [t["content"] for t in llm_chat.load_history(session="s2")] == ["other"]
-    assert llm_chat.load_history(session="missing") == []
+        Real: ``llm_chat.normalize_session`` — ``[A-Za-z0-9_-]{1,64}``, anything else → ``default``.
+        """
+        assert llm_chat.normalize_session(None) == "default"
+        assert llm_chat.normalize_session("") == "default"
+        assert llm_chat.normalize_session("abc_12-Z") == "abc_12-Z"
+        assert llm_chat.normalize_session("bad/id") == "default"
+        assert llm_chat.normalize_session("x" * 65) == "default"
+        assert llm_chat.normalize_session("ok" * 32) == "ok" * 32  # exactly 64
 
+    def test_per_session_history_isolation(self, tmp_path, monkeypatch):
+        """Tutor: per-session history (HistoryManager.get/append per session).
 
-def test_reset_archives_only_that_session(tmp_path, monkeypatch):
-    hist = tmp_path / "llm_history.jsonl"
-    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
-    llm_chat.append_history("keep-u", "keep-a", session="keep")
-    llm_chat.append_history("drop-u", "drop-a", session="drop")
-    lines = llm_chat.handle_llm_sync("/llm reset", session="drop")
-    assert any("session=drop history archived" in x for x in lines)
-    assert hist.exists()
-    kept = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
-    assert all(r.get("session") == "keep" for r in kept)
-    assert [t["content"] for t in llm_chat.load_history(session="keep")] == ["keep-u", "keep-a"]
-    assert llm_chat.load_history(session="drop") == []
-    archives = list(tmp_path.glob("llm_history.jsonl.reset-drop-*"))
-    assert len(archives) == 1
-    archived = [json.loads(x) for x in archives[0].read_text().splitlines() if x.strip()]
-    assert all(r.get("session") == "drop" for r in archived)
+        Real: ``append_history(..., session=)`` / ``load_history(session=)`` over one JSONL
+        whose rows carry a ``session`` field.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        llm_chat.append_history("alpha-user", "alpha-asst", session="alpha")
+        llm_chat.append_history("beta-user", "beta-asst", session="beta")
+        a = llm_chat.load_history(session="alpha")
+        b = llm_chat.load_history(session="beta")
+        d = llm_chat.load_history(session="default")
+        assert [t["content"] for t in a] == ["alpha-user", "alpha-asst"]
+        assert [t["content"] for t in b] == ["beta-user", "beta-asst"]
+        assert d == []
+        rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
+        assert all("session" in r for r in rows)
 
+    def test_legacy_rows_map_to_default(self, tmp_path, monkeypatch):
+        """Tutor: migrate old history without breaking it.
 
-def test_atomic_rewrite_survives_simulated_crash(tmp_path, monkeypatch):
-    hist = tmp_path / "llm_history.jsonl"
-    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
-    llm_chat.append_history("u1", "a1", session="s1")
-    llm_chat.append_history("u2", "a2", session="s2")
-    original = hist.read_text()
-    # Simulate a crash mid-rewrite: leave a .tmp behind without replacing.
-    tmp = hist.with_name(hist.name + ".tmp")
-    tmp.write_text('{"role":"user","content":"CORRUPT","session":"s1"}\n', encoding="utf-8")
-    # Live file must still be the original until os.replace lands.
-    assert hist.read_text() == original
-    assert "CORRUPT" not in hist.read_text()
-    # A real archive rewrite swaps atomically and leaves other sessions intact.
-    dest = llm_chat.archive_history(session="s1")
-    assert dest is not None and dest.exists()
-    assert hist.exists()
-    assert "CORRUPT" not in hist.read_text()
-    assert [t["content"] for t in llm_chat.load_history(session="s2")] == ["u2", "a2"]
-    assert llm_chat.load_history(session="s1") == []
-    # .tmp from the simulated crash may remain; it must not be treated as live history.
-    assert not any("CORRUPT" in (llm_chat.load_history(session=s)[0]["content"] if llm_chat.load_history(session=s) else "")
-                   for s in ("s1", "s2", "default"))
+        Real: ``_row_session`` — rows written before sessions (no ``session`` field) load as ``default``.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        hist.write_text(
+            json.dumps({"role": "user", "content": "legacy hi"}) + "\n"
+            + json.dumps({"role": "assistant", "content": "legacy bye"}) + "\n"
+            + json.dumps({"role": "user", "content": "other", "session": "s2"}) + "\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        assert [t["content"] for t in llm_chat.load_history(session="default")] == ["legacy hi", "legacy bye"]
+        assert [t["content"] for t in llm_chat.load_history(session="s2")] == ["other"]
+        assert llm_chat.load_history(session="missing") == []
 
+    def test_session_scoped_llm_reset(self, tmp_path, monkeypatch):
+        """Tutor: ``clear(session)`` only drops that session.
 
-def test_concurrent_appends_lose_no_rows(tmp_path, monkeypatch):
-    hist = tmp_path / "llm_history.jsonl"
-    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
-    n_threads, n_each = 8, 20
+        Real: ``/llm reset`` → ``archive_history(session=)`` moves only that session's rows to
+        ``*.reset-<session>-<utc>`` (rewrite, never delete); other sessions stay live.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        llm_chat.append_history("keep-u", "keep-a", session="keep")
+        llm_chat.append_history("drop-u", "drop-a", session="drop")
+        lines = llm_chat.handle_llm_sync("/llm reset", session="drop")
+        assert any("session=drop history archived" in x for x in lines)
+        assert hist.exists()
+        kept = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
+        assert all(r.get("session") == "keep" for r in kept)
+        assert [t["content"] for t in llm_chat.load_history(session="keep")] == ["keep-u", "keep-a"]
+        assert llm_chat.load_history(session="drop") == []
+        archives = list(tmp_path.glob("llm_history.jsonl.reset-drop-*"))
+        assert len(archives) == 1
+        archived = [json.loads(x) for x in archives[0].read_text().splitlines() if x.strip()]
+        assert all(r.get("session") == "drop" for r in archived)
 
-    def worker(i: int) -> None:
-        for j in range(n_each):
-            llm_chat.append_history(f"u-{i}-{j}", f"a-{i}-{j}", session=f"s{i}")
+    def test_atomic_rewrite_survives_simulated_crash(self, tmp_path, monkeypatch):
+        """Tutor: atomic save (write ``.tmp`` then rename).
 
-    threads = [threading.Thread(target=worker, args=(i,)) for i in range(n_threads)]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
-    rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
-    # each append writes 2 rows
-    assert len(rows) == n_threads * n_each * 2
-    for i in range(n_threads):
-        turns = llm_chat.load_history(session=f"s{i}")
-        assert len(turns) == n_each * 2
-        assert turns[0]["content"] == f"u-{i}-0"
-        assert turns[-1]["content"] == f"a-{i}-{n_each - 1}"
+        Real: ``_atomic_rewrite`` — ``.tmp`` + fsync + ``os.replace``; a stale ``.tmp`` left by a
+        crash is never read as live history.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        llm_chat.append_history("u1", "a1", session="s1")
+        llm_chat.append_history("u2", "a2", session="s2")
+        original = hist.read_text()
+        tmp = hist.with_name(hist.name + ".tmp")
+        tmp.write_text('{"role":"user","content":"CORRUPT","session":"s1"}\n', encoding="utf-8")
+        assert hist.read_text() == original
+        dest = llm_chat.archive_history(session="s1")
+        assert dest is not None and dest.exists()
+        assert hist.exists() and "CORRUPT" not in hist.read_text()
+        assert [t["content"] for t in llm_chat.load_history(session="s2")] == ["u2", "a2"]
+        assert llm_chat.load_history(session="s1") == []
+        for s in ("s1", "s2", "default"):
+            assert all("CORRUPT" not in t["content"] for t in llm_chat.load_history(session=s))
 
+    def test_writes_fsync_and_rewrite_uses_os_replace(self, tmp_path, monkeypatch):
+        """Tutor: durable writes (flush + fsync) and atomic rename.
 
-def test_websocket_session_query_param(stub_llm):
-    from fastapi.testclient import TestClient
-    from src.cli_loopback import create_app
+        Real: ``append_history`` fsyncs after each pair; ``archive_history`` → ``_atomic_rewrite``
+        fsyncs the ``.tmp`` and swaps it in with ``os.replace`` (archive file first, then live file).
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        fsyncs, replaces = [], []
+        real_fsync, real_replace = llm_chat.os.fsync, llm_chat.os.replace
+        monkeypatch.setattr(llm_chat.os, "fsync", lambda fd: (fsyncs.append(fd), real_fsync(fd))[1])
+        monkeypatch.setattr(llm_chat.os, "replace",
+                            lambda a, b: (replaces.append((Path(a).name, Path(b).name)), real_replace(a, b))[1])
+        llm_chat.append_history("u1", "a1", session="s1")
+        llm_chat.append_history("u2", "a2", session="s2")
+        assert len(fsyncs) == 2 and replaces == []
+        dest = llm_chat.archive_history(session="s1")
+        assert dest is not None
+        assert len(fsyncs) == 4  # archive .tmp + live .tmp
+        assert replaces == [(dest.name + ".tmp", dest.name), (hist.name + ".tmp", hist.name)]
+        assert not hist.with_name(hist.name + ".tmp").exists()
 
-    client = TestClient(create_app())
-    with client.websocket_connect("/cli?session=room42") as ws:
-        banner = [ws.receive_text() for _ in range(6)]
-        assert any("llm session: room42" in b for b in banner)
-        ws.send_text("/llm hello from room42")
-        got = []
-        while not any(x.startswith("[Engine] llm:") for x in got):
-            got.append(ws.receive_text())
-        assert any("llm session: room42" in x for x in got)
-    with client.websocket_connect("/cli?session=bad/id") as ws:
-        banner = [ws.receive_text() for _ in range(6)]
-        assert any("llm session: default" in b for b in banner)
+    def test_lock_serializes_history_io(self, tmp_path, monkeypatch):
+        """Tutor: lock around history reads/writes.
+
+        Real: ``_HISTORY_LOCK`` (threading.Lock) — an append waits while the lock is held.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        done = threading.Event()
+
+        def writer() -> None:
+            llm_chat.append_history("locked-u", "locked-a", session="lk")
+            done.set()
+
+        with llm_chat._HISTORY_LOCK:
+            t = threading.Thread(target=writer)
+            t.start()
+            assert not done.wait(0.3), "append must block while the history lock is held"
+            assert not hist.exists()
+        t.join(5)
+        assert done.is_set()
+        assert [x["content"] for x in llm_chat.load_history(session="lk")] == ["locked-u", "locked-a"]
+
+    def test_concurrent_appends_lose_no_rows(self, tmp_path, monkeypatch):
+        """Tutor: thread-safe HistoryManager.
+
+        Real: 8 threads × 20 appends under ``_HISTORY_LOCK`` — no lost or interleaved rows.
+        """
+        hist = tmp_path / "llm_history.jsonl"
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        n_threads, n_each = 8, 20
+
+        def worker(i: int) -> None:
+            for j in range(n_each):
+                llm_chat.append_history(f"u-{i}-{j}", f"a-{i}-{j}", session=f"s{i}")
+
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(n_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
+        assert len(rows) == n_threads * n_each * 2
+        for i in range(n_threads):
+            turns = llm_chat.load_history(session=f"s{i}")
+            assert len(turns) == n_each * 2
+            assert turns[0]["content"] == f"u-{i}-0"
+            assert turns[-1]["content"] == f"a-{i}-{n_each - 1}"
+
+    def test_websocket_session_query_param(self, stub_llm):
+        """Tutor: HTTP ``/llm`` route with a session parameter (no such route here).
+
+        Real: ``/cli?session=<id>`` on the WebSocket in ``cli_loopback.py``; invalid ids → ``default``.
+        """
+        from fastapi.testclient import TestClient
+
+        client = TestClient(create_app())
+        with client.websocket_connect("/cli?session=room42") as ws:
+            banner = [ws.receive_text() for _ in range(6)]
+            assert any("llm session: room42" in b for b in banner)
+            ws.send_text("/llm hello from room42")
+            got = []
+            while not any(x.startswith("[Engine] llm:") for x in got):
+                got.append(ws.receive_text())
+            assert any("llm session: room42" in x for x in got)
+        with client.websocket_connect("/cli?session=bad/id") as ws:
+            banner = [ws.receive_text() for _ in range(6)]
+            assert any("llm session: default" in b for b in banner)
+
+    def test_deepinfer_primary_and_gguf_fallback_share_session(self, stub_llm, tmp_path, monkeypatch):
+        """DeepInfer platform: primary (127.0.0.1:8090) and GGUF fallback write one session history.
+
+        Real: ``handle_llm_sync(session=)`` → ``complete_routed`` (llm_backend) → ``append_history``.
+        Turn 1 is answered by DeepInfer (probe stubbed online); turn 2 by the ClarkeYoursaTee GGUF
+        fallback (deepseek-r2 on 8085 in production) after DeepInfer goes offline. Both turns land
+        in the same session and the fallback sees turn 1 as context. Loopback stub only.
+        """
+        from src import llm_backend
+
+        hist = tmp_path / "llm_history.jsonl"
+        url = os.environ["LLM_URL"]  # the stub_llm loopback server
+        monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
+        monkeypatch.setenv("LLM_RAW_REPLY", "1")
+        monkeypatch.setenv("LLM_BACKEND", "deepinfer")
+        monkeypatch.setenv("DEEPINFER_URL", url)
+        monkeypatch.setenv("LLM_FALLBACK", "clarkeyoursatee")
+        monkeypatch.setenv("LLM_CLARKEYOURSATEE_URL", url)
+        monkeypatch.setenv("LLM_CLARKEYOURSATEE_MODEL", "deepseek-r2-1.5b")
+
+        monkeypatch.setattr(llm_backend, "probe_server", lambda u, timeout=None: (True, "GET /health 200"))
+        monkeypatch.setattr(stub_llm, "reply", "DeepInfer says APPLE.")
+        lines1 = llm_chat.handle_llm_sync("/llm remember APPLE", session="tutor")
+        assert any(x.startswith("[System] llm route: backend=deepinfer ") for x in lines1)
+        assert stub_llm.requests[-1]["body"]["model"] == "deepinfer"
+
+        llm_backend.reset_state()
+        monkeypatch.setattr(llm_backend, "probe_server", lambda u, timeout=None: (False, "connect refused"))
+        monkeypatch.setattr(stub_llm, "reply", "Fallback recalls APPLE.")
+        lines2 = llm_chat.handle_llm_sync("/llm what did I ask you to remember?", session="tutor")
+        assert any(x.startswith("[System] llm: deepinfer backend offline (") for x in lines2)
+        assert any("clarkeyoursatee fallback from deepinfer" in x for x in lines2)
+        body = stub_llm.requests[-1]["body"]
+        assert body["model"] == "deepseek-r2-1.5b"
+        prior = [m["content"] for m in body["messages"][1:-1]]
+        assert prior == ["remember APPLE", "DeepInfer says APPLE."]
+
+        rows = [json.loads(x) for x in hist.read_text().splitlines() if x.strip()]
+        assert len(rows) == 4 and {r["session"] for r in rows} == {"tutor"}
+        assert [t["content"] for t in llm_chat.load_history(session="tutor")][::2] == [
+            "remember APPLE", "what did I ask you to remember?"]
+        assert llm_chat.load_history(session="default") == []
