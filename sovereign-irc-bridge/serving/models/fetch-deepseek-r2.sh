@@ -17,9 +17,19 @@ BASE="deepseek-r2-1.5b-Q4_K_M"
 ARCHIVE="${BASE}.tar.gz"
 GGUF="${BASE}.gguf"
 GGUF_SHA256="80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
-URL_BASE="https://github.com/${REPO}/releases/download/${TAG}"
+GGUF_SIZE="1117320640"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# MODEL_PIN.json (next to this script) is the source of truth; the constants above are fallbacks.
+PIN="${PIN:-$SCRIPT_DIR/MODEL_PIN.json}"
+pin_get() { sed -n "s/^ *\"$1\": *\"\{0,1\}\([^\",]*\)\"\{0,1\},\{0,1\} *$/\1/p" "$PIN" | head -n1; }
+if [ -f "$PIN" ]; then
+  v="$(pin_get gguf_sha256)"; [ -n "$v" ] && GGUF_SHA256="$v"
+  v="$(pin_get size)";        [ -n "$v" ] && GGUF_SIZE="$v"
+  v="$(pin_get release_tag)"; [ -n "$v" ] && TAG="$v"
+  echo "Using pin $PIN (sha256 $GGUF_SHA256, size $GGUF_SIZE)"
+fi
+URL_BASE="https://github.com/${REPO}/releases/download/${TAG}"
 DEST="${DEST:-$SCRIPT_DIR}"
 mkdir -p "$DEST"
 WORK="$(mktemp -d "${DEST%/}/.fetch-deepseek-r2.XXXXXX")"
