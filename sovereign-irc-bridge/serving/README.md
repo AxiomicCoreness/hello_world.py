@@ -53,6 +53,8 @@ sovereign-irc-bridge/serving/  (this folder)
 ├── models/                      # drop-in: deepseek-r2-1.5b-Q4_K_M.gguf (git-ignored)
 ├── launch-6680-deepseek-r2.sh   # bridge, fallback → 8085
 ├── launch-6680-revert-8082.sh   # bridge, fallback → 8082 (v1 fine-tune)
+├── launch-irc-bot.sh            # IRC bot mode: !llm in an IRC channel, outbound only (IRC_BOT.md)
+├── systemd/                     # example user units: llama-8085, irc-llm-bot
 ├── keepalive.sh                 # restarts 8085 and 6680 if their ports drop
 └── stop-tunnel.sh               # unused: outbound Cloudflare tunnel edges are blocked
 ```
@@ -63,6 +65,13 @@ sovereign-irc-bridge/serving/  (this folder)
 2. `src/llm_chat.py` builds the prompt (with saved history) and marks reasoning as `[thinking]`.
 3. `src/llm_backend.py` tries DeepInfer on 127.0.0.1:8090 first; when it is unreachable it falls back to
    the llama-server named by `LLM_FALLBACK` / `LLM_CLARKEYOURSATEE_URL` (127.0.0.1:8085, deepseek-r2-1.5b).
+
+## IRC bot mode
+
+`launch-irc-bot.sh` runs `python -m src.irc_llm_bot`: the same `/llm` path, answered as `!llm` in
+one IRC channel (default `#axiomiccoreness` on irc.abjects.net, TLS 6697). It only connects out, so
+it needs no domain, `wss://` or open ports. Setup, Libera.Chat opt-in rules, systemd/Windows/macOS notes
+and the temporary GitHub Actions session are in [IRC_BOT.md](IRC_BOT.md).
 
 ## Environment variables
 

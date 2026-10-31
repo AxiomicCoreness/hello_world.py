@@ -6,6 +6,8 @@ package com.fruitfly.games.rhythm.client.transport;
 import com.fruitfly.games.rhythm.client.CliLines;
 import com.fruitfly.games.rhythm.client.ide.PythonIdeCli;
 import com.fruitfly.games.rhythm.client.ide.TracebackFeedback;
+import com.fruitfly.games.rhythm.client.irc.IrcWsProtocol;
+import com.fruitfly.games.rhythm.client.irc.IrcWsSession;
 import com.fruitfly.games.rhythm.client.llm.LlmCli;
 import com.fruitfly.games.rhythm.web.Dom;
 import java.util.Collections;
@@ -23,10 +25,14 @@ import org.teavm.jso.websocket.WebSocket;
  * <ol>
  *   <li>{@code ?bridge=ws(s)://…} or {@code <meta name="cli-bridge" content="ws(s)://…">}</li>
  *   <li>loopback page / {@code file:} → {@link CliLines#LOOPBACK_WS}</li>
- *   <li>otherwise stay disconnected and print {@link CliLines#REMOTE_NOT_CONFIGURED}</li>
+ *   <li>otherwise (e.g. GitHub Pages) <b>direct IRC-over-WebSocket</b> via
+ *       {@link IrcWsSession}: default {@link IrcWsProtocol#DEFAULT_URL} (abjects),
+ *       {@link IrcWsProtocol#DEFAULT_CHANNEL}, nick {@code Guest<digits>}; overridable by
+ *       {@code ?irc=wss://…&channel=…&nick=…}. An explicit {@code ?irc=} also wins over the
+ *       loopback default; {@code ?irc=off} restores {@link CliLines#REMOTE_NOT_CONFIGURED}.</li>
  * </ol>
- * Remote IRC {@code irc.abjects.net:6669} stays behind the bridge; the browser
- * never dials abjects or {@code 0.0.0.0} directly.
+ * In bridge mode remote IRC {@code irc.abjects.net:6669} stays behind the bridge. In direct
+ * mode the browser speaks IRC to the network's own wss:// gateway (never {@code 0.0.0.0}).
  *
  * <p>Enter sends; history lines are tagged System / Engine / User / Traceback.
  * Clicking the column focuses {@code #chat-input}; Main skips game keys while
@@ -48,6 +54,9 @@ public final class CliClient {
     private final TracebackFeedback feedback = new TracebackFeedback();
     /** Live neuron snapshot JSON from Main (null until wired). */
     private Supplier<String> neuronSnapshot;
+    /** Direct IRC-over-WebSocket mode (null = bridge mode). */
+    private final IrcWsSession irc;
+    private final java.util.List<String> ircNotes;
 
     /** Resolve dial URL from the page: ?bridge= / meta override, loopback, else none. */
     public CliClient() {
@@ -55,7 +64,25 @@ public final class CliClient {
                 Dom.locationProtocol(),
                 Dom.locationHostname(),
                 Dom.locationQueryParam(CliLines.BRIDGE_QUERY_PARAM),
-                Dom.metaContent(CliLines.BRIDGE_META_NAME)));
+                Dom.metaContent(CliLines.BRIDGE_META_NAME)),
+                Dom.locationQueryParam(IrcWsProtocol.QUERY_URL),
+                IrcWsProtocol.resolve(
+                        Dom.locationQueryParam(IrcWsProtocol.QUERY_URL),
+                        Dom.locationQueryParam(IrcWsProtocol.QUERY_CHANNEL),
+                        Dom.locationQueryParam(IrcWsProtocol.QUERY_NICK),
+                        String.valueOf(10000 + (int) (Math.random() * 90000))));
+    }
+
+    private CliClient(CliLines.BridgeResolution r, String ircParam, IrcWsProtocol.Config c) {
+        boolean direct = IrcWsProtocol.useDirect(r.source, r.url != null, ircParam, c);
+        this.wsUrl = direct ? null : r.url;
+        this.rejectedNote = r.rejected;
+        this.warningNote = direct ? null : r.warning;
+        this.irc = direct ? new IrcWsSession(c) : null;
+        this.ircNotes = c == null ? java.util.Collections.<String>emptyList() : c.notes;
+        if (r.rejected != null) {
+            Dom.log("[CliClient] " + r.rejected);
+        }
     }
 
     /**
@@ -70,20 +97,18 @@ public final class CliClient {
         this.wsUrl = wsUrl.trim();
         this.rejectedNote = null;
         this.warningNote = null;
+        this.irc = null;
+        this.ircNotes = java.util.Collections.<String>emptyList();
     }
 
-    private CliClient(CliLines.BridgeResolution r) {
-        this.wsUrl = r.url;
-        this.rejectedNote = r.rejected;
-        this.warningNote = r.warning;
-        if (r.rejected != null) {
-            Dom.log("[CliClient] " + r.rejected);
-        }
-    }
-
-    /** Dial URL, or null when no bridge is configured. */
+    /** Bridge dial URL, or null when no bridge is configured (or in direct IRC mode). */
     public String wsUrl() {
         return wsUrl;
+    }
+
+    /** True when the chatbox speaks IRC directly over the network's wss:// gateway. */
+    public boolean directIrc() {
+        return irc != null;
     }
 
     /** Main wires the live LIF-RK4 spike snapshot used by {@code /llm}. */
@@ -111,6 +136,12 @@ public final class CliClient {
             return;
         }
         input = (HTMLInputElement) raw;
+        if (irc != null) {
+            HTMLElement title = (HTMLElement) doc.querySelector(".cli-title");
+            if (title != null) {
+                title.setTextContent("CLI \u00b7 IRC " + irc.channel() + " \u00b7 /llm \u00b7 /py");
+            }
+        }
         clearAndBoot();
         HTMLElement form = (HTMLElement) doc.getElementById("cli-form");
         if (form != null) {
@@ -148,6 +179,16 @@ public final class CliClient {
 
     private void clearAndBoot() {
         history.setTextContent("");
+        if (irc != null) {
+            appendRaw(CliLines.format(CliLines.KIND_SYSTEM, "TeaVM CLI → IRC " + irc.url()
+                    + " · " + irc.channel() + " · nick " + irc.nick()));
+            appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
+                    "override: ?irc=wss://…&channel=…&nick=… · ?irc=off · ?bridge=wss://…/cli for the bridge"));
+            appendRaw(CliLines.format(CliLines.KIND_SYSTEM, IrcWsSession.helpLine()));
+            appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
+                    "pythonIDE: /py help · /py list · /py pointer (offline in IRC mode)"));
+            return;
+        }
         appendRaw(CliLines.bootSystemLine());
         appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
                 "remote behind bridge: " + CliLines.REMOTE_IRC
@@ -164,6 +205,13 @@ public final class CliClient {
     private void connect() {
         if (rejectedNote != null) {
             append(CliLines.KIND_SYSTEM, rejectedNote);
+        }
+        for (String note : ircNotes) {
+            append(CliLines.KIND_SYSTEM, note);
+        }
+        if (irc != null) {
+            connectIrc();
+            return;
         }
         if (wsUrl == null) {
             append(CliLines.KIND_SYSTEM, CliLines.REMOTE_NOT_CONFIGURED);
@@ -218,6 +266,87 @@ public final class CliClient {
         });
     }
 
+    /** Direct mode: dial the IRC network's wss:// gateway and run {@link IrcWsSession}. */
+    private void connectIrc() {
+        if (!WebSocket.isSupported()) {
+            append(CliLines.KIND_SYSTEM, "WebSocket unsupported in this browser");
+            return;
+        }
+        append(CliLines.KIND_SYSTEM, "dialing " + irc.url() + " …");
+        try {
+            socket = WebSocket.create(irc.url());
+        } catch (Throwable t) {
+            append(CliLines.KIND_SYSTEM, "dial failed: " + t);
+            return;
+        }
+        final WebSocket mine = socket;
+        socket.onOpen(evt -> {
+            open = true;
+            apply(irc.onOpen());
+        });
+        socket.onMessage(evt -> {
+            MessageEvent me = (MessageEvent) evt;
+            String data = me.getDataAsString();
+            if (data == null) {
+                data = String.valueOf(me.getData());
+            }
+            apply(irc.onFrame(data));
+        });
+        socket.onError(evt -> {
+            append(CliLines.KIND_SYSTEM, "IRC WebSocket error (" + irc.url()
+                    + ") · /reconnect to retry · or try ?irc=wss://…");
+        });
+        socket.onClose(evt -> {
+            if (socket != mine) {
+                return;
+            }
+            open = false;
+            irc.onClosed();
+            CloseEvent ce = (CloseEvent) evt;
+            append(CliLines.KIND_SYSTEM, "IRC closed code=" + ce.getCode() + " · "
+                    + nullToEmpty(ce.getReason()) + " · /reconnect to dial again");
+        });
+    }
+
+    private void apply(IrcWsSession.Step step) {
+        if (socket != null && open) {
+            for (String line : step.send) {
+                try {
+                    socket.send(line);
+                } catch (Throwable t) {
+                    append(CliLines.KIND_SYSTEM, "IRC send failed: " + t);
+                    break;
+                }
+            }
+        }
+        for (String line : step.show) {
+            appendRaw(line);
+        }
+    }
+
+    /** Direct-mode user line: /py stays local, /reconnect redials, the rest goes to IRC. */
+    private void sendIrcUser(String text) {
+        if (PythonIdeCli.isIdeLine(text)) {
+            for (String line : PythonIdeCli.handleOffline(text)) {
+                appendRaw(line);
+            }
+            return;
+        }
+        if (text.trim().equalsIgnoreCase("/reconnect")) {
+            if (socket != null && open) {
+                append(CliLines.KIND_SYSTEM, "already connected to " + irc.url());
+                return;
+            }
+            connectIrc();
+            return;
+        }
+        if (socket == null || !open) {
+            append(CliLines.KIND_SYSTEM, "not connected to " + irc.url() + " · /reconnect");
+            return;
+        }
+        apply(irc.onUser(text));
+    }
+
     private static String nullToEmpty(String s) {
         return s == null ? "" : s;
     }
@@ -243,6 +372,15 @@ public final class CliClient {
 
     /** Append a User line; IDE commands run offline and/or over the loopback WS. */
     public void sendUser(String text) {
+        if (irc != null) {
+            // Chat / IRC commands echo as [IRC] lines from the session; echo local-only ones here.
+            if (PythonIdeCli.isIdeLine(text) || text.trim().equalsIgnoreCase("/reconnect")) {
+                append(CliLines.KIND_USER, text);
+            }
+            sendIrcUser(text);
+            scrollToEnd();
+            return;
+        }
         append(CliLines.KIND_USER, text);
         if (LlmCli.isLlmLine(text)) {
             sendLlm(text);

@@ -506,6 +506,47 @@ offline: … unreachable`. Neither crashes the chat.
 4. Optional end-to-end check (plain headless Chrome, no extra flags; all three services running):
    `node --experimental-websocket tools/llm_chat_e2e.mjs http://127.0.0.1:8092/`
 
+## Direct IRC chat on Pages (IRC over WebSocket)
+
+A static page can't open raw TCP, so on GitHub Pages the left chatbox speaks IRC
+straight to an IRC network's own **wss://** gateway (`client/irc/IrcWsProtocol`,
+`client/irc/IrcWsSession`, wired in `CliClient`). Defaults:
+
+| Setting | Default | Override |
+|---|---|---|
+| Gateway | `wss://irc.abjects.net:6680/` (abjects, the same network the bridge uses) | `?irc=wss://host[:port][/path]`, e.g. Libera: `?irc=wss://web.libera.chat/webirc/websocket/` |
+| Channel | `#axiomiccoreness` | `?channel=name` (the `#` is added; a URL `#` would be a fragment) |
+| Nick | `Guest` + 5 random digits | `?nick=YourNick` |
+| Off | — | `?irc=off` (old "remote bridge not configured") |
+
+Mode choice: `?bridge=` / `<meta name="cli-bridge">` → the existing bridge path
+(`/llm` + live `/py`), even if `?irc=` is set; an explicit `?irc=` wins over the
+loopback default; a loopback/`file:` page with neither stays on
+`ws://127.0.0.1:6680/cli`; any other page (Pages) uses direct IRC.
+
+In direct mode: text → `PRIVMSG <channel>`; `/llm <text>` is sent to the channel
+as-is for the IRC LLM bot (when it's running and in the channel); `/me`, `/nick`,
+`/join`, `/msg`, `/names`, `/quit`, `/reconnect`; `/py` stays local (offline
+toolkit). `PING` → `PONG`, `001` → `JOIN`, nick-in-use retries with `_`. There is
+no raw-line passthrough, and every outbound line goes through
+`IrcWsProtocol.clean` (CR / LF / NUL → space, 400-char cap), so typed text can't
+inject a second IRC command. Only `wss://` is accepted (plain `ws://` only to
+loopback, for local tests); `0.0.0.0` and userinfo URLs are rejected.
+
+Why abjects: `.github/workflows/irc-wss-probe.yml` dials the gateway from GitHub
+runners with the Pages Origin (`https://axiomiccoreness.github.io`) and with
+abjects' own origin (`https://www.abjects.net`, whose `chat.html` webchat dials the same
+`wss://irc.abjects.net:6680/`); abjects answered HTTP 101 and the `001` welcome
+(2026-10-30T15:20:19-04:00 and 2026-10-30T15:23:31-04:00). Libera.Chat's gateway
+(`wss://web.libera.chat/webirc/websocket/`, the URL its Gamja webchat uses) answered a
+Cloudflare 403 to the same runners, so it is opt-in only via `?irc=`; a normal browser
+may still get through. If you pick Libera, its rules apply: the channel registered
+with ChanServ, LLM bots opted in by the channel operators (topic says LLMs may be
+present), labelled as bots, and their human admin present. Channels set `+r`
+answer `477` (shown in the chat) to unregistered guests on either network.
+
+Tests (offline, no sockets): `IrcWsProtocolTest`, `IrcWsSessionTest`.
+
 ## Debug Oracle panel (team v1)
 
 Browser debug shell served with the TeaVM webapp:
