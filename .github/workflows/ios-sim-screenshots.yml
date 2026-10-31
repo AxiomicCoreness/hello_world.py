@@ -1,0 +1,227 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: iOS simulator screenshots
+
+# Manual only. Not a gate: no push / pull_request triggers, nothing depends on it.
+# Builds the SwiftUI apps for the iOS Simulator on a GitHub macOS runner, boots an iPhone
+# (iPhone 12 if the runner has it, else the nearest iPhone), launches each screen and saves
+# `xcrun simctl io screenshot` PNGs as an artifact.
+#
+#   axiomic-chat  — ios/AxiomicCorenessChat (PR #165). One screen, shot right after launch and
+#                   again after the IRC gateway has had time to register and JOIN.
+#   clarke-pocket — ios/ClarkePocket (PR #167). Model / Chat / IRC tabs, chosen with the
+#                   `-selectedTab N` launch argument (the app's @AppStorage key). llama.cpp's
+#                   xcframework has no simulator slice, so this build swaps in
+#                   .github/ios-sim/LlamaEngineSimStub.swift and drops LlamaBinary
+#                   (.github/ios-sim/clarke-pocket-sim.yml). The device build in
+#                   ios-clarke-pocket.yml is untouched.
+#
+# The app branches are checked out read-only; the helper files come from this workflow's own ref.
+# Nothing types or taps, so neither app sends a chat line; IRC only registers a guest nick and
+# JOINs. Clarke Pocket's !llm responder is forced off with `-ircResponderEnabled NO`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "Which app to screenshot"
+        type: choice
+        options: [both, axiomic-chat, clarke-pocket]
+        default: both
+      chat_ref:
+        description: "Branch / SHA holding ios/AxiomicCorenessChat"
+        type: string
+        default: feat/ios-libera-chat
+      pocket_ref:
+        description: "Branch / SHA holding ios/ClarkePocket"
+        type: string
+        default: feat/ios-clarke-pocket
+      irc_wait:
+        description: "Seconds to wait for the IRC connection before the IRC screenshot"
+        type: string
+        default: "40"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-sim-screenshots-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  axiomic-chat:
+    if: inputs.app == 'both' || inputs.app == 'axiomic-chat'
+    name: AxiomicCorenessChat (#165) in the simulator
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      APP_REF: ${{ inputs.chat_ref }}
+      IRC_WAIT: ${{ inputs.irc_wait }}
+      OUT: ${{ github.workspace }}/shots/axiomic-chat
+    steps:
+      - name: checkout helpers (this workflow's ref)
+        uses: actions/checkout@v4
+        with:
+          path: tools
+          sparse-checkout: .github/ios-sim
+      - name: checkout app (${{ inputs.chat_ref }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.chat_ref }}
+          path: app
+          sparse-checkout: ios/AxiomicCorenessChat
+      - name: toolchain + simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          brew install xcodegen
+          IFS=$'\t' read -r udid name runtime < <(python3 tools/.github/ios-sim/pick-simulator.py)
+          echo "simulator: $name ($runtime) $udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          mkdir -p "$OUT"
+          {
+            echo "app: ios/AxiomicCorenessChat"
+            echo "ref: $APP_REF @ $(git -C app rev-parse HEAD)"
+            echo "helpers: $GITHUB_REF @ $GITHUB_SHA"
+            echo "simulator: $name, $runtime"
+            echo "xcode: $(xcodebuild -version | tr '\n' ' ')"
+          } > "$OUT/manifest.txt"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl status_bar "$udid" override --time 9:41 --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 || true
+      - name: generate project + build for the simulator
+        working-directory: app/ios/AxiomicCorenessChat
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          cp ../../../tools/.github/ios-sim/axiomic-chat-sim.yml project-sim.yml
+          mkdir -p SimStub
+          xcodegen generate --spec project-sim.yml
+          xcodebuild \
+            -project AxiomicCorenessChatSim.xcodeproj \
+            -scheme AxiomicCorenessChat \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "id=$UDID" \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            build > "$OUT/xcodebuild.log" 2>&1 && rc=0 || rc=$?
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" "$OUT/xcodebuild.log" | tail -n 60 || true
+          exit "$rc"
+      - name: install + screenshots
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          app=app/ios/AxiomicCorenessChat/build/dd/Build/Products/Debug-iphonesimulator/AxiomicCorenessChat.app
+          xcrun simctl install "$UDID" "$app"
+          bash tools/.github/ios-sim/shoot.sh "$UDID" io.github.axiomiccoreness.axiomiccorenesschat "$OUT" \
+            "1-chat-launch:4" \
+            "2-chat-after-${IRC_WAIT}s:${IRC_WAIT}"
+      - name: app log (last 5 min)
+        if: always()
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          xcrun simctl spawn "$UDID" log show --last 5m --style compact \
+            --predicate 'process == "AxiomicCorenessChat"' > "$OUT/app.log" 2>&1 || true
+          tail -n 40 "$OUT/app.log" || true
+      - name: upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-sim-screenshots-axiomic-chat
+          path: shots/axiomic-chat
+          if-no-files-found: warn
+
+  clarke-pocket:
+    if: inputs.app == 'both' || inputs.app == 'clarke-pocket'
+    name: ClarkePocket (#167) in the simulator (llama stub)
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      APP_REF: ${{ inputs.pocket_ref }}
+      IRC_WAIT: ${{ inputs.irc_wait }}
+      OUT: ${{ github.workspace }}/shots/clarke-pocket
+    steps:
+      - name: checkout helpers (this workflow's ref)
+        uses: actions/checkout@v4
+        with:
+          path: tools
+          sparse-checkout: .github/ios-sim
+      - name: checkout app (${{ inputs.pocket_ref }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pocket_ref }}
+          path: app
+          sparse-checkout: ios/ClarkePocket
+      - name: toolchain + simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          brew install xcodegen
+          IFS=$'\t' read -r udid name runtime < <(python3 tools/.github/ios-sim/pick-simulator.py)
+          echo "simulator: $name ($runtime) $udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          mkdir -p "$OUT"
+          {
+            echo "app: ios/ClarkePocket (LlamaEngine replaced by the simulator stub)"
+            echo "ref: $APP_REF @ $(git -C app rev-parse HEAD)"
+            echo "helpers: $GITHUB_REF @ $GITHUB_SHA"
+            echo "simulator: $name, $runtime"
+            echo "xcode: $(xcodebuild -version | tr '\n' ' ')"
+          } > "$OUT/manifest.txt"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b
+          xcrun simctl status_bar "$udid" override --time 9:41 --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4 || true
+      - name: generate project (stub LlamaEngine) + build for the simulator
+        working-directory: app/ios/ClarkePocket
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          cp ../../../tools/.github/ios-sim/clarke-pocket-sim.yml project-sim.yml
+          mkdir -p SimStub
+          cp ../../../tools/.github/ios-sim/LlamaEngineSimStub.swift SimStub/LlamaEngine.swift
+          xcodegen generate --spec project-sim.yml
+          xcodebuild \
+            -project ClarkePocketSim.xcodeproj \
+            -scheme ClarkePocket \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "id=$UDID" \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            build > "$OUT/xcodebuild.log" 2>&1 && rc=0 || rc=$?
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" "$OUT/xcodebuild.log" | tail -n 60 || true
+          exit "$rc"
+      - name: install + screenshots
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          app=app/ios/ClarkePocket/build/dd/Build/Products/Debug-iphonesimulator/ClarkePocket.app
+          xcrun simctl install "$UDID" "$app"
+          bash tools/.github/ios-sim/shoot.sh "$UDID" io.github.axiomiccoreness.clarkepocket "$OUT" \
+            "1-model-tab:6:-selectedTab 0,-ircResponderEnabled NO" \
+            "2-chat-tab:6:-selectedTab 1,-ircResponderEnabled NO" \
+            "3-irc-tab-after-${IRC_WAIT}s:${IRC_WAIT}:-selectedTab 2,-ircResponderEnabled NO"
+      - name: app log (last 5 min)
+        if: always()
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          xcrun simctl spawn "$UDID" log show --last 5m --style compact \
+            --predicate 'process == "ClarkePocket"' > "$OUT/app.log" 2>&1 || true
+          tail -n 40 "$OUT/app.log" || true
+      - name: upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-sim-screenshots-clarke-pocket
+          path: shots/clarke-pocket
+          if-no-files-found: warn

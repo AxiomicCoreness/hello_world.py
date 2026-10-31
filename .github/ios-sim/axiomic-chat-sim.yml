@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# SIMULATOR SCREENSHOTS ONLY (ios-sim-screenshots.yml). ios/AxiomicCorenessChat ships only Swift
+# sources (its README builds the app by hand in Xcode), so this XcodeGen spec is the equivalent
+# "iOS App, SwiftUI, iOS 16.0" project for the simulator. The workflow copies it to
+# ios/AxiomicCorenessChat/project-sim.yml on the runner; nothing is committed to the app's branch.
+name: AxiomicCorenessChatSim
+options:
+  bundleIdPrefix: io.github.axiomiccoreness
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+targets:
+  AxiomicCorenessChat:
+    type: application
+    platform: iOS
+    sources:
+      - path: AxiomicCorenessChat
+    info:
+      path: SimStub/Info.plist
+      properties:
+        CFBundleDisplayName: AxiomicCoreness
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        LSRequiresIPhoneOS: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.axiomiccorenesschat
+        PRODUCT_NAME: AxiomicCorenessChat
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTED_PLATFORMS: iphonesimulator
+        GENERATE_INFOPLIST_FILE: NO
