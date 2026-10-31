@@ -11,6 +11,7 @@ struct ModelView: View {
     @State private var importing = false
     @State private var confirmDelete = false
     @State private var available: Int64 = MemoryMonitor.availableBytes()
+    @State private var transcript: String?
 
     var body: some View {
         ScrollView {
@@ -24,6 +25,18 @@ struct ModelView: View {
                 }
                 section("FILE") { fileState }
                 section("ENGINE") { engineState }
+                section("CHAT EXPORT") {
+                    Text("Shares the saved chat as Markdown: your messages and the answers, without the thinking. The app's built-in system prompt is never included.")
+                        .foregroundColor(Theme.system)
+                    if let t = transcript {
+                        ShareLink(item: t, preview: SharePreview("Clarke Pocket chat")) {
+                            Text("Share chat transcript")
+                        }
+                        .foregroundColor(Theme.accent)
+                    } else {
+                        button("Prepare export") { transcript = ChatStore.exportMarkdown() }
+                    }
+                }
                 section("MEMORY") {
                     line("free for this app", available > 0 ? RuntimePolicy.formatBytes(available) : "unknown")
                     line("needs about", RuntimePolicy.formatBytes(RuntimePolicy.estimatedNeed(modelBytes: ModelPin.sizeBytes)))
@@ -44,7 +57,7 @@ struct ModelView: View {
         .confirmationDialog("Delete the model file?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { model.deleteModel() }
         }
-        .onAppear { model.refreshFileState(); available = MemoryMonitor.availableBytes() }
+        .onAppear { model.refreshFileState(); available = MemoryMonitor.availableBytes(); transcript = nil }
     }
 
     @ViewBuilder private var fileState: some View {

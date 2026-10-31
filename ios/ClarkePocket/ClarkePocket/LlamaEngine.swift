@@ -185,9 +185,11 @@ actor LlamaEngine {
 
     /// System + the newest history that fits + the new user message, measured with the real
     /// tokenizer and leaving `RuntimePolicy.replyReserve` tokens for the answer.
+    /// The hidden system prompt (HiddenPrompt.swift) is prepended here, for every request (Chat
+    /// and the IRC !llm responder); it never leaves this actor except into llama.cpp.
     func fitPrompt(system: String, history: [PromptTurn], user: String) -> [PromptTurn] {
         let nCtx = ctx.map { Int(llama_n_ctx($0)) } ?? Int(RuntimePolicy.contextTokens)
-        return PromptWindow.fit(system: system, history: history, user: user,
+        return PromptWindow.fit(system: HiddenPrompt.compose(system), history: history, user: user,
                                 budget: nCtx - RuntimePolicy.replyReserve) { tokenCount($0) }
     }
 
