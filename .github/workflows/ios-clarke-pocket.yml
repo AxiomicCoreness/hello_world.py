@@ -3,11 +3,16 @@
 
 name: iOS Clarke Pocket
 
-# Only for ios/ClarkePocket. Two jobs:
+# Only for ios/ClarkePocket. Jobs:
 #   core-linux  — `swift test` of the pure-Foundation core (pure-Swift SHA-256 path).
 #   app-macos   — `swift test` again with CryptoKit, then XcodeGen + an unsigned
 #                 xcodebuild for a generic iOS device (resolves the pinned llama.cpp
-#                 xcframework, compiles every SwiftUI and llama file). No signing, no .ipa.
+#                 xcframework, compiles every SwiftUI and llama file). No signing.
+#                 Then an unsigned Release build packaged as ClarkePocket-unsigned.ipa
+#                 (+ .sha256), uploaded as the artifact "ClarkePocket-unsigned-ipa" for
+#                 sideloading (e.g. Sideloadly signs it with a free Apple ID).
+#   prerelease  — workflow_dispatch with prerelease=true only: attaches that .ipa to a
+#                 GitHub pre-release. Never runs on push / pull_request.
 
 on:
   push:
@@ -20,6 +25,11 @@ on:
       - "ios/ClarkePocket/**"
       - ".github/workflows/ios-clarke-pocket.yml"
   workflow_dispatch:
+    inputs:
+      prerelease:
+        description: "Also attach the unsigned .ipa to a GitHub pre-release"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -81,3 +91,126 @@ jobs:
           app=build/dd/Build/Products/Debug-iphoneos/ClarkePocket.app
           ls "$app/Frameworks"
           test -f "$app/Frameworks/llama.framework/llama"
+
+      # ---- unsigned .ipa for sideloading (Sideloadly / free Apple ID) ----
+      # Release, so there is no Xcode 16 debug dylib / preview stub in the bundle.
+      # No entitlements: CODE_SIGN_ENTITLEMENTS is forced empty, so the optional
+      # Increased Memory Limit entitlement (paid accounts only) can never get in.
+      - name: xcodebuild Release (generic iOS device, unsigned, no entitlements)
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ClarkePocket.xcodeproj \
+            -scheme ClarkePocket \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/dd-release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            build
+      - name: package Payload/ClarkePocket.app into ClarkePocket-unsigned.ipa
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          src=build/dd-release/Build/Products/Release-iphoneos/ClarkePocket.app
+          rm -rf build/ipa && mkdir -p build/ipa/Payload
+          ditto "$src" build/ipa/Payload/ClarkePocket.app      # keeps symlinks
+          app=build/ipa/Payload/ClarkePocket.app
+          # Strip any signature (the linker's ad-hoc one, or one shipped in the
+          # prebuilt framework) so the bundle is genuinely unsigned; Sideloadly re-signs.
+          while IFS= read -r -d '' f; do
+            if file -b "$f" | grep -q 'Mach-O'; then
+              codesign --remove-signature "$f" 2>/dev/null || true
+            fi
+          done < <(find "$app" -type f -print0)
+          find "$app" -name _CodeSignature -prune -exec rm -rf {} +
+          rm -f "$app/embedded.mobileprovision" "$app"/*.xcent
+          (cd build/ipa && zip -qry ClarkePocket-unsigned.ipa Payload)
+          (cd build/ipa && shasum -a 256 ClarkePocket-unsigned.ipa > ClarkePocket-unsigned.ipa.sha256)
+          ls -l build/ipa
+          cat build/ipa/ClarkePocket-unsigned.ipa.sha256
+      - name: check the .ipa (layout, unsigned, no entitlements, Info.plist, arm64, llama)
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          rm -rf build/ipa-check && mkdir build/ipa-check
+          (cd build/ipa-check && unzip -q ../ipa/ClarkePocket-unsigned.ipa)
+          app=build/ipa-check/Payload/ClarkePocket.app
+          test "$(ls build/ipa-check)" = "Payload"
+          test "$(ls build/ipa-check/Payload)" = "ClarkePocket.app"
+          test -f "$app/ClarkePocket"
+          test -f "$app/Frameworks/llama.framework/llama"
+          test -f "$app/Frameworks/llama.framework/Info.plist"
+          if find "$app" -name _CodeSignature | grep -q .; then echo "::error::_CodeSignature present"; exit 1; fi
+          test ! -e "$app/embedded.mobileprovision"
+          if grep -rl 'increased-memory-limit' "$app"; then echo "::error::memory entitlement in bundle"; exit 1; fi
+          for f in "$app/ClarkePocket" "$app/Frameworks/llama.framework/llama"; do
+            lipo -archs "$f"; lipo -archs "$f" | grep -qw arm64
+            if codesign -d "$f" 2>/dev/null; then echo "::error::$f is still signed"; exit 1; fi
+            if codesign -d --entitlements - "$f" 2>/dev/null | grep -q key; then echo "::error::$f has entitlements"; exit 1; fi
+          done
+          python3 - "$app" <<'PY'
+          import plistlib, sys
+          app = sys.argv[1]
+          p = plistlib.load(open(f"{app}/Info.plist", "rb"))
+          want = {
+              "CFBundleIdentifier": "io.github.axiomiccoreness.clarkepocket",
+              "CFBundleExecutable": "ClarkePocket",
+              "CFBundlePackageType": "APPL",
+              "CFBundleShortVersionString": "1.0",
+              "CFBundleVersion": "1",
+              "MinimumOSVersion": "16.4",
+              "UIDeviceFamily": [1],
+          }
+          bad = [f"{k}={p.get(k)!r} (want {v!r})" for k, v in want.items() if p.get(k) != v]
+          if "arm64" not in p.get("UIRequiredDeviceCapabilities", []):
+              bad.append(f"UIRequiredDeviceCapabilities={p.get('UIRequiredDeviceCapabilities')!r} lacks arm64")
+          if "iPhoneOS" not in p.get("CFBundleSupportedPlatforms", []):
+              bad.append(f"CFBundleSupportedPlatforms={p.get('CFBundleSupportedPlatforms')!r}")
+          f = plistlib.load(open(f"{app}/Frameworks/llama.framework/Info.plist", "rb"))
+          print("app:", {k: p.get(k) for k in list(want) + ["UIRequiredDeviceCapabilities", "DTSDKName", "DTXcode"]})
+          print("llama.framework:", {k: f.get(k) for k in ("CFBundleIdentifier", "MinimumOSVersion", "CFBundleShortVersionString")})
+          if bad:
+              sys.exit("Info.plist problems: " + "; ".join(bad))
+          PY
+          (cd build/ipa && shasum -a 256 -c ClarkePocket-unsigned.ipa.sha256)
+      - name: upload the unsigned .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClarkePocket-unsigned-ipa
+          path: |
+            ios/ClarkePocket/build/ipa/ClarkePocket-unsigned.ipa
+            ios/ClarkePocket/build/ipa/ClarkePocket-unsigned.ipa.sha256
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+
+  prerelease:
+    name: attach .ipa to a pre-release (manual only)
+    needs: app-macos
+    if: github.event_name == 'workflow_dispatch' && inputs.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ClarkePocket-unsigned-ipa
+          path: ipa
+      - name: create the pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          short=$(echo "$GITHUB_SHA" | cut -c1-8)
+          tag="clarke-pocket-unsigned-$short"
+          gh release create "$tag" ipa/ClarkePocket-unsigned.ipa ipa/ClarkePocket-unsigned.ipa.sha256 \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "Clarke Pocket unsigned .ipa ($short)" \
+            --notes "Unsigned build of ios/ClarkePocket at $GITHUB_SHA, for sideloading (e.g. Sideloadly with a free Apple ID). Not signed; not for the App Store."
