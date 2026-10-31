@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 //
 // On-device chat tab: streaming answer, Stop, reasoning in a dimmed "thinking" disclosure.
+// With no local model and the PC-bot fallback on (IRC tab), answers come from the PC bot instead.
 
 import SwiftUI
 
@@ -44,7 +45,9 @@ struct ChatView: View {
     private var header: some View {
         HStack(spacing: 6) {
             Circle().fill(model.isLoaded ? Theme.dotConnected : Theme.dotOffline).frame(width: 8, height: 8)
-            Text("CHAT · ON-DEVICE · \(ModelPin.label.uppercased())")
+            Text(model.willUseBridge || model.answeringViaBridge
+                 ? "CHAT · VIA PC BOT · \(BridgeRequest.botNick.uppercased())"
+                 : "CHAT · ON-DEVICE · \(ModelPin.label.uppercased())")
                 .font(Theme.titleFont).tracking(Theme.titleTracking)
                 .foregroundColor(Theme.accent).lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 4)
@@ -121,7 +124,7 @@ struct ChatView: View {
                 Button(action: send) {
                     Image(systemName: "paperplane.fill").foregroundColor(Theme.accent)
                 }
-                .disabled(model.activeFile == nil || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .disabled(!model.canAnswer || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .accessibilityLabel("Send")
             }
         }

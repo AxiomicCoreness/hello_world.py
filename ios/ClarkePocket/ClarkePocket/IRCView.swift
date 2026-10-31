@@ -10,6 +10,7 @@ struct IRCView: View {
     @ObservedObject var client: IRCClient
     @ObservedObject var responder: IRCResponder
     @ObservedObject var model: ModelStore
+    @ObservedObject var bridge: BridgeFallback
     @State private var inputText = ""
     @FocusState private var inputFocused: Bool
 
@@ -18,6 +19,7 @@ struct IRCView: View {
             titleBar
             Rectangle().fill(Theme.border).frame(height: Theme.borderWidth)
             responderBar
+            fallbackBar
             Rectangle().fill(Theme.border).frame(height: Theme.borderWidth)
             history
             Rectangle().fill(Theme.border).frame(height: Theme.borderWidth)
@@ -48,6 +50,19 @@ struct IRCView: View {
                  ? (model.isLoaded ? "answering !llm here with the on-device model" : "!llm on — load the model to answer")
                  : "answer !llm with the on-device model (off)")
                 .font(Theme.titleFont).foregroundColor(responder.enabled ? Theme.accent : Theme.system)
+        }
+        .tint(Theme.accent)
+        .padding(.vertical, 4)
+        .padding(.horizontal, Theme.titlePadH)
+    }
+
+    /// Chat fallback: with no on-device model, Chat asks the PC bot in a private message.
+    private var fallbackBar: some View {
+        Toggle(isOn: $bridge.enabled) {
+            Text(bridge.enabled
+                 ? (client.isConnected ? "no local model → Chat asks \(BridgeRequest.botNick) by PM" : "PC-bot fallback on — waiting for IRC")
+                 : "Chat fallback to the PC bot when no local model (off)")
+                .font(Theme.titleFont).foregroundColor(bridge.enabled ? Theme.accent : Theme.system)
         }
         .tint(Theme.accent)
         .padding(.vertical, 4)

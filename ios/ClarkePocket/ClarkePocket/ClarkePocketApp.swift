@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 //
 // Clarke Pocket: a small PocketPal-style app — a GGUF model running on the iPhone (llama.cpp,
-// Metal) plus an IRC client. Three tabs: Model, Chat, IRC. Everything stops cleanly in the
+// Metal) plus an IRC client. Three tabs: Model, Chat, IRC. Works standalone; with no local model
+// the chat can optionally fall back to the PC bot over IRC (BridgeFallback.swift). Everything stops cleanly in the
 // background (IRC says QUIT, the model is unloaded); nothing calls exit().
 
 import SwiftUI
@@ -24,6 +25,7 @@ final class AppModel: ObservableObject {
     let chat: ChatStore
     let irc: IRCClient
     let responder: IRCResponder
+    let bridge: BridgeFallback
 
     init() {
         let m = ModelStore()
@@ -32,6 +34,8 @@ final class AppModel: ObservableObject {
         chat = ChatStore(model: m)
         irc = c
         responder = IRCResponder(model: m, client: c)
+        bridge = BridgeFallback(client: c)
+        m.attachBridge(bridge, client: c)
     }
 }
 
@@ -46,7 +50,7 @@ struct RootView: View {
                 .tabItem { Label("Model", systemImage: "cpu") }.tag(0)
             ChatView(chat: app.chat, model: app.model)
                 .tabItem { Label("Chat", systemImage: "bubble.left.and.text.bubble.right") }.tag(1)
-            IRCView(client: app.irc, responder: app.responder, model: app.model)
+            IRCView(client: app.irc, responder: app.responder, model: app.model, bridge: app.bridge)
                 .tabItem { Label("IRC", systemImage: "number") }.tag(2)
         }
         .tint(Theme.accent)

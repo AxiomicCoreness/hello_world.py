@@ -6,7 +6,9 @@
 //   * typed input goes through IRCCommand (/join /part /msg /me /nick /quit, //text),
 //   * an active channel that follows /join and /part instead of one fixed channel,
 //   * /quit closes the socket and stays offline until "Reconnect" (the app never exits),
-//   * an `onChannelMessage` hook the on-device !llm responder listens to, and `say(lines:)`.
+//   * an `onChannelMessage` hook the on-device !llm responder listens to, and `say(lines:)`,
+//   * an `onDirectMessage` hook (PMs and NOTICEs to us) and `sendPrivate(_:to:)` for the
+//     chat's PC-bot fallback (BridgeFallback.swift).
 //
 // Direct IRC client over WebSocket (abjects network by default). The phone talks to abjects
 // itself; nothing on the user's PC is exposed (no open port, no tunnel, no all-interfaces bind).
@@ -72,6 +74,8 @@ final class IRCClient: ObservableObject {
 
     /// Called for every channel PRIVMSG from someone else: (sender, channel, text).
     var onChannelMessage: ((String, String, String) -> Void)?
+    /// (sender, text, isNotice) for a PRIVMSG addressed to our nick or a NOTICE from a user.
+    var onDirectMessage: ((String, String, Bool) -> Void)?
 
     /// Kept for the view's dot/label; true only after the server's 001 welcome.
     var isConnected: Bool { status == .connected }
@@ -233,6 +237,15 @@ final class IRCClient: ObservableObject {
         }
     }
 
+    /// One private message (the chat's PC-bot fallback), sanitised and echoed locally.
+    func sendPrivate(_ text: String, to nick: String) {
+        guard registered else { return }
+        let clean = IRCOutgoing.sanitize(text)
+        guard !clean.isEmpty, !nick.isEmpty, !nick.contains(" ") else { return }
+        sendRaw("PRIVMSG \(nick) :\(clean)")
+        append(.own, sender: "\(nickname) → \(nick)", text: clean)
+    }
+
     private func sendRaw(_ line: String) {
         guard let t = task else { return }
         // Protocol lines are built here from sanitised parts; strip CR/LF once more as a guard.
@@ -313,10 +326,13 @@ final class IRCClient: ObservableObject {
             append(.peer, sender: label, text: text, thinking: dim)
             if isChannel, !line.params[line.params.count - 1].hasPrefix("\u{1}") {
                 onChannelMessage?(sender, target, line.params[line.params.count - 1])
+            } else if !isChannel, target.caseInsensitiveCompare(nickname) == .orderedSame {
+                onDirectMessage?(sender, line.params[line.params.count - 1], false)
             }
         case "NOTICE":
             guard registered, let text = line.params.last else { return }
             append(.system, sender: line.nick, text: text)
+            if let from = line.nick { onDirectMessage?(from, text, true) }
         case "ERROR":
             connectionLost("server: \(line.params.last ?? "ERROR")")
         case "471", "473", "474", "475", "477":
