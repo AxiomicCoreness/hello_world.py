@@ -1,0 +1,125 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: LLM bench · deepseek-r2 on llama-server
+
+# Throughput benchmark of the pinned deepseek-r2-1.5b Q4_K_M GGUF on a pinned llama.cpp CPU build.
+# Reference it was wired from: the bot's box, golden-ratio prompt, 597 tokens in 35.7 s = 16.8 tok/s
+# (2026-10-30, America/New_York).
+#
+# Not a gate: manual (Actions → this workflow → Run workflow) plus a weekly schedule only.
+# No push / pull_request trigger, not a required check, nothing depends on it.
+# The model server binds 127.0.0.1:8085 on the runner only; no secrets are used.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_tokens:
+        description: "max_tokens per prompt"
+        required: false
+        default: "1024"
+        type: string
+  schedule:
+    - cron: "17 10 * * 1"  # Mondays 10:17 UTC (06:17 EDT / 05:17 EST)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: llm-bench
+  cancel-in-progress: false
+
+jobs:
+  bench:
+    name: Bench · deepseek-r2-1.5b Q4_K_M (CPU)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Same pin as irc-llm-bot-session.yml (PR #163): llama.cpp b12015 Linux x64 CPU build.
+      LLAMA_TAG: b12015
+      LLAMA_ASSET: llama-b12015-bin-ubuntu-x64.tar.gz
+      LLAMA_SHA256: 25458e07a9eca87791b2c856bf7d1c457dcfda038d6bf2fa2bbb07f11c988ee6
+      MODELS_DIR: sovereign-irc-bridge/serving/models
+      BENCH_MAX_TOKENS: ${{ inputs.max_tokens || '1024' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: sovereign-irc-bridge
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Offline bench parser tests
+        run: python -I sovereign-irc-bridge/src/test_bench_llm.py
+
+      - name: Read model pin (MODEL_PIN.json)
+        id: pin
+        run: |
+          python -I - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, re
+          pin = json.load(open("sovereign-irc-bridge/serving/models/MODEL_PIN.json", encoding="utf-8"))
+          assert re.fullmatch(r"[0-9a-f]{64}", pin["gguf_sha256"]), pin["gguf_sha256"]
+          print(f"sha256={pin['gguf_sha256']}")
+          print(f"file={pin['file']}")
+          PY
+          cat "$GITHUB_OUTPUT"
+
+      - name: Cache GGUF (keyed on its sha256)
+        id: gguf-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.MODELS_DIR }}/${{ steps.pin.outputs.file }}
+          key: llm-gguf-${{ steps.pin.outputs.sha256 }}
+
+      - name: Fetch pinned GGUF (sha256 per MODEL_PIN.json)
+        run: ./sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh
+
+      - name: Verify GGUF sha256
+        env:
+          WANT: ${{ steps.pin.outputs.sha256 }}
+          FILE: ${{ env.MODELS_DIR }}/${{ steps.pin.outputs.file }}
+        run: |
+          echo "${WANT}  ${FILE}" | sha256sum -c -
+          echo "MODEL_SHA256=${WANT}" >> "$GITHUB_ENV"
+          echo "cache hit: ${{ steps.gguf-cache.outputs.cache-hit || 'false' }}"
+
+      - name: Download pinned llama.cpp (sha256-checked)
+        run: |
+          mkdir -p "$RUNNER_TEMP/llama"
+          cd "$RUNNER_TEMP/llama"
+          curl -fsSL --retry 5 -o "$LLAMA_ASSET" "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_TAG}/${LLAMA_ASSET}"
+          echo "${LLAMA_SHA256}  ${LLAMA_ASSET}" | sha256sum -c -
+          tar xzf "$LLAMA_ASSET"
+          bin="$(find "$RUNNER_TEMP/llama" -type f -name llama-server | head -n1)"
+          test -x "$bin"
+          echo "LLAMA_SERVER=$bin" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$(dirname "$bin")" >> "$GITHUB_ENV"
+
+      - name: Start llama-server on 127.0.0.1:8085
+        run: |
+          nohup ./sovereign-irc-bridge/serving/launch-8085-deepseek-r2.sh > "$RUNNER_TEMP/llama-8085.log" 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8085/health >/dev/null 2>&1; then echo "llama-server ready"; exit 0; fi
+            sleep 2
+          done
+          tail -n 50 "$RUNNER_TEMP/llama-8085.log"; echo "::error::llama-server did not come up"; exit 1
+
+      - name: Run benchmark
+        run: |
+          python -I sovereign-irc-bridge/serving/bench_llm.py \
+            --url http://127.0.0.1:8085 --max-tokens "$BENCH_MAX_TOKENS" \
+            --llama-build "$LLAMA_TAG" --model-sha256 "$MODEL_SHA256" --out bench.json
+
+      - name: Upload bench.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-bench-${{ github.run_id }}
+          path: bench.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: llama-server log tail
+        if: always()
+        run: tail -n 30 "$RUNNER_TEMP/llama-8085.log" 2>/dev/null || true
