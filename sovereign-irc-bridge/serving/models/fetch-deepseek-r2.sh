@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
-# fetch-deepseek-r2.sh — download the deepseek-r2-1.5b Q4_K_M GGUF from the
-# GitHub Release. Tries the single joined GGUF asset first and verifies its sha256;
-# if it is missing or does not match, falls back to the 42 x 25 MB chunks: verify every
-# chunk, reassemble, extract, and verify the final GGUF sha256. No tokens are used.
+# fetch-deepseek-r2.sh — download the pinned deepseek-r2 Q4_K_M GGUF from its
+# GitHub Release. MODEL_PIN.json picks the file, tag, size and sha256 (currently the
+# unevaluated 1.8B); the constants below are the 1.5B fallback (same as MODEL_PIN.1p5b.json).
+# Tries the single joined GGUF asset first and verifies its sha256; if it is missing or
+# does not match and the pin has parts (1.5B: 42 x 25 MB chunks), verifies every chunk,
+# reassembles, extracts, and verifies the final GGUF sha256. No tokens are used.
 #
 # Usage:
 #   ./fetch-deepseek-r2.sh                 # into this script's folder (serving/models/)
 #   DEST=/some/dir ./fetch-deepseek-r2.sh  # into another folder
 #   KEEP_PARTS=1 ./fetch-deepseek-r2.sh    # keep the downloaded chunks afterwards
 #   SKIP_SINGLE=1 ./fetch-deepseek-r2.sh   # skip the single-file asset, use the parts only
+#   PIN=./MODEL_PIN.1p5b.json ./fetch-deepseek-r2.sh   # fall back to the 1.5B pin
 set -euo pipefail
 
 REPO="${REPO:-AxiomicCoreness/hello_world.py}"
 TAG="${TAG:-model-deepseek-r2-1.5b-q4km-v1}"
 BASE="deepseek-r2-1.5b-Q4_K_M"
-ARCHIVE="${BASE}.tar.gz"
-GGUF="${BASE}.gguf"
 GGUF_SHA256="80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
 GGUF_SIZE="1117320640"
 
@@ -27,8 +28,12 @@ if [ -f "$PIN" ]; then
   v="$(pin_get gguf_sha256)"; [ -n "$v" ] && GGUF_SHA256="$v"
   v="$(pin_get size)";        [ -n "$v" ] && GGUF_SIZE="$v"
   v="$(pin_get release_tag)"; [ -n "$v" ] && TAG="$v"
-  echo "Using pin $PIN (sha256 $GGUF_SHA256, size $GGUF_SIZE)"
+  v="$(pin_get file)";        [ -n "$v" ] && BASE="${v%.gguf}"
+  v="$(pin_get parts)";       [ -n "$v" ] && PIN_PARTS="$v"
+  echo "Using pin $PIN ($BASE.gguf, sha256 $GGUF_SHA256, size $GGUF_SIZE)"
 fi
+ARCHIVE="${BASE}.tar.gz"
+GGUF="${BASE}.gguf"
 URL_BASE="https://github.com/${REPO}/releases/download/${TAG}"
 DEST="${DEST:-$SCRIPT_DIR}"
 mkdir -p "$DEST"
@@ -65,7 +70,12 @@ if [ "${SKIP_SINGLE:-0}" != "1" ]; then
   rm -f "$WORK/$GGUF"
 fi
 
-# 2) fallback: 42-part reassembly
+# 2) fallback: part reassembly (only when the pin publishes parts)
+if [ "${PIN_PARTS:-42}" = "0" ]; then
+  echo "ERROR: $GGUF single-file asset failed and pin $PIN has no parts; nothing installed" >&2
+  echo "       (to fall back to 1.5B: PIN=$SCRIPT_DIR/MODEL_PIN.1p5b.json $0)" >&2
+  exit 1
+fi
 echo "Downloading SHA256SUMS from $URL_BASE"
 fetch SHA256SUMS
 

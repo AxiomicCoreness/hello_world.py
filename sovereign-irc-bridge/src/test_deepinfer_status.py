@@ -110,4 +110,4 @@ def test_cli_runs_isolated_without_src_on_path(tmp_path: Path) -> None:
 
 def test_single_file_gguf_url() -> None:
     assert ds.GGUF_URL == ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
-                           "model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf")
+                           "model-deepseek-r2-1p8b-q4km-v1/deepseek-r2-1p8b-Q4_K_M.gguf")

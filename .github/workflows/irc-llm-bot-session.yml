@@ -118,7 +118,10 @@ jobs:
           echo "LLAMA_SERVER=$bin" >> "$GITHUB_ENV"
           echo "LD_LIBRARY_PATH=$(dirname "$bin")" >> "$GITHUB_ENV"
 
-      - name: Download pinned GGUF from the release (sha256 per MODEL_PIN.json)
+      - name: Download pinned GGUF from the release (sha256 per the 1.5B fallback pin)
+        # 8085 stays on the 1.5B (launch-8085-deepseek-r2.sh) until the 1.8B eval is reviewed.
+        env:
+          PIN: sovereign-irc-bridge/serving/models/MODEL_PIN.1p5b.json
         run: ./sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh
 
       - name: Start llama-server on 127.0.0.1:8085
