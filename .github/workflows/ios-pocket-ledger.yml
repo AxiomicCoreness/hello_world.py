@@ -1,0 +1,286 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: iOS Pocket Ledger
+
+# Every change to ios/ClarkePocket that passes the iOS Pocket Simulator workflow
+# on main gets its file hashes recorded in a NEW ledger.v2 entry, via a pull
+# request. Never a direct push; the owner merges.
+#
+# Trigger: workflow_run cannot filter by paths, so it rides on "iOS Pocket
+# Simulator", which itself runs on push to main only for ios/ClarkePocket/**
+# (and its own workflow file). A run whose ios/ClarkePocket tree root equals
+# the last recorded iOS entry is skipped (exit 4, "nothing to record").
+#
+# Append-only: tools/ios_pocket_manifest.py creates <n>.yml with exclusive
+# create and never edits an existing entry. <n> = last ledger.v2 index on main
+# + 1, computed at PR time. If <n> is claimed by an open PR (a ledger.v2/<n>.yml
+# file) or a remote branch ledger/seal-<n> / ledger/ios-pocket-<n>, the run
+# FAILS with a clear message (exit 3) instead of guessing: prev_hash must chain
+# to the real predecessor. Re-run with workflow_dispatch (head_sha) after the
+# pending ledger PR lands.
+#
+# CI on the auto-opened PR: PRs and pushes made with GITHUB_TOKEN do not
+# trigger pull_request/push workflows (see argo-ci.yml). workflow_dispatch is
+# the documented exception, so after opening the PR this workflow dispatches
+# its own `verify` job on the PR branch (mode=verify). Argo CI and the
+# dual-gate would not run on a ledger.v2-only PR anyway (their path filters
+# are argocd/tests/**.py), so the record job runs the same verifier
+# (verify_ledger.py --mode hard on ledger.v2 >= 9286, as Argo's hard gate does)
+# before pushing. Closing and reopening the PR as a user also runs `verify`.
+
+on:
+  workflow_run:
+    workflows: ["iOS Pocket Simulator"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: "record: 40-hex main commit with a successful iOS Pocket Simulator push run"
+        required: false
+        default: ""
+      mode:
+        description: "record (open a ledger PR) or verify (check this ref only)"
+        type: choice
+        options: [record, verify]
+        default: verify
+  pull_request:
+    branches: [main]
+    paths:
+      - "ledger.v2/**"
+      - "tools/ios_pocket_manifest.py"
+      - "tests/test_ios_pocket_manifest.py"
+      - ".github/workflows/ios-pocket-ledger.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: iOS Pocket Ledger · verify
+    if: >-
+      github.event_name == 'pull_request'
+      || (github.event_name == 'workflow_dispatch' && inputs.mode == 'verify')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # check-entry re-reads ios/ClarkePocket at measured_at_commit
+          submodules: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test deps (before tests; tests install nothing)
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install "pytest>=8,<9" "pyyaml>=6,<7"
+      - name: Offline tests (python -I)
+        run: |
+          set -euo pipefail
+          # exit 5 (no tests collected) fails too
+          python -I -m pytest tests/test_ios_pocket_manifest.py -q --tb=short -p no:cacheprovider
+      - name: Re-derive every iOS Pocket ledger entry
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          n=0
+          for f in ledger.v2/*.yml; do
+            if grep -q '^ios_pocket_tree_root:' "$f"; then
+              python -I tools/ios_pocket_manifest.py check-entry "$f"
+              n=$((n+1))
+            fi
+          done
+          echo "iOS Pocket ledger entries checked: $n"
+      - name: Hard gate (same as Argo CI) on ledger.v2 >= 9286
+        run: |
+          set -euo pipefail
+          mapfile -t gate < <(python -P - ledger.v2/*.yml <<'PY'
+          import sys, yaml
+          for f in sys.argv[1:]:
+              try:
+                  d = yaml.safe_load(open(f, encoding="utf-8"))
+              except yaml.YAMLError:
+                  print(f)
+                  continue
+              i = d.get("entry_index") if isinstance(d, dict) else None
+              if isinstance(i, int) and 9286 <= i < 100000:
+                  print(f)
+          PY
+          )
+          [ ${#gate[@]} -gt 0 ] || { echo "::error::no ledger.v2 entries >= 9286"; exit 1; }
+          python -P .github/scripts/verify_ledger.py --mode hard "${gate[@]}"
+      - name: ISO 8601 gate on entries added by this ref
+        run: |
+          set -euo pipefail
+          base=$(git merge-base origin/main HEAD)
+          python -I scripts/ledger_iso8601_gate.py --base "$base"
+
+  record:
+    name: iOS Pocket Ledger · record
+    if: >-
+      (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.event == 'push'
+        && github.event.workflow_run.head_branch == 'main'
+        && github.event.workflow_run.path == '.github/workflows/ios-pocket-simulator.yml')
+      || (github.event_name == 'workflow_dispatch' && inputs.mode == 'record')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write        # push the ledger/ios-pocket-<n> branch (never main)
+      pull-requests: write   # open the PR
+      actions: write         # dispatch the verify job on that branch
+    concurrency:
+      group: ios-pocket-ledger-record
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      EVENT_SHA: ${{ github.event.workflow_run.head_sha }}
+      EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+      INPUT_SHA: ${{ inputs.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PyYAML (verifier only; the manifest tool is stdlib)
+        run: python -m pip install --quiet "pyyaml>=6,<7"
+
+      - name: Resolve commit and its successful iOS Pocket Simulator run
+        id: ci
+        run: |
+          set -euo pipefail
+          sha="${EVENT_SHA:-$INPUT_SHA}"
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::head_sha must be 40-hex, got '${sha}'"; exit 1
+          fi
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::$sha is not on main"; exit 1
+          fi
+          if [ -n "${EVENT_RUN_ID:-}" ]; then
+            gh api "repos/$REPO/actions/runs/$EVENT_RUN_ID" > ios-run.json
+          else
+            run_id=$(gh api "repos/$REPO/actions/workflows/ios-pocket-simulator.yml/runs?head_sha=$sha&event=push&branch=main&status=success&per_page=1" \
+              --jq '.workflow_runs[0].id // empty')
+            [ -n "$run_id" ] || { echo "::error::no successful push run of ios-pocket-simulator.yml on main for $sha"; exit 1; }
+            gh api "repos/$REPO/actions/runs/$run_id" > ios-run.json
+          fi
+          # The tool re-checks head_sha / conclusion / event / branch / path and refuses otherwise.
+          {
+            echo "sha=$sha"
+            echo "main=$(git rev-parse origin/main)"
+            echo "run_id=$(python -I -c 'import json;print(json.load(open("ios-run.json"))["id"])')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Claimed ledger.v2 indices (open PRs and ledger branches)
+        id: taken
+        run: |
+          set -euo pipefail
+          : > taken.txt
+          for pr in $(gh pr list --repo "$REPO" --state open --limit 200 --json number --jq '.[].number'); do
+            gh api --paginate "repos/$REPO/pulls/$pr/files" --jq '.[].filename' \
+              | sed -nE 's#^ledger(\.v2)?/([0-9]{4,6})\.ya?ml$#\2#p' >> taken.txt
+          done
+          git ls-remote --heads origin 'ledger/*' \
+            | sed -nE 's#.*refs/heads/ledger/(seal|ios-pocket)-([0-9]{4,6})$#\2#p' >> taken.txt
+          sort -un taken.txt -o taken.txt
+          echo "claimed: $(tr '\n' ' ' < taken.txt)"
+          args=""; while read -r n; do args="$args --taken $n"; done < taken.txt
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+
+      - name: Write the next ledger.v2 entry (exclusive create)
+        id: entry
+        env:
+          SHA: ${{ steps.ci.outputs.sha }}
+          MAIN: ${{ steps.ci.outputs.main }}
+          TAKEN: ${{ steps.taken.outputs.args }}
+        run: |
+          set -uo pipefail
+          # shellcheck disable=SC2086
+          python -I tools/ios_pocket_manifest.py entry --rev "$SHA" \
+            --ios-run-json ios-run.json --ledger-main "$MAIN" $TAKEN > entry.json
+          rc=$?
+          if [ "$rc" -eq 4 ]; then
+            echo "::notice::ios/ClarkePocket unchanged since the last iOS ledger entry — nothing to record"
+            echo "write=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          [ "$rc" -eq 0 ] || exit "$rc"
+          cat entry.json
+          n=$(python -I -c 'import json;print(json.load(open("entry.json"))["next_index"])')
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+          echo "write=true" >> "$GITHUB_OUTPUT"
+
+      - name: Verify before push (check-entry, Argo hard gate, ISO 8601 gate)
+        if: steps.entry.outputs.write == 'true'
+        env:
+          N: ${{ steps.entry.outputs.n }}
+        run: |
+          set -euo pipefail
+          {
+            python -I tools/ios_pocket_manifest.py check-entry "ledger.v2/$N.yml"
+            python -P .github/scripts/verify_ledger.py --mode hard "ledger.v2/$N.yml"
+            git add "ledger.v2/$N.yml"
+            python -I scripts/ledger_iso8601_gate.py --base origin/main
+          } 2>&1 | tee verify.txt
+
+      - name: Push branch and open the PR (no direct push to main)
+        if: steps.entry.outputs.write == 'true'
+        env:
+          N: ${{ steps.entry.outputs.n }}
+          SHA: ${{ steps.ci.outputs.sha }}
+          MAIN: ${{ steps.ci.outputs.main }}
+          RUN_ID: ${{ steps.ci.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          branch="ledger/ios-pocket-$N"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            echo "::error::$branch already exists — index $N is claimed; refusing to touch it"; exit 3
+          fi
+          root=$(python -I -c 'import json;print(json.load(open("entry.json"))["tree_root_sha256"])')
+          count=$(python -I -c 'import json;print(json.load(open("entry.json"))["file_count"])')
+          git switch -c "$branch"
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit --author "Clarke Yoursa Tee <mrteanotcoffee@gmail.com>" -q -F - <<MSG
+          ledger: seal $N /ios_clarke_pocket_manifest_$SHA
+
+          Append-only ledger.v2/$N.yml: sha256 + size of $count files under
+          ios/ClarkePocket/ at $SHA, tree_root_sha256 $root,
+          after iOS Pocket Simulator run $RUN_ID succeeded on that commit.
+
+          Signed-off-by: Clarke Yoursa Tee <mrteanotcoffee@gmail.com>
+          MSG
+          git push origin "HEAD:refs/heads/$branch"    # new branch only; never --force
+          {
+            echo "Appends **ledger.v2/$N.yml** (new file only; every existing entry untouched)."
+            echo
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| measured commit | \`$SHA\` |"
+            echo "| appended on main | \`$MAIN\` |"
+            echo "| ios/ClarkePocket files | $count |"
+            echo "| tree_root_sha256 | \`$root\` |"
+            echo "| iOS Pocket Simulator run | https://github.com/$REPO/actions/runs/$RUN_ID |"
+            echo
+            echo "Opened with GITHUB_TOKEN, so pull_request workflows do not start on this PR."
+            echo "This workflow dispatched its own **iOS Pocket Ledger · verify** job on \`$branch\`."
+            echo "Closing and reopening the PR runs it again as a pull_request event."
+            echo
+            echo "<details><summary>Checks run before push</summary>"
+            echo
+            echo '```'
+            cat verify.txt
+            echo '```'
+            echo "</details>"
+          } > body.md
+          gh pr create --repo "$REPO" --base main --head "$branch" \
+            --title "ledger: seal $N /ios_clarke_pocket_manifest (${SHA})" --body-file body.md
+          gh workflow run ios-pocket-ledger.yml --repo "$REPO" --ref "$branch" -f mode=verify
