@@ -10,11 +10,15 @@
 //   * Load/unload: Metal, ctx 2048, threads from the P-cores; low-memory warning before loading;
 //     unloaded when the app goes to the background or iOS sends a memory warning.
 //   * One generation at a time (`busy`); the IRC responder skips while the chat is generating.
+//   * Fallback: when there is no local model (no file, or it failed to load) and the user switched
+//     on the PC-bot fallback, `generate` asks the bridge's IRC bot instead (BridgeFallback.swift).
+//     A low-memory refusal is not a fallback case: the user decides "Load anyway".
 // Nothing here exits the app; every failure becomes a visible state.
 
 import Foundation
 import SwiftUI
 import UIKit
+import Combine
 
 @MainActor
 final class ModelStore: NSObject, ObservableObject {
@@ -41,6 +45,11 @@ final class ModelStore: NSObject, ObservableObject {
     @Published private(set) var lastSpeed: String?
 
     let engine = LlamaEngine()
+    /// Optional PC-bot fallback (set once by AppModel).
+    private(set) var bridge: BridgeFallback?
+    private var bridgeWatch: [AnyCancellable] = []
+    /// True while the current answer comes from the PC bot rather than this phone.
+    @Published private(set) var answeringViaBridge = false
 
     private var session: URLSession!
     private var download: URLSessionDownloadTask?
@@ -74,6 +83,20 @@ final class ModelStore: NSObject, ObservableObject {
         return nil
     }
     var isLoaded: Bool { if case .loaded = engineState { return true } else { return false } }
+
+    /// Chat can send: a local model file exists, or the PC-bot fallback is on and IRC is connected.
+    var canAnswer: Bool { activeFile != nil || (bridge?.isAvailable ?? false) }
+    /// No local model file, so the next answer would come from the PC bot.
+    var willUseBridge: Bool { activeFile == nil && (bridge?.isAvailable ?? false) }
+
+    /// Wire the fallback; views watching this store also refresh when it or IRC changes state.
+    func attachBridge(_ b: BridgeFallback, client: IRCClient) {
+        bridge = b
+        bridgeWatch = [
+            b.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() },
+            client.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() },
+        ]
+    }
 
     override init() {
         super.init()
@@ -298,8 +321,12 @@ final class ModelStore: NSObject, ObservableObject {
         guard !busy else { return nil }
         busy = true
         defer { busy = false }
-        if !isLoaded { await load() }
-        guard isLoaded else { return nil }
+        if !isLoaded, activeFile != nil { await load() }
+        if !isLoaded {
+            // Local model unavailable (no file, or loading failed). Not after a low-memory refusal.
+            guard memoryWarning == nil, let bridge, bridge.isAvailable else { return nil }
+            return await generateViaBridge(bridge, user: user, onText: onText)
+        }
         let engine = self.engine
         let task = Task { @MainActor () -> (String, Bool, String?) in
             var out = ""
@@ -330,6 +357,22 @@ final class ModelStore: NSObject, ObservableObject {
     }
 
 
+
+    /// The PC bot keeps its own per-nick history and system prompt, so only `user` is sent.
+    private func generateViaBridge(_ bridge: BridgeFallback, user: String,
+                                   onText: @escaping @MainActor (String) -> Void) async -> (text: String, stopped: Bool, error: String?) {
+        answeringViaBridge = true
+        defer { answeringViaBridge = false }
+        let task = Task { @MainActor () -> (String, Bool, String?) in
+            let r = await bridge.ask(question: user, onText: onText)
+            return (r.text, r.stopped, r.error)
+        }
+        current = task
+        let r = await task.value
+        current = nil
+        lastSpeed = "via PC bot \(BridgeRequest.botNick) (IRC private message)"
+        return (r.0, r.1, r.2)
+    }
 
     func cancelCurrent() { current?.cancel() }
 }

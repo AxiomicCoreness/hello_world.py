@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 // SPDX-License-Identifier: MIT
 //
-// The pinned on-device model and a streaming SHA-256 file verifier.
+// The pinned on-device model (selectable in code; 1.5B by default) and a streaming SHA-256 file verifier.
 // The app (iOS) hashes with CryptoKit. Linux has no CryptoKit, so there — only for `swift test` —
 // the same calls go to the small pure-Swift `SHA256` in SHA256Fallback.swift (same API subset).
 
@@ -10,17 +10,63 @@ import Foundation
 import CryptoKit
 #endif
 
-/// The one model this app downloads by default (GitHub release asset of this repo).
-public enum ModelPin {
-    public static let releaseTag = "model-deepseek-r2-1.5b-q4km-v1"
-    public static let fileName = "deepseek-r2-1.5b-Q4_K_M.gguf"
-    public static let url = URL(string:
-        "https://github.com/AxiomicCoreness/hello_world.py/releases/download/\(releaseTag)/\(fileName)")!
-    public static let sizeBytes: Int64 = 1_117_320_640
-    public static let sha256 = "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
-    /// Label shown in the chat and saved nowhere else (the history rows carry no model field,
+/// One downloadable GGUF: a GitHub release asset of this repo, pinned by exact size and SHA-256.
+public struct ModelPinSpec: Equatable, Sendable {
+    public let releaseTag: String
+    public let fileName: String
+    public let sizeBytes: Int64
+    /// Full 64-hex lower-case SHA-256 of the file.
+    public let sha256: String
+    /// Label shown in the chat and saved nowhere else (history rows carry no model field,
     /// matching the bridge's shape).
-    public static let label = "ClarkeYoursaTee (deepseek-r2-1.5b)"
+    public let label: String
+
+    public init(releaseTag: String, fileName: String, sizeBytes: Int64, sha256: String, label: String) {
+        self.releaseTag = releaseTag
+        self.fileName = fileName
+        self.sizeBytes = sizeBytes
+        self.sha256 = sha256
+        self.label = label
+    }
+
+    public var url: URL {
+        URL(string: "https://github.com/AxiomicCoreness/hello_world.py/releases/download/\(releaseTag)/\(fileName)")!
+    }
+
+    /// deepseek-r2 1.5B Q4_K_M (DeepSeek-R1-Distill-Qwen-1.5B fine-tune). The default.
+    public static let deepseekR2_1p5b = ModelPinSpec(
+        releaseTag: "model-deepseek-r2-1.5b-q4km-v1",
+        fileName: "deepseek-r2-1.5b-Q4_K_M.gguf",
+        sizeBytes: 1_117_320_640,
+        sha256: "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1",
+        label: "ClarkeYoursaTee (deepseek-r2-1.5b)")
+
+    /// deepseek-r2 1.8B Q4_K_M (LLaMA-Pro block expansion, 28 → 33 layers). Available in code
+    /// only: NOT the default until its eval has been reviewed.
+    public static let deepseekR2_1p8b = ModelPinSpec(
+        releaseTag: "model-deepseek-r2-1p8b-q4km-v1",
+        fileName: "deepseek-r2-1p8b-Q4_K_M.gguf",
+        sizeBytes: 1_259_979_680,
+        sha256: "f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4",
+        label: "ClarkeYoursaTee (deepseek-r2-1.8b)")
+
+    /// Every pin the app knows about (selectable in code via `ModelPin.selected`).
+    public static let all: [ModelPinSpec] = [deepseekR2_1p5b, deepseekR2_1p8b]
+}
+
+/// The model this app downloads on first launch. To switch models, change `selected` to another
+/// `ModelPinSpec` (e.g. `.deepseekR2_1p8b`) — one line, compile-time. Each pin has its own file
+/// name, so a downloaded file of one pin is never mistaken for another.
+public enum ModelPin {
+    /// Stays on the 1.5B until the 1.8B eval has been reviewed.
+    public static let selected: ModelPinSpec = .deepseekR2_1p5b
+
+    public static var releaseTag: String { selected.releaseTag }
+    public static var fileName: String { selected.fileName }
+    public static var url: URL { selected.url }
+    public static var sizeBytes: Int64 { selected.sizeBytes }
+    public static var sha256: String { selected.sha256 }
+    public static var label: String { selected.label }
 }
 
 public enum VerifyError: Error, Equatable, CustomStringConvertible {

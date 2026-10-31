@@ -18,7 +18,7 @@ This folder is source. You build it with Xcode on a Mac, or, without a Mac, down
 
 | | |
 |---|---|
-| Model | `ClarkeYoursaTee (deepseek-r2-1.5b)`, `deepseek-r2-1.5b-Q4_K_M.gguf`, 1 117 320 640 bytes (1.12 GB), sha256 `80a49c2f…79e5c1`, from this repo's release [`model-deepseek-r2-1.5b-q4km-v1`](https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1) (`Sources/PocketCore/ModelPin.swift`) |
+| Model | `ClarkeYoursaTee (deepseek-r2-1.5b)`, `deepseek-r2-1.5b-Q4_K_M.gguf`, 1 117 320 640 bytes (1.12 GB), sha256 `80a49c2f…79e5c1`, from this repo's release [`model-deepseek-r2-1.5b-q4km-v1`](https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1) (`Sources/PocketCore/ModelPin.swift`). Selectable in code: `ModelPin.selected` (default `.deepseekR2_1p5b`; `.deepseekR2_1p8b` = `deepseek-r2-1p8b-Q4_K_M.gguf`, 1 259 979 680 bytes, sha256 `f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4`, release `model-deepseek-r2-1p8b-q4km-v1`, not the default until its eval is reviewed) |
 | Inference | llama.cpp release **b11960** (the build behind llama.cpp v0.8.0), as the official prebuilt `llama-b11960-xcframework.zip`, pinned by checksum in `LlamaBinary/Package.swift` |
 | Settings | context 2048 tokens · all layers on Metal · 2 generation / 4 batch threads on the A14 (from its 2 performance cores) · temperature 0.6, top-p 0.95 (read from the GGUF) · chat template from the GGUF |
 | IRC | `wss://irc.abjects.net:6680/`, starts in `#axiomiccoreness`, nick `Clarke_iOS_<4 digits>` |
@@ -130,7 +130,29 @@ GitHub pre-release.
      `!llm` in the same channel too.** If both are running, people get two answers, so turn this switch
      on only when the PC bot is off.
 
-### Saved history
+### Standalone, and the optional PC-bot fallback
+
+The app needs no PC: on first launch the **Model** tab downloads the pinned GGUF from its GitHub
+release, checks the exact size and SHA-256, and runs it with llama.cpp on the phone.
+
+To change the model, edit one line in `Sources/PocketCore/ModelPin.swift`:
+`public static let selected: ModelPinSpec = .deepseekR2_1p5b`. Each pin has its own file name,
+size and SHA-256, so a file downloaded for one pin is never accepted as another.
+
+**Fallback (off by default, IRC tab → "Chat fallback to the PC bot when no local model")**: when
+there is no local model file, or it failed to load, Chat sends your question as a **private
+message** to the PC bridge's IRC bot (`ClarkeTutorBot`, `sovereign-irc-bridge/src/irc_llm_bot.py`)
+over the app's existing IRC connection and shows its `[LLM]` reply lines. The chat header then says
+`VIA PC BOT`.
+- Only the question is sent. The PC bot uses its own system prompt and its own per-nick history.
+- The bot must be running on the PC, and the phone must be connected to IRC. The phone opens no
+  port and never connects to the PC directly (the bridge stays bound to 127.0.0.1).
+- IRC is plaintext to the network's operators, so leave this off for anything private.
+- A reply ends after 4 quiet seconds, on the bot's `…(truncated)` line, or on a NOTICE (for example
+  its rate limit). With no answer within 180 s, Chat says the PC bot may be off.
+- A low-memory refusal does **not** fall back. You choose **Load anyway** instead.
+
+## Saved history
 
 `Application Support/llm_history.jsonl` uses the same row format as the bridge (PR #166). It's one JSON object
 per line with keys in this order: `role`, `content`, `format` (assistant: `"markdown"`), `thinking`
