@@ -13,8 +13,8 @@ A small PocketPal-style iPhone app with three tabs:
 - **IRC**: the same abjects client as `ios/AxiomicCorenessChat` (PR #165), plus slash commands. You can
   also switch on answering `!llm` questions with the on-device model.
 
-This folder is **source only**. There is no `.ipa`. You build it with Xcode on a Mac, and a free
-Apple ID is enough to put it on your own iPhone. It targets an **iPhone 12 (A14, 4 GB)** and anything newer.
+This folder is source. You build it with Xcode on a Mac, or, without a Mac, download the **unsigned
+`.ipa`** that CI builds and sign it with Sideloadly (section C). A free Apple ID is enough either way. It targets an **iPhone 12 (A14, 4 GB)** and anything newer.
 
 | | |
 |---|---|
@@ -71,6 +71,29 @@ Xcode fetches the llama.cpp XCFramework (about 70 MB) the first time and checks 
    - **Settings → General → VPN & Device Management →** your Apple ID → **Trust**.
 4. Apps signed with a free account **expire after 7 days**. Press Run again from Xcode to renew; the
    downloaded model and history stay on the phone.
+
+### C. Without a Mac: unsigned `.ipa` + Sideloadly (Windows)
+
+The workflow `.github/workflows/ios-clarke-pocket.yml` builds an **unsigned Release** app for iPhone on
+every change and uploads it as the artifact **`ClarkePocket-unsigned-ipa`** (kept 14 days):
+`ClarkePocket-unsigned.ipa` plus `ClarkePocket-unsigned.ipa.sha256`. CI checks that it holds only
+`Payload/ClarkePocket.app`, has no signature and no entitlements, embeds `Frameworks/llama.framework`,
+is arm64, and that its `Info.plist` says bundle id `io.github.axiomiccoreness.clarkepocket`, version 1.0 (1),
+iOS 16.4+, iPhone only. Running the workflow by hand with **prerelease** ticked also attaches it to a
+GitHub pre-release.
+
+1. Open the latest green run of **iOS Clarke Pocket** under **Actions**, download
+   `ClarkePocket-unsigned-ipa` (a zip; downloading needs a GitHub login) and unzip it.
+   Optionally check it: `certutil -hashfile ClarkePocket-unsigned.ipa SHA256` should match the `.sha256` file.
+2. Install Sideloadly. On Windows it also needs **iTunes and iCloud from apple.com** (not the Microsoft
+   Store versions) so it can see the phone.
+3. Plug in the iPhone, drop the `.ipa` on Sideloadly, enter your Apple ID and press **Start**.
+   If it says the bundle id is unavailable, set a unique one under *Advanced options*
+   (e.g. `com.mrteanotcoffee.clarkepocket`).
+4. On the iPhone: **Developer Mode → On** and **VPN & Device Management → Trust**, as in section A.
+5. Free-account limits: the app **expires after 7 days** (re-sign with Sideloadly to renew; the model and
+   history stay if the bundle id is unchanged), at most **3 sideloaded apps** at once per device, and at most
+   10 new app ids per 7 days. The optional memory entitlement below is never in this `.ipa`.
 
 ### B. Without XcodeGen (plain Xcode)
 
