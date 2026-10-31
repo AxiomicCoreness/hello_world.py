@@ -84,7 +84,9 @@ jobs:
           import json
           s = json.load(open("../../schemes.json"))
           names = (s.get("workspace") or s.get("project") or {}).get("schemes", [])
-          print(next((n for n in ("ClarkePocket-Package", "PocketCore") if n in names), ""))
+          # Package.swift is named ClarkePocket; with no .xcodeproj present, Xcode exposes the
+          # package scheme as "ClarkePocket" (or "<name>-Package" when there are several products).
+          print(next((n for n in ("ClarkePocket-Package", "ClarkePocket", "PocketCore") if n in names), ""))
           PY
           )
           test -n "$scheme" || { echo "::error::no package scheme found"; cat ../../schemes.json; exit 1; }
