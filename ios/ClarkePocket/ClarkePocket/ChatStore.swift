@@ -18,8 +18,10 @@ struct ChatTurn: Identifiable, Equatable {
     var streaming = false
     var stopped = false
 
-    var answer: String { MarkdownMath.normalizeMath(MarkdownMath.splitThinking(text).answer) }
-    var thinking: String { MarkdownMath.splitThinking(text).thinking }
+    // Everything the UI renders goes through HiddenPrompt.redact (a verbatim echo of the hidden
+    // system prompt is never shown).
+    var answer: String { HiddenPrompt.redact(MarkdownMath.normalizeMath(MarkdownMath.splitThinking(text).answer)) }
+    var thinking: String { HiddenPrompt.redact(MarkdownMath.splitThinking(text).thinking) }
     var isThinkingNow: Bool { streaming && MarkdownMath.thinkingOpen(text) }
 }
 
@@ -28,6 +30,8 @@ final class ChatStore: ObservableObject {
     @Published private(set) var turns: [ChatTurn] = []
     @Published private(set) var generating = false
 
+    /// Visible per-screen instructions. The hidden system prompt is prepended to this by
+    /// LlamaEngine.fitPrompt and is never stored here, in `turns`, in history or in exports.
     static let systemPrompt = """
     You are \(ModelPin.label), a helpful assistant running entirely on the user's iPhone. \
     Answer concisely. Use Markdown, and write math in LaTeX with \\( \\) or \\[ \\].
@@ -38,11 +42,21 @@ final class ChatStore: ObservableObject {
     let history: HistoryFile
     private let model: ModelStore
 
-    init(model: ModelStore) {
-        self.model = model
+    /// Application Support/llm_history.jsonl (also read by the Model tab's chat export).
+    nonisolated static var historyURL: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        history = HistoryFile(url: base.appendingPathComponent("llm_history.jsonl"))
+        return base.appendingPathComponent("llm_history.jsonl")
+    }
+
+    /// Markdown transcript for sharing: user/assistant answers only, hidden prompt redacted.
+    nonisolated static func exportMarkdown() -> String {
+        TranscriptExport.markdown(rows: HistoryFile(url: historyURL).readAll())
+    }
+
+    init(model: ModelStore) {
+        self.model = model
+        history = HistoryFile(url: Self.historyURL)
         loadSaved()
     }
 
@@ -91,7 +105,7 @@ final class ChatStore: ObservableObject {
             if let e = r.error { turns.append(ChatTurn(role: .note, text: "error: \(e)")) }
             turns[idx].stopped = r.stopped
             if !r.text.isEmpty {
-                history.append(History.pair(user: user, rawReply: r.text))
+                history.append(History.pair(user: user, rawReply: HiddenPrompt.redact(r.text)))
             }
         }
     }
