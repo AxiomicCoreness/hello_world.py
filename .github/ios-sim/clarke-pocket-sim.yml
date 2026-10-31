@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+#
+# SIMULATOR SCREENSHOTS ONLY (ios-sim-screenshots.yml). Same app as ios/ClarkePocket/project.yml,
+# except: built for the iOS Simulator, without the LlamaBinary package (its xcframework has no
+# simulator slice) and with SimStub/LlamaEngine.swift in place of ClarkePocket/LlamaEngine.swift.
+# The workflow copies this file to ios/ClarkePocket/project-sim.yml and the stub to
+# ios/ClarkePocket/SimStub/ on the runner; nothing is committed to the app's branch.
+name: ClarkePocketSim
+options:
+  bundleIdPrefix: io.github.axiomiccoreness
+  deploymentTarget:
+    iOS: "16.4"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+targets:
+  ClarkePocket:
+    type: application
+    platform: iOS
+    sources:
+      - path: ClarkePocket
+        excludes:
+          - LlamaEngine.swift
+      - path: Sources/PocketCore
+      - path: SimStub
+    info:
+      path: SimStub/Info.plist
+      properties:
+        CFBundleDisplayName: Clarke Pocket
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        LSRequiresIPhoneOS: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.clarkepocket
+        PRODUCT_NAME: ClarkePocket
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTED_PLATFORMS: iphonesimulator
+        GENERATE_INFOPLIST_FILE: NO
