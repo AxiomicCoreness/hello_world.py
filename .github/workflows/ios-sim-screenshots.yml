@@ -22,9 +22,6 @@ name: iOS simulator screenshots
 # JOINs. Clarke Pocket's !llm responder is forced off with `-ircResponderEnabled NO`.
 
 on:
-  # TEMPORARY, removed in the next commit: one run from this branch before the workflow is on main.
-  push:
-    branches: [ci/ios-sim-screenshots]
   workflow_dispatch:
     inputs:
       app:
