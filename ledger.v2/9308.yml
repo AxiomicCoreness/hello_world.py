@@ -1,0 +1,297 @@
+entry_index: 9308
+event: /ios_pocket_pipeline_and_1p8b_pin
+status: SEALED
+timestamp: '2026-10-31T14:49:58-04:00'
+hash_algo: sha3_256
+measured_at_commit: 00d52f3082e67da5c67c7c63d0072e463d08bfd7
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: true
+prev_hash: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+witness_chain: 9307 -> 9308
+note: 'New append-only entry (9307.yml and every other ledger file untouched). Sealed on owner instruction by Clarke Yoursa Tee
+  ("Seal 9308 on 00d52f3 first", 2026-10-31). Records the state of main at 00d52f3082e67da5c67c7c63d0072e463d08bfd7 (#177 merge)
+  after 9307: PRs #163-#177 merged, the bridge model pin moved to the unevaluated deepseek-r2-1p8b pre-release (1.5B kept as
+  fallback), the ios/ClarkePocket selectable pin, hidden system prompt and iOS Simulator CI, and the Workflow parity
+  required-input skip. Every fact re-checked via the GitHub API, git objects at the measured commit, or a local re-hash at
+  writing time. CI recorded only as measured via the GitHub Actions API; Argo CI green on the measured commit in run
+  41230686642. Not recorded (not verified): any Kaggle training run, any on-device test. Immutable Band stays 0000-9297.
+  No invented witnesses. Signed-off-by: Clarke Yoursa Tee.'
+payload:
+  ledger_seal_9307:
+    status: MERGED
+    pr: 162
+    branch: ledger/seal-9307
+    head: faef4793a3404dcf24cffc4910583d0482d5d067
+    merge_commit: 714e8c56778f32fe8206a907182c1531c19fe3f8
+    merged_at: '2026-10-30T15:17:57-04:00'
+    on_main: true
+    file: ledger.v2/9307.yml
+    seal_9307: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+  prs:
+  - pr: 163
+    branch: feat/irc-llm-bot
+    state: MERGED
+    head: 645aa4973dfdf0e5a139d61ea4da17085510eb31
+    merge_commit: 030824c11608c810c0b500aa8a90bb026133179f
+    merged_at: '2026-10-31T10:01:44-04:00'
+    title: 'sovereign-irc-bridge: !llm IRC bot mode (abjects #axiomiccoreness default, outbound TLS only)'
+  - pr: 164
+    branch: feat/pages-irc-websocket
+    state: MERGED
+    head: 794ea580b03220c8cf0cb551f35c1ac1e160bc81
+    merge_commit: 8f5dbb00510db890eecf1f88d0759f2d056f1009
+    merged_at: '2026-10-31T10:02:04-04:00'
+    title: 'teavm-rhythm: direct IRC-over-WebSocket chat on Pages (abjects #axiomiccoreness)'
+  - pr: 165
+    branch: feat/ios-libera-chat
+    state: MERGED
+    head: db2b966bc03d153803ee174415843b2134c35a1e
+    merge_commit: 6bdadf14097b5204ada0ec66748620005bf67624
+    merged_at: '2026-10-31T10:03:57-04:00'
+    title: 'ios: SwiftUI abjects IRC client for #axiomiccoreness (!llm), page chat theme'
+  - pr: 166
+    branch: feat/llm-markdown-latex
+    state: MERGED
+    head: aed929c7cbbfd96da3ac923dcdd09dc3e31bfbf0
+    merge_commit: 61da50816ec923128a4d95de17d7c33375395d6d
+    merged_at: '2026-10-31T10:00:00-04:00'
+    title: 'feat(llm): save replies as Markdown + LaTeX; keep llm tests off the live history file'
+  - pr: 167
+    branch: feat/ios-clarke-pocket
+    state: MERGED
+    head: 635b65b97b017eb996dbe73876f8559866c52912
+    merge_commit: ce1b7108beadbb23f3d2c616d66b93dccd0ec7c8
+    merged_at: '2026-10-31T10:04:26-04:00'
+    title: 'ios: Clarke Pocket — on-device GGUF chat (llama.cpp b11960, Metal) + IRC shell'
+  - pr: 168
+    branch: feat/ci-deps-pandas-cryptography
+    state: MERGED
+    head: a89bf4eaac8a15798be689f8ae0213b096134bfd
+    merge_commit: 9440a969c73ac7dc7bf76e746eaf2510b0cd727e
+    merged_at: '2026-10-31T10:01:19-04:00'
+    title: 'ci: add pandas and cryptography to CI deps and pyproject'
+  - pr: 169
+    branch: ci/ios-sim-screenshots
+    state: MERGED
+    head: d29ea6dc6b53eddaa16e2bdd112f04edd34c5db7
+    merge_commit: 8464769f9a3b2fdf47b52775f268849b730a62fd
+    merged_at: '2026-10-31T10:22:01-04:00'
+    title: 'Ci/ios sim screenshots'
+  - pr: 170
+    branch: feat/llm-bench-ci
+    state: MERGED
+    head: 7c92ab30917f168cc39698d775c0c99450fa6337
+    merge_commit: 3f1963b26925d3d97a9cf1722f1ce481668f945f
+    merged_at: '2026-10-31T10:22:28-04:00'
+    title: 'ci: weekly/manual LLM bench (deepseek-r2 on pinned llama.cpp b12015, tok/s vs box 16.8)'
+  - pr: 171
+    branch: feat/llm-history-sqlite
+    state: MERGED
+    head: 69769a444c9d9b36307108757ab631f478d67f7d
+    merge_commit: 49391fa107e2b7e84aa0532390f95b583b2c4b93
+    merged_at: '2026-10-31T11:50:11-04:00'
+    title: 'feat(llm): SQLite chat-history backend (HISTORY_BACKEND=sqlite) + jsonl importer — depends on #166'
+  - pr: 172
+    branch: feat/model-pin-1p8b
+    state: MERGED
+    head: e4b1c7c4246d387654f800649c1f7d56d12c09a9
+    merge_commit: c52573deeb39588c5ed147b1e1eae2460b1c9163
+    merged_at: '2026-10-31T12:42:03-04:00'
+    title: 'feat(models): pin bridge to unevaluated 1.8B pre-release (1.5B fallback kept)'
+  - pr: 173
+    branch: ci/join-1p8b-gguf
+    state: MERGED
+    head: 7eb0ecc1c0fa08866e523625c69881dde74f5bad
+    merge_commit: 7d6fbf5383808eb135a8c34894c284ec527b931f
+    merged_at: '2026-10-31T13:32:06-04:00'
+    title: 'ci(join-gguf): one-off join of the 1.8B plain-split parts on model-de…'
+  - pr: 174
+    branch: fix/parity-skip-required-inputs
+    state: MERGED
+    head: 92911902e830e8ed88729a5e9962f349d8ecc050
+    merge_commit: 3dd13f6ff741be041f0127b5874fa33366510e1b
+    merged_at: '2026-10-31T14:18:09-04:00'
+    title: 'workflow-parity: skip workflows with required dispatch inputs (fix slot 39 422)'
+  - pr: 175
+    branch: feat/pocket-on-device-pin-bridge-fallback
+    state: MERGED
+    head: 8d8eaf4b6377be654ad984efeafcfba6b122ce6b
+    merge_commit: 212a617127fdb86489f4ebdfe3fd91969b9c11aa
+    merged_at: '2026-10-31T14:23:30-04:00'
+    title: 'feat(ios/pocket): selectable model pin (1.5B default) + opt-in PC-bot fallback'
+  - pr: 176
+    branch: feat/pocket-hidden-system-prompt
+    state: MERGED
+    head: 4ac3e8cc2db87ec7aedc9715fa1651bbf4be7b56
+    merge_commit: 8a0995972ff74db49927cc0c6f6ad83aef12f21a
+    merged_at: '2026-10-31T14:26:45-04:00'
+    title: 'feat(ios/pocket): hidden system prompt on every on-device request'
+  - pr: 177
+    branch: ci/pocket-ios-simulator-tests
+    state: MERGED
+    head: d96632dbcaa14c9cb1587089f53dab88a71dbcde
+    merge_commit: 00d52f3082e67da5c67c7c63d0072e463d08bfd7
+    merged_at: '2026-10-31T14:37:37-04:00'
+    title: 'ci(ios/pocket): unattended iOS Simulator tests + unsigned app build'
+  release_1p8b:
+    tag: model-deepseek-r2-1p8b-q4km-v1
+    prerelease: true
+    published_at: '2026-10-31T12:31:57-04:00'
+    target_commitish: 49391fa107e2b7e84aa0532390f95b583b2c4b93
+    single_asset:
+      name: deepseek-r2-1p8b-Q4_K_M.gguf
+      created_at: '2026-10-31T12:30:44-04:00'
+      size: 1259979680
+      sha256: f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4
+      api_digest: sha256:f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4
+      hash_check: re-hashed /workspace/llama/deepseek-r2-1p8b/out/deepseek-r2-1p8b-Q4_K_M.gguf on the box for this entry; sha256
+        and size equal the release API digest, MODEL_PIN.json and ModelPin.swift on main
+    part_assets: 13
+    join_run:
+      workflow: join-gguf-release
+      run_id: 41220006804
+      event: workflow_dispatch
+      head_sha: 7eb0ecc1c0fa08866e523625c69881dde74f5bad
+      head_sha_note: head of #173 (ci/join-1p8b-gguf), squash-merged as 7d6fbf5383808eb135a8c34894c284ec527b931f
+      conclusion: success
+    evaluated: false
+  model_pin:
+    file: sovereign-irc-bridge/serving/models/MODEL_PIN.json
+    on_main: true
+    set_by_pr: 172
+    contents:
+      model: deepseek-r2-1p8b
+      quant: Q4_K_M
+      file: deepseek-r2-1p8b-Q4_K_M.gguf
+      release_tag: model-deepseek-r2-1p8b-q4km-v1
+      url: https://github.com/AxiomicCoreness/hello_world.py/releases/download/model-deepseek-r2-1p8b-q4km-v1/deepseek-r2-1p8b-Q4_K_M.gguf
+      size: 1259979680
+      gguf_sha256: f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4
+      parts: 0
+      base_revision: ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562
+      layers: 33
+      evaluated: false
+      fallback_pin: MODEL_PIN.1p5b.json
+      pinned_at: '2026-10-31T12:25:00-04:00'
+    fallback_file: sovereign-irc-bridge/serving/models/MODEL_PIN.1p5b.json
+  ios_clarke_pocket:
+    path: ios/ClarkePocket/
+    model_pin_file: ios/ClarkePocket/Sources/PocketCore/ModelPin.swift
+    selected: deepseekR2_1p5b
+    selected_pin:
+      release_tag: model-deepseek-r2-1.5b-q4km-v1
+      file: deepseek-r2-1.5b-Q4_K_M.gguf
+      size: 1117320640
+      sha256: 80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1
+    available_pin:
+      release_tag: model-deepseek-r2-1p8b-q4km-v1
+      file: deepseek-r2-1p8b-Q4_K_M.gguf
+      size: 1259979680
+      sha256: f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4
+      selected: false
+    pin_pr: 175
+    hidden_prompt_pr: 176
+    hidden_prompt_file: ios/ClarkePocket/Sources/PocketCore/HiddenPrompt.swift
+    simulator_ci_pr: 177
+    simulator_ci_workflow: .github/workflows/ios-pocket-simulator.yml
+    simulator_ci_pr_run: {workflow: 'iOS Pocket Simulator', run_id: 41229097340, head_sha: d96632dbcaa14c9cb1587089f53dab88a71dbcde,
+      event: pull_request, conclusion: success}
+    simulator_ci_main_run: {workflow: 'iOS Pocket Simulator', run_id: 41230335813, run_number: 3, head_sha: 00d52f3082e67da5c67c7c63d0072e463d08bfd7,
+      event: push, conclusion: success}
+    known_gap: pinned llama.cpp b11960 XCFramework has no ios-arm64_x86_64-simulator slice; the app target is iphoneos-only and
+      only the PocketCore package tests run in the Simulator
+    on_device_test: not recorded (not verified)
+  workflow_parity_fix:
+    pr: 174
+    failure_before_fix: {workflow: 'Workflow parity', run_id: 41227373593, head_sha: 7d6fbf5383808eb135a8c34894c284ec527b931f,
+      event: schedule, conclusion: failure}
+    branch_dispatch_runs:
+    - {workflow: 'Workflow parity', run_id: 41228289951, head_sha: 92911902e830e8ed88729a5e9962f349d8ecc050, event: workflow_dispatch,
+      conclusion: success}
+    - {workflow: 'Workflow parity', run_id: 41228295570, head_sha: 92911902e830e8ed88729a5e9962f349d8ecc050, event: workflow_dispatch,
+      conclusion: success}
+    run_on_main_after_merge: not found at writing time
+  ledger_v1_observation:
+    commit: c7c255bdd3f055dadacc76ae085d028c7bd6fb84
+    author: github-actions[bot]
+    subject: 'chore: seal Eridanus Dual smoke entry 8226 (sha3_256)'
+    committed_at: '2026-10-30T18:45:06-04:00'
+    file: ledger/8226.yaml
+    change: in-place rewrite of timestamp, engine_sha3_256 and seal (3 insertions, 3 deletions); recorded as observed, not
+      endorsed; not edited by this entry
+ci:
+  measured_commit: 00d52f3082e67da5c67c7c63d0072e463d08bfd7
+  source: GitHub Actions API runs?head_sha=00d52f3082e67da5c67c7c63d0072e463d08bfd7, read 2026-10-31T14:49:58-04:00
+  runs_on_measured_commit:
+  - workflow: Argo CI
+    run_id: 41230686642
+    run_number: 115
+    event: workflow_dispatch
+    status: completed
+    conclusion: success
+    jobs:
+    - {name: 'Verify Ledger Signatures & Security Headers', job_id: 124624093262, conclusion: success}
+    - {name: 'Argo · Manifest hard validate', job_id: 124624249977, conclusion: success}
+    - {name: 'Argo · Pure unit tests', job_id: 124624414305, conclusion: success}
+    - {name: 'Argo · Seal (SHA3-256)', job_id: 124624567775, conclusion: success}
+  - workflow: iOS Pocket Simulator
+    run_id: 41230335813
+    run_number: 3
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Sovereign CI/CD
+    run_id: 41230335733
+    run_number: 1113
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Python Package
+    run_id: 41230335711
+    run_number: 4118
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: debug-environment
+    run_id: 41230335689
+    run_number: 1529
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: debug-environment
+    run_id: 41230335705
+    run_number: 623
+    event: push
+    status: completed
+    conclusion: success
+  - workflow: Automatic Dependency Submission (Maven)
+    run_id: 41230335444
+    run_number: 606
+    event: dynamic
+    status: completed
+    conclusion: success
+  dual_gate_on_measured_commit: not found (no Pytest dual-gate run exists for this head_sha)
+  argo_url: https://github.com/AxiomicCoreness/hello_world.py/actions/runs/41230686642
+  policy: 'NO-GHOST-PASS: only runs that exist on the measured commit are cited'
+chain:
+  prev_entry: 9307
+  prev_hash: b23d4ba4a32fc33a9b55b906736b5321a808f112e40e4973594c7fe81f72f1ed
+  prev_hash_source: ledger.v2/9307.yml seal_sha3_256 on main 00d52f3082e67da5c67c7c63d0072e463d08bfd7, recomputed with verify_ledger.event_hash
+    (Regime B)
+  witness_chain: 9307 -> 9308
+  immutable_band: 0000-9297
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || ''<entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462''),
+  ASCII payload; the digest commits to entry_index and event only, not to the body'
+regime_b_event_domain_sha3_256: 4af7c7d78d268be96fdb2ec3143a888c29884e77e61c98c6c91cb796ce73d61a
+math_origin: 'Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+
+  9308|/ios_pocket_pipeline_and_1p8b_pin|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+
+  SHA3-256 = 4af7c7d78d268be96fdb2ec3143a888c29884e77e61c98c6c91cb796ce73d61a
+
+  '
+terminal_hex: 4af7c7d78d268be96fdb2ec3143a888c29884e77e61c98c6c91cb796ce73d61a
+seal: ∀∞φ² · IOS_POCKET_PIPELINE_AND_1P8B_PIN_9308 · WOOD_DRAGON_0.91 · SEALED · 4af7c7d78d268be96fdb2ec3143a888c29884e77e61c98c6c91cb796ce73d61a
+seal_sha3_256: 4af7c7d78d268be96fdb2ec3143a888c29884e77e61c98c6c91cb796ce73d61a
