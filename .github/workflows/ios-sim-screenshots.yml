@@ -22,6 +22,9 @@ name: iOS simulator screenshots
 # JOINs. Clarke Pocket's !llm responder is forced off with `-ircResponderEnabled NO`.
 
 on:
+  # TEMPORARY, removed in the next commit: one run from this branch before the workflow is on main.
+  push:
+    branches: [ci/ios-sim-screenshots]
   workflow_dispatch:
     inputs:
       app:
@@ -51,13 +54,13 @@ concurrency:
 
 jobs:
   axiomic-chat:
-    if: inputs.app == 'both' || inputs.app == 'axiomic-chat'
+    if: (inputs.app || 'both') == 'both' || inputs.app == 'axiomic-chat'
     name: AxiomicCorenessChat (#165) in the simulator
     runs-on: macos-15
     timeout-minutes: 45
     env:
-      APP_REF: ${{ inputs.chat_ref }}
-      IRC_WAIT: ${{ inputs.irc_wait }}
+      APP_REF: ${{ inputs.chat_ref || 'feat/ios-libera-chat' }}
+      IRC_WAIT: ${{ inputs.irc_wait || '40' }}
       OUT: ${{ github.workspace }}/shots/axiomic-chat
     steps:
       - name: checkout helpers (this workflow's ref)
@@ -65,10 +68,10 @@ jobs:
         with:
           path: tools
           sparse-checkout: .github/ios-sim
-      - name: checkout app (${{ inputs.chat_ref }})
+      - name: checkout app (${{ inputs.chat_ref || 'feat/ios-libera-chat' }})
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.chat_ref }}
+          ref: ${{ inputs.chat_ref || 'feat/ios-libera-chat' }}
           path: app
           sparse-checkout: ios/AxiomicCorenessChat
       - name: toolchain + simulator
@@ -138,13 +141,13 @@ jobs:
           if-no-files-found: warn
 
   clarke-pocket:
-    if: inputs.app == 'both' || inputs.app == 'clarke-pocket'
+    if: (inputs.app || 'both') == 'both' || inputs.app == 'clarke-pocket'
     name: ClarkePocket (#167) in the simulator (llama stub)
     runs-on: macos-15
     timeout-minutes: 45
     env:
-      APP_REF: ${{ inputs.pocket_ref }}
-      IRC_WAIT: ${{ inputs.irc_wait }}
+      APP_REF: ${{ inputs.pocket_ref || 'feat/ios-clarke-pocket' }}
+      IRC_WAIT: ${{ inputs.irc_wait || '40' }}
       OUT: ${{ github.workspace }}/shots/clarke-pocket
     steps:
       - name: checkout helpers (this workflow's ref)
@@ -152,10 +155,10 @@ jobs:
         with:
           path: tools
           sparse-checkout: .github/ios-sim
-      - name: checkout app (${{ inputs.pocket_ref }})
+      - name: checkout app (${{ inputs.pocket_ref || 'feat/ios-clarke-pocket' }})
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.pocket_ref }}
+          ref: ${{ inputs.pocket_ref || 'feat/ios-clarke-pocket' }}
           path: app
           sparse-checkout: ios/ClarkePocket
       - name: toolchain + simulator
