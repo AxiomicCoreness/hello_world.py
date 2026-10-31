@@ -4,6 +4,16 @@ Place `deepseek-r2-1.5b-Q4_K_M.gguf` (from
 https://www.kaggle.com/models/clarkeyoursatee/deepseek-r2-1-5b-q4-k-m) in this folder.
 Everything here except this README, `.gitignore` and `fetch-deepseek-r2.sh` is git-ignored, so the weights are never committed.
 
+## Model pin (1.8B active, 1.5B fallback)
+
+`MODEL_PIN.json` points at the **unevaluated** 1.8B pre-release
+[`model-deepseek-r2-1p8b-q4km-v1`](https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1p8b-q4km-v1)
+(`deepseek-r2-1p8b-Q4_K_M.gguf`, 1,259,979,680 bytes, sha256
+`f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4`, `"evaluated": false`).
+`MODEL_PIN.1p5b.json` keeps the 1.5B pin below unchanged; `PIN=./MODEL_PIN.1p5b.json ./fetch-deepseek-r2.sh`
+fetches the 1.5B. `launch-8085-deepseek-r2.sh` and the bench / IRC-bot workflows stay on the 1.5B until the
+1.8B-vs-1.5B evaluation has been reviewed.
+
 ## Direct download (phones / PocketPal AI)
 
 Single verified file, no reassembly needed:

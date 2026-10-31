@@ -1,0 +1,12 @@
+{
+  "model": "deepseek-r2-1.5b",
+  "quant": "Q4_K_M",
+  "file": "deepseek-r2-1.5b-Q4_K_M.gguf",
+  "release_tag": "model-deepseek-r2-1.5b-q4km-v1",
+  "url": "https://github.com/AxiomicCoreness/hello_world.py/releases/download/model-deepseek-r2-1.5b-q4km-v1/deepseek-r2-1.5b-Q4_K_M.gguf",
+  "size": 1117320640,
+  "gguf_sha256": "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1",
+  "archive_sha256": "22715bf886eeb22f74292f22574b816588f27ed41e5896bd81a07ebae5f08bce",
+  "parts": 42,
+  "pinned_at": "2026-10-30T14:12:31-04:00"
+}

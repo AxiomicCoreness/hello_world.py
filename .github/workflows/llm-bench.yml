@@ -40,6 +40,9 @@ jobs:
       LLAMA_ASSET: llama-b12015-bin-ubuntu-x64.tar.gz
       LLAMA_SHA256: 25458e07a9eca87791b2c856bf7d1c457dcfda038d6bf2fa2bbb07f11c988ee6
       MODELS_DIR: sovereign-irc-bridge/serving/models
+      # 8085 stays on the 1.5B (launch-8085-deepseek-r2.sh) until the 1.8B eval is reviewed,
+      # so bench the 1.5B fallback pin; MODEL_PIN.json now points at the unevaluated 1.8B.
+      PIN: sovereign-irc-bridge/serving/models/MODEL_PIN.1p5b.json
       BENCH_MAX_TOKENS: ${{ inputs.max_tokens || '1024' }}
     steps:
       - uses: actions/checkout@v4
@@ -53,12 +56,12 @@ jobs:
       - name: Offline bench parser tests
         run: python -I sovereign-irc-bridge/src/test_bench_llm.py
 
-      - name: Read model pin (MODEL_PIN.json)
+      - name: Read model pin ($PIN, the 1.5B fallback of MODEL_PIN.json)
         id: pin
         run: |
           python -I - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, re
-          pin = json.load(open("sovereign-irc-bridge/serving/models/MODEL_PIN.json", encoding="utf-8"))
+          import json, os, re
+          pin = json.load(open(os.environ["PIN"], encoding="utf-8"))
           assert re.fullmatch(r"[0-9a-f]{64}", pin["gguf_sha256"]), pin["gguf_sha256"]
           print(f"sha256={pin['gguf_sha256']}")
           print(f"file={pin['file']}")
@@ -72,7 +75,7 @@ jobs:
           path: ${{ env.MODELS_DIR }}/${{ steps.pin.outputs.file }}
           key: llm-gguf-${{ steps.pin.outputs.sha256 }}
 
-      - name: Fetch pinned GGUF (sha256 per MODEL_PIN.json)
+      - name: Fetch pinned GGUF (sha256 per $PIN)
         run: ./sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh
 
       - name: Verify GGUF sha256

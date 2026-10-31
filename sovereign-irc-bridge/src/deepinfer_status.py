@@ -42,10 +42,12 @@ GPU_DEPS: Tuple[str, ...] = (
     "torch", "deep_gemm", "deep_ep", "flash_mla", "tile_kernels", "tilelang", "deep_select", "deep_cluster",
 )
 COMPILED_EXT = "deepinfer._C"
+# 1.5B fallbacks (same as serving/models/MODEL_PIN.1p5b.json); MODEL_PIN.json overrides them when present.
 GGUF_NAME = "deepseek-r2-1.5b-Q4_K_M.gguf"
-# Fallbacks; serving/models/MODEL_PIN.json overrides them when present.
 GGUF_SHA256 = "80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1"
 GGUF_SIZE = 1_117_320_640
+RELEASE_TAG = "model-deepseek-r2-1.5b-q4km-v1"
+GGUF_PARTS = 42
 MODEL_PIN_PATH = Path(__file__).resolve().parents[1] / "serving" / "models" / "MODEL_PIN.json"
 
 
@@ -58,12 +60,15 @@ def load_model_pin(path: Path = MODEL_PIN_PATH) -> Dict[str, Any]:
 
 
 _PIN = load_model_pin()
-if _PIN.get("file", GGUF_NAME) == GGUF_NAME:
-    GGUF_SHA256 = str(_PIN.get("gguf_sha256", GGUF_SHA256))
-    GGUF_SIZE = int(_PIN.get("size", GGUF_SIZE))
-RELEASE_URL = "https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1"
-GGUF_URL = ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
-            "model-deepseek-r2-1.5b-q4km-v1/" + GGUF_NAME)
+if _PIN.get("file") and _PIN.get("gguf_sha256"):
+    GGUF_NAME = str(_PIN["file"])
+    GGUF_SHA256 = str(_PIN["gguf_sha256"])
+    GGUF_SIZE = int(_PIN.get("size", 0)) or None
+    RELEASE_TAG = str(_PIN.get("release_tag", RELEASE_TAG))
+    GGUF_PARTS = int(_PIN.get("parts", 0))
+RELEASE_URL = "https://github.com/AxiomicCoreness/hello_world.py/releases/tag/" + RELEASE_TAG
+GGUF_URL = str(_PIN.get("url") or ("https://github.com/AxiomicCoreness/hello_world.py/releases/download/"
+                                   + RELEASE_TAG + "/" + GGUF_NAME))
 PREFIX = "[System] deepinfer status: "
 
 _BRIDGE_DIR = Path(__file__).resolve().parents[1]
@@ -227,7 +232,8 @@ def status_lines(verify: bool = True, rep: Optional[Dict[str, Any]] = None) -> L
     elif g["state"] == "missing":
         gl = (f"GGUF {GGUF_NAME} missing at {g['path']} - download {GGUF_URL} (sha256 {GGUF_SHA256}) "
               f"or run sovereign-irc-bridge/serving/models/fetch-deepseek-r2.sh, which tries it "
-              f"first and falls back to the 42 parts ({RELEASE_URL})")
+              + (f"first and falls back to the {GGUF_PARTS} parts ({RELEASE_URL})" if GGUF_PARTS
+                 else f"({RELEASE_URL}; no parts - PIN=MODEL_PIN.1p5b.json falls back to 1.5B)"))
     elif g["state"] == "sha256 mismatch":
         gl = f"GGUF at {g['path']} sha256 MISMATCH: {g['sha256']} != {GGUF_SHA256}"
     else:

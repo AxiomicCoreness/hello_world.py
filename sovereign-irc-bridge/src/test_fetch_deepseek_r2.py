@@ -123,3 +123,39 @@ def test_skip_single_forces_parts(tmp_path: Path) -> None:
     r = _run(script, env)
     assert r.returncode == 0, r.stderr
     assert GGUF not in _requests(assets)
+
+
+def _pin(tmp_path: Path, name: str, sha: str, parts: int) -> Path:
+    pin = tmp_path / "PIN.json"
+    pin.write_text("{\n"
+                   f'  "file": "{name}",\n'
+                   '  "release_tag": "model-test-tag",\n'
+                   f'  "size": {len(DATA)},\n'
+                   f'  "gguf_sha256": "{sha}",\n'
+                   f'  "parts": {parts},\n'
+                   '  "pinned_at": "2026-10-31T12:25:00-04:00"\n}\n')
+    return pin
+
+
+def test_pin_file_name_and_tag_are_used(tmp_path: Path) -> None:
+    script, env, dest, assets = _setup(tmp_path, single=None, parts=False)
+    name = "deepseek-r2-1p8b-Q4_K_M.gguf"
+    (assets / name).write_bytes(DATA)
+    env["PIN"] = str(_pin(tmp_path, name, _sha(DATA), 0))
+    r = _run(script, env)
+    assert r.returncode == 0, r.stderr
+    assert (dest / name).read_bytes() == DATA
+    assert _requests(assets) == [name]
+    assert "model-test-tag" not in r.stderr
+
+
+def test_pin_without_parts_fails_closed(tmp_path: Path) -> None:
+    script, env, dest, assets = _setup(tmp_path, single=None, parts=True)
+    name = "deepseek-r2-1p8b-Q4_K_M.gguf"
+    (assets / name).write_bytes(b"corrupt")
+    env["PIN"] = str(_pin(tmp_path, name, _sha(DATA), 0))
+    r = _run(script, env)
+    assert r.returncode != 0
+    assert "has no parts" in r.stderr and "MODEL_PIN.1p5b.json" in r.stderr
+    assert not (dest / name).exists()
+    assert "SHA256SUMS" not in _requests(assets)
