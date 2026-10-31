@@ -75,7 +75,8 @@ def _backend_env(monkeypatch, tmp_path):
     from src import llm_backend
 
     for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_ABLITERATED_URL", "DEEPINFER_REPROBE_S",
-              "DEEPINFER_CONNECT_TIMEOUT", "LLM_RAW_REPLY", "LLM_SYSTEM_PROMPT", "LLM_HISTORY_MAX_TOKENS"):
+              "DEEPINFER_CONNECT_TIMEOUT", "LLM_RAW_REPLY", "LLM_SYSTEM_PROMPT", "LLM_HISTORY_MAX_TOKENS",
+              "HISTORY_BACKEND", "LLM_HISTORY_DB"):
         monkeypatch.delenv(k, raising=False)
     # Keep unit tests off the live history file and on the legacy reply guard by default
     # (raw/history behaviour is covered by dedicated tests below).

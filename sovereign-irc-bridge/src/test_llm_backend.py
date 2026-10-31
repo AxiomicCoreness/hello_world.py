@@ -61,7 +61,8 @@ class _Chat(BaseHTTPRequestHandler):
 @pytest.fixture(autouse=True)
 def _env(monkeypatch, tmp_path):
     for k in ("LLM_BACKEND", "LLM_FALLBACK", "DEEPINFER_URL", "LLM_CLARKEYOURSATEE_URL", "LLM_URL", "LLM_ABLITERATED_URL",
-              "DEEPINFER_REPROBE_S", "DEEPINFER_CONNECT_TIMEOUT", "LLM_PROMPT_MODE"):
+              "DEEPINFER_REPROBE_S", "DEEPINFER_CONNECT_TIMEOUT", "LLM_PROMPT_MODE",
+              "HISTORY_BACKEND", "LLM_HISTORY_DB"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setenv("LLM_BUILD_FEEDBACK", "0")
     # History goes to this test's tmp dir, never the live bridge file. Without this,
