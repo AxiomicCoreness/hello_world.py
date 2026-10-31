@@ -1,0 +1,146 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: iOS Pocket Simulator
+
+# Unattended CI for ios/ClarkePocket on every pull request and every push to main.
+# No signing secrets: everything runs with CODE_SIGNING_ALLOWED=NO.
+#   simulator-tests  `xcodebuild test` of the PocketCore XCTest target
+#                    (Tests/PocketCoreTests, from Package.swift) on an iOS Simulator.
+#                    Fails unless at least MIN_TESTS tests actually ran.
+#   app-build        XcodeGen + `xcodebuild build` of the ClarkePocket app for a generic
+#                    iOS device, unsigned.
+# Why the app is not built for the Simulator: the pinned llama.cpp b11960 XCFramework
+# (ios/ClarkePocket/LlamaBinary/Package.swift) ships only ios-arm64 and
+# macos-arm64_x86_64 slices, so the app target links on a device SDK only.
+# The pure core (everything the tests cover) is built for and run on the Simulator.
+
+on:
+  pull_request:
+    paths:
+      - "ios/ClarkePocket/**"
+      - ".github/workflows/ios-pocket-simulator.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ios/ClarkePocket/**"
+      - ".github/workflows/ios-pocket-simulator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-pocket-simulator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator-tests:
+    name: PocketCore tests on iOS Simulator
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      MIN_TESTS: "40"
+    steps:
+      - uses: actions/checkout@v4
+      - name: toolchain
+        run: |
+          set -eu
+          xcodebuild -version
+          swift --version
+          xcrun simctl list runtimes
+      - name: pick an available iPhone simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          xcrun simctl list devices available --json > devices.json
+          udid=$(python3 - <<'PY'
+          import json
+          d = json.load(open("devices.json"))["devices"]
+          best = None
+          for runtime, devs in d.items():
+              if ".iOS-" not in runtime:
+                  continue
+              ver = tuple(int(x) for x in runtime.rsplit(".iOS-", 1)[1].split("-") if x.isdigit())
+              for dev in devs:
+                  if dev.get("isAvailable") and dev["name"].startswith("iPhone"):
+                      key = (ver, dev["name"])
+                      if best is None or key > best[0]:
+                          best = (key, dev["udid"], dev["name"])
+          if best is None:
+              raise SystemExit("no available iPhone simulator")
+          print(best[1])
+          PY
+          )
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          xcrun simctl list devices available | grep "$udid"
+      - name: pick the package test scheme
+        id: scheme
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodebuild -list -json > ../../schemes.json
+          scheme=$(python3 - <<'PY'
+          import json
+          s = json.load(open("../../schemes.json"))
+          names = (s.get("workspace") or s.get("project") or {}).get("schemes", [])
+          print(next((n for n in ("ClarkePocket-Package", "PocketCore") if n in names), ""))
+          PY
+          )
+          test -n "$scheme" || { echo "::error::no package scheme found"; cat ../../schemes.json; exit 1; }
+          echo "scheme=$scheme" >> "$GITHUB_OUTPUT"
+          echo "scheme: $scheme"
+      - name: xcodebuild test (iOS Simulator, unsigned)
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -scheme '${{ steps.scheme.outputs.scheme }}' \
+            -destination 'platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}' \
+            -derivedDataPath build/dd-sim \
+            -resultBundlePath build/PocketCoreTests.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build-test.log
+      - name: require that the tests really ran
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          grep -q '\*\* TEST SUCCEEDED \*\*' build-test.log
+          ran=$(grep -Eo "Executed [0-9]+ tests?" build-test.log | awk '{print $2}' | sort -n | tail -1)
+          echo "tests executed: ${ran:-0}"
+          test "${ran:-0}" -ge "$MIN_TESTS" || { echo "::error::only ${ran:-0} tests ran (need >= $MIN_TESTS)"; exit 1; }
+      - name: upload the test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PocketCoreTests-simulator-xcresult
+          path: ios/ClarkePocket/build/PocketCoreTests.xcresult
+          retention-days: 14
+          if-no-files-found: warn
+
+  app-build:
+    name: ClarkePocket app build (generic iOS device, unsigned)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: xcodegen
+        working-directory: ios/ClarkePocket
+        run: |
+          set -eu
+          brew install xcodegen
+          xcodegen --version
+          xcodegen generate
+      - name: xcodebuild build (no signing)
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ClarkePocket.xcodeproj \
+            -scheme ClarkePocket \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+          test -f build/dd/Build/Products/Debug-iphoneos/ClarkePocket.app/Frameworks/llama.framework/llama
