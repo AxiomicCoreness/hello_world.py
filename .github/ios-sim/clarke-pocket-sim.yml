@@ -23,6 +23,7 @@ targets:
       - path: ClarkePocket
         excludes:
           - LlamaEngine.swift
+          - Info.plist        # the generated plist below is the target's INFOPLIST_FILE, not a resource
       - path: Sources/PocketCore
       - path: SimStub
     info:
