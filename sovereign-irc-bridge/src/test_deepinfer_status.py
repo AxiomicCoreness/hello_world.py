@@ -80,14 +80,21 @@ def test_status_lines_render_blockers_and_gguf(monkeypatch: pytest.MonkeyPatch, 
     assert "verdict:" in lines[-1]
 
 
-def test_llm_status_command_returns_report_without_model_call(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_llm_status_command_returns_report_without_model_call(monkeypatch: pytest.MonkeyPatch,
+                                                              tmp_path: Path) -> None:
     def boom(*a, **k):  # pragma: no cover - must not be reached
         raise AssertionError("/llm status must not call a model")
 
+    # History lives in tmp_path (the status report now ends with one history line).
+    monkeypatch.delenv("HISTORY_BACKEND", raising=False)
+    monkeypatch.delenv("LLM_HISTORY_DB", raising=False)
+    hist = tmp_path / "llm_history.jsonl"
+    monkeypatch.setenv("LLM_HISTORY_PATH", str(hist))
     monkeypatch.setattr(llm_chat, "complete_routed", boom)
     monkeypatch.setattr(ds, "status_lines", lambda verify=True, rep=None: [ds.PREFIX + "stub"])
-    assert llm_chat.handle_llm_sync("/llm status") == [ds.PREFIX + "stub"]
-    assert llm_chat.handle_llm_sync("/llm STATUS ") == [ds.PREFIX + "stub"]
+    history_line = f"[System] llm history: backend=jsonl path={hist} rows=0 sessions=0"
+    assert llm_chat.handle_llm_sync("/llm status") == [ds.PREFIX + "stub", history_line]
+    assert llm_chat.handle_llm_sync("/llm STATUS ") == [ds.PREFIX + "stub", history_line]
 
 
 def test_cli_runs_isolated_without_src_on_path(tmp_path: Path) -> None:

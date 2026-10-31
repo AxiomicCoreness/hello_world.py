@@ -47,6 +47,14 @@ Env:
                  separate ``"thinking"`` field. Rows without ``format`` are
                  legacy plain text (``[thinking]`` markers inline).
   LLM_HISTORY_MAX_TOKENS  default 2500 (chars/4 estimate); newest turns kept.
+  HISTORY_BACKEND  "jsonl" (default, the file above, unchanged) or "sqlite"
+                 (:mod:`src.llm_history_sqlite`: sessions + messages tables, WAL,
+                 user + assistant saved in one transaction, reset = archived_at).
+                 Unknown values log a warning and use jsonl.
+  LLM_HISTORY_DB  SQLite file for HISTORY_BACKEND=sqlite; default is next to
+                 the JSONL file (``llm_history.sqlite3``). LLM_HISTORY_PATH=""
+                 still disables history unless LLM_HISTORY_DB is set.
+  LLM_HISTORY_DB_BUSY_MS  default 5000 (sqlite busy_timeout).
   LLM_SYSTEM_PROMPT  "spike" forces the TeaVM neuron/traceback system prompt;
                  otherwise that prompt only applies when a #neuro snapshot or
                  traceback feedback is attached. Plain /llm questions get a
@@ -70,7 +78,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, List, Optional, Tuple
 from urllib.parse import urlsplit
 
-from src import chatml_prebuild, deepinfer_status, llm_backend, llm_markdown
+from src import chatml_prebuild, deepinfer_status, llm_backend, llm_history_sqlite, llm_markdown
 
 logger = logging.getLogger("sovereign-irc-bridge.llm")
 
@@ -143,6 +151,78 @@ def history_path() -> Optional[Path]:
     return Path(str(raw).strip())
 
 
+HISTORY_BACKENDS: Final = ("jsonl", "sqlite")
+
+
+def history_backend() -> str:
+    """HISTORY_BACKEND → "jsonl" (default) | "sqlite". Unknown → jsonl (logged)."""
+    raw = (os.environ.get("HISTORY_BACKEND") or "jsonl").strip().lower()
+    if raw in HISTORY_BACKENDS:
+        return raw
+    logger.warning("HISTORY_BACKEND=%r is not one of %s; using jsonl", raw, "|".join(HISTORY_BACKENDS))
+    return "jsonl"
+
+
+def history_db_path() -> Optional[Path]:
+    """LLM_HISTORY_DB, else ``llm_history.sqlite3`` next to the JSONL file (None = disabled)."""
+    raw = (os.environ.get("LLM_HISTORY_DB") or "").strip()
+    if raw:
+        return Path(raw)
+    jsonl = history_path()
+    return None if jsonl is None else jsonl.with_suffix(".sqlite3")
+
+
+def history_store() -> Optional[llm_history_sqlite.SqliteHistory]:
+    """The SQLite store when HISTORY_BACKEND=sqlite (fresh object; cheap, no connection held)."""
+    if history_backend() != "sqlite":
+        return None
+    db = history_db_path()
+    if db is None:
+        return None
+    try:
+        busy = int(os.environ.get("LLM_HISTORY_DB_BUSY_MS", llm_history_sqlite.DEFAULT_BUSY_MS))
+    except ValueError:
+        busy = llm_history_sqlite.DEFAULT_BUSY_MS
+    return llm_history_sqlite.SqliteHistory(db, busy_ms=busy)
+
+
+def model_label(meta: Dict[str, Any]) -> Optional[str]:
+    """``<backend>:<model>`` for the assistant row, e.g. ``clarkeyoursatee:deepseek-r2-1.5b``."""
+    be = meta.get("backend")
+    if not be:
+        return None
+    fn = {
+        llm_backend.LABEL_DEEPINFER: llm_backend.deepinfer_model,
+        llm_backend.LABEL_GGUF: llm_model,
+        llm_backend.LABEL_FALLBACK: llm_model,
+        llm_backend.LABEL_CLARKEYOURSATEE: llm_backend.clarkeyoursatee_model,
+        llm_backend.LABEL_ABLITERATED: llm_backend.abliterated_model,
+    }.get(be)
+    return f"{be}:{fn()}" if fn else str(be)
+
+
+def history_status_line() -> str:
+    """One ``/llm status`` line: active history backend and its counts (no model call)."""
+    if history_backend() == "sqlite":
+        store = history_store()
+        if store is None:
+            return "[System] llm history: backend=sqlite disabled (LLM_HISTORY_PATH empty, LLM_HISTORY_DB unset)"
+        st = store.stats()
+        if st is None:
+            return f"[System] llm history: backend=sqlite db={store.path} unavailable (see bridge log)"
+        return (f"[System] llm history: backend=sqlite db={store.path} schema=v{st['schema']} "
+                f"journal={st['journal_mode']} sessions={st['sessions_live']} live/"
+                f"{st['sessions_archived']} archived messages={st['messages']} "
+                f"(live {st['messages_live']})")
+    path = history_path()
+    if path is None:
+        return "[System] llm history: backend=jsonl disabled (LLM_HISTORY_PATH empty)"
+    with _HISTORY_LOCK:
+        rows = _read_all_rows(path) if path.is_file() else []
+    sessions = {_row_session(r) for r in rows}
+    return f"[System] llm history: backend=jsonl path={path} rows={len(rows)} sessions={len(sessions)}"
+
+
 def history_max_tokens() -> int:
     try:
         return max(0, int(os.environ.get("LLM_HISTORY_MAX_TOKENS", DEFAULT_HISTORY_MAX_TOKENS)))
@@ -202,8 +282,11 @@ def _atomic_rewrite(path: Path, rows: List[Dict[str, Any]]) -> None:
 
 def load_history(path: Optional[Path] = None, session: str = DEFAULT_SESSION) -> List[Dict[str, str]]:
     """Read JSONL turns for ``session`` (legacy rows → default). Missing file → []."""
-    path = history_path() if path is None else path
     session = normalize_session(session)
+    if path is None and history_backend() == "sqlite":
+        store = history_store()
+        return [] if store is None else store.load(session, history_max_tokens())
+    path = history_path() if path is None else path
     if path is None or not path.is_file():
         return []
     turns: List[Dict[str, str]] = []
@@ -245,14 +328,24 @@ def trim_history(turns: List[Dict[str, str]], budget: Optional[int] = None) -> L
 def append_history(user: str, assistant: str, path: Optional[Path] = None,
                    session: str = DEFAULT_SESSION, *,
                    assistant_format: Optional[str] = None,
-                   thinking: Optional[str] = None) -> None:
+                   thinking: Optional[str] = None,
+                   model: Optional[str] = None) -> None:
     """Append one user/assistant pair as JSONL with ``session``; fsync. Never raises.
 
     ``assistant_format`` (e.g. ``"markdown"``) and a non-empty ``thinking`` are
     added to the assistant row only; without them the row is the legacy shape.
+    With HISTORY_BACKEND=sqlite (and no explicit ``path``) the pair goes to the
+    SQLite store in one transaction instead; ``model`` fills ``model_label``
+    there (the JSONL row shape is unchanged).
     """
-    path = history_path() if path is None else path
     session = normalize_session(session)
+    if path is None and history_backend() == "sqlite":
+        store = history_store()
+        if store is not None:
+            store.append_pair(session, user, assistant, assistant_format=assistant_format,
+                              thinking=thinking, model_label=model)
+        return
+    path = history_path() if path is None else path
     if path is None:
         return
     try:
@@ -767,9 +860,17 @@ def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
     prompt, neuro, cli_fb, notes = parse_wire(text)
     # /llm status — DeepInfer V4 missing deps, vendored-tree pin check, GGUF sha256 (no model call).
     if prompt.strip().lower() == "status":
-        return deepinfer_status.status_lines()
+        return deepinfer_status.status_lines() + [history_status_line()]
     # /llm reset — archive only this session's rows; other sessions stay put.
     if prompt.strip().lower() == "reset":
+        if history_backend() == "sqlite":
+            store = history_store()
+            done = None if store is None else store.archive(session)
+            if done is None:
+                return [f"[System] llm: history already empty for session={session} (nothing to reset)"]
+            return [f"[System] llm: session={session} history archived in {store.path} "
+                    f"(sessions.id={done['id']}, {done['messages']} messages kept, "
+                    f"archived_at={done['archived_at']})"]
         archived = archive_history(session=session)
         if archived is None:
             return [f"[System] llm: history already empty for session={session} (nothing to reset)"]
@@ -825,7 +926,8 @@ def handle_llm_sync(text: str, session: str = DEFAULT_SESSION) -> List[str]:
     # Markdown (+ LaTeX math) with reasoning in its own ``thinking`` field.
     entry = _markdown_history_entry(reply or "", meta, raw=raw)
     append_history(prompt or "(empty)", entry["content"], session=session,
-                   assistant_format=entry["format"], thinking=entry.get("thinking"))
+                   assistant_format=entry["format"], thinking=entry.get("thinking"),
+                   model=model_label(meta))
     return lines
 
 
