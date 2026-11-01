@@ -15,7 +15,7 @@ settings:
     SWIFT_VERSION: "5.0"
 packages:
   LlamaBinary:
-    path: LlamaBinary     # binaryTarget → llama.cpp b11960 xcframework (checksum-pinned)
+    path: LlamaBinary     # binaryTarget → universal llama.cpp b11960 xcframework (device + Simulator + macOS, checksum-pinned)
 targets:
   ClarkePocket:
     type: application
@@ -42,8 +42,53 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.clarkepocket   # change if Xcode says it is taken
         PRODUCT_NAME: ClarkePocket
         TARGETED_DEVICE_FAMILY: "1"
-        SUPPORTED_PLATFORMS: iphoneos     # the xcframework has no simulator slice
         SUPPORTS_MACCATALYST: NO
         CODE_SIGN_STYLE: Automatic        # pick your (free) Personal Team in Signing & Capabilities
         ENABLE_BITCODE: NO
         # Optional, off by default (see README): CODE_SIGN_ENTITLEMENTS: Optional/IncreasedMemoryLimit.entitlements
+
+  # App-hosted XCTests: run inside ClarkePocket.app (device or Simulator) against the linked
+  # llama.framework slice. No model weights: a missing path and a stub file only.
+  ClarkePocketAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/ClarkePocketAppTests
+    dependencies:
+      - target: ClarkePocket
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.clarkepocket.apptests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
+
+  # UI smoke test: launches the app, visits every tab, attaches screenshots.
+  ClarkePocketUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/ClarkePocketUITests
+    dependencies:
+      - target: ClarkePocket
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.axiomiccoreness.clarkepocket.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
+        TEST_TARGET_NAME: ClarkePocket
+
+schemes:
+  ClarkePocket:
+    build:
+      targets:
+        ClarkePocket: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - ClarkePocketAppTests
+        - ClarkePocketUITests
+    archive:
+      config: Release

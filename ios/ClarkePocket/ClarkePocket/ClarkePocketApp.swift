@@ -44,6 +44,14 @@ struct RootView: View {
     @AppStorage("selectedTab") private var tab = 0
     @Environment(\.scenePhase) private var scenePhase
 
+    /// On unless the `ircAutoConnect` default is set to NO. CI passes `-ircAutoConnect NO` as a
+    /// launch argument so the Simulator smoke test never dials the public IRC server; the RECONNECT
+    /// button still works. Users never see a change: the key is unset on a phone.
+    static var ircAutoConnect: Bool {
+        UserDefaults.standard.object(forKey: "ircAutoConnect") == nil
+            || UserDefaults.standard.bool(forKey: "ircAutoConnect")
+    }
+
     var body: some View {
         TabView(selection: $tab) {
             ModelView(model: app.model)
@@ -55,11 +63,11 @@ struct RootView: View {
         }
         .tint(Theme.accent)
         .preferredColorScheme(.dark)
-        .onAppear { app.irc.start() }
+        .onAppear { if Self.ircAutoConnect { app.irc.start() } }
         .onChange(of: scenePhase) { phase in
             switch phase {
             case .active:
-                app.irc.start()            // reconnect on return (unless the user typed /quit)
+                if Self.ircAutoConnect { app.irc.start() }   // reconnect on return (unless the user typed /quit)
             case .background:
                 app.irc.stop()             // iOS would suspend the socket anyway
                 app.model.enteredBackground()
