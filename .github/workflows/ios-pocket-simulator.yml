@@ -48,7 +48,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 45
     env:
-      MIN_TESTS: "62"
+      MIN_TESTS: "74"
     steps:
       - uses: actions/checkout@v4
       - name: toolchain
@@ -160,7 +160,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 60
     env:
-      MIN_APP_TESTS: "7"
+      MIN_APP_TESTS: "9"
       BUNDLE_ID: io.github.axiomiccoreness.clarkepocket
       OUT: ${{ github.workspace }}/sim-out
     steps:

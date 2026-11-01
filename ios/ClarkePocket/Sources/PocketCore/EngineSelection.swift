@@ -1,38 +1,51 @@
 // SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 // SPDX-License-Identifier: MIT
 //
-// Which on-device engine answers: MLX Swift with Clarke Yoursa Tee's own MLX-converted model is
-// the PRIMARY engine; llama.cpp b11960 with the pinned GGUF (ModelPin, 1.5B) is the FALLBACK.
-// The fallback is chosen automatically whenever MLX cannot run (Simulator, no Metal, MLX not
-// linked into this build, MLX model not published / not on the phone / SHA-256 mismatch) and
-// can also be forced in the Chat tab. Pure logic, tested offline (EngineSelectionTests).
+// Which on-device engine answers, in this order:
+//   1. MLX Swift with Clarke Yoursa Tee's own MLX-converted model (PRIMARY);
+//   2. ClarkeEngine, Clarke Yoursa Tee's own pure-Swift qwen2 engine on the pinned GGUF (CPU);
+//   3. llama.cpp b11960 with the pinned GGUF (ModelPin, 1.5B) (FALLBACK).
+// Each step is skipped automatically when it cannot run (MLX: Simulator, no Metal, not linked,
+// model not published / missing / SHA-256 mismatch; ClarkeEngine: no GGUF on the phone or a GGUF
+// it cannot read). Any engine can also be chosen in the Chat tab. Pure logic, tested offline
+// (EngineSelectionTests).
 
 import Foundation
 
 public enum EngineKind: String, CaseIterable, Sendable {
     case mlx
+    case clarke
     case llamaCpp
 
     public var label: String {
         switch self {
         case .mlx: return "MLX Swift (primary)"
+        case .clarke: return "ClarkeEngine (Clarke Yoursa Tee's own, CPU)"
         case .llamaCpp: return "llama.cpp b11960 GGUF (fallback)"
         }
     }
-    public var shortLabel: String { self == .mlx ? "MLX" : "LLAMA.CPP" }
+    public var shortLabel: String {
+        switch self {
+        case .mlx: return "MLX"
+        case .clarke: return "CLARKEENGINE"
+        case .llamaCpp: return "LLAMA.CPP"
+        }
+    }
 }
 
 /// The user's setting (Chat tab). Stored under `key`; unset means `.automatic`.
 public enum EnginePreference: String, CaseIterable, Sendable {
     case automatic
     case mlx
+    case clarke
     case llamaCpp
 
     public static let key = "enginePreference"
     public var label: String {
         switch self {
-        case .automatic: return "Automatic (MLX, else llama.cpp)"
+        case .automatic: return "Automatic (MLX, then ClarkeEngine, then llama.cpp)"
         case .mlx: return "MLX Swift"
+        case .clarke: return "ClarkeEngine (pure Swift, CPU)"
         case .llamaCpp: return "llama.cpp (GGUF)"
         }
     }
@@ -93,17 +106,41 @@ public enum MLXModelState: Equatable, Sendable {
     }
 }
 
+/// Can ClarkeEngine run the GGUF on this phone?
+public enum ClarkeModelState: Equatable, Sendable {
+    case noFile
+    case unreadable(String)   // GGUF header / architecture / tensor types it cannot handle
+    case ready
+
+    /// Cheap check: parse the GGUF header and tensor index (mmap; no weights are read).
+    public static func check(path: String?) -> ClarkeModelState {
+        guard let path, FileManager.default.fileExists(atPath: path) else { return .noFile }
+        do {
+            let g = try GGUFFile(path: path)
+            let arch = g.string("general.architecture") ?? "?"
+            guard arch == "qwen2" else { return .unreadable("architecture \(arch) is not qwen2") }
+            for name in g.tensorOrder { _ = try g.tensor(name) }
+            return .ready
+        } catch {
+            return .unreadable("\(error)")
+        }
+    }
+}
+
 /// What the device and this build can do.
 public struct EngineEnvironment: Equatable, Sendable {
     public var isSimulator: Bool
     public var hasMetal: Bool
     public var mlxLinked: Bool
     public var mlxModel: MLXModelState
-    public init(isSimulator: Bool, hasMetal: Bool, mlxLinked: Bool, mlxModel: MLXModelState) {
+    public var clarkeModel: ClarkeModelState
+    public init(isSimulator: Bool, hasMetal: Bool, mlxLinked: Bool, mlxModel: MLXModelState,
+                clarkeModel: ClarkeModelState = .noFile) {
         self.isSimulator = isSimulator
         self.hasMetal = hasMetal
         self.mlxLinked = mlxLinked
         self.mlxModel = mlxModel
+        self.clarkeModel = clarkeModel
     }
 }
 
@@ -128,19 +165,43 @@ public enum EngineSelector {
         }
     }
 
-    public static func choose(_ pref: EnginePreference, _ env: EngineEnvironment) -> EngineChoice {
-        if pref == .llamaCpp {
-            return EngineChoice(active: .llamaCpp, isFallback: true, reason: "llama.cpp chosen in settings")
+    /// nil when ClarkeEngine can run; else the reason it cannot.
+    public static func clarkeBlocker(_ env: EngineEnvironment) -> String? {
+        switch env.clarkeModel {
+        case .noFile: return "no GGUF model file on this device"
+        case .unreadable(let why): return "cannot read the GGUF (\(why))"
+        case .ready: return nil
         }
-        if let why = mlxBlocker(env) {
-            let prefix = pref == .mlx ? "MLX chosen but unavailable: " : ""
-            return EngineChoice(active: .llamaCpp, isFallback: true, reason: prefix + why)
-        }
-        return EngineChoice(active: .mlx, isFallback: false, reason: "MLX model verified")
     }
 
-    /// After MLX failed at load time (e.g. out of memory): always the llama.cpp fallback.
-    public static func afterMLXLoadFailure(_ error: String) -> EngineChoice {
-        EngineChoice(active: .llamaCpp, isFallback: true, reason: "MLX failed to load (\(error)); using llama.cpp")
+    public static func choose(_ pref: EnginePreference, _ env: EngineEnvironment) -> EngineChoice {
+        switch pref {
+        case .llamaCpp:
+            return EngineChoice(active: .llamaCpp, isFallback: true, reason: "llama.cpp chosen in settings")
+        case .clarke:
+            if let why = clarkeBlocker(env) {
+                return EngineChoice(active: .llamaCpp, isFallback: true, reason: "ClarkeEngine chosen but unavailable: " + why)
+            }
+            return EngineChoice(active: .clarke, isFallback: false, reason: "ClarkeEngine chosen in settings")
+        case .mlx, .automatic:
+            guard let mlxWhy = mlxBlocker(env) else {
+                return EngineChoice(active: .mlx, isFallback: false, reason: "MLX model verified")
+            }
+            let prefix = pref == .mlx ? "MLX chosen but unavailable: " : "MLX: "
+            if pref == .automatic, clarkeBlocker(env) == nil {
+                return EngineChoice(active: .clarke, isFallback: false, reason: prefix + mlxWhy)
+            }
+            let clarkeWhy = pref == .automatic ? "; ClarkeEngine: " + (clarkeBlocker(env) ?? "") : ""
+            return EngineChoice(active: .llamaCpp, isFallback: true, reason: prefix + mlxWhy + clarkeWhy)
+        }
+    }
+
+    /// After an engine failed at load time (e.g. out of memory): the next one in the order.
+    public static func afterLoadFailure(of kind: EngineKind, _ error: String, _ env: EngineEnvironment) -> EngineChoice {
+        if kind == .mlx, clarkeBlocker(env) == nil {
+            return EngineChoice(active: .clarke, isFallback: false, reason: "MLX failed to load (\(error)); using ClarkeEngine")
+        }
+        let name = kind == .mlx ? "MLX" : "ClarkeEngine"
+        return EngineChoice(active: .llamaCpp, isFallback: true, reason: "\(name) failed to load (\(error)); using llama.cpp")
     }
 }

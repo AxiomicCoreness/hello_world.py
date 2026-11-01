@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: MIT
 //
 // Owns the model file and the on-device engines the Chat and IRC tabs share.
-//   * Engines (ChatEngine.swift): MLXEngine is PRIMARY, LlamaEngine (llama.cpp b11960, pinned 1.5B
-//     GGUF) is the FALLBACK. EngineSelector picks one from the device, the MLX model check and the
-//     Chat-tab setting; if MLX fails to load, the llama.cpp fallback is used automatically.
+//   * Engines (ChatEngine.swift), in order: MLXEngine (PRIMARY) -> ClarkeEngine (Clarke Yoursa Tee's
+//     own pure-Swift engine, CPU) -> LlamaEngine (llama.cpp b11960, pinned 1.5B GGUF, FALLBACK).
+//     EngineSelector picks one from the device, the model checks and the Chat-tab setting; if the
+//     chosen engine fails to load, the next one in the order is used automatically.
 //   * Download: URLSession download task with progress, then a streaming CryptoKit SHA-256 check
 //     against ModelPin, then rename from .partial. Resumable after Cancel / a dropped connection.
 //   * Import: Files picker → copy into the app → GGUF magic → SHA-256. A file whose hash is not
@@ -51,9 +52,11 @@ final class ModelStore: NSObject, ObservableObject {
     let engine = LlamaEngine()
     /// PRIMARY engine: MLX Swift + Clarke Yoursa Tee's MLX-converted model (not linked/published yet).
     let mlx = MLXEngine()
+    /// Clarke Yoursa Tee's own engine: pure Swift qwen2 on the same GGUF, CPU only.
+    let clarke = ClarkeChatEngine()
     /// Which engine answers, and why. Shown in the Chat header.
     @Published private(set) var engineChoice: EngineChoice =
-        EngineSelector.choose(EnginePreference.load(.standard), EngineDetector.environment())
+        EngineSelector.choose(EnginePreference.load(.standard), EngineDetector.environment(ggufPath: ModelStore.firstGGUF()))
     var enginePreference: EnginePreference {
         get { EnginePreference.load(.standard) }
         set {
@@ -63,9 +66,18 @@ final class ModelStore: NSObject, ObservableObject {
         }
     }
     func refreshEngineChoice() {
-        engineChoice = EngineSelector.choose(enginePreference, EngineDetector.environment())
+        engineChoice = EngineSelector.choose(enginePreference, EngineDetector.environment(ggufPath: activeFile?.path))
     }
-    private var activeEngine: any ChatEngine { engineChoice.active == .mlx ? mlx : engine }
+    nonisolated static func firstGGUF() -> String? {
+        [pinnedURL, customURL].first { FileManager.default.fileExists(atPath: $0.path) }?.path
+    }
+    private var activeEngine: any ChatEngine {
+        switch engineChoice.active {
+        case .mlx: return mlx
+        case .clarke: return clarke
+        case .llamaCpp: return engine
+        }
+    }
     /// Optional PC-bot fallback (set once by AppModel).
     private(set) var bridge: BridgeFallback?
     private var bridgeWatch: [AnyCancellable] = []
@@ -312,7 +324,16 @@ final class ModelStore: NSObject, ObservableObject {
                 engineState = .loaded("MLX · \(desc)")
                 return
             } catch {
-                engineChoice = EngineSelector.afterMLXLoadFailure("\(error)")
+                engineChoice = EngineSelector.afterLoadFailure(of: .mlx, "\(error)", EngineDetector.environment(ggufPath: url.path))
+            }
+        }
+        if engineChoice.active == .clarke {
+            do {
+                let desc = try await clarke.load(path: url.path)
+                engineState = .loaded(desc)
+                return
+            } catch {
+                engineChoice = EngineSelector.afterLoadFailure(of: .clarke, "\(error)", EngineDetector.environment(ggufPath: url.path))
             }
         }
         do {

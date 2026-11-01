@@ -8,8 +8,8 @@ import XCTest
 
 final class EngineSelectionTests: XCTestCase {
     private func env(sim: Bool = false, metal: Bool = true, linked: Bool = true,
-                     model: MLXModelState = .verified) -> EngineEnvironment {
-        EngineEnvironment(isSimulator: sim, hasMetal: metal, mlxLinked: linked, mlxModel: model)
+                     model: MLXModelState = .verified, clarke: ClarkeModelState = .noFile) -> EngineEnvironment {
+        EngineEnvironment(isSimulator: sim, hasMetal: metal, mlxLinked: linked, mlxModel: model, clarkeModel: clarke)
     }
 
     func testMLXIsPrimaryWhenEverythingIsThere() {
@@ -41,7 +41,9 @@ final class EngineSelectionTests: XCTestCase {
         XCTAssertEqual(c.active, .llamaCpp)
         XCTAssertTrue(c.reason.hasPrefix("MLX chosen but unavailable"))
         XCTAssertEqual(EngineSelector.choose(.mlx, env()).active, .mlx)
-        XCTAssertEqual(EngineSelector.afterMLXLoadFailure("oom").active, .llamaCpp)
+        XCTAssertEqual(EngineSelector.afterLoadFailure(of: .mlx, "oom", env()).active, .llamaCpp)
+        XCTAssertEqual(EngineSelector.afterLoadFailure(of: .mlx, "oom", env(clarke: .ready)).active, .clarke)
+        XCTAssertEqual(EngineSelector.afterLoadFailure(of: .clarke, "oom", env(clarke: .ready)).active, .llamaCpp)
     }
 
     func testPreferenceDefaultsToAutomatic() {
@@ -79,5 +81,35 @@ final class EngineSelectionTests: XCTestCase {
         let one = MLXModelPinSpec(releaseTag: "test", directoryName: "t",
                                   files: [MLXModelFile(name: "config.json", sizeBytes: Int64(body.count), sha256: good)], label: "stub")
         XCTAssertEqual(MLXModelState.check(dir: dir, pin: one), .verified)
+    }
+
+    func testOrderMLXThenClarkeEngineThenLlama() {
+        // MLX ready wins even when ClarkeEngine could run.
+        XCTAssertEqual(EngineSelector.choose(.automatic, env(clarke: .ready)).active, .mlx)
+        // MLX blocked, GGUF readable: ClarkeEngine.
+        let c = EngineSelector.choose(.automatic, env(sim: true, clarke: .ready))
+        XCTAssertEqual(c.active, .clarke)
+        XCTAssertFalse(c.isFallback)
+        XCTAssertTrue(c.reason.contains("Simulator"), c.reason)
+        // Both blocked: llama.cpp, and the reason names both.
+        let l = EngineSelector.choose(.automatic, env(sim: true, clarke: .noFile))
+        XCTAssertEqual(l.active, .llamaCpp)
+        XCTAssertTrue(l.reason.contains("Simulator") && l.reason.contains("ClarkeEngine"), l.reason)
+        // Explicit settings.
+        XCTAssertEqual(EngineSelector.choose(.clarke, env(clarke: .ready)).active, .clarke)
+        let u = EngineSelector.choose(.clarke, env(clarke: .unreadable("arch llama")))
+        XCTAssertEqual(u.active, .llamaCpp)
+        XCTAssertTrue(u.reason.hasPrefix("ClarkeEngine chosen but unavailable"))
+        XCTAssertEqual(EngineSelector.choose(.llamaCpp, env(sim: true, clarke: .ready)).active, .llamaCpp)
+        // MLX forced but unavailable skips ClarkeEngine (the user asked for MLX, not ClarkeEngine).
+        XCTAssertEqual(EngineSelector.choose(.mlx, env(sim: true, clarke: .ready)).active, .llamaCpp)
+    }
+
+    func testClarkeModelStateCheck() throws {
+        XCTAssertEqual(ClarkeModelState.check(path: nil), .noFile)
+        XCTAssertEqual(ClarkeModelState.check(path: "/nonexistent/x.gguf"), .noFile)
+        let junk = FileManager.default.temporaryDirectory.appendingPathComponent("junk-\(UUID().uuidString).gguf")
+        try Data("GGUF-not-really".utf8).write(to: junk)
+        guard case .unreadable = ClarkeModelState.check(path: junk.path) else { return XCTFail("junk accepted") }
     }
 }
