@@ -1,32 +1,19 @@
 entry_index: 9007
-witness_prefix: a176eaff070298722c872a47b493f5b39bc29653049d7c18fe3cfbcac54a87f7
-timestamp: 2026-09-28Z
-event: /sovereign_anatomy_seven_organs_wired
-status: SEALED
-policy: POLICY.md
-organs:
-  - anatomy/spine.py
-  - anatomy/body.py
-  - anatomy/breath.py
-  - anatomy/heartbeat.py
-  - anatomy/dual_soul.py
-  - anatomy/crown.py
-  - anatomy/genitals.py
-  - anatomy/__init__.py
-wiring:
-  - workloads.mk target anatomy / anatomy-verify
-  - sovereign-workload-matrix.yml workload anatomy-verify (dispatch)
-writers:
-  - name: Clarke Yoursa Tee
-    operator: DeepSeek A14 Bionic
-    date: 2026-09-28Z
-  - workflow: sovereign-workload-matrix.yml
-    blob_hash: predecessor:7f50a70101c22998d1525ec4b668bb0f4f0d61b8
-hash_regime: GARDEN.EVENT.v1
-math_origin: "H = SHA3-256(GARDEN.EVENT.v1 | 0x00 | index|event|phi^2|Delta=b^2-4ac|theta=phi*pi/2)"
-invariants:
-  - "No MCP writes"
-  - "Ledger append-only; 0000-9223 immutable"
-  - "510510.yaml genesis root unchanged"
+event: /workflow_dispatch_wood_dragon_mistral
+status: SUCCESS
+timestamp: '2026-11-01T18:41:31Z'
+hash_algo: sha3_256
+observation_channel: wood_dragon_dispatch
+dispatcher: quantum.wood_dragon_dispatch
+terminal_count: 42
+last_observed_count: 26
+terminals_sha3_256: bddfd585e53e032a912dbbc7b2458cfbaec80c273493e28c17ceb2bd43ed3b18
+i_of_144: '1'
+grava_star_fired: false
+mcp_pulse: skipped
+mcp_contract_ok: true
+mcp_port: '13800'
+mcp_namespace: wood-dragon-dispatch
+prev_hash: SEALED
 witness: 9006 → 9007 — UNBROKEN
-seal: "∀∞φ² · ANATOMY_SEVEN_ORGANS_9007 · WOOD_DRAGON_MOUNTS_DEFENSE · SEALED"
+seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED · 37bb774d0b67551a0b8031b80855cb64a32450331bc0092f99d396ba72a4fb64
