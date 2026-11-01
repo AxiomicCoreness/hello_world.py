@@ -26,13 +26,16 @@ private func kv(_ k: String, _ v: String) -> some View {
 }
 
 enum BundledConnectome {
+    case loaded(Connectome)
+    case failed(String)
+
     /// The bundled placeholder map, or the error text.
-    static func load() -> Result<Connectome, String> {
+    static func load() -> BundledConnectome {
         guard let url = Bundle.main.url(forResource: "HHMIJaneliaMap", withExtension: "xml") else {
-            return .failure("\(Connectome.placeholderFileName) is not in the app bundle")
+            return .failed("\(Connectome.placeholderFileName) is not in the app bundle")
         }
-        do { return .success(try Connectome.parse(try Data(contentsOf: url), isPlaceholder: true)) }
-        catch { return .failure("\(error)") }
+        do { return .loaded(try Connectome.parse(try Data(contentsOf: url), isPlaceholder: true)) }
+        catch { return .failed("\(error)") }
     }
 }
 
@@ -44,9 +47,9 @@ struct ConnectomePanel: View {
         panel("CONNECTOME (PLACEHOLDER)") {
             kv("file", Connectome.placeholderLabel)
             switch map {
-            case .failure(let e):
+            case .failed(let e):
                 Text(e).foregroundColor(Theme.remote)
-            case .success(let c):
+            case .loaded(let c):
                 kv("neurons", "\(c.neurons.count) (\(c.neurons.joined(separator: ", ")))")
                 kv("connections", c.synapses.map { "\($0.from)→\($0.to) \($0.weight)" }.joined(separator: ", "))
                 if let r = raster {
