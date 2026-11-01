@@ -12,8 +12,10 @@ Web3 CLI with 3D visualization at 300 DPI
 Sovereign flow-field engine lives at
 [`canvases/agentic-tilelang-eridanus-dual/`](../agentic-tilelang-eridanus-dual/CANVAS.md).
 
-- Engine: `eridanus_dual.py` (parse-safe identifiers; dict keys keep ℰ₁/ℰ₂/𝓝)
-- Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝓝₁₀.₀₆
-- Demo: `python canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py`
+- Full engine: `eridanus_dual.py` (sealed Entry 8226)
+- Minimal reference: `eridanus_dual_minimal.py` (parse-safe compact demo)
+- Dual invariant: ℰ₁ ⊕ ℰ₂ = 𝒫₁₀.₀₆
+- Demo (full): `python canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py`
+- Demo (minimal): `python canvases/agentic-tilelang-eridanus-dual/eridanus_dual_minimal.py`
 - Tests: `python tests/test_eridanus_dual.py`
 - Chain: 8225 → 8226 — UNBROKEN
