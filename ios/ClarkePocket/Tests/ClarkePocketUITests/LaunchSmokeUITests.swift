@@ -36,6 +36,11 @@ final class LaunchSmokeUITests: XCTestCase {
 
         tabs.buttons["Chat"].tap()
         XCTAssertTrue(tabs.buttons["Chat"].isSelected)
+        // MLX does not run in the Simulator: the header must name the llama.cpp fallback.
+        let engine = app.staticTexts["activeEngineLabel"]
+        XCTAssertTrue(engine.waitForExistence(timeout: 15), "no active-engine label in the Chat tab")
+        XCTAssertTrue(engine.label.contains("llama.cpp"), "engine label: \(engine.label)")
+        XCTAssertTrue(engine.label.contains("Simulator"), "engine label: \(engine.label)")
         shot(app, "2-chat-tab")
 
         tabs.buttons["IRC"].tap()

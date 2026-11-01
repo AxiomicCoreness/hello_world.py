@@ -1,7 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 // SPDX-License-Identifier: MIT
 //
-// Owns the model file and the one LlamaEngine the Chat and IRC tabs share.
+// Owns the model file and the on-device engines the Chat and IRC tabs share.
+//   * Engines (ChatEngine.swift): MLXEngine is PRIMARY, LlamaEngine (llama.cpp b11960, pinned 1.5B
+//     GGUF) is the FALLBACK. EngineSelector picks one from the device, the MLX model check and the
+//     Chat-tab setting; if MLX fails to load, the llama.cpp fallback is used automatically.
 //   * Download: URLSession download task with progress, then a streaming CryptoKit SHA-256 check
 //     against ModelPin, then rename from .partial. Resumable after Cancel / a dropped connection.
 //   * Import: Files picker → copy into the app → GGUF magic → SHA-256. A file whose hash is not
@@ -44,7 +47,25 @@ final class ModelStore: NSObject, ObservableObject {
     @Published private(set) var memoryWarning: String?
     @Published private(set) var lastSpeed: String?
 
+    /// FALLBACK engine: llama.cpp b11960 + the pinned GGUF.
     let engine = LlamaEngine()
+    /// PRIMARY engine: MLX Swift + Clarke Yoursa Tee's MLX-converted model (not linked/published yet).
+    let mlx = MLXEngine()
+    /// Which engine answers, and why. Shown in the Chat header.
+    @Published private(set) var engineChoice: EngineChoice =
+        EngineSelector.choose(EnginePreference.load(.standard), EngineDetector.environment())
+    var enginePreference: EnginePreference {
+        get { EnginePreference.load(.standard) }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: EnginePreference.key)
+            if isLoaded { unload() }
+            refreshEngineChoice()
+        }
+    }
+    func refreshEngineChoice() {
+        engineChoice = EngineSelector.choose(enginePreference, EngineDetector.environment())
+    }
+    private var activeEngine: any ChatEngine { engineChoice.active == .mlx ? mlx : engine }
     /// Optional PC-bot fallback (set once by AppModel).
     private(set) var bridge: BridgeFallback?
     private var bridgeWatch: [AnyCancellable] = []
@@ -284,9 +305,19 @@ final class ModelStore: NSObject, ObservableObject {
         }
         memoryWarning = nil
         engineState = .loading
+        refreshEngineChoice()
+        if engineChoice.active == .mlx, let dir = EngineDetector.mlxModelDirectory() {
+            do {
+                let desc = try await mlx.load(directory: dir)
+                engineState = .loaded("MLX · \(desc)")
+                return
+            } catch {
+                engineChoice = EngineSelector.afterMLXLoadFailure("\(error)")
+            }
+        }
         do {
             let info = try await engine.load(path: url.path, threads: MemoryMonitor.threads())
-            engineState = .loaded("\(info.description) · ctx \(info.contextTokens) · \(info.threads.gen)/\(info.threads.batch) threads · Metal · template \(info.templateSource) · T \(info.temperature) p \(info.topP)")
+            engineState = .loaded("llama.cpp (fallback) · \(info.description) · ctx \(info.contextTokens) · \(info.threads.gen)/\(info.threads.batch) threads · Metal · template \(info.templateSource) · T \(info.temperature) p \(info.topP)")
         } catch {
             engineState = .failed("\(error)")
         }
@@ -295,7 +326,8 @@ final class ModelStore: NSObject, ObservableObject {
     func unload() {
         cancelCurrent()
         engineState = .unloaded
-        Task { await engine.unload() }
+        let e = activeEngine
+        Task { await e.unload() }
     }
 
     private func handleMemoryWarning() {
@@ -327,7 +359,7 @@ final class ModelStore: NSObject, ObservableObject {
             guard memoryWarning == nil, let bridge, bridge.isAvailable else { return nil }
             return await generateViaBridge(bridge, user: user, onText: onText)
         }
-        let engine = self.engine
+        let engine = self.activeEngine
         let task = Task { @MainActor () -> (String, Bool, String?) in
             var out = ""
             var stopped = false
