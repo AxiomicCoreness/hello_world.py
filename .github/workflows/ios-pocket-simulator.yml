@@ -10,10 +10,18 @@ name: iOS Pocket Simulator
 #                    Fails unless at least MIN_TESTS tests actually ran.
 #   app-build        XcodeGen + `xcodebuild build` of the ClarkePocket app for a generic
 #                    iOS device, unsigned.
-# Why the app is not built for the Simulator: the pinned llama.cpp b11960 XCFramework
-# (ios/ClarkePocket/LlamaBinary/Package.swift) ships only ios-arm64 and
-# macos-arm64_x86_64 slices, so the app target links on a device SDK only.
-# The pure core (everything the tests cover) is built for and run on the Simulator.
+#   app-simulator    XcodeGen + the FULL ClarkePocket app (real llama.framework, Simulator slice)
+#                    built for the iOS Simulator; `xcodebuild test` of the app-hosted tests
+#                    (Tests/ClarkePocketAppTests, real llama calls on a missing path and a stub
+#                    file, no weights) and the UI smoke test (Tests/ClarkePocketUITests, visits
+#                    every tab); then `simctl install` + `simctl launch` of the built .app, a
+#                    liveness check and a screenshot. Fails unless MIN_APP_TESTS passed and none
+#                    failed or were skipped. Screenshots + .xcresult are uploaded as artifacts.
+# The Simulator works because LlamaBinary/Package.swift now pins this repo's own universal
+# llama.cpp b11960 xcframework (ios-arm64, ios-arm64_x86_64-simulator, macos-arm64_x86_64),
+# built from source by .github/workflows/pocket-llama-xcframework.yml.
+# Nothing here listens on a port. The app is launched with -ircAutoConnect NO and
+# -ircResponderEnabled NO, so CI never dials the public IRC server.
 
 on:
   pull_request:
@@ -146,3 +154,126 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
           test -f build/dd/Build/Products/Debug-iphoneos/ClarkePocket.app/Frameworks/llama.framework/llama
+
+  app-simulator:
+    name: ClarkePocket app on iOS Simulator (build, app + UI tests, install, launch, screenshot)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      MIN_APP_TESTS: "5"
+      BUNDLE_ID: io.github.axiomiccoreness.clarkepocket
+      OUT: ${{ github.workspace }}/sim-out
+    steps:
+      - uses: actions/checkout@v4
+      - name: toolchain + simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          brew install xcodegen
+          xcodegen --version
+          IFS=$'\t' read -r udid name runtime < <(python3 .github/ios-sim/pick-simulator.py)
+          echo "simulator: $name ($runtime) $udid"
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          mkdir -p "$OUT"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b
+      - name: xcodegen
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcodegen generate
+      - name: xcodebuild test (full app, iOS Simulator, unsigned)
+        working-directory: ios/ClarkePocket
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project ClarkePocket.xcodeproj \
+            -scheme ClarkePocket \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -derivedDataPath build/dd-app-sim \
+            -resultBundlePath build/ClarkePocketApp.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build-app-test.log
+          grep -q '\*\* TEST SUCCEEDED \*\*' build-app-test.log
+      - name: require that the app tests really ran
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          xcrun xcresulttool get test-results summary --path build/ClarkePocketApp.xcresult > summary.json
+          cat summary.json
+          python3 - <<'PY'
+          import json, os, sys
+          s = json.load(open("summary.json"))
+          passed, failed, skipped = s.get("passedTests", 0), s.get("failedTests", 0), s.get("skippedTests", 0)
+          need = int(os.environ["MIN_APP_TESTS"])
+          print(f"passed={passed} failed={failed} skipped={skipped} need>={need}")
+          if failed or skipped or passed < need:
+              sys.exit(f"::error::app tests: passed={passed} failed={failed} skipped={skipped} (need >= {need} passed, 0 failed, 0 skipped)")
+          PY
+      - name: the app embeds the real llama.framework Simulator slice
+        working-directory: ios/ClarkePocket
+        run: |
+          set -euo pipefail
+          app=build/dd-app-sim/Build/Products/Debug-iphonesimulator/ClarkePocket.app
+          bin="$app/Frameworks/llama.framework/llama"
+          test -f "$bin"
+          lipo -info "$bin"
+          xcrun vtool -show-build "$bin" | tee vtool.txt
+          grep -q 'IOSSIMULATOR' vtool.txt
+      - name: install + launch + screenshot (no taps, no typing)
+        working-directory: ios/ClarkePocket
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -euo pipefail
+          app=build/dd-app-sim/Build/Products/Debug-iphonesimulator/ClarkePocket.app
+          xcrun simctl uninstall "$UDID" "$BUNDLE_ID" || true
+          xcrun simctl install "$UDID" "$app"
+          xcrun simctl launch --terminate-running-process "$UDID" "$BUNDLE_ID" \
+            -ircAutoConnect NO -ircResponderEnabled NO -selectedTab 0 | tee launch.txt
+          pid=$(awk -F': ' '{print $2}' launch.txt | tr -dc '0-9')
+          test -n "$pid"
+          sleep 10
+          xcrun simctl spawn "$UDID" launchctl list | grep -F "$BUNDLE_ID" | tee alive.txt
+          awk '{print $1}' alive.txt | grep -qx "$pid" || { echo "::error::ClarkePocket (pid $pid) is not running 10 s after launch"; exit 1; }
+          xcrun simctl io "$UDID" screenshot --type=png "$OUT/launch-model-tab.png"
+          test -s "$OUT/launch-model-tab.png"
+          xcrun simctl terminate "$UDID" "$BUNDLE_ID"
+      - name: export UI test screenshots from the result bundle
+        if: always()
+        working-directory: ios/ClarkePocket
+        run: |
+          set -uo pipefail
+          mkdir -p "$OUT/ui-test-attachments"
+          xcrun xcresulttool export attachments --path build/ClarkePocketApp.xcresult \
+            --output-path "$OUT/ui-test-attachments" || echo "::warning::could not export attachments"
+          cp build-app-test.log "$OUT/" 2>/dev/null || true
+          ls -la "$OUT" "$OUT/ui-test-attachments" || true
+      - name: app log (last 5 min)
+        if: always()
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          xcrun simctl spawn "$UDID" log show --last 5m --style compact \
+            --predicate 'process == "ClarkePocket"' > "$OUT/app.log" 2>&1 || true
+          tail -n 40 "$OUT/app.log" || true
+      - name: upload screenshots + logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClarkePocket-simulator-screenshots
+          path: sim-out
+          retention-days: 14
+          if-no-files-found: warn
+      - name: upload the app test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClarkePocketApp-simulator-xcresult
+          path: ios/ClarkePocket/build/ClarkePocketApp.xcresult
+          retention-days: 14
+          if-no-files-found: warn

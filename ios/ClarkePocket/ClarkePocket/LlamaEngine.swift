@@ -66,6 +66,13 @@ actor LlamaEngine {
 
     var isLoaded: Bool { ctx != nil }
 
+    /// llama.cpp's own build/feature line (e.g. "Metal = 1 | ..."). Used by the app-level tests to
+    /// prove the linked framework slice really runs on this platform (device or Simulator).
+    nonisolated static func systemInfo() -> String {
+        _ = backend
+        return String(cString: llama_print_system_info())
+    }
+
     func load(path: String,
               contextTokens: Int32 = RuntimePolicy.contextTokens,
               gpuLayers: Int32 = RuntimePolicy.gpuLayers,
