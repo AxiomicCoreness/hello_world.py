@@ -81,9 +81,22 @@ public struct MLXModelPinSpec: Equatable, Sendable {
 }
 
 public enum MLXModelPin {
-    /// nil until an MLX-converted model of Clarke Yoursa Tee's own is published as a release of
-    /// this repo with per-file SHA-256s. Until then the app always runs the llama.cpp fallback.
-    public static let selected: MLXModelPinSpec? = nil
+    /// Clarke Yoursa Tee's own model in 4-bit MLX format. It was converted, with code libraries only,
+    /// from the pinned 1.5B GGUF (sha256 80a49c2fe2410f704ceda4590212174a99899341b01e6af5433319481179e5c1).
+    /// Release `pocket-mlx-clarke-1p5b-4bit`. Every file is checked by size and SHA-256 before MLX loads it.
+    public static let clarke1p5b4bit = MLXModelPinSpec(
+        releaseTag: "pocket-mlx-clarke-1p5b-4bit",
+        directoryName: "ClarkeYoursaTee-1.5B-mlx-4bit",
+        files: [
+            MLXModelFile(name: "config.json", sizeBytes: 2315, sha256: "68439fd5c55c8f907487934d29a415902639107172b000309185f3cbebe2b2d5"),
+            MLXModelFile(name: "model.safetensors", sizeBytes: 999901724, sha256: "d712a6d5d9fc52794eb424aa1949eaa27e9bd27790a8da196e12bf5aa515f8a0"),
+            MLXModelFile(name: "model.safetensors.index.json", sizeBytes: 51750, sha256: "2028bcb80a174c3f39044365db8b00e84a384111f90c582098b4567568936f0d"),
+            MLXModelFile(name: "tokenizer.json", sizeBytes: 11430574, sha256: "8daf6a1684cabbe9e2ec2cf605a9ac85789a9ccd9b84ba825e13b3d564e1f456"),
+            MLXModelFile(name: "tokenizer_config.json", sizeBytes: 361, sha256: "ee5ac29e04c5e710e0faae8c082d4fd63e7a1b0db508cd570c4b2f1885fe559c"),
+            MLXModelFile(name: "chat_template.jinja", sizeBytes: 2246, sha256: "56a1447ad31926fdc21fb07e56e5642bd9c850c4f52d8c8af7bbe5f079a84f5f"),
+        ],
+        label: "ClarkeYoursaTee 1.5B · MLX 4-bit")
+    public static let selected: MLXModelPinSpec? = clarke1p5b4bit
 }
 
 /// State of the MLX model files on the phone.

@@ -8,9 +8,9 @@
 //   3. LlamaEngine (FALLBACK): llama.cpp b11960 universal xcframework + the pinned 1.5B GGUF.
 // EngineSelector (PocketCore) picks one; ModelStore drives whichever is active.
 //
-// MLX status in this build: the MLX Swift package is NOT linked yet and no MLX-converted model is
-// published (MLXModelPin.selected == nil), so MLXEngine.load always throws `.unavailable` and the
-// llama.cpp fallback answers. Nothing here pretends MLX ran.
+// MLX status in this build: Clarke Yoursa Tee's 1.5B model in 4-bit MLX format is published and
+// hash-pinned (MLXModelPin.clarke1p5b4bit). The MLX Swift package is NOT linked yet, so
+// MLXEngine.load always throws `.unavailable` and the next engine answers. Nothing here pretends MLX ran.
 
 import Foundation
 import Metal

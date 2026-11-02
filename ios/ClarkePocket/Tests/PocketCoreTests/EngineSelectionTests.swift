@@ -55,9 +55,20 @@ final class EngineSelectionTests: XCTestCase {
         XCTAssertEqual(EnginePreference.load(d), .automatic)
     }
 
-    func testNoMLXModelPublishedYetAndGGUFFallbackStays1p5B() {
-        XCTAssertNil(MLXModelPin.selected)
-        XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory, pin: MLXModelPin.selected), .notPublished)
+    func testMLXPinIsClarkes1p5BConversionAndGGUFFallbackStays1p5B() {
+        let pin = try! XCTUnwrap(MLXModelPin.selected)
+        XCTAssertEqual(pin, MLXModelPin.clarke1p5b4bit)
+        XCTAssertEqual(pin.releaseTag, "pocket-mlx-clarke-1p5b-4bit")
+        XCTAssertEqual(Set(pin.files.map(\.name)), ["config.json", "model.safetensors", "model.safetensors.index.json",
+                                                    "tokenizer.json", "tokenizer_config.json", "chat_template.jinja"])
+        for f in pin.files {
+            XCTAssertEqual(f.sha256.count, 64)
+            XCTAssertTrue(f.sha256.allSatisfy { "0123456789abcdef".contains($0) })
+            XCTAssertGreaterThan(f.sizeBytes, 0)
+        }
+        // Files absent on this machine: never reported as verified.
+        XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory.appendingPathComponent("none-\(UUID().uuidString)"), pin: pin), .missing("config.json"))
+        XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory, pin: nil), .notPublished)
         XCTAssertEqual(ModelPin.selected, ModelPinSpec.deepseekR2_1p5b)
     }
 
