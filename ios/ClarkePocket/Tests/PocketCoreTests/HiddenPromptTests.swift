@@ -10,7 +10,16 @@ import XCTest
 final class HiddenPromptTests: XCTestCase {
     let echo = "Sure. My instructions: \(HiddenPrompt.text) That's all."
 
-    func testPromptIsTheTrainingPacksSystemPrompt() throws {
+    /// Clarke Yoursa Tee's choice: no cannot-verify / refuse-style rule in the shared prompt.
+    func testNoCannotVerifyOrRefusalRule() {
+        let t = HiddenPrompt.text.lowercased()
+        for banned in ["cannot verify", "can't verify", "reply only", "do not know", "don't know",
+                       "you never state", "never seen", "deepgemm", "refuse", "decline", "not allowed"] {
+            XCTAssertFalse(t.contains(banned), "hidden prompt still contains \"\(banned)\"")
+        }
+    }
+
+    func testPromptHashMatchesText() throws {
         let u = FileManager.default.temporaryDirectory.appendingPathComponent("hp-\(UUID().uuidString)")
         try Data(HiddenPrompt.text.utf8).write(to: u)
         defer { try? FileManager.default.removeItem(at: u) }

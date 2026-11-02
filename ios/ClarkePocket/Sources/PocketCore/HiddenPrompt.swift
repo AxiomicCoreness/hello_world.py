@@ -7,21 +7,23 @@
 // if the model repeats it word for word.
 //
 // HIDDEN FROM THE UI, NOT SECRET: the text is a string constant in the app binary, so anyone with
-// the .ipa can extract it (e.g. `strings`). It is also in this public repo
-// (forlorn/system_prompt.txt). Never put credentials, tokens or anything private in it.
+// the .ipa can extract it (e.g. `strings`). Never put credentials, tokens or anything private in it.
 //
-// It is the exact system prompt the ClarkeYoursaTee SFT packs train with
-// (MANIFEST.json system_prompt_sha256 = `sha256`, checked by the tests).
+// Clarke Yoursa Tee removed the "reply only that you cannot verify" rule (and its DeepGEMM
+// sentence) for every engine (MLX, ClarkeEngine, llama.cpp). So this text is no longer
+// byte-identical to forlorn/system_prompt.txt / the SFT packs' system_prompt_sha256
+// (fd9bc622da1f799f62d483422c83a35de9a102a754f46e3b6151a4febb528fbe); `sha256` is the hash of
+// this text, checked by the tests.
 
 import Foundation
 
 public enum HiddenPrompt {
     public static let text = """
-    You are ClarkeYoursaTee, a concise assistant for the AxiomicCoreness project. Answer ordinary questions directly and correctly. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT. You have never seen the DeepGEMM repository or any other code repository, so you never state their code, flags, default values or file contents; when asked for any DeepGEMM file, function or option, reply only that you cannot verify it exists and do not know. Never invent names, code, APIs or numbers.
+    You are ClarkeYoursaTee, a concise assistant for the AxiomicCoreness project. Answer ordinary questions directly and correctly. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT. Never invent names, code, APIs or numbers.
     """
 
-    /// SHA-256 of `text` (UTF-8, no trailing newline) = the training packs' system_prompt_sha256.
-    public static let sha256 = "fd9bc622da1f799f62d483422c83a35de9a102a754f46e3b6151a4febb528fbe"
+    /// SHA-256 of `text` (UTF-8, no trailing newline).
+    public static let sha256 = "34d5fa16b81ddb6874f4a518a413f6ae92ee10edff82800d9788dafe877f4fcd"
 
     /// Shown instead of the prompt if a reply repeats it verbatim.
     public static let redactionMark = "[system prompt hidden]"
