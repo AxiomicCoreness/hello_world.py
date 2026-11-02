@@ -101,7 +101,24 @@ public enum MLXModelPin {
             MLXModelFile(name: "chat_template.jinja", sizeBytes: 2246, sha256: "56a1447ad31926fdc21fb07e56e5642bd9c850c4f52d8c8af7bbe5f079a84f5f"),
         ],
         label: "ClarkeYoursaTee 1.5B · MLX 4-bit")
-    public static let selected: MLXModelPinSpec? = clarke1p5b4bit
+    /// Clarke Yoursa Tee's own ClarkeYoursaTee-2B-v3t in 4-bit MLX format. It was converted, with code
+    /// libraries only, from ClarkeYoursaTee-2B-v3-Q4_K_M.gguf (sha256
+    /// 717a893e53218604395b07f073c106e79c4356fbc95282f97873bd3d57be6fcf). Release
+    /// `pocket-mlx-clarke-2b-v3t-4bit`. This is the MLX path only; the GGUF default pin
+    /// (ModelPin, 1.5B) and MODEL_PIN.json are unchanged.
+    public static let clarke2bV3t4bit = MLXModelPinSpec(
+        releaseTag: "pocket-mlx-clarke-2b-v3t-4bit",
+        directoryName: "ClarkeYoursaTee-2B-v3t-mlx-4bit",
+        files: [
+            MLXModelFile(name: "config.json", sizeBytes: 2455, sha256: "05f37c12222a8827bc4152d4d964e9202b7705f81ee09ccedff710e8d731d15d"),
+            MLXModelFile(name: "model.safetensors", sizeBytes: 1131572152, sha256: "61e424ac4ceaaad46934e87b695a50b9d6c03ec062630ed4f0e60e7478e7ada2"),
+            MLXModelFile(name: "model.safetensors.index.json", sizeBytes: 60951, sha256: "88c15f7c9f9f7f71e35c47d5c396c4706076ed71a737ab627cfd76dc88f0f415"),
+            MLXModelFile(name: "tokenizer.json", sizeBytes: 11430709, sha256: "93a922d6643764e7c23c28f980b59a0c9fa5655c3c6dc441759779cb002b606b"),
+            MLXModelFile(name: "tokenizer_config.json", sizeBytes: 350, sha256: "88742f04f7b429e48323c7ed84a5dddb2a349c36c4fecc6984ce759fd32460c8"),
+            MLXModelFile(name: "chat_template.jinja", sizeBytes: 2507, sha256: "cd8e9439f0570856fd70470bf8889ebd8b5d1107207f67a5efb46e342330527f"),
+        ],
+        label: "ClarkeYoursaTee-2B-v3t · MLX 4-bit")
+    public static let selected: MLXModelPinSpec? = clarke2bV3t4bit
 }
 
 /// State of the MLX model files on the phone.

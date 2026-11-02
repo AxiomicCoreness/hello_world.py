@@ -10,7 +10,7 @@
 //
 // MLX: mlx-swift-lm (MLXLLM + MLXLMCommon) and swift-transformers (Tokenizers) are linked by
 // project.yml. MLXEngine loads only Clarke Yoursa Tee's hash-pinned MLX 4-bit files
-// (MLXModelPin.clarke1p5b4bit), only on a real device with Metal; in the Simulator it refuses and
+// (MLXModelPin.clarke2bV3t4bit), only on a real device with Metal; in the Simulator it refuses and
 // the next engine answers. Nothing here pretends MLX ran.
 
 import Foundation
@@ -71,7 +71,7 @@ actor MLXEngine: ChatEngine {
         // Same system message as the other engines; ~4 chars/token estimate for the window.
         PromptWindow.fit(system: HiddenPrompt.compose(system), history: history, user: user,
                          budget: Int(RuntimePolicy.contextTokens) - RuntimePolicy.replyReserve,
-                         tokenCount: { max(1, $0.utf8.count / 4) })
+                         tokenCount: { turns in turns.reduce(0) { $0 + 4 + $1.content.utf8.count / 4 } })
     }
     func begin(_ turns: [PromptTurn], maxTokens: Int) async throws -> Int {
         guard let container else { throw MLXEngineError.unavailable("not loaded") }

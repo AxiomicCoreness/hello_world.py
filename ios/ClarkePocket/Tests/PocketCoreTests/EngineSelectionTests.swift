@@ -55,10 +55,10 @@ final class EngineSelectionTests: XCTestCase {
         XCTAssertEqual(EnginePreference.load(d), .automatic)
     }
 
-    func testMLXPinIsClarkes1p5BConversionAndGGUFFallbackStays1p5B() {
+    func testMLXPinIsClarkes2Bv3tConversionAndGGUFFallbackStays1p5B() {
         let pin = try! XCTUnwrap(MLXModelPin.selected)
-        XCTAssertEqual(pin, MLXModelPin.clarke1p5b4bit)
-        XCTAssertEqual(pin.releaseTag, "pocket-mlx-clarke-1p5b-4bit")
+        XCTAssertEqual(pin, MLXModelPin.clarke2bV3t4bit)
+        XCTAssertEqual(pin.releaseTag, "pocket-mlx-clarke-2b-v3t-4bit")
         XCTAssertEqual(Set(pin.files.map(\.name)), ["config.json", "model.safetensors", "model.safetensors.index.json",
                                                     "tokenizer.json", "tokenizer_config.json", "chat_template.jinja"])
         for f in pin.files {
@@ -70,8 +70,8 @@ final class EngineSelectionTests: XCTestCase {
         XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory.appendingPathComponent("none-\(UUID().uuidString)"), pin: pin), .missing("config.json"))
         XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory, pin: nil), .notPublished)
         XCTAssertEqual(pin.url(for: pin.files[1]).absoluteString,
-                       "https://github.com/AxiomicCoreness/hello_world.py/releases/download/pocket-mlx-clarke-1p5b-4bit/model.safetensors")
-        XCTAssertEqual(pin.totalBytes, 1_011_388_970)
+                       "https://github.com/AxiomicCoreness/hello_world.py/releases/download/pocket-mlx-clarke-2b-v3t-4bit/model.safetensors")
+        XCTAssertEqual(pin.totalBytes, 1143069124)
         XCTAssertEqual(ModelPin.selected, ModelPinSpec.deepseekR2_1p5b)
     }
 
