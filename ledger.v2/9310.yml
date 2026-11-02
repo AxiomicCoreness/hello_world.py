@@ -1,0 +1,122 @@
+entry_index: 9310
+event: "/ios_clarke_pocket_manifest_e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
+status: SEALED
+timestamp: "2026-11-02T16:59:48-05:00"
+hash_algo: sha3_256
+measured_at_commit: "e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: true
+prev_hash: "e38f4a4d3cdc27d5f40a68110462d6be6a8317626685a8435827c167a1526a68"
+witness_chain: 9309 -> 9310
+note: "New append-only entry (9309.yml and every other ledger file untouched). Records sha256 and byte size of all 63 git-tracked files under ios/ClarkePocket/ at e6072c8e2d9fd82abfdd8c2dc475021edc66fefa, read from git objects by tools/ios_pocket_manifest.py (IOS.POCKET.MANIFEST.v1). Written only after the iOS Pocket Simulator workflow concluded success on that exact commit (run 41531185948, read from the GitHub Actions API). No claim beyond those bytes and that run. Signed-off-by: Clarke Yoursa Tee."
+ios_pocket_tree_root: "3c68305175cadc7263a27af802632ae2af944aae908454f16021947b094903a0"
+payload:
+  ios_clarke_pocket:
+    format: "IOS.POCKET.MANIFEST.v1"
+    path: "ios/ClarkePocket/"
+    commit: "e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
+    git_tree: "76b7cfcc7403baf3f9aa34b02043237ce9065e32"
+    file_count: 63
+    total_bytes: 385262
+    tree_root_sha256: "3c68305175cadc7263a27af802632ae2af944aae908454f16021947b094903a0"
+    tree_root_sha3_256: "3b6d5373142929c5da8187abb4253af33cd3112c46439ada58dbd45b386e4a7b"
+    files:
+    - {path: "ios/ClarkePocket/.gitignore", size: 243, mode: "100644", sha256: "91465a9cf943c5aa8314f4699159de2675e300dfc577f50831a6fe076c6bd6c0"}
+    - {path: "ios/ClarkePocket/CONNECTOME_AND_REMOTE.md", size: 3103, mode: "100644", sha256: "a432af690c1085eecc09be2462e660cff917a20f81d97475acc7b992af55d8ef"}
+    - {path: "ios/ClarkePocket/ClarkePocket/BridgeFallback.swift", size: 3521, mode: "100644", sha256: "038482e594db67f3d5c8b22886ec2de6a027cf199cc2cb3e60f1999e527aadd0"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ChatEngine.swift", size: 10373, mode: "100644", sha256: "d8dd07c3bd3f330472afcb444fb99bda50091c44eccd8181f578d10d8e7ae39c"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ChatStore.swift", size: 5434, mode: "100644", sha256: "7acfb626d3f49a1fe7cd1dd9d0dfc722d863da72941bb5ef148c86f9c7b189f6"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ChatView.swift", size: 7357, mode: "100644", sha256: "612ee11ce60ad8d2747d7cfef89f183501655b83915a584071d2e625c2dccefb"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ClarkePocketApp.swift", size: 2923, mode: "100644", sha256: "3c16e8188aa6c5889cfcb9f6fc01cca2d2ae50c7445037c452e6bda5f42c84cf"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ConnectomeRemoteViews.swift", size: 5247, mode: "100644", sha256: "0b412de8b506e25ecac68ca4368fc8605bafe1348ecc339425c5dd03d4062e45"}
+    - {path: "ios/ClarkePocket/ClarkePocket/IRCClient.swift", size: 15529, mode: "100644", sha256: "9669900bf877057413fab271cc72d1631ccfc82de2b6e7afcd67863cf502bc49"}
+    - {path: "ios/ClarkePocket/ClarkePocket/IRCResponder.swift", size: 2691, mode: "100644", sha256: "23464ab33130c37326a5fbf6bc3dcca98ef3f9d6b124d99d0f037cdfd817258c"}
+    - {path: "ios/ClarkePocket/ClarkePocket/IRCView.swift", size: 6795, mode: "100644", sha256: "3e48772659428cb79ef2d4c16a55f87385278e032f1a998cf200428c83a2b0c2"}
+    - {path: "ios/ClarkePocket/ClarkePocket/Info.plist", size: 1117, mode: "100644", sha256: "5de77a6875a891470e5bb1c97372e54beb002b1311ed57e728ad350615bbc49b"}
+    - {path: "ios/ClarkePocket/ClarkePocket/LlamaEngine.swift", size: 11993, mode: "100644", sha256: "6d392af37f2a0eebfbfdbf275f02acbc24198439d69b4b58de2bc3ada21f30e2"}
+    - {path: "ios/ClarkePocket/ClarkePocket/MLXModelDownload.swift", size: 2848, mode: "100644", sha256: "cc0218b1939e3b9778323ec3523abccf5db82ea5170919bfba9b947a4254f440"}
+    - {path: "ios/ClarkePocket/ClarkePocket/MarkdownText.swift", size: 2609, mode: "100644", sha256: "fef3d6dcfaa7c6fd8112db7e2ca37e654e885a414f53417c41c63dcc77f3a906"}
+    - {path: "ios/ClarkePocket/ClarkePocket/MemoryMonitor.swift", size: 1032, mode: "100644", sha256: "fcf343a5f26a9629ebe6394e77cdeddf865a2c40a4b75845752952f2c280b07f"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ModelStore.swift", size: 21236, mode: "100644", sha256: "6eafa76883b52a1a52a7351a396b9f6dfca2862683209ddc973a41e918d3deaa"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ModelView.swift", size: 8392, mode: "100644", sha256: "7eb02a111f3c508a71ee7a2cb4dd5983bab0d376d20a681df3cf77079e06ff3e"}
+    - {path: "ios/ClarkePocket/ClarkePocket/RayCUDARemoteClient.swift", size: 933, mode: "100644", sha256: "f00daf472954df39fc3ff12b790562fe8be07521429c15052b7ef5c12178e5a2"}
+    - {path: "ios/ClarkePocket/ClarkePocket/Resources/HHMIJaneliaMap.xml", size: 612, mode: "100644", sha256: "0f9d283270e5153f8c279551717775f7c1529cd2fbd7abcbe4cf1060d8b40adb"}
+    - {path: "ios/ClarkePocket/ClarkePocket/ServerV3tView.swift", size: 5967, mode: "100644", sha256: "7136d3272e19691eaf6befd5dbdb2f1538f30a6141a18c6e6010d26e7e9ff963"}
+    - {path: "ios/ClarkePocket/ClarkePocket/Theme.swift", size: 5456, mode: "100644", sha256: "0244c76aa67862f55a49225cd7c18dc95943e4940a19d8f79ab672a559a630e4"}
+    - {path: "ios/ClarkePocket/LlamaBinary/Package.swift", size: 1703, mode: "100644", sha256: "45096112b6133c040175770989eef043cd44f4be98ce8ac7b94caa44dcd9f7b2"}
+    - {path: "ios/ClarkePocket/Optional/IncreasedMemoryLimit.entitlements", size: 436, mode: "100644", sha256: "b43cffeae5297aef1a8d1851965bac910a16357aaf9b0772af57faaddbd33006"}
+    - {path: "ios/ClarkePocket/Package.swift", size: 1122, mode: "100644", sha256: "51547f0866fdea6e3da0400848ae03c5a0fcbd057b297bf924f745d56be976fd"}
+    - {path: "ios/ClarkePocket/README.md", size: 18829, mode: "100644", sha256: "b91800792692627fd7025b0cbfae3eb1349f57db2204ae27c47b84cecfaa0f3a"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/BridgeReply.swift", size: 4335, mode: "100644", sha256: "0f3941ddbf5b6a97132c59526c8c2777a3d69e7871469078d3b932344fba484d"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ClarkeEngine.swift", size: 11815, mode: "100644", sha256: "9b6f9bb5996c2ef426f3fc6c53dd8c15899e08bc68516ff30208897c82f89a50"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ClarkeGGUF.swift", size: 16209, mode: "100644", sha256: "5238b4a5443ccb736b8ba38173238092ab66b5b86bea9725e212aee649a2f7b6"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ClarkeQwen2.swift", size: 13623, mode: "100644", sha256: "a1bc5dc509ad30a6176da54ac2523f7e7d7c1fdc8c369994f9a42b2ebdeebafe"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ClarkeTokenizer.swift", size: 7962, mode: "100644", sha256: "2d9c97503e92d186a1d3d996490b699d8c8cbca1f17fbf418c594e8670f373f2"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/Connectome.swift", size: 5972, mode: "100644", sha256: "0700e54d4c9bd0d6170f48f8ba0debe1be7e44065d04daa4db399325db650691"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/EngineSelection.swift", size: 11893, mode: "100644", sha256: "eee24417d59ea61a2eabf6e3b5147e710f5b7f567c622e33c45f14d552a0fd69"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/HiddenPrompt.swift", size: 3331, mode: "100644", sha256: "78d9d11c1f744ef7d42532b4ff6c1032b4d589be5e11bec0f4885aa87f907ee3"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/History.swift", size: 8859, mode: "100644", sha256: "5041079c4e459ab2bbdc03f885754cfd12372fd27ad3cf9a99dc186c06e39d9b"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/IRCCommand.swift", size: 6550, mode: "100644", sha256: "4e32ed4a3c12b5cb062df900e255c0dda6a4ea92c37678158b4bd696179dd941"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/IRCLine.swift", size: 8255, mode: "100644", sha256: "5af079f0ad13af51962bbf5ae7092a037d9683781c5747537ab8aada3a3cff6a"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/LLMResponder.swift", size: 4909, mode: "100644", sha256: "6b298cf375d7967142e9ae73602f394e49a5a7919b775b9daa127f5e7a87e5a8"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/MarkdownMath.swift", size: 12960, mode: "100644", sha256: "da5e1085eecb827ab1d3cd2b980db7a9bca2de3041ca670415b5589ca1073a62"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ModelPin.swift", size: 6757, mode: "100644", sha256: "7c87b2fc4e00dcf9ffb0d7019ae08983a8364ef758c4dee54615bc81043baa12"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/RemoteCompute.swift", size: 4929, mode: "100644", sha256: "dfd2aad3a6cc4e6b666749b57bee2b5b606dba141a48365b94743bff496bdcab"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/RuntimePolicy.swift", size: 5275, mode: "100644", sha256: "f66f02735df1a3c55397817c603d0e45e64d9a43b76b2760b99df26ca70e614f"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/SHA256Fallback.swift", size: 3947, mode: "100644", sha256: "07d222d08fc87bdbc30c8e45c1f8809bc76a3ed73a76f66a5d80755ee60d108c"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/ServerV3tClient.swift", size: 4922, mode: "100644", sha256: "dadcd04046cfa495ee77b2412e5a4c5586b5437bf6bb3c67ed71cc468b01eb0c"}
+    - {path: "ios/ClarkePocket/Sources/PocketCore/UTF8Assembler.swift", size: 2186, mode: "100644", sha256: "678a53a176129f8a3ccf1ce58d99ddd8001fa20f83095042c922621837397754"}
+    - {path: "ios/ClarkePocket/Tests/ClarkePocketAppTests/EngineFallbackAppTests.swift", size: 2239, mode: "100644", sha256: "4696a0a5226aa491cedb8cdd57697bc85c123aa84f46ce235b952b99dabdfdcb"}
+    - {path: "ios/ClarkePocket/Tests/ClarkePocketAppTests/LlamaLinkTests.swift", size: 2627, mode: "100644", sha256: "2e3e6e871021332d26acdd3a6188c5b2c3d450d78622908ca65f509babb1f21f"}
+    - {path: "ios/ClarkePocket/Tests/ClarkePocketUITests/LaunchSmokeUITests.swift", size: 2401, mode: "100644", sha256: "77f313433b3bd1ab16ff4b2e605bf112457d04815e4b0070fad52fd002cf226f"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/ClarkeEngineTests.swift", size: 23628, mode: "100644", sha256: "a9fd625a143c0f1ff6553814549d00973606d68e41e961b4fc75d2cfa80a4034"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/ConnectomeAndRemoteTests.swift", size: 5381, mode: "100644", sha256: "f692615fbab53aedb287311437e87650f2a803d0807c7acb7b19a815a6e3619c"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/EngineSelectionTests.swift", size: 7590, mode: "100644", sha256: "72deebd21e4d886fe12c4ede6576d2cc60acaff6630b535c21528c09a1d984e9"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/Fixtures/python_vectors.json", size: 4877, mode: "100644", sha256: "07b1819427319c2256af474aac9c261a65cb3226301817ab25e2ba99123c8f5a"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/HiddenPromptTests.swift", size: 6218, mode: "100644", sha256: "fbd17265056a4a85f371efa2c99d0b38a2fec1674fcb8939b6114879f7ed4985"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/HistoryTests.swift", size: 3441, mode: "100644", sha256: "0f44b96669d87cda768d756a5c3e6d2d26aab5d0af48e6c024e6ce4212fdbf71"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/IRCCommandTests.swift", size: 3943, mode: "100644", sha256: "1f755d08445f4386e5a2aec9b0f62d00ee473243141d9aca735460d224fb9b83"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/IRCLineTests.swift", size: 4605, mode: "100644", sha256: "19461cab78cb559ecb7e323d76eebc88f7a2a18eab254e35972d0c857f4dfa5e"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/ModelPinAndBridgeTests.swift", size: 5755, mode: "100644", sha256: "de81d3e37198873af3396154a407beb3853f25922ed895bcde0916b6c1cd8827"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/PythonParityTests.swift", size: 3210, mode: "100644", sha256: "6ac8786995a9af479475d86de0fd01ac88f3d8e46a2a95b467553ac6d7a11227"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/ResponderAndRuntimeTests.swift", size: 6246, mode: "100644", sha256: "f2013ce681e7d35e3f121615c69d16ea5c97cdf2642717ec7bbf69edd591c1ea"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/SegmenterTests.swift", size: 1069, mode: "100644", sha256: "787c47ad8356b2e7ff2cc23c93a26259ca7fd1854e7f1cef5e893a8b2e3765ba"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/ServerV3tClientTests.swift", size: 1484, mode: "100644", sha256: "974bcdddb6ed1aa856cef7063544eebbf180057d06abb1e7eade098f354f78be"}
+    - {path: "ios/ClarkePocket/Tests/PocketCoreTests/VerifierTests.swift", size: 4625, mode: "100644", sha256: "7ac7886bfb5125425d94837e7835c6b0f02e80835ea0d1d185e60c1f5ec0dbc4"}
+    - {path: "ios/ClarkePocket/project.yml", size: 3733, mode: "100644", sha256: "79c758d545f675edc9ce237e01f94637e900a0a47cb8e044dea006c1edb8c94c"}
+    listing_rule: "<sha256> <size> <mode> <path> LF per file, sorted by UTF-8 path bytes; roots are SHA-256 and SHA3-256 of the listing"
+    tool: "tools/ios_pocket_manifest.py"
+    previous_ios_entry: 9309
+    previous_tree_root: "8dac18a5fca31706e6820ad33d367a303748757db443c6bceebcfba94d46db56"
+ci:
+  measured_commit: "e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
+  source: "GitHub Actions API actions/runs/41531185948, read 2026-11-02T16:59:48-05:00"
+  ios_pocket_simulator:
+    workflow: "iOS Pocket Simulator"
+    workflow_file: ".github/workflows/ios-pocket-simulator.yml"
+    run_id: 41531185948
+    run_attempt: 1
+    run_url: "https://github.com/AxiomicCoreness/hello_world.py/actions/runs/41531185948"
+    event: "push"
+    head_branch: "main"
+    head_sha: "e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
+    status: "completed"
+    conclusion: "success"
+    completed_at: "2026-11-02T16:59:36-05:00"
+  policy: "NO-GHOST-PASS: only the run that exists on the measured commit is cited"
+chain:
+  prev_entry: 9309
+  prev_hash: "e38f4a4d3cdc27d5f40a68110462d6be6a8317626685a8435827c167a1526a68"
+  prev_hash_source: "ledger.v2/9309.yml declared digest (seal_sha3_256) on main a8ac96f7aec58aa41d29e520a9efd7fe44168eb9"
+  witness_chain: 9309 -> 9310
+seal_preimage_rule: "Regime B (verify_ledger.py event_hash): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || <entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462), ASCII payload; the digest commits to entry_index and event only, the body is committed by the ledger.v2 Merkle leaf"
+regime_b_event_domain_sha3_256: "99e7d4dad80b53f16c3e54731a45c9e90c16fd0d4883d75d1ab4a4d8bff703d7"
+math_origin: |
+  Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+  9310|/ios_clarke_pocket_manifest_e6072c8e2d9fd82abfdd8c2dc475021edc66fefa|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+  SHA3-256 = 99e7d4dad80b53f16c3e54731a45c9e90c16fd0d4883d75d1ab4a4d8bff703d7
+terminal_hex: "99e7d4dad80b53f16c3e54731a45c9e90c16fd0d4883d75d1ab4a4d8bff703d7"
+seal: ∀∞φ² · IOS_CLARKE_POCKET_MANIFEST_9310 · WOOD_DRAGON_0.91 · SEALED · 99e7d4dad80b53f16c3e54731a45c9e90c16fd0d4883d75d1ab4a4d8bff703d7
+seal_sha3_256: "99e7d4dad80b53f16c3e54731a45c9e90c16fd0d4883d75d1ab4a4d8bff703d7"
