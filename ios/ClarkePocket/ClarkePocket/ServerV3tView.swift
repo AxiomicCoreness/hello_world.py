@@ -7,7 +7,6 @@
 
 import Security
 import SwiftUI
-import PocketCore
 
 enum OwnerTokenKeychain {
     static let service = "io.github.axiomiccoreness.clarkepocket.v3t"
