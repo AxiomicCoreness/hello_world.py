@@ -19,7 +19,7 @@ This folder is source. You build it with Xcode on a Mac, or, without a Mac, down
 | | |
 |---|---|
 | Model | `ClarkeYoursaTee (deepseek-r2-1.5b)`, `deepseek-r2-1.5b-Q4_K_M.gguf`, 1 117 320 640 bytes (1.12 GB), sha256 `80a49c2f…79e5c1`, from this repo's release [`model-deepseek-r2-1.5b-q4km-v1`](https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1) (`Sources/PocketCore/ModelPin.swift`). Selectable in code: `ModelPin.selected` (default `.deepseekR2_1p5b`; `.deepseekR2_1p8b` = `deepseek-r2-1p8b-Q4_K_M.gguf`, 1 259 979 680 bytes, sha256 `f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4`, release `model-deepseek-r2-1p8b-q4km-v1`, not the default until its eval is reviewed) |
-| Engines | The engines are tried in this order:<br>1. **MLX Swift** (primary) with Clarke Yoursa Tee's own MLX-converted model (`MLXEngine`, pin `MLXModelPin`). **Not active yet:** MLX Swift is not linked in this build and no MLX-converted model is published.<br>2. **ClarkeEngine** (`Sources/PocketCore/ClarkeEngine.swift`), Clarke Yoursa Tee's own pure-Swift qwen2 engine. It runs on the CPU only, with Foundation + Accelerate. It reads the pinned 1.5B GGUF through mmap, using its own GGUF reader, Q4_K/Q6_K/Q8_0/Q5_0/F16/F32 dequantisation, and a BPE tokenizer built from the file's metadata.<br>3. **llama.cpp b11960** (fallback, `LlamaEngine`) on the same GGUF.<br>Each engine is skipped automatically when it cannot run. The Chat tab **ENGINE** menu can force one, and the Chat header names the active engine and why |
+| Engines | The engines are tried in this order:<br>1. **MLX Swift** (primary) with Clarke Yoursa Tee's own MLX-converted model (`MLXEngine`, pin `MLXModelPin`). The model is published (ClarkeYoursaTee-2B-v3t, release `pocket-mlx-clarke-2b-v3t-4bit`, converted from ClarkeYoursaTee-2B-v3-Q4_K_M.gguf; the GGUF default pin stays 1.5B), and each of its files is pinned by size and SHA-256. MLX Swift (mlx-swift-lm 3.32.3 + swift-transformers 1.3.5) is linked. It runs only on a real iPhone with Metal after the MLX model is downloaded on the Model tab; in the Simulator it is skipped.<br>2. **ClarkeEngine** (`Sources/PocketCore/ClarkeEngine.swift`), Clarke Yoursa Tee's own pure-Swift qwen2 engine. It runs on the CPU only, with Foundation + Accelerate. It reads the pinned 1.5B GGUF through mmap, using its own GGUF reader, Q4_K/Q6_K/Q8_0/Q5_0/F16/F32 dequantisation, and a BPE tokenizer built from the file's metadata.<br>3. **llama.cpp b11960** (fallback, `LlamaEngine`) on the same GGUF.<br>Each engine is skipped automatically when it cannot run. The Chat tab **ENGINE** menu can force one, and the Chat header names the active engine and why |
 | Fallback inference | llama.cpp release **b11960** (the build behind llama.cpp v0.8.0, commit `8642541b255bfb5dc39cd351a178be09013a55d6`), built from source by this repo's workflow `.github/workflows/pocket-llama-xcframework.yml` into one universal XCFramework (ios-arm64, ios-arm64_x86_64-simulator, macos-arm64_x86_64), published as the asset `llama-b11960-universal-xcframework.zip` of this repo's release `pocket-llama-b11960-xcf` and pinned by checksum in `LlamaBinary/Package.swift` |
 | Settings | context 2048 tokens · all layers on Metal · 2 generation / 4 batch threads on the A14 (from its 2 performance cores) · temperature 0.6, top-p 0.95 (read from the GGUF) · chat template from the GGUF |
 | IRC | `wss://irc.abjects.net:6680/`, starts in `#axiomiccoreness`, nick `Clarke_iOS_<4 digits>` |
@@ -52,7 +52,7 @@ This folder is source. You build it with Xcode on a Mac, or, without a Mac, down
 
 ## Build and install
 
-You need a Mac with **Xcode 16 or newer**, an iPhone with **iOS 16.4+** and a USB cable. A library Mac works.
+You need a Mac with **Xcode 16 or newer**, an iPhone with **iOS 17+** and a USB cable. A library Mac works.
 
 ### A. With XcodeGen (recommended)
 
@@ -85,7 +85,7 @@ every change and uploads it as the artifact **`ClarkePocket-unsigned-ipa`** (kep
 `ClarkePocket-unsigned.ipa` plus `ClarkePocket-unsigned.ipa.sha256`. CI checks that it holds only
 `Payload/ClarkePocket.app`, has no signature and no entitlements, embeds `Frameworks/llama.framework`,
 is arm64, and that its `Info.plist` says bundle id `io.github.axiomiccoreness.clarkepocket`, version 1.0 (1),
-iOS 16.4+, iPhone only. Running the workflow by hand with **prerelease** ticked also attaches it to a
+iOS 17+, iPhone only. Running the workflow by hand with **prerelease** ticked also attaches it to a
 GitHub pre-release.
 
 1. Open the latest green run of **iOS Clarke Pocket** under **Actions**, download
@@ -110,7 +110,7 @@ GitHub pre-release.
    (`SHA256Fallback.swift` compiles to nothing on iOS. It's fine to add.)
 3. **File → Add Package Dependencies… → Add Local…** → choose the `LlamaBinary` folder, then add the
    **LlamaBinary** library to the ClarkePocket target.
-4. Target → **General**: Minimum Deployments **iOS 16.4**. Under Supported Destinations, keep **iPhone** only.
+4. Target → **General**: Minimum Deployments **iOS 17.0**. Under Supported Destinations, keep **iPhone** only.
 5. Continue with step 1 of A (signing).
 
 ## Using it

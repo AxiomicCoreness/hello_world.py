@@ -12,6 +12,7 @@ struct ModelView: View {
     @State private var confirmDelete = false
     @State private var available: Int64 = MemoryMonitor.availableBytes()
     @State private var transcript: String?
+    @StateObject private var mlxDownload = MLXModelDownload()
 
     var body: some View {
         ScrollView {
@@ -25,6 +26,7 @@ struct ModelView: View {
                 }
                 section("FILE") { fileState }
                 section("ENGINE") { engineState }
+                if let pin = MLXModelPin.selected { section("MLX MODEL (PRIMARY ENGINE)") { mlxState(pin) } }
                 ConnectomePanel()
                 RemoteBackendPanel()
                 section("CHAT EXPORT") {
@@ -59,7 +61,26 @@ struct ModelView: View {
         .confirmationDialog("Delete the model file?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { model.deleteModel() }
         }
-        .onAppear { model.refreshFileState(); available = MemoryMonitor.availableBytes(); transcript = nil }
+        .onAppear { mlxDownload.refresh(); model.refreshFileState(); available = MemoryMonitor.availableBytes(); transcript = nil }
+    }
+
+    @ViewBuilder private func mlxState(_ pin: MLXModelPinSpec) -> some View {
+        line("name", pin.label)
+        line("source", "GitHub release \(pin.releaseTag) · \(pin.files.count) files, SHA-256 pinned")
+        line("size", RuntimePolicy.formatBytes(pin.totalBytes))
+        switch mlxDownload.state {
+        case .idle:
+            button("Download MLX model") { mlxDownload.start { model.refreshEngineChoice() } }
+        case let .downloading(file, i, n):
+            ProgressView().tint(Theme.accent)
+            line("downloading", "\(file) (\(i) of \(n))")
+            button("Cancel") { mlxDownload.cancel() }
+        case .verified:
+            line("status", "ready · every file matches its SHA-256 pin")
+        case .failed(let why):
+            Text(why).foregroundColor(Theme.remote)
+            button("Try again") { mlxDownload.start { model.refreshEngineChoice() } }
+        }
     }
 
     @ViewBuilder private var fileState: some View {

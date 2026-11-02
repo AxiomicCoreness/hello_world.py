@@ -141,6 +141,8 @@ jobs:
           brew install xcodegen
           xcodegen --version
           xcodegen generate
+          # MLX Swift compiles Metal shaders; Xcode 26 ships the Metal toolchain as a separate component.
+          xcodebuild -downloadComponent MetalToolchain
       - name: xcodebuild build (no signing)
         working-directory: ios/ClarkePocket
         run: |
@@ -183,6 +185,8 @@ jobs:
         run: |
           set -euo pipefail
           xcodegen generate
+          # MLX Swift compiles Metal shaders; Xcode 26 ships the Metal toolchain as a separate component.
+          xcodebuild -downloadComponent MetalToolchain
       - name: xcodebuild test (full app, iOS Simulator, unsigned)
         working-directory: ios/ClarkePocket
         env:
