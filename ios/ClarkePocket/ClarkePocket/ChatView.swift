@@ -43,20 +43,39 @@ struct ChatView: View {
     }
 
     private var header: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            headerRow
+            // Active engine: MLX Swift (primary) or llama.cpp b11960 GGUF (fallback), and why.
+            Text("Engine: \(model.engineChoice.active.label) — \(model.engineChoice.reason)")
+                .font(.caption2).foregroundColor(Theme.accent.opacity(0.75))
+                .lineLimit(2).minimumScaleFactor(0.7)
+                .accessibilityIdentifier("activeEngineLabel")
+        }
+        .padding(.vertical, Theme.titlePadV)
+        .padding(.horizontal, Theme.titlePadH)
+    }
+
+    private var headerRow: some View {
         HStack(spacing: 6) {
             Circle().fill(model.isLoaded ? Theme.dotConnected : Theme.dotOffline).frame(width: 8, height: 8)
             Text(model.willUseBridge || model.answeringViaBridge
                  ? "CHAT · VIA PC BOT · \(BridgeRequest.botNick.uppercased())"
-                 : "CHAT · ON-DEVICE · \(ModelPin.label.uppercased())")
+                 : "CHAT · ON-DEVICE · \(model.engineChoice.active.shortLabel) · \(ModelPin.label.uppercased())")
                 .font(Theme.titleFont).tracking(Theme.titleTracking)
                 .foregroundColor(Theme.accent).lineLimit(1).minimumScaleFactor(0.6)
             Spacer(minLength: 4)
+            Menu("ENGINE") {
+                ForEach(EnginePreference.allCases, id: \.self) { p in
+                    Button((model.enginePreference == p ? "✓ " : "") + p.label) { model.enginePreference = p }
+                }
+            }
+            .font(Theme.titleFont).foregroundColor(Theme.remote)
+            .disabled(chat.generating)
+            .accessibilityIdentifier("enginePreferenceMenu")
             Button("RESET") { confirmReset = true }
                 .font(Theme.titleFont).foregroundColor(Theme.remote)
                 .disabled(chat.generating)
         }
-        .padding(.vertical, Theme.titlePadV)
-        .padding(.horizontal, Theme.titlePadH)
     }
 
     @ViewBuilder

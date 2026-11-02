@@ -19,19 +19,23 @@ This folder is source. You build it with Xcode on a Mac, or, without a Mac, down
 | | |
 |---|---|
 | Model | `ClarkeYoursaTee (deepseek-r2-1.5b)`, `deepseek-r2-1.5b-Q4_K_M.gguf`, 1 117 320 640 bytes (1.12 GB), sha256 `80a49c2f…79e5c1`, from this repo's release [`model-deepseek-r2-1.5b-q4km-v1`](https://github.com/AxiomicCoreness/hello_world.py/releases/tag/model-deepseek-r2-1.5b-q4km-v1) (`Sources/PocketCore/ModelPin.swift`). Selectable in code: `ModelPin.selected` (default `.deepseekR2_1p5b`; `.deepseekR2_1p8b` = `deepseek-r2-1p8b-Q4_K_M.gguf`, 1 259 979 680 bytes, sha256 `f19e0c500c4f734c6e8860e9f6e730e36d544c5f9500f74dce5339b188253af4`, release `model-deepseek-r2-1p8b-q4km-v1`, not the default until its eval is reviewed) |
-| Inference | llama.cpp release **b11960** (the build behind llama.cpp v0.8.0), as the official prebuilt `llama-b11960-xcframework.zip`, pinned by checksum in `LlamaBinary/Package.swift` |
+| Engines | The engines are tried in this order:<br>1. **MLX Swift** (primary) with Clarke Yoursa Tee's own MLX-converted model (`MLXEngine`, pin `MLXModelPin`). **Not active yet:** MLX Swift is not linked in this build and no MLX-converted model is published.<br>2. **ClarkeEngine** (`Sources/PocketCore/ClarkeEngine.swift`), Clarke Yoursa Tee's own pure-Swift qwen2 engine. It runs on the CPU only, with Foundation + Accelerate. It reads the pinned 1.5B GGUF through mmap, using its own GGUF reader, Q4_K/Q6_K/Q8_0/Q5_0/F16/F32 dequantisation, and a BPE tokenizer built from the file's metadata.<br>3. **llama.cpp b11960** (fallback, `LlamaEngine`) on the same GGUF.<br>Each engine is skipped automatically when it cannot run. The Chat tab **ENGINE** menu can force one, and the Chat header names the active engine and why |
+| Fallback inference | llama.cpp release **b11960** (the build behind llama.cpp v0.8.0, commit `8642541b255bfb5dc39cd351a178be09013a55d6`), built from source by this repo's workflow `.github/workflows/pocket-llama-xcframework.yml` into one universal XCFramework (ios-arm64, ios-arm64_x86_64-simulator, macos-arm64_x86_64), published as the asset `llama-b11960-universal-xcframework.zip` of this repo's release `pocket-llama-b11960-xcf` and pinned by checksum in `LlamaBinary/Package.swift` |
 | Settings | context 2048 tokens · all layers on Metal · 2 generation / 4 batch threads on the A14 (from its 2 performance cores) · temperature 0.6, top-p 0.95 (read from the GGUF) · chat template from the GGUF |
 | IRC | `wss://irc.abjects.net:6680/`, starts in `#axiomiccoreness`, nick `Clarke_iOS_<4 digits>` |
 | Look | the TeaVM rhythm page's chat column (`Theme.swift`, copied from PR #165) |
-| Minimum iOS | **16.4** (the llama.cpp framework is built for 16.4+). **Real iPhone only**: the framework has no simulator slice |
+| Minimum iOS | **16.4** (the llama.cpp framework is built for 16.4+). Runs on a real iPhone **and in the iOS Simulator** (CI builds, tests, installs and launches it there on every PR) |
 
 ## Files
 
 | Path | What it is |
 |---|---|
 | `project.yml` | XcodeGen spec that generates `ClarkePocket.xcodeproj` (not committed) |
-| `LlamaBinary/Package.swift` | local Swift package wrapping llama.cpp's XCFramework (URL + checksum) |
+| `LlamaBinary/Package.swift` | local Swift package wrapping the universal llama.cpp XCFramework from this repo's release (URL + checksum) |
 | `ClarkePocket/ClarkePocketApp.swift` | `@main`, tabs, foreground/background handling |
+| `Sources/PocketCore/ClarkeEngine.swift`, `ClarkeGGUF.swift`, `ClarkeTokenizer.swift`, `ClarkeQwen2.swift` | ClarkeEngine: config §0, `syncWithGate` (HTTPS JSON model manifest, offline defaults), `run`, GGUF reader + dequant, BPE, qwen2 decoder with KV cache, sampler. Offline tests in `ClarkeEngineTests` (synthetic GGUF fixtures) |
+| `ClarkePocket/ChatEngine.swift` | `ChatEngine` protocol; `ClarkeChatEngine` (ClarkeEngine adapter); `MLXEngine` (primary, refuses until MLX is linked and a model is pinned); `EngineDetector` (Simulator / Metal / MLX file check) |
+| `Sources/PocketCore/EngineSelection.swift` | MLX-primary / llama.cpp-fallback selection, `MLXModelPin`, per-file SHA-256 check (tested offline in `EngineSelectionTests`) |
 | `ClarkePocket/LlamaEngine.swift` | llama.cpp C API wrapper (`actor`): load, chat template, tokenize, prefill, stream, stop |
 | `ClarkePocket/ModelStore.swift` | download / import / SHA-256 check / load / unload, plus the generation lock for one answer at a time |
 | `ClarkePocket/ModelView.swift` | Model tab |
@@ -41,6 +45,8 @@ This folder is source. You build it with Xcode on a Mac, or, without a Mac, down
 | `ClarkePocket/MemoryMonitor.swift`, `Theme.swift`, `Info.plist` | free-memory / P-core queries, colours (copied from #165), app plist |
 | `Sources/PocketCore/*.swift` | pure-Foundation core, compiled into the app and unit-tested: model pin + SHA-256 verifier, history format, Markdown/LaTeX port, IRC parser (copied from #165), slash-command builder, `!llm` reply wrapper + rate limiter, runtime policy, UTF-8 stream assembler |
 | `Tests/PocketCoreTests/` | 40 XCTest cases (`swift test`), including byte-for-byte checks against the Python bridge |
+| `Tests/ClarkePocketAppTests/` | app-hosted XCTests: the linked llama.framework runs (system info, a missing path and a stub file fail cleanly, no weights), default pin stays 1.5B |
+| `Tests/ClarkePocketUITests/` | UI smoke test: launch, visit Model / Chat / IRC, screenshot each |
 | `Package.swift` | runs those tests on a Mac or Linux without Xcode |
 | `Optional/IncreasedMemoryLimit.entitlements` | **not used by default** (see below) |
 
@@ -58,14 +64,14 @@ xcodegen generate              # writes ClarkePocket.xcodeproj
 open ClarkePocket.xcodeproj
 ```
 
-Xcode fetches the llama.cpp XCFramework (about 70 MB) the first time and checks its checksum. Then:
+Xcode fetches the universal llama.cpp XCFramework (about 116 MB) the first time and checks its checksum. Then:
 
 1. Select the **ClarkePocket** target and open **Signing & Capabilities**. Tick *Automatically manage signing*
    and set Team to your Apple ID (*Add an Account…* if it isn't listed; a free account shows as
    "Personal Team"). If Xcode says the bundle identifier is taken, change
    `io.github.axiomiccoreness.clarkepocket` to something unique, e.g. `com.mrteanotcoffee.clarkepocket`.
-2. Plug in the iPhone, pick **it** as the run destination (a simulator won't build because there's no
-   simulator slice), and press **▶ Run**.
+2. Plug in the iPhone, pick **it** as the run destination, and press **▶ Run**. An iPhone Simulator
+   works too (no signing needed there); launch argument `-ircAutoConnect NO` keeps it off IRC.
 3. Only the first time, on the iPhone:
    - **Settings → Privacy & Security → Developer Mode → On**, then restart when asked.
    - **Settings → General → VPN & Device Management →** your Apple ID → **Trust**.
@@ -214,7 +220,7 @@ cd ios/ClarkePocket && swift test     # Mac or Linux, no Xcode needed
 
 - **"No such module 'llama'" / package errors**: File → Packages → Reset Package Caches, then build again.
   The checksum in `LlamaBinary/Package.swift` must match the zip; it's pinned on purpose.
-- **Build fails for a simulator**: expected, because the framework only has a device slice. Pick your iPhone.
+- **Simulator**: supported. The universal XCFramework has an ios-arm64_x86_64-simulator slice; pass `-ircAutoConnect NO` as a launch argument to keep the Simulator off IRC.
 - **The app closes while loading**: iOS ran out of memory. Close other apps and try again, or try the optional
   memory entitlement above.
 - **IRC stays amber**: the network blocks port 6680 or WebSockets. Try mobile data.

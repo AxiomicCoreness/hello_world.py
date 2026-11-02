@@ -1,0 +1,197 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Pocket llama.xcframework (b11960 universal)
+
+# Builds llama.cpp b11960 from source with llama.cpp's own build-xcframework.sh, on a GitHub
+# macOS runner, as ONE universal XCFramework with three slices:
+#   ios-arm64 (iPhone), ios-arm64_x86_64-simulator (iOS Simulator), macos-arm64_x86_64.
+# Then zips it, computes the SwiftPM checksum and publishes the zip as an asset of the release
+# RELEASE_TAG on THIS repository. ios/ClarkePocket/LlamaBinary/Package.swift points at that
+# asset (url + checksum). No third-party binary: the source is llama.cpp at the pinned commit,
+# fetched by git and checked against the pinned 40-hex SHA before anything is built.
+#
+# Idempotent and append-only: if the release already has the asset, nothing is rebuilt or
+# replaced (no --clobber). The job then downloads the published asset and FAILS unless its
+# SHA-256 equals the checksum pinned in LlamaBinary/Package.swift (when Package.swift already
+# points at this release) and GitHub's own asset digest.
+
+on:
+  push:
+    branches: [main, feat/pocket-universal-xcframework]
+    paths:
+      - ".github/workflows/pocket-llama-xcframework.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocket-llama-xcframework
+  cancel-in-progress: false
+
+env:
+  LLAMA_REPO: ggml-org/llama.cpp
+  LLAMA_TAG: b11960
+  LLAMA_SHA: 8642541b255bfb5dc39cd351a178be09013a55d6
+  RELEASE_TAG: pocket-llama-b11960-xcf
+  ASSET: llama-b11960-universal-xcframework.zip
+  BUILDS: "ios-device ios-sim macos"
+
+jobs:
+  xcframework:
+    name: build + publish universal llama.xcframework
+    runs-on: macos-26
+    timeout-minutes: 150
+    permissions:
+      contents: write          # create the release / upload its asset on this repo only
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: already published?
+        id: rel
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+               --jq '.assets[].name' 2>/dev/null | grep -qx "$ASSET"; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$RELEASE_TAG already has $ASSET; verifying instead of rebuilding"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: toolchain
+        if: steps.rel.outputs.published == 'false'
+        run: |
+          set -euo pipefail
+          if [ -d /Applications/Xcode_26.4.app ]; then sudo xcode-select -s /Applications/Xcode_26.4.app; fi
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          command -v cmake >/dev/null || brew install cmake
+          cmake --version
+
+      - name: fetch llama.cpp ${{ env.LLAMA_TAG }} at the pinned commit
+        if: steps.rel.outputs.published == 'false'
+        run: |
+          set -euo pipefail
+          git init -q llama.cpp
+          cd llama.cpp
+          git remote add origin "https://github.com/$LLAMA_REPO.git"
+          git fetch -q --depth 1 origin "refs/tags/$LLAMA_TAG:refs/tags/$LLAMA_TAG"
+          tag_commit=$(git rev-parse "refs/tags/$LLAMA_TAG^{commit}")
+          echo "tag $LLAMA_TAG -> $tag_commit"
+          test "$tag_commit" = "$LLAMA_SHA" || { echo "::error::tag $LLAMA_TAG is $tag_commit, pinned $LLAMA_SHA"; exit 1; }
+          git -c advice.detachedHead=false checkout -q "$LLAMA_SHA"
+          test "$(git rev-parse HEAD)" = "$LLAMA_SHA"
+          test -x build-xcframework.sh
+
+      - name: build-xcframework.sh ${{ env.BUILDS }}
+        if: steps.rel.outputs.published == 'false'
+        working-directory: llama.cpp
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2086
+          ./build-xcframework.sh $BUILDS
+
+      - name: check slices + zip + checksum
+        if: steps.rel.outputs.published == 'false'
+        id: zip
+        working-directory: llama.cpp
+        run: |
+          set -euo pipefail
+          xc=build-apple/llama.xcframework
+          plutil -convert json -o slices.json "$xc/Info.plist"
+          python3 - <<'PY'
+          import json, sys
+          libs = json.load(open("slices.json"))["AvailableLibraries"]
+          got = sorted(l["LibraryIdentifier"] for l in libs)
+          print("slices:", got)
+          need = ["ios-arm64", "ios-arm64_x86_64-simulator", "macos-arm64_x86_64"]
+          if got != need:
+              sys.exit(f"::error::expected slices {need}, got {got}")
+          PY
+          for f in "$xc"/ios-arm64_x86_64-simulator/llama.framework/llama "$xc"/ios-arm64/llama.framework/llama; do
+            lipo -info "$f"
+          done
+          # Same layout as llama.cpp's own release zip (build-apple/llama.xcframework).
+          zip -q -r -y "../$ASSET" build-apple/llama.xcframework
+          cd ..
+          sha=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+          spm=$(swift package compute-checksum "$ASSET")
+          echo "sha256 $sha"
+          echo "swift package compute-checksum $spm"
+          test "$sha" = "$spm"
+          printf '%s' "$sha" | grep -Eq '^[0-9a-f]{64}$'
+          echo "checksum=$sha" >> "$GITHUB_OUTPUT"
+          echo "size=$(stat -f%z "$ASSET")" >> "$GITHUB_OUTPUT"
+          printf '%s  %s\n' "$sha" "$ASSET" > "$ASSET.sha256"
+
+      - name: upload as workflow artifact too
+        if: steps.rel.outputs.published == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama-b11960-universal-xcframework
+          path: |
+            ${{ env.ASSET }}
+            ${{ env.ASSET }}.sha256
+          if-no-files-found: error
+
+      - name: publish release asset (new release or missing asset only, never clobber)
+        if: steps.rel.outputs.published == 'false'
+        env:
+          SUM: ${{ steps.zip.outputs.checksum }}
+          SIZE: ${{ steps.zip.outputs.size }}
+        run: |
+          set -euo pipefail
+          built=$(date +%Y-%m-%dT%H:%M:%S%z | sed -E 's/([0-9]{2})$/:\1/')
+          cat > notes.md <<NOTES
+          Universal llama.cpp **$LLAMA_TAG** XCFramework for ios/ClarkePocket (SwiftPM binaryTarget).
+
+          | Field | Value |
+          |---|---|
+          | source | https://github.com/$LLAMA_REPO commit \`$LLAMA_SHA\` (tag $LLAMA_TAG) |
+          | built by | ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} |
+          | workflow commit | \`$GITHUB_SHA\` |
+          | built at | $built |
+          | script | \`./build-xcframework.sh $BUILDS\` (llama.cpp's own) |
+          | slices | ios-arm64, ios-arm64_x86_64-simulator, macos-arm64_x86_64 |
+          | asset | $ASSET ($SIZE bytes) |
+          | SwiftPM checksum (sha256) | \`$SUM\` |
+
+          Not a model. No model weights are in this release.
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --title "llama.cpp $LLAMA_TAG universal xcframework (Clarke Pocket)" \
+              --notes-file notes.md
+          fi
+          gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" "$ASSET" "$ASSET.sha256"
+
+      - name: verify the published asset
+        run: |
+          set -euo pipefail
+          rm -rf verify && mkdir verify
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" -p "$ASSET" -D verify
+          sum=$(shasum -a 256 "verify/$ASSET" | awk '{print $1}')
+          digest=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" \
+            --jq ".assets[] | select(.name==\"$ASSET\") | .digest // empty")
+          url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${ASSET}"
+          echo "asset url: $url"
+          echo "sha256:    $sum"
+          echo "gh digest: ${digest:-<none>}"
+          if [ -n "$digest" ]; then test "$digest" = "sha256:$sum"; fi
+          pkg=ios/ClarkePocket/LlamaBinary/Package.swift
+          if grep -q "$url" "$pkg"; then
+            pinned=$(grep -Eo 'checksum: "[0-9a-f]{64}"' "$pkg" | grep -Eo '[0-9a-f]{64}')
+            echo "pinned:    $pinned"
+            test "$pinned" = "$sum" || { echo "::error::Package.swift checksum $pinned != published $sum"; exit 1; }
+          else
+            echo "::notice::$pkg does not point at this release yet"
+          fi
+          {
+            echo "### llama.xcframework release asset"
+            echo "- url: $url"
+            echo "- sha256 / SwiftPM checksum: \`$sum\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -68,7 +68,7 @@ final class HiddenPromptTests: XCTestCase {
         XCTAssertFalse(joined.contains(String(HiddenPrompt.text.prefix(60))))
     }
 
-    /// Source guard: only the model wrapper composes the prompt, and no SwiftUI view, store or
+    /// Source guard: only the model wrappers compose the prompt, and no SwiftUI view, store or
     /// IRC file refers to the prompt text itself. Every rendered/saved/exported/posted string
     /// goes through `HiddenPrompt.redact`.
     func testOnlyTheEngineSeesThePrompt() throws {
@@ -86,7 +86,8 @@ final class HiddenPromptTests: XCTestCase {
             XCTAssertFalse(src.contains(String(HiddenPrompt.text.prefix(48))), "\(name) contains the prompt")
             if src.contains("HiddenPrompt.compose") { composers.append(name) }
         }
-        XCTAssertEqual(composers, ["LlamaEngine.swift"])
+        // Only engine wrappers: LlamaEngine and ChatEngine.swift (ClarkeChatEngine, same system message).
+        XCTAssertEqual(composers.sorted(), ["ChatEngine.swift", "LlamaEngine.swift"])
         // The save, IRC and display paths redact.
         let chatStore = try String(contentsOf: appDir.appendingPathComponent("ChatStore.swift"), encoding: .utf8)
         XCTAssertTrue(chatStore.contains("rawReply: HiddenPrompt.redact(r.text)"))
