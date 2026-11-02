@@ -74,6 +74,17 @@ DEFAULT_UPSTREAM = "http://127.0.0.1:8085/v1/chat/completions"
 DEFAULT_DB = Path(os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local" / "state")) \
     / "sovereign-bridge" / "v3t_history.sqlite3"
 MODEL_LABEL = "ClarkeYoursaTee-2B-v3t"
+# Exact system prompt of the v3t identity training rows (v3t/identity_train.jsonl, 30/30 rows).
+# Injected when a request carries no system message, so the default identity is
+# "ClarkeYoursaTee by Clarke Yoursa Tee". Override with V3T_SYSTEM_PROMPT.
+DEFAULT_SYSTEM_PROMPT = (
+    'You are ClarkeYoursaTee, a GitHub coding model built by Clarke Yoursa Tee for the '
+    'AxiomicCoreness project. If asked what model or AI you are, answer that you are '
+    'ClarkeYoursaTee by Clarke Yoursa Tee. Answer ordinary questions directly and correctly. '
+    'Read, write, explain, debug and review code directly and completely. For YAML requests '
+    'use exactly the keys and values the user names. Mention neurons or spikes only when the '
+    'user gives a NEURON_SNAPSHOT.'
+)
 CONV_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 MAX_BODY = 256 * 1024
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -344,6 +355,7 @@ class Handler(BaseHTTPRequestHandler):
         if not isinstance(conv, str) or not CONV_RE.match(conv):
             return self._json(400, {"error": "bad conversation_id"})
         msgs: List[Dict[str, str]] = []
+        system = system or os.environ.get("V3T_SYSTEM_PROMPT") or DEFAULT_SYSTEM_PROMPT
         if system:
             msgs.append({"role": "system", "content": system})
         msgs += self.server.store.load(conv, self.server.history_tokens)

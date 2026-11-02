@@ -124,7 +124,7 @@ class V3tRouteTest(unittest.TestCase):
         self.assertTrue(out["history_saved"])
         # second turn gets server-side history prepended
         self.req("POST", "/llm/v1/chat/completions", {"conversation_id": "conv-a", "message": "two"}, self.token)
-        self.assertEqual([m["content"] for m in Stub.seen[-1]["messages"]], ["one", "echo:one", "two"])
+        self.assertEqual([m["content"] for m in Stub.seen[-1]["messages"]], [vr.DEFAULT_SYSTEM_PROMPT, "one", "echo:one", "two"])
         code, _, body = self.req("GET", "/llm/history/conv-a", token=self.token)
         msgs = json.loads(body)["messages"]
         self.assertEqual([(m["role"], m["content"]) for m in msgs],
@@ -159,6 +159,19 @@ class V3tRouteTest(unittest.TestCase):
             urllib.request.urlopen(r, timeout=10).read()
         msgs = json.loads(self.req("GET", "/llm/history/shared", token=tok)[2])["messages"]
         self.assertEqual([m["device"] for m in msgs], ["iphone", "iphone", "teavm", "teavm"])
+
+    def test_default_identity_system_prompt_injected(self):
+        self.req("POST", "/llm/v1/chat/completions", {"message": "What model are you?"}, self.token)
+        sent = Stub.seen[-1]["messages"]
+        self.assertEqual(sent[0], {"role": "system", "content": vr.DEFAULT_SYSTEM_PROMPT})
+        self.assertIn("ClarkeYoursaTee by Clarke Yoursa Tee", vr.DEFAULT_SYSTEM_PROMPT)
+        for bad in ("cannot verify", "refuse", "not allowed"):
+            self.assertNotIn(bad, vr.DEFAULT_SYSTEM_PROMPT.lower())
+        # an explicit system message wins
+        self.req("POST", "/llm/v1/chat/completions",
+                 {"messages": [{"role": "system", "content": "custom"}, {"role": "user", "content": "x"}]},
+                 self.token)
+        self.assertEqual(Stub.seen[-1]["messages"][0], {"role": "system", "content": "custom"})
 
     def test_bad_conversation_id(self):
         code, _, _ = self.req("POST", "/llm/v1/chat/completions",
