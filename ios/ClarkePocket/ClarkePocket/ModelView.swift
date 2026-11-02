@@ -25,6 +25,8 @@ struct ModelView: View {
                 }
                 section("FILE") { fileState }
                 section("ENGINE") { engineState }
+                ConnectomePanel()
+                RemoteBackendPanel()
                 section("CHAT EXPORT") {
                     Text("Shares the saved chat as Markdown: your messages and the answers, without the thinking. The app's built-in system prompt is never included.")
                         .foregroundColor(Theme.system)

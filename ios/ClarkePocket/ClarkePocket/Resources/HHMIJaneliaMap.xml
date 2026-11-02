@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLACEHOLDER. This is NOT HHMI Janelia FlyEM hemibrain data.
+  A hand-written 3-neuron ring (A -> B -> C -> A) in the project-local
+  format read by com.fruitfly.brain.ConnectomeLoader. The real hemibrain
+  bulk export is CSV (neurons / connections tables) and would need a
+  separate CSV loader or a conversion step to this format.
+-->
+<hemibrain>
+    <neuron id="A"/>
+    <neuron id="B"/>
+    <neuron id="C"/>
+
+    <connection from="A" to="B" weight="1.0"/>
+    <connection from="B" to="C" weight="0.8"/>
+    <connection from="C" to="A" weight="0.5"/>
+</hemibrain>
