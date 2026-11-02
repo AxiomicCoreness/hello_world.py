@@ -166,7 +166,7 @@ jobs:
               "CFBundlePackageType": "APPL",
               "CFBundleShortVersionString": "1.0",
               "CFBundleVersion": "1",
-              "MinimumOSVersion": "16.4",
+              "MinimumOSVersion": "17.0",
               "UIDeviceFamily": [1],
           }
           bad = [f"{k}={p.get(k)!r} (want {v!r})" for k, v in want.items() if p.get(k) != v]
