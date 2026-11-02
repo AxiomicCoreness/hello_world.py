@@ -25,3 +25,15 @@ TeaVM page  (/v3t …)        ──┼─ https://bridge.axiomiccoreness.com �
 `bridge.axiomiccoreness.com` is **not** currently routed to the serving box (no tunnel runs; the
 box's outbound network has blocked Cloudflare tunnel edges before). Until a tunnel or reverse proxy
 that terminates TLS and forwards `/llm/*` to `127.0.0.1:8087` is in place, only loopback clients work.
+
+## Time and web tools
+
+* Every request gets the v3t identity prompt (if none was sent), a tool few-shot, and a fresh
+  `Current time: <America/New_York ±hh:mm> (UTC …Z)` line.
+* llama-server 8085 uses `chat-templates/clarkeyoursatee-v3t-time.jinja` (run with
+  `TZ=America/New_York … --jinja --chat-template-file …`), so its built-in UI also defaults to the
+  identity and the current time (UTC computed from `strftime_now('%s')`).
+* Tools: `web_fetch(url)` / `web_search(query)` in Qwen `<tool_call>` format, up to 3 rounds.
+  http(s) only, 512 KiB cap, 10 s timeout, public addresses only (checked on resolve and on the
+  connected peer, every redirect), User-Agent only. `V3T_FETCH_ALLOW_NETS` is an explicit opt-in for
+  a sandbox resolver that maps names into a reserved range (e.g. `198.18.0.0/15`); loopback stays blocked.

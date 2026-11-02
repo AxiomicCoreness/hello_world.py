@@ -60,10 +60,12 @@ from urllib.parse import urlsplit
 try:  # package import (tests, ``python -m src.v3t_route``)
     from . import device_tokens as dt
     from . import llm_history_sqlite as hs
+    from . import v3t_tools as vt
 except ImportError:  # pragma: no cover - direct script run
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from src import device_tokens as dt  # type: ignore
     from src import llm_history_sqlite as hs  # type: ignore
+    from src import v3t_tools as vt  # type: ignore
 
 logger = logging.getLogger("sovereign-irc-bridge.v3t")
 
@@ -243,7 +245,8 @@ class V3tServer(ThreadingHTTPServer):
 
     def __init__(self, host: str, port: int, store: V3tStore, *, upstream: str = DEFAULT_UPSTREAM,
                  model_sha: Optional[str] = None, cors_origins=DEFAULT_CORS,
-                 history_tokens: int = 2500, timeout_s: float = 180.0, opener=None) -> None:
+                 history_tokens: int = 2500, timeout_s: float = 180.0, opener=None,
+                 clock=None, tools=None, max_tool_rounds: int = 3) -> None:
         require_loopback_host(host)
         self.address_family = __import__("socket").AF_INET6 if ":" in host else __import__("socket").AF_INET
         self.store = store
@@ -253,6 +256,9 @@ class V3tServer(ThreadingHTTPServer):
         self.history_tokens = history_tokens
         self.timeout_s = timeout_s
         self.opener = opener or urllib.request.urlopen
+        self.clock = clock or vt.utc_now          # fresh time on every request (injectable in tests)
+        self.tools = tools                        # None → real web_fetch / web_search
+        self.max_tool_rounds = max_tool_rounds
         super().__init__((host, port), Handler)
 
 
@@ -356,35 +362,67 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(400, {"error": "bad conversation_id"})
         msgs: List[Dict[str, str]] = []
         system = system or os.environ.get("V3T_SYSTEM_PROMPT") or DEFAULT_SYSTEM_PROMPT
-        if system:
-            msgs.append({"role": "system", "content": system})
+        system = system + vt.TOOLS_PROMPT + "\n" + vt.now_line(self.server.clock())
+        msgs.append({"role": "system", "content": system})
         msgs += self.server.store.load(conv, self.server.history_tokens)
         msgs.append({"role": "user", "content": user})
-        up: Dict[str, Any] = {"model": "local-gguf", "messages": msgs,
-                              "stream": bool(body.get("stream"))}
+        stream = bool(body.get("stream"))
+        params: Dict[str, Any] = {}
         for k in ("max_tokens", "temperature", "top_p"):
             if isinstance(body.get(k), (int, float)) and not isinstance(body.get(k), bool):
-                up[k] = body[k]
-        req = urllib.request.Request(self.server.upstream, data=json.dumps(up).encode("utf-8"),
-                                     headers={"Content-Type": "application/json"}, method="POST")
-        try:
-            resp = self.server.opener(req, timeout=self.server.timeout_s)
-        except (urllib.error.URLError, OSError) as exc:
-            return self._json(502, {"error": f"upstream offline: {type(exc).__name__}"})
-        with resp:
-            if up["stream"]:
-                return self._stream(resp, conv, device, user)
+                params[k] = body[k]
+        tool_log: List[Dict[str, str]] = []
+        out: Dict[str, Any] = {}
+        msg: Dict[str, Any] = {}
+        reply = ""
+        for _round in range(self.server.max_tool_rounds + 1):
+            up = {"model": "local-gguf", "messages": msgs, "stream": False, **params}
             try:
-                out = json.loads(resp.read().decode("utf-8"))
-                msg = out["choices"][0]["message"]
-                reply = msg.get("content") or ""
-            except Exception:
+                out, msg = self._upstream(up)
+            except (urllib.error.URLError, OSError) as exc:
+                return self._json(502, {"error": f"upstream offline: {type(exc).__name__}"})
+            except ValueError:
                 return self._json(502, {"error": "bad upstream reply"})
+            reply = msg.get("content") or ""
+            call = vt.parse_tool_call(reply)
+            if call is None or _round == self.server.max_tool_rounds:
+                break
+            name, args = call
+            result = vt.run_tool(name, args, self.server.tools)
+            tool_log.append({"name": name, "arguments": json.dumps(args)[:300], "result": result[:300]})
+            msgs = msgs + [{"role": "assistant", "content": reply},
+                           {"role": "user", "content": f"<tool_response>{result}</tool_response>"}]
         thinking = msg.get("reasoning_content") if isinstance(msg, dict) else None
         saved = self.server.store.save_turn(conv, device, user, reply, self.server.model_sha, thinking)
+        if stream:  # tool loop runs first, then the final answer is sent as SSE
+            return self._sse_final(conv, reply, saved)
         out["conversation_id"] = conv
         out["history_saved"] = saved
+        out["tool_calls_run"] = tool_log
         self._json(200, out, {"X-Conversation-Id": conv})
+
+    def _upstream(self, up: Dict[str, Any]):
+        req = urllib.request.Request(self.server.upstream, data=json.dumps(up).encode("utf-8"),
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with self.server.opener(req, timeout=self.server.timeout_s) as resp:
+            try:
+                out = json.loads(resp.read().decode("utf-8"))
+                return out, out["choices"][0]["message"]
+            except Exception as exc:
+                raise ValueError("bad upstream reply") from exc
+
+    def _sse_final(self, conv: str, reply: str, saved: bool) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Conversation-Id", conv)
+        self._cors()
+        events = [{"choices": [{"delta": {"content": reply}}]},
+                  {"conversation_id": conv, "history_saved": saved}]
+        data = b"".join(b"data: " + json.dumps(e).encode() + b"\n\n" for e in events) + b"data: [DONE]\n\n"
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def _stream(self, resp, conv: str, device: str, user: str) -> None:
         self.send_response(200)

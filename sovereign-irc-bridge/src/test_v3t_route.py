@@ -23,6 +23,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src import device_tokens as dt  # noqa: E402
 from src import v3t_route as vr  # noqa: E402
 
+from datetime import datetime, timezone  # noqa: E402
+
+FAKE_NOW = datetime(2026, 7, 4, 16, 5, 9, tzinfo=timezone.utc)  # EDT (-04:00)
 SHA = "717a893e53218604395b07f073c106e79c4356fbc95282f97873bd3d57be6fcf"
 
 
@@ -36,6 +39,11 @@ class Stub(BaseHTTPRequestHandler):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         Stub.seen.append(body)
         last = body["messages"][-1]["content"]
+        if last == "use tool":
+            last = '<tool_call>{"name": "web_fetch", "arguments": {"url": "https://example.com"}}</tool_call>'
+            data = json.dumps({"choices": [{"message": {"role": "assistant", "content": last}}]}).encode()
+            self.send_response(200); self.send_header("Content-Length", str(len(data))); self.end_headers()
+            self.wfile.write(data); return
         if body.get("stream"):
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream")
@@ -64,9 +72,12 @@ class V3tRouteTest(unittest.TestCase):
         threading.Thread(target=cls.up.serve_forever, daemon=True).start()
         cls.store = vr.V3tStore(cls.db)
         cls.token = cls.store.tokens.mint("iphone")
+        cls.fetched = []
         cls.srv = vr.V3tServer("127.0.0.1", 0, cls.store,
                                upstream=f"http://127.0.0.1:{cls.up.server_port}/v1/chat/completions",
-                               model_sha=SHA)
+                               model_sha=SHA, clock=lambda: FAKE_NOW,
+                               tools={"web_fetch": lambda a: cls.fetched.append(a) or "PAGE TEXT",
+                                      "web_search": lambda a: "RESULTS"})
         threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
         cls.base = f"http://127.0.0.1:{cls.srv.server_port}"
 
@@ -124,7 +135,9 @@ class V3tRouteTest(unittest.TestCase):
         self.assertTrue(out["history_saved"])
         # second turn gets server-side history prepended
         self.req("POST", "/llm/v1/chat/completions", {"conversation_id": "conv-a", "message": "two"}, self.token)
-        self.assertEqual([m["content"] for m in Stub.seen[-1]["messages"]], [vr.DEFAULT_SYSTEM_PROMPT, "one", "echo:one", "two"])
+        sent = Stub.seen[-1]["messages"]
+        self.assertTrue(sent[0]["content"].startswith(vr.DEFAULT_SYSTEM_PROMPT))
+        self.assertEqual([m["content"] for m in sent[1:]], ["one", "echo:one", "two"])
         code, _, body = self.req("GET", "/llm/history/conv-a", token=self.token)
         msgs = json.loads(body)["messages"]
         self.assertEqual([(m["role"], m["content"]) for m in msgs],
@@ -163,7 +176,7 @@ class V3tRouteTest(unittest.TestCase):
     def test_default_identity_system_prompt_injected(self):
         self.req("POST", "/llm/v1/chat/completions", {"message": "What model are you?"}, self.token)
         sent = Stub.seen[-1]["messages"]
-        self.assertEqual(sent[0], {"role": "system", "content": vr.DEFAULT_SYSTEM_PROMPT})
+        self.assertTrue(sent[0]["content"].startswith(vr.DEFAULT_SYSTEM_PROMPT))
         self.assertIn("ClarkeYoursaTee by Clarke Yoursa Tee", vr.DEFAULT_SYSTEM_PROMPT)
         for bad in ("cannot verify", "refuse", "not allowed"):
             self.assertNotIn(bad, vr.DEFAULT_SYSTEM_PROMPT.lower())
@@ -171,7 +184,21 @@ class V3tRouteTest(unittest.TestCase):
         self.req("POST", "/llm/v1/chat/completions",
                  {"messages": [{"role": "system", "content": "custom"}, {"role": "user", "content": "x"}]},
                  self.token)
-        self.assertEqual(Stub.seen[-1]["messages"][0], {"role": "system", "content": "custom"})
+        self.assertTrue(Stub.seen[-1]["messages"][0]["content"].startswith("custom\n"))
+
+    def test_fake_clock_time_line_in_system_prompt(self):
+        self.req("POST", "/llm/v1/chat/completions", {"message": "time?"}, self.token)
+        sysmsg = Stub.seen[-1]["messages"][0]["content"]
+        self.assertIn("Current time: 2026-07-04T12:05:09-04:00 (UTC 2026-07-04T16:05:09Z). "
+                      "Always write timestamps in ISO 8601 with explicit offset.", sysmsg)
+
+    def test_tool_call_is_run_and_fed_back(self):
+        code, _, body = self.req("POST", "/llm/v1/chat/completions", {"message": "use tool"}, self.token)
+        out = json.loads(body)
+        self.assertEqual(out["tool_calls_run"][0]["name"], "web_fetch")
+        self.assertEqual(self.fetched[-1], {"url": "https://example.com"})
+        self.assertEqual(Stub.seen[-1]["messages"][-1]["content"], "<tool_response>PAGE TEXT</tool_response>")
+        self.assertEqual(out["choices"][0]["message"]["content"], "echo:<tool_response>PAGE TEXT</tool_response>")
 
     def test_bad_conversation_id(self):
         code, _, _ = self.req("POST", "/llm/v1/chat/completions",
