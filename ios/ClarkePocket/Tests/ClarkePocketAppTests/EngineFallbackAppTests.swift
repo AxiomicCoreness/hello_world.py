@@ -40,7 +40,7 @@ final class EngineFallbackAppTests: XCTestCase {
         XCTAssertEqual(engines.map { $0.kind }, [.mlx, .clarke, .llamaCpp])
         do {
             _ = try await MLXEngine().load(directory: FileManager.default.temporaryDirectory)
-            XCTFail("MLX must not claim to load in this build")
+            XCTFail("MLX must not claim to load in the Simulator")
         } catch let e as MLXEngineError {
             XCTAssertTrue("\(e)".hasPrefix("MLX unavailable"))
         } catch {

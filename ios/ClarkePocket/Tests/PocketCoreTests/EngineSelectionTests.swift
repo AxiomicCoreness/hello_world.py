@@ -69,6 +69,9 @@ final class EngineSelectionTests: XCTestCase {
         // Files absent on this machine: never reported as verified.
         XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory.appendingPathComponent("none-\(UUID().uuidString)"), pin: pin), .missing("config.json"))
         XCTAssertEqual(MLXModelState.check(dir: FileManager.default.temporaryDirectory, pin: nil), .notPublished)
+        XCTAssertEqual(pin.url(for: pin.files[1]).absoluteString,
+                       "https://github.com/AxiomicCoreness/hello_world.py/releases/download/pocket-mlx-clarke-1p5b-4bit/model.safetensors")
+        XCTAssertEqual(pin.totalBytes, 1_011_388_970)
         XCTAssertEqual(ModelPin.selected, ModelPinSpec.deepseekR2_1p5b)
     }
 

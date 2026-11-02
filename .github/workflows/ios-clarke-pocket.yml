@@ -53,7 +53,7 @@ jobs:
 
   app-macos:
     name: core tests + iOS device build (macOS, unsigned)
-    runs-on: macos-15
+    runs-on: macos-latest   # Xcode 26: mlx-swift-lm needs swift-tools 6.2
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +72,8 @@ jobs:
           brew install xcodegen
           xcodegen --version
           xcodegen generate
+          # MLX Swift compiles Metal shaders; Xcode 26 ships the Metal toolchain as a separate component.
+          xcodebuild -downloadComponent MetalToolchain
       - name: xcodebuild (generic iOS device, no signing)
         working-directory: ios/ClarkePocket
         run: |

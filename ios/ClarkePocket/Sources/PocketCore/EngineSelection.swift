@@ -78,6 +78,11 @@ public struct MLXModelPinSpec: Equatable, Sendable {
         self.files = files
         self.label = label
     }
+    /// Release download URL of one file of this pin (this repo's own GitHub release).
+    public func url(for file: MLXModelFile) -> URL {
+        URL(string: "https://github.com/AxiomicCoreness/hello_world.py/releases/download/\(releaseTag)/\(file.name)")!
+    }
+    public var totalBytes: Int64 { files.reduce(0) { $0 + $1.sizeBytes } }
 }
 
 public enum MLXModelPin {
