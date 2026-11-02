@@ -48,7 +48,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 45
     env:
-      MIN_TESTS: "74"
+      MIN_TESTS: "75"
     steps:
       - uses: actions/checkout@v4
       - name: toolchain
