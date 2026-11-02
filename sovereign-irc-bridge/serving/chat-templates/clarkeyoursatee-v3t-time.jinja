@@ -1,0 +1,68 @@
+{%- set _z = strftime_now('%z') -%}
+{%- set _s = strftime_now('%s') | int -%}
+{%- set _d = (_s / 86400) | int -%}{%- set _r = _s - _d * 86400 -%}
+{%- set _zz = _d + 719468 -%}{%- set _era = (_zz / 146097) | int -%}{%- set _doe = _zz - _era * 146097 -%}
+{%- set _yoe = ((_doe - ((_doe / 1460) | int) + ((_doe / 36524) | int) - ((_doe / 146096) | int)) / 365) | int -%}
+{%- set _doy = _doe - (365 * _yoe + ((_yoe / 4) | int) - ((_yoe / 100) | int)) -%}
+{%- set _mp = ((5 * _doy + 2) / 153) | int -%}
+{%- set _dd = _doy - (((153 * _mp + 2) / 5) | int) + 1 -%}
+{%- set _mm = _mp + 3 if _mp < 10 else _mp - 9 -%}
+{%- set _yy = _yoe + _era * 400 + (1 if _mm <= 2 else 0) -%}
+{%- set _hh = (_r / 3600) | int -%}{%- set _mi = ((_r - _hh * 3600) / 60) | int -%}{%- set _ss = _r - _hh * 3600 - _mi * 60 -%}
+{%- set _p = ['00','01','02','03','04','05','06','07','08','09'] -%}
+{%- set _utc = _yy|string + '-' + (_p[_mm] if _mm < 10 else _mm|string) + '-' + (_p[_dd] if _dd < 10 else _dd|string) + 'T' + (_p[_hh] if _hh < 10 else _hh|string) + ':' + (_p[_mi] if _mi < 10 else _mi|string) + ':' + (_p[_ss] if _ss < 10 else _ss|string) + 'Z' -%}
+{%- set _now_line = '\nCurrent time: ' + strftime_now('%Y-%m-%dT%H:%M:%S') + _z[:3] + ':' + _z[3:] + ' (UTC ' + _utc + '). Always write timestamps in ISO 8601 with explicit offset.' -%}
+{%- if tools %}
+    {{- '<|im_start|>system\n' }}
+    {%- if messages[0]['role'] == 'system' %}
+        {{- messages[0]['content'] }}{%- if 'Current time:' not in messages[0]['content'] %}{{- _now_line }}{%- endif %}
+    {%- else %}
+        {{- 'You are ClarkeYoursaTee, a GitHub coding model built by Clarke Yoursa Tee for the AxiomicCoreness project. If asked what model or AI you are, answer that you are ClarkeYoursaTee by Clarke Yoursa Tee. Answer ordinary questions directly and correctly. Read, write, explain, debug and review code directly and completely. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT.' + _now_line }}
+    {%- endif %}
+    {{- "\n\n# Tools\n\nYou may call one or more functions to assist with the user query.\n\nYou are provided with function signatures within <tools></tools> XML tags:\n<tools>" }}
+    {%- for tool in tools %}
+        {{- "\n" }}
+        {{- tool | tojson }}
+    {%- endfor %}
+    {{- "\n</tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n</tool_call><|im_end|>\n" }}
+{%- else %}
+    {%- if messages[0]['role'] == 'system' %}
+        {{- '<|im_start|>system\n' + messages[0]['content'] + ('' if 'Current time:' in messages[0]['content'] else _now_line) + '<|im_end|>\n' }}
+    {%- else %}
+        {{- '<|im_start|>system\nYou are ClarkeYoursaTee, a GitHub coding model built by Clarke Yoursa Tee for the AxiomicCoreness project. If asked what model or AI you are, answer that you are ClarkeYoursaTee by Clarke Yoursa Tee. Answer ordinary questions directly and correctly. Read, write, explain, debug and review code directly and completely. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT.' + _now_line + '<|im_end|>\n' }}
+    {%- endif %}
+{%- endif %}
+{%- for message in messages %}
+    {%- if (message.role == "user") or (message.role == "system" and not loop.first) or (message.role == "assistant" and not message.tool_calls) %}
+        {{- '<|im_start|>' + message.role + '\n' + message.content + '<|im_end|>' + '\n' }}
+    {%- elif message.role == "assistant" %}
+        {{- '<|im_start|>' + message.role }}
+        {%- if message.content %}
+            {{- '\n' + message.content }}
+        {%- endif %}
+        {%- for tool_call in message.tool_calls %}
+            {%- if tool_call.function is defined %}
+                {%- set tool_call = tool_call.function %}
+            {%- endif %}
+            {{- '\n<tool_call>\n{"name": "' }}
+            {{- tool_call.name }}
+            {{- '", "arguments": ' }}
+            {{- tool_call.arguments | tojson }}
+            {{- '}\n</tool_call>' }}
+        {%- endfor %}
+        {{- '<|im_end|>\n' }}
+    {%- elif message.role == "tool" %}
+        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != "tool") %}
+            {{- '<|im_start|>user' }}
+        {%- endif %}
+        {{- '\n<tool_response>\n' }}
+        {{- message.content }}
+        {{- '\n</tool_response>' }}
+        {%- if loop.last or (messages[loop.index0 + 1].role != "tool") %}
+            {{- '<|im_end|>\n' }}
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
+{%- if add_generation_prompt %}
+    {{- '<|im_start|>assistant\n' }}
+{%- endif %}

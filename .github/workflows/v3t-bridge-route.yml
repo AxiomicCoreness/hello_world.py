@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+# Offline tests for the authenticated v3t /llm route (stdlib only: python -I, no pip installs).
+# No artifacts are uploaded: chat history never leaves the box.
+name: v3t bridge route
+on:
+  pull_request:
+    paths:
+      - "sovereign-irc-bridge/src/v3t_route.py"
+      - "sovereign-irc-bridge/src/device_tokens.py"
+      - "sovereign-irc-bridge/src/test_v3t_route.py"
+      - "sovereign-irc-bridge/src/v3t_tools.py"
+      - "sovereign-irc-bridge/src/test_v3t_tools.py"
+      - "sovereign-irc-bridge/src/llm_history_sqlite.py"
+      - ".github/workflows/v3t-bridge-route.yml"
+  push:
+    branches: [main]
+    paths:
+      - "sovereign-irc-bridge/src/v3t_route.py"
+      - "sovereign-irc-bridge/src/device_tokens.py"
+      - "sovereign-irc-bridge/src/test_v3t_route.py"
+      - "sovereign-irc-bridge/src/v3t_tools.py"
+      - "sovereign-irc-bridge/src/test_v3t_tools.py"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: v3t route tests (auth, history, loopback bind, CORS)
+        run: python -I sovereign-irc-bridge/src/test_v3t_route.py
+      - name: v3t tools tests (fake clock ISO 8601, SSRF blocks)
+        run: python -I sovereign-irc-bridge/src/test_v3t_tools.py
