@@ -9,7 +9,9 @@ import com.fruitfly.games.rhythm.client.ide.TracebackFeedback;
 import com.fruitfly.games.rhythm.client.irc.IrcWsProtocol;
 import com.fruitfly.games.rhythm.client.irc.IrcWsSession;
 import com.fruitfly.games.rhythm.client.llm.LlmCli;
+import com.fruitfly.games.rhythm.client.llm.V3tCli;
 import com.fruitfly.games.rhythm.web.Dom;
+import com.fruitfly.games.rhythm.web.V3tHttp;
 import java.util.Collections;
 import java.util.function.Supplier;
 import org.teavm.jso.dom.events.Event;
@@ -199,6 +201,7 @@ public final class CliClient {
         appendRaw(CliLines.format(CliLines.KIND_SYSTEM,
                 "demos: /py deepinfer · /py katex (KaTeXMacroSetTest) · Traceback on fail"));
         appendRaw(LlmCli.helpLine());
+        append(CliLines.KIND_SYSTEM, V3tCli.helpLine());
         appendRaw(CliLines.pagesHttpsHint());
     }
 
@@ -372,6 +375,13 @@ public final class CliClient {
 
     /** Append a User line; IDE commands run offline and/or over the loopback WS. */
     public void sendUser(String text) {
+        if (V3tCli.isV3tLine(text)) {
+            // Works in both bridge and direct-IRC mode; a token line is never echoed.
+            append(CliLines.KIND_USER, V3tCli.isSecretLine(text) ? "/v3t token \u2022\u2022\u2022" : text);
+            sendV3t(text);
+            scrollToEnd();
+            return;
+        }
         if (irc != null) {
             // Chat / IRC commands echo as [IRC] lines from the session; echo local-only ones here.
             if (PythonIdeCli.isIdeLine(text) || text.trim().equalsIgnoreCase("/reconnect")) {
@@ -424,6 +434,74 @@ public final class CliClient {
                             : "not connected — bridge " + wsUrl + " is not open");
         }
         scrollToEnd();
+    }
+
+    /** Current shared v3t conversation id (server-side history), or null for a new one. */
+    private String v3tConversation;
+
+    /** /v3t: owner token from localStorage → authenticated bridge route → llama-server v3t. */
+    private void sendV3t(String text) {
+        V3tCli.Command cmd = V3tCli.parse(text);
+        String base = V3tCli.resolveBase(Dom.locationHostname(), V3tHttp.queryOverride());
+        switch (cmd.kind) {
+            case HELP:
+                append(CliLines.KIND_SYSTEM, V3tCli.helpLine() + " · route " + base);
+                return;
+            case TOKEN:
+                if (!V3tCli.validToken(cmd.arg)) {
+                    append(CliLines.KIND_SYSTEM, "v3t: that is not an owner token (cyt_\u2026)");
+                    return;
+                }
+                append(CliLines.KIND_SYSTEM, V3tHttp.storeToken(V3tCli.TOKEN_KEY, cmd.arg)
+                        ? "v3t: owner token saved in this browser's localStorage only"
+                        : "v3t: localStorage unavailable; token not saved");
+                return;
+            case FORGET:
+                V3tHttp.storeToken(V3tCli.TOKEN_KEY, "");
+                append(CliLines.KIND_SYSTEM, "v3t: token removed from this browser");
+                return;
+            case NEW:
+                v3tConversation = null;
+                append(CliLines.KIND_SYSTEM, "v3t: new conversation");
+                return;
+            default:
+                break;
+        }
+        String token = V3tHttp.loadToken(V3tCli.TOKEN_KEY);
+        if (token == null || token.isEmpty()) {
+            append(CliLines.KIND_SYSTEM, "v3t: no owner token in this browser \u2013 /v3t token <owner token>");
+            return;
+        }
+        if (cmd.kind == V3tCli.Kind.HISTORY) {
+            V3tHttp.call(base + V3tCli.HISTORY_PATH, token, null, (ok, out, conv) -> {
+                append(CliLines.KIND_SYSTEM, (ok ? "v3t shared history:\n" : "") + out);
+                scrollToEnd();
+            });
+            return;
+        }
+        if (cmd.kind == V3tCli.Kind.OPEN) {
+            if (!V3tCli.validConversationId(cmd.arg)) {
+                append(CliLines.KIND_SYSTEM, "v3t: bad conversation id");
+                return;
+            }
+            V3tHttp.call(base + V3tCli.HISTORY_PATH + "/" + cmd.arg, token, null, (ok, out, conv) -> {
+                if (ok) {
+                    v3tConversation = cmd.arg;
+                }
+                append(CliLines.KIND_SYSTEM, out);
+                scrollToEnd();
+            });
+            return;
+        }
+        append(CliLines.KIND_SYSTEM, "v3t \u2192 " + base + " \u2026");
+        V3tHttp.call(base + V3tCli.CHAT_PATH, token, V3tCli.chatBody(cmd.arg, v3tConversation),
+                (ok, out, conv) -> {
+                    if (ok && conv != null && !conv.isEmpty()) {
+                        v3tConversation = conv;
+                    }
+                    append(ok ? CliLines.KIND_ENGINE : CliLines.KIND_SYSTEM, ok ? "v3t: " + out : out);
+                    scrollToEnd();
+                });
     }
 
     /** /llm: prompt + live spike snapshot + traceback feedback → bridge → llama-server. */
