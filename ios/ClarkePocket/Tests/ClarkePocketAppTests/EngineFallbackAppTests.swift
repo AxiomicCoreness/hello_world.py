@@ -11,10 +11,13 @@ final class EngineFallbackAppTests: XCTestCase {
     func testSimulatorSelectsLlamaFallback() {
         let env = EngineDetector.environment()
         XCTAssertTrue(env.isSimulator)
-        XCTAssertFalse(env.mlxLinked)
+        // MLX Swift is linked into this build, but must never be selected in the Simulator.
+        XCTAssertTrue(env.mlxLinked)
+        XCTAssertEqual(EngineSelector.mlxBlocker(env), "MLX does not run in the iOS Simulator")
         XCTAssertEqual(env.clarkeModel, .noFile)   // fresh Simulator: no GGUF downloaded
         let c = EngineSelector.choose(.automatic, env)
         XCTAssertEqual(c.active, .llamaCpp)
+        XCTAssertNotEqual(c.active, .mlx)
         XCTAssertTrue(c.isFallback)
     }
 
