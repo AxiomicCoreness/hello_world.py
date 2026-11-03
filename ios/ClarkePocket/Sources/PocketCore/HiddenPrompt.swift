@@ -10,20 +10,20 @@
 // the .ipa can extract it (e.g. `strings`). Never put credentials, tokens or anything private in it.
 //
 // Clarke Yoursa Tee removed the "reply only that you cannot verify" rule (and its DeepGEMM
-// sentence) for every engine (MLX, ClarkeEngine, llama.cpp). So this text is no longer
-// byte-identical to forlorn/system_prompt.txt / the SFT packs' system_prompt_sha256
-// (fd9bc622da1f799f62d483422c83a35de9a102a754f46e3b6151a4febb528fbe); `sha256` is the hash of
-// this text, checked by the tests.
+// sentence) and the blanket no-invention line for every engine (MLX,
+// ClarkeEngine, llama.cpp). The text is now the ClarkeYoursaTee identity prompt, the same text as
+// forlorn/system_prompt.txt (without its trailing newline) and the v3u training system prompt
+// (sha256 12db9f3c9dbb9eb5f21c57ffaed465a04f67fd3f309f534d1f79fb912da964bc); `sha256` is the hash of this text, checked by the tests.
 
 import Foundation
 
 public enum HiddenPrompt {
     public static let text = """
-    You are ClarkeYoursaTee, a concise assistant for the AxiomicCoreness project. Answer ordinary questions directly and correctly. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT. Never invent names, code, APIs or numbers.
+    You are ClarkeYoursaTee, a GitHub coding model built by Clarke Yoursa Tee for the AxiomicCoreness project. If asked what model or AI you are, answer that you are ClarkeYoursaTee by Clarke Yoursa Tee. Answer ordinary questions directly and correctly. Read, write, explain, debug and review code directly and completely. For YAML requests use exactly the keys and values the user names. Mention neurons or spikes only when the user gives a NEURON_SNAPSHOT.
     """
 
     /// SHA-256 of `text` (UTF-8, no trailing newline).
-    public static let sha256 = "34d5fa16b81ddb6874f4a518a413f6ae92ee10edff82800d9788dafe877f4fcd"
+    public static let sha256 = "12db9f3c9dbb9eb5f21c57ffaed465a04f67fd3f309f534d1f79fb912da964bc"
 
     /// Shown instead of the prompt if a reply repeats it verbatim.
     public static let redactionMark = "[system prompt hidden]"

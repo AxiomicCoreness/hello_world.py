@@ -14,7 +14,7 @@ final class HiddenPromptTests: XCTestCase {
     func testNoCannotVerifyOrRefusalRule() {
         let t = HiddenPrompt.text.lowercased()
         for banned in ["cannot verify", "can't verify", "reply only", "do not know", "don't know",
-                       "you never state", "never seen", "deepgemm", "refuse", "decline", "not allowed"] {
+                       "you never state", "never state their code", "never invent names", "never seen", "deepgemm", "refuse", "decline", "not allowed"] {
             XCTAssertFalse(t.contains(banned), "hidden prompt still contains \"\(banned)\"")
         }
     }

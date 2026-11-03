@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: MIT
 """training/lessons/*.jsonl must match the deepseek-r2 tutor's chat format.
 
-Stdlib json only; runs under `python -I -m pytest`. The tutor's train.jsonl
+Stdlib json only; runs under `python -I -m pytest`. The tutor's cleaned train_clean.jsonl
 lives outside the repo, so its line-1 system prompt is pinned by sha256 here and
 also compared directly when the file is present ($TUTOR_TRAIN_JSONL, default
-/workspace/llama/deepseek-r2/train.jsonl).
+/workspace/llama/deepseek-r2/train_clean.jsonl).
 """
 from __future__ import annotations
 
@@ -21,8 +21,9 @@ LESSON_FILES = [
     ROOT / "training" / "lessons" / "2026-10-30-ci-lessons.jsonl",
     ROOT / "training" / "lessons" / "2026-10-30-ledger-dynamics.jsonl",
 ]
-SYSTEM_SHA256 = "fd9bc622da1f799f62d483422c83a35de9a102a754f46e3b6151a4febb528fbe"
-TRAIN = Path(os.environ.get("TUTOR_TRAIN_JSONL", "/workspace/llama/deepseek-r2/train.jsonl"))
+SYSTEM_SHA256 = "12db9f3c9dbb9eb5f21c57ffaed465a04f67fd3f309f534d1f79fb912da964bc"  # ClarkeYoursaTee identity prompt (restriction lines removed)
+BANNED_PHRASES = ("never invent names", "never state their code")
+TRAIN = Path(os.environ.get("TUTOR_TRAIN_JSONL", "/workspace/llama/deepseek-r2/train_clean.jsonl"))
 
 
 def _rows(lessons):
@@ -55,6 +56,20 @@ def test_system_prompt_matches_train_jsonl_when_present(lessons):
     with TRAIN.open(encoding="utf-8") as fh:
         want = json.loads(fh.readline())["messages"][0]["content"]
     assert {r["messages"][0]["content"] for r in _rows(lessons)} == {want}
+
+
+@pytest.mark.parametrize("lessons", LESSON_FILES, ids=lambda p: p.name)
+def test_no_restriction_lines_anywhere(lessons):
+    text = lessons.read_text(encoding="utf-8").lower()
+    for phrase in BANNED_PHRASES:
+        assert phrase not in text, phrase
+
+
+def test_forlorn_system_prompt_has_no_restriction_lines():
+    text = (ROOT / "forlorn" / "system_prompt.txt").read_text(encoding="utf-8")
+    assert hashlib.sha256(text.rstrip("\n").encode("utf-8")).hexdigest() == SYSTEM_SHA256
+    for phrase in BANNED_PHRASES:
+        assert phrase not in text.lower(), phrase
 
 
 def test_ledger_lessons_cite_existing_sources_on_main():
