@@ -90,6 +90,11 @@ payload:
     tool: "tools/ios_pocket_manifest.py"
     previous_ios_entry: 9309
     previous_tree_root: "8dac18a5fca31706e6820ad33d367a303748757db443c6bceebcfba94d46db56"
+changes:
+  - "added ios/ClarkePocket/ClarkePocket/ServerV3tView.swift (sha256 none -> 7136d3272e19691eaf6befd5dbdb2f1538f30a6141a18c6e6010d26e7e9ff963) in e6072c8e2d9fd82abfdd8c2dc475021edc66fefa (#184)"
+  - "added ios/ClarkePocket/Sources/PocketCore/ServerV3tClient.swift (sha256 none -> dadcd04046cfa495ee77b2412e5a4c5586b5437bf6bb3c67ed71cc468b01eb0c) in e6072c8e2d9fd82abfdd8c2dc475021edc66fefa (#184)"
+  - "added ios/ClarkePocket/Tests/PocketCoreTests/ServerV3tClientTests.swift (sha256 none -> 974bcdddb6ed1aa856cef7063544eebbf180057d06abb1e7eade098f354f78be) in e6072c8e2d9fd82abfdd8c2dc475021edc66fefa (#184)"
+  - "removed: none; modified: none (other 60 files byte-identical to 9309 manifest at 4858f900cc2f6a73e283947036cd2d426ab91093, tree root 8dac18a5fca31706e6820ad33d367a303748757db443c6bceebcfba94d46db56)"
 ci:
   measured_commit: "e6072c8e2d9fd82abfdd8c2dc475021edc66fefa"
   source: "GitHub Actions API actions/runs/41531185948, read 2026-11-02T16:59:48-05:00"
