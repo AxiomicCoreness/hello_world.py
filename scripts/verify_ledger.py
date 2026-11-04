@@ -16,6 +16,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "tools"))
+import ledger_seal  # shared seal core (tools/ledger_seal.py)
+
 SEAL_PREFIX = "∀∞φ²"
 
 def json_default(obj: Any) -> Any:
@@ -60,13 +66,12 @@ def main() -> int:
     print(f"✅ Ledger verified: {path} (entry_index={entry_index})")
 
     if args.verify_seal and entry_index:
-        computed = compute_seal(data)
-        stored_raw = data.get('seal', '')
-        stored = extract_seal_hash(stored_raw)
-        if computed == stored:
-            print(f"✅ Seal verified: {computed[:32]}...")
+        # Shared core: same regimes (A, A_ASCII, B, S) as the CI verifiers.
+        v = ledger_seal.verify_entry(data, entry_index)
+        if v["status"] == ledger_seal.VERIFIED:
+            print(f"✅ Seal verified (regime {','.join(v['regimes'])})")
         else:
-            print(f"❌ Seal mismatch: computed {computed[:32]}... != stored {stored[:32]}...")
+            print(f"❌ Seal {v['status']}: no regime reproduces the declared digest")
             return 1
 
     return 0
