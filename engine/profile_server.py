@@ -165,7 +165,7 @@ class ProfileManager:
             return
 
         try:
-            sock = socket.create_server(("0.0.0.0", self._port))
+            sock = socket.create_server(("127.0.0.1", self._port))
         except OSError as e:
             logger.error(f"profile http server failed to bind port {self._port}: {e}. Profiling API disabled.")
             return
