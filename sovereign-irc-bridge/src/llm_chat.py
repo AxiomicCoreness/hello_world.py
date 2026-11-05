@@ -5,13 +5,13 @@
 Backend selection (see :mod:`src.llm_backend`): LLM_BACKEND=deepinfer (default)
 posts to DEEPINFER_URL; LLM_BACKEND=gguf posts to LLM_URL (llama.cpp). With
 LLM_FALLBACK=gguf an offline DeepInfer hands the turn to the GGUF server and
-the reply is labeled ``backend=qwen`` / ``[Fallback: Qwen]``; with
+the reply is labeled ``backend=gguf`` / ``[Fallback: gguf]``; with
 LLM_FALLBACK=gguf-abliterated (or LLM_BACKEND=gguf-abliterated) it goes to
-LLM_ABLITERATED_URL and is labeled ``backend=qwen-abliterated`` /
-``[Fallback: Qwen2.5-1.5B abliterated]``; with LLM_FALLBACK=clarkeyoursatee (or
+LLM_ABLITERATED_URL and is labeled ``backend=GGUF abliterated`` /
+``[Fallback: GGUF abliterated]``; with LLM_FALLBACK=clarkeyoursatee (or
 LLM_BACKEND=clarkeyoursatee) it goes to LLM_CLARKEYOURSATEE_URL and is labeled
 ``backend=clarkeyoursatee`` /
-``[ClarkeYoursaTee (Qwen2.5-1.5B-Instruct-abliterated derivative)]``. Without a fallback the
+``[ClarkeYoursaTee]``. Without a fallback the
 turn ends with ``[System] llm: deepinfer backend offline (…)``.
 
 The TeaVM chatbox sends one WebSocket frame::
@@ -20,7 +20,7 @@ The TeaVM chatbox sends one WebSocket frame::
     #neuro {...NeuronSnapshot JSON: per-lane LIF-RK4 spike counts / rates...}
     #feedback {...TracebackFeedback JSON: recent CLI traceback reports...}
 
-This module turns that into an OpenAI-style chat request for llama.cpp's
+This module turns that into a chat-completions request for llama.cpp's
 ``llama-server`` (``/v1/chat/completions``) on 127.0.0.1 and returns chat
 lines. It always sends role messages (system + user), never a hand-built
 ``<|im_start|>`` prompt: llama-server renders them with the GGUF's own chat
@@ -603,8 +603,8 @@ def complete(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[st
 
 def complete_routed(messages: List[Dict[str, str]]) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
     """Like complete(), plus route meta. meta["backend"] is the provenance label:
-    "deepinfer", "gguf" (LLM_BACKEND=gguf), "qwen" (GGUF fallback for an offline
-    DeepInfer), "qwen-abliterated" (abliterated Qwen GGUF, direct or fallback) or
+    "deepinfer", "gguf" (LLM_BACKEND=gguf or GGUF fallback for an offline
+    DeepInfer), "GGUF abliterated" (abliterated GGUF, direct or fallback) or
     "clarkeyoursatee" (ClarkeYoursaTee GGUF, direct or fallback)."""
     try:
         be, fb = llm_backend.backend(), llm_backend.fallback()
@@ -677,7 +677,7 @@ def _complete_gguf(messages, label: str):
 
 
 def _complete_abliterated(messages):
-    # Same Qwen chat template family and reply guard as the plain gguf path,
+    # Same ChatML-family GGUF chat template and reply guard as the plain gguf path,
     # but its own server, model name and provenance label.
     reply, err, meta = _complete_at(
         lambda: assert_loopback_url(llm_backend.abliterated_url_raw(), "LLM_ABLITERATED_URL"),
@@ -687,8 +687,7 @@ def _complete_abliterated(messages):
 
 
 def _complete_clarkeyoursatee(messages):
-    # Qwen ChatML family (ClarkeYoursaTee is a Qwen2.5 derivative); own server,
-    # model name and provenance label.
+    # ChatML-family GGUF; own server, model name and provenance label.
     reply, err, meta = _complete_at(
         lambda: assert_loopback_url(llm_backend.clarkeyoursatee_url_raw(), "LLM_CLARKEYOURSATEE_URL"),
         llm_backend.clarkeyoursatee_model(), messages)
@@ -698,7 +697,7 @@ def _complete_clarkeyoursatee(messages):
 
 def _complete_at(url_fn, model: str, messages: List[Dict[str, str]],
                  extra: Optional[Dict[str, Any]] = None) -> Tuple[Optional[str], Optional[str], Dict[str, Any]]:
-    """One OpenAI-style request through the chatml_prebuild routing + guard pipeline."""
+    """One chat-completions request through the chatml_prebuild routing + guard pipeline."""
     meta: Dict[str, Any] = {}
     try:
         url = url_fn()
@@ -736,7 +735,7 @@ def _complete_at(url_fn, model: str, messages: List[Dict[str, str]],
 
 
 def _extract_reasoning(data: Any) -> Optional[str]:
-    """OpenAI-style ``message.reasoning_content`` (DeepSeek-R1 / llama-server)."""
+    """``message.reasoning_content`` reasoning field (DeepSeek-R1 / llama-server)."""
     if not isinstance(data, dict):
         return None
     try:
