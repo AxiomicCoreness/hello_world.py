@@ -63,6 +63,12 @@ except ImportError:
     print("ERROR: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
     sys.exit(2)
 
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[2] / "tools"))
+import ledger_seal  # shared seal core (tools/ledger_seal.py)
+
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 SEAL_TAIL = re.compile(r"·\s*([0-9a-f]{64})\s*$")
 EXCLUDED_FIELDS = ("seal", "seal_sha3_256", "sha3_256", "hash_sha3_256", "hash")
@@ -95,8 +101,9 @@ def canonical_json(obj: Any) -> str:
 
 
 def expected_digest(doc: Dict[str, Any]) -> str:
-    body = {k: v for k, v in doc.items() if k not in EXCLUDED_FIELDS}
-    return hashlib.sha3_256(canonical_json(body).encode("utf-8")).hexdigest()
+    """Regime S — delegated to the shared core (same EXCLUDED_FIELDS)."""
+    assert tuple(EXCLUDED_FIELDS) == ledger_seal.S_EXCLUDED_FIELDS
+    return ledger_seal.regime_s(doc)
 
 
 def find_entries(root: Path) -> List[Path]:

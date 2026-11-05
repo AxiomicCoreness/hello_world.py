@@ -36,6 +36,12 @@ try:
 except ImportError:
     HAVE_YAML = False
 
+
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[2] / "tools"))
+import ledger_seal  # shared seal core (tools/ledger_seal.py)
+
 HASH_ALGO = "sha3_256"
 HASH_RE = re.compile(r"([0-9a-fA-F]{64})")
 
@@ -178,33 +184,14 @@ def load_entries(ledger_dir: str,
     return entries
 
 def canonical_hash(data: dict) -> str:
-    body = {k: v for k, v in data.items() if k != "seal"}
-    canon = json.dumps(
-        body,
-        sort_keys=True,
-        separators=(",", ":"),
-        default=json_default,
-        ensure_ascii=False,
-    )
-    return hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
+    """Regime A — delegated to the shared core."""
+    return ledger_seal.regime_a(data)
 
 def event_hash(data: dict, n: Any = None) -> Optional[str]:
+    """Regime B — delegated to the shared core."""
     if n is None:
         n = resolve_entry_index(data)
-    event = data.get("event")
-    if not isinstance(n, int) or isinstance(n, bool) or not isinstance(event, str):
-        return None
-    
-    event = event.strip() # Defensive stripping of whitespace
-    domain = EVENT_DOMAIN_LEDGER if n >= REGIME_B_FROM else EVENT_DOMAIN
-    payload = f"{n}|{event}|phi2={PHI2}|delta={DELTA}|theta={THETA}"
-    try:
-        payload_bytes = payload.encode("ascii")
-    except UnicodeEncodeError:
-        return None
-    return hashlib.new(
-        HASH_ALGO, domain + b"\x00" + payload_bytes
-    ).hexdigest()
+    return ledger_seal.regime_b(data, n)
 
 def declared_hex(data: dict) -> Optional[str]:
     seal = str(data.get("seal", ""))
@@ -374,7 +361,12 @@ def check_seals(entries: List[Entry], strict: bool = False) -> int:
         computed_b = event_hash(e.data, e.n)
         ok_a = seal_field_matches(e.data, computed_a)
         ok_b = computed_b is not None and seal_field_matches(e.data, computed_b)
-        ok = ok_a or ok_b
+        # Regime S (explicit seal_sha3_256 preimage) via the shared core, so this
+        # verifier agrees with verify_ledger_seals.py on those entries.
+        ok_s = (isinstance(e.data.get("seal_sha3_256"), str)
+                and ledger_seal.verify_entry(e.data, e.n)["status"] == ledger_seal.VERIFIED
+                and "S" in ledger_seal.verify_entry(e.data, e.n)["regimes"])
+        ok = ok_a or ok_b or ok_s
         e.seal_computed = computed_b if ok_b else computed_a
         e.seal_ok = ok
         idx = e.n
