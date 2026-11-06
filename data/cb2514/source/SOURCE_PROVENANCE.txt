@@ -1,0 +1,52 @@
+Saved: 2026-11-05 America/New_York (box local); tool timestamps may show UTC.
+
+User query typo: "neutrino.jenalia.org" → intended "neuprint.janelia.org".
+Screenshot match: neuPrint / Male CNS Cell Type Explorer page for cell type CB2514, neuron count 5,
+ROI PVLP(R) with LC9-dominant partners (PVLP030, PVLP020, PVLP070, DNpe024, PVLP004, CL322, PVLP076, LT42, PVLP150, …).
+Exact matching public page:
+  https://reiserlab.github.io/celltype-explorer-drosophila-male-cns/types/CB2514.html
+Dataset: male-cns:v1.0 on https://neuprint.janelia.org/?dataset=male-cns:v1.0
+Snapshot note from explorer: generated 2026-09-09 18:56 UTC from neuPrint male-cns:v1.0
+  UUID 4b2087c0fbe046bfaf0d60bc970e3e5d.
+
+No neuPrint/Janelia connector/plugin available (SearchPlugins miss).
+Live neuPrint Cypher/API queries require a free-account Bearer token; not used (no sign-in).
+
+Files saved under /workspace/janelia-results/:
+
+1) body-annotations-male-cns-v1.0-minconf-0.5.feather
+   Source: https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather
+   Official bulk annotation table from https://male-cns.janelia.org/download/
+   Size: 14483314 bytes
+   MD5: 50a7718770c57220f160ba4f431ab89e (matches GCS object md5)
+   SHA256: 2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2
+   Checks: Arrow feather magic ARROW1; 211577 rows; type=="CB2514" and flywireType=="CB2514" each yield exactly 5 bodies; somaSide R=2 L=3 matches page "Right: 2 | Left: 3".
+
+2) CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv
+   DERIVED FILTER ONLY (not a separate Janelia export): the 5 CB2514 rows from file (1).
+   bodyIds: 60536, 64328, 124180, 125402, 167164
+   instances: CB2514_R, CB2514_R, CB2514_L, CB2514_L, CB2514_L
+
+3) CB2514-swc/{60536,64328,124180,125402,167164}.swc
+   Source pattern: https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/<bodyId>.swc
+   Official public SWC centerline skeletons for the five CB2514 body IDs from (1).
+   Coordinate space: Male CNS EM, 8 nm units (per male-cns download page).
+
+4) neurons.json
+   Source: https://raw.githubusercontent.com/reiserlab/celltype-explorer-drosophila-male-cns/main/data/neurons.json
+   Explorer type catalog (11751 types); contains CB2514 name/URLs only, not connectivity weights.
+   SHA256: cbbb8a35d0aac077f64d5f98d51d19f6d3ed40331b5c49fb4edb7e2f1e6b1180
+
+5) CB2514.html
+   Source: https://reiserlab.github.io/celltype-explorer-drosophila-male-cns/types/CB2514.html
+   Saved page that matches the screenshot content (type CB2514, 5 neurons, PVLP/LC9 tables).
+   This is HTML documentation/UI, not a bulk edge-weight export.
+
+NOT downloaded (need explicit selection or auth/browser):
+- Full connectome-weights-male-cns-v1.0-minconf-0.5.feather (~1.1 GB) — whole-graph edges, not CB2514-only.
+- Other feather tables (syn-points 12.7 GB, syn-partners, NT predictions, body-stats).
+- Interactive Cell Type Explorer “Download neurons” ZIP (SWC coarse/high-res or OBJ) — UI-generated; browser needed.
+- Live neuPrint query export for CB2514 adjacencies — requires neuPrint login token.
+
+Limits: chart percentages were not reinterpreted as counts. No synthetic edges invented.
+No Kaggle/GitHub/code changes made.

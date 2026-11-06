@@ -59,6 +59,10 @@ import org.xml.sax.SAXParseException;
  * <p>The parser is hardened against XXE: DOCTYPE declarations are
  * refused outright and external entities / DTDs / XInclude are off.
  * JDK only, no third-party dependencies.
+ *
+ * <p>{@code connectome/neuron_index.json} is not this format. CB2514 body
+ * IDs are identification only and are loaded by {@link Cb2514NeuronIndex},
+ * which refuses to build a {@link Connectome} from them.
  */
 public final class ConnectomeLoader {
 

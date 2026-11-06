@@ -1,0 +1,6 @@
+assignedOlHex1,assignedOlHex2,bodyId,flywireType,group,instance,somaSide,statusLabel,superclass,type,vfbId,hemibrainType,itoleeHl,supertype,birthtime,mancBodyid,mancGroup,mancType,subclass,synonyms,class,rootSide,somaNeuromere,trumanHl,dimorphism,matchingNotes,entryNerve,mancSerial,mcnsSerial,serialMotif,fruDsx,exitNerve,receptorType,somaLocation,tosomaLocation,status
+,,60536,CB2514,60536.0,CB2514_R,R,Roughly traced,cb_intrinsic,CB2514,VFB_jrmc39qm,,VLPl2_posterior,60309,,,,,,,,,,,,,,,,,fru_low,,,[22666 21412 23596],,Traced
+,,64328,CB2514,60536.0,CB2514_R,R,Roughly traced,cb_intrinsic,CB2514,VFB_jrmc39qj,,VLPl2_posterior,60309,,,,,,,,,,,,,,,,,fru_low,,,[23496 21270 22662],,Traced
+,,124180,CB2514,60536.0,CB2514_L,L,Roughly traced,cb_intrinsic,CB2514,VFB_jrmc39qn,,VLPl2_posterior,60309,,,,,,,,,,,,,,,,,fru_low,,,[73540 17562 21432],,Traced
+,,125402,CB2514,60536.0,CB2514_L,L,Roughly traced,cb_intrinsic,CB2514,VFB_jrmc39qk,,VLPl2_posterior,60309,,,,,,,,,,,,,,,,,fru_low,,,[73811 17344 21078],,Traced
+,,167164,CB2514,60536.0,CB2514_L,L,Roughly traced,cb_intrinsic,CB2514,VFB_jrmc39ql,,VLPl2_posterior,60309,,,,,,,,,,,,,,,,,fru_low,,,[74548 17518 21292],,Traced

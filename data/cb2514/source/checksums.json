@@ -1,0 +1,56 @@
+{
+  "algorithm": "sha256",
+  "note": "Checksums of packaged source files as copied into this package. Do not treat as biological claims beyond the source provenance file.",
+  "files": [
+    {
+      "path": "SOURCE_PROVENANCE.txt",
+      "bytes": 3300,
+      "sha256": "b626fb853a92106dbf36f1010f30597f60b695f858bd3f837d901131c4b12879"
+    },
+    {
+      "path": "annotations/CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv",
+      "bytes": 1169,
+      "sha256": "da5c2a1b4285e72c64f253f9c05caa64c1933d9d38c94a05082eddb825e157f0"
+    },
+    {
+      "path": "annotations/body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "bytes": 14483314,
+      "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2"
+    },
+    {
+      "path": "catalog/neurons.json",
+      "bytes": 1610653,
+      "sha256": "cbbb8a35d0aac077f64d5f98d51d19f6d3ed40331b5c49fb4edb7e2f1e6b1180"
+    },
+    {
+      "path": "pages/CB2514.html",
+      "bytes": 103594,
+      "sha256": "930693c755b43fa79ccf6c8b13d9d4f2989dae49b1c3d1a7a6a4368898051adb"
+    },
+    {
+      "path": "skeletons/124180.swc",
+      "bytes": 48974,
+      "sha256": "cfee09a23a1f4fc58fc34e509687f5a5980b03b34d9bd1af1241e38edeacc4a4"
+    },
+    {
+      "path": "skeletons/125402.swc",
+      "bytes": 51163,
+      "sha256": "33a86d735ca94487769bc00e386efae8f3ac49f58a8f1cd9c557678a1720740c"
+    },
+    {
+      "path": "skeletons/167164.swc",
+      "bytes": 53129,
+      "sha256": "bd3e003864815cb4677ea5084908fadc007b6344864206cda6a6f739c0ed0251"
+    },
+    {
+      "path": "skeletons/60536.swc",
+      "bytes": 53788,
+      "sha256": "a927658adaf2ccf9bd2adba1ef8700bc220cf45c41792269301d67c42b1776e7"
+    },
+    {
+      "path": "skeletons/64328.swc",
+      "bytes": 54560,
+      "sha256": "672ca5bcfaf4a46c232f3ea2689453d3107f89de011011fab6477b4825f03a46"
+    }
+  ]
+}

@@ -44,6 +44,15 @@ public final class NeuronSnapshot {
     private NeuronSnapshot() {
     }
 
+    /**
+     * Male-cns CB2514 identification aside. Not inserted into {@link #idle},
+     * {@link #fromLif}, or {@link #fromConnectome}: those stay spike records
+     * of the rhythm brain.
+     */
+    public static String cb2514IdentityAside() {
+        return Cb2514Identity.asideJson();
+    }
+
     /** No brain is driving presses (control mode off). */
     public static String idle(String mode, long songMs) {
         StringBuilder b = new StringBuilder(96);

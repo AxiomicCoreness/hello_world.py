@@ -1,0 +1,20 @@
+{
+  "body_ids": [60536, 64328, 124180, 125402, 167164],
+  "cell_type": "CB2514",
+  "dataset_id": "male-cns:v1.0",
+  "dataset_uuid": "4b2087c0fbe046bfaf0d60bc970e3e5d",
+  "distillation_required_when_absent": [
+    "compatible_tokenizer_vocab_context",
+    "normalized_expert_distributions",
+    "normalized_student_distribution",
+    "model_ids",
+    "student_trajectory_provenance"
+  ],
+  "edges_included": false,
+  "hhmi_jenalia_pom_fabricated": false,
+  "laterality": {"L": 3, "R": 2},
+  "nominal_student": "DeepSeek-R1-Distill-1.5B",
+  "pvlp_r_chart_membership_unverified": true,
+  "roi_context_display": "PVLP(R)",
+  "student_roles_not_teachers": ["DeepInfer", "DeepTutor"]
+}

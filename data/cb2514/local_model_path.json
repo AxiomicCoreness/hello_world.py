@@ -1,0 +1,9 @@
+{
+  "accessible_here": false,
+  "gguf_path": "/kaggle/input/models/clarkeyoursatee/deepseek-r1-1-5b-q4-k-m/gguf/deepseek-r2-1.5b-q4_k_m/2/deepseek-r1-distill-1.5b-Q4_K_M.gguf",
+  "model_label": "ClarkeYoursaTee",
+  "nominal_student": "DeepSeek-R1-Distill-1.5B",
+  "note": "Path recorded for the ClarkeYoursaTee Kaggle layout only. Nothing here opens, downloads, or verifies the GGUF.",
+  "role": "config_pointer_only",
+  "student_roles_not_teachers": ["DeepInfer", "DeepTutor"]
+}

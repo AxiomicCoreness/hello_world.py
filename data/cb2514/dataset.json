@@ -1,0 +1,21 @@
+{
+  "annotation_csv_relative": "data/cb2514/source/annotations/CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv",
+  "cell_type": "CB2514",
+  "dataset_id": "male-cns:v1.0",
+  "dataset_uuid": "4b2087c0fbe046bfaf0d60bc970e3e5d",
+  "expected_body_count": 5,
+  "expected_body_ids": [60536, 64328, 124180, 125402, 167164],
+  "license_note": "Male CNS / FlyEM data under CC-BY; see male-cns.janelia.org",
+  "neuprint_url": "https://neuprint.janelia.org/?dataset=male-cns:v1.0",
+  "roi_context": {
+    "chart_membership_unverified": true,
+    "display": "PVLP(R)",
+    "edges_inferred_from_charts": false,
+    "laterality": "R",
+    "not_a_cell_type": true,
+    "not_per_body_annotation": true,
+    "note": "PVLP(R) is screenshot/chart-observed ROI context. It does not assert verified per-body ROI membership from the annotation CSV, and must not be used to fabricate edges.",
+    "roi_name": "PVLP",
+    "role": "observed_chart_roi_context_only"
+  }
+}

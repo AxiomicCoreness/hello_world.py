@@ -22,10 +22,12 @@ import java.util.Locale;
  *   --repl                                  line commands on stdin, exit 0 at EOF/exit
  *   (no mode flag)                          short interactive demo
  *
- * Every mode accepts --connectome-file PATH to load the network from XML
- * via {@link ConnectomeLoader}; without it the synthetic
- * Connectome.random(8, 0.25, 20_260_720L) is used. Load progress goes to
- * stderr so --chat and --sim stdout stay the bare result line.
+ * Every mode except {@code --cb2514-index} accepts --connectome-file PATH
+ * to load the network from XML via {@link ConnectomeLoader}; without it the
+ * synthetic Connectome.random(8, 0.25, 20_260_720L) is used. Load progress
+ * goes to stderr so --chat and --sim stdout stay the bare result line.
+ * {@code --cb2514-index} prints the male-cns CB2514 identification line and
+ * does not call {@link ConnectomeLoader}.
  *
  * --sim and the REPL's {@code step} drive every neuron with
  * {@link #DRIVE} = 0.5 per step, the same value the demo loop and
@@ -40,7 +42,8 @@ public final class SovereignMain {
     static final double DRIVE = 0.5;
 
     static final String USAGE =
-            "usage: SovereignMain [--chat <text> | --sim | --repl] [--q <float>] [--p <float>]"
+            "usage: SovereignMain [--chat <text> | --sim | --repl | --cb2514-index]"
+            + " [--q <float>] [--p <float>]"
             + " [--steps <int>] [--dt <float>] [--no-demo] [--connectome-file <path>]";
 
     static final String REPL_HELP =
@@ -56,6 +59,7 @@ public final class SovereignMain {
         double  dt     = 1e-4;
         boolean noDemo = false;
         Path    connectomeFile = null;
+        boolean cb2514Index = false;
     }
 
     public static void main(String[] args) {
@@ -76,9 +80,12 @@ public final class SovereignMain {
             return 2;
         }
 
-        boolean hasMode = a.chat != null || a.sim || a.repl;
+        boolean hasMode = a.chat != null || a.sim || a.repl || a.cb2514Index;
         if (a.noDemo && !hasMode) {
             return 0;
+        }
+        if (a.cb2514Index) {
+            return runCb2514Index(out, err);
         }
 
         Connectome connectome;
@@ -134,13 +141,21 @@ public final class SovereignMain {
                 case "--connectome-file":
                     a.connectomeFile = Paths.get(requireValue(argv, ++i, "--connectome-file"));
                     break;
+                case "--cb2514-index":
+                    a.cb2514Index = true;
+                    break;
                 default:
                     throw new IllegalArgumentException("unknown token: " + token);
             }
         }
-        int modes = (a.chat != null ? 1 : 0) + (a.sim ? 1 : 0) + (a.repl ? 1 : 0);
+        int modes = (a.chat != null ? 1 : 0) + (a.sim ? 1 : 0) + (a.repl ? 1 : 0)
+                + (a.cb2514Index ? 1 : 0);
         if (modes > 1) {
-            throw new IllegalArgumentException("--chat, --sim and --repl are mutually exclusive");
+            throw new IllegalArgumentException(
+                    "--chat, --sim, --repl and --cb2514-index are mutually exclusive");
+        }
+        if (a.cb2514Index && a.connectomeFile != null) {
+            throw new IllegalArgumentException("--cb2514-index does not load a connectome file");
         }
         if (a.steps <= 0) throw new IllegalArgumentException("--steps must be > 0");
         if (a.dt <= 0)    throw new IllegalArgumentException("--dt must be > 0");
@@ -152,6 +167,18 @@ public final class SovereignMain {
             throw new IllegalArgumentException("missing value for " + opt);
         }
         return argv[i];
+    }
+
+    private static int runCb2514Index(PrintStream out, PrintStream err) {
+        try {
+            Cb2514NeuronIndex index = Cb2514NeuronIndex.loadDefault();
+            out.println(index.identificationLine());
+            err.println(Cb2514NeuronIndex.STDERR_NOTE);
+            return 0;
+        } catch (Exception e) {
+            err.println("failed to load CB2514 index: " + e.getMessage());
+            return 2;
+        }
     }
 
     /** Loaded connectome if --connectome-file was given, else the synthetic fallback. */

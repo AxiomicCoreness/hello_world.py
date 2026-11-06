@@ -20,6 +20,7 @@ import org.teavm.jso.JSObject;
  *   verify(rows?)    no argument: re-derive math_origin + hash chain of the kept rows in Java;
  *                    with rows: re-hash those rows here -> {ok, firstBad, checked}
  *   sha256(s)        the game's SHA-256 (hex), for recomputing a row's hash
+ *   cb2514()        male-cns CB2514 identification aside (not lane spikes, not synapses)
  * </pre>
  * Rows are JSON copies: changing them changes nothing in the game.
  */
@@ -44,7 +45,7 @@ final class DebugApi {
     private DebugApi() {
     }
 
-    @JSBody(params = {"version", "moves", "first", "count", "mode", "clock", "verifyKept", "sha"}, script = ""
+    @JSBody(params = {"version", "moves", "first", "count", "mode", "clock", "verifyKept", "sha", "cb2514"}, script = ""
             + "if (typeof window === 'undefined') return;"
             + "var Z = '0000000000000000000000000000000000000000000000000000000000000000';"
             + "function na(v) { return v === null || v === undefined ? 'na' : String(v); }"
@@ -65,6 +66,7 @@ final class DebugApi {
             + "  mode: function () { return String(mode()); },"
             + "  clock: function () { return +clock(); },"
             + "  sha256: function (s) { return String(sha(String(s))); },"
+            + "  cb2514: function () { return String(cb2514()); },"
             + "  verify: function (rows) {"
             + "    if (rows) return check(rows);"
             + "    var bad = verifyKept() | 0, a = check(JSON.parse(first())), b = check(JSON.parse(moves()));"
@@ -74,5 +76,6 @@ final class DebugApi {
             + "if (Object.freeze) Object.freeze(api);"
             + "try { Object.defineProperty(window, '__rhythmDebug', {value: api, writable: false, enumerable: false, configurable: true}); }"
             + "catch (e) { window.__rhythmDebug = api; }")
-    static native void install(String version, Text moves, Text first, Num count, Text mode, Num clock, Num verifyKept, Hash sha);
+    static native void install(String version, Text moves, Text first, Num count, Text mode, Num clock,
+            Num verifyKept, Hash sha, Text cb2514);
 }

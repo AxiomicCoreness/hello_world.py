@@ -83,6 +83,10 @@ and `SovereignMain.diff`. Nothing is on either GitCode mirror.
   of a full-size XML would be heavy.
 - `--limit` ranks by total synapse count, which favours hub neurons. It is not an anatomical
   region selection.
+- male-cns:v1.0 CB2514 (body IDs 60536, 64328, 124180, 125402, 167164) is a different
+  dataset from hemibrain v1.2. `csv_to_xml.py` does not convert it, and
+  `connectome/neuron_index.json` is identification only. PVLP(R) chart context is not
+  membership or edges. See `skills/cb2514_male_cns/`.
 
 ## Verify
 - `python -P -m pytest -q evals` from this folder: all tests pass. They use only synthetic

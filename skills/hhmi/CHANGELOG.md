@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4] - 2026-11-06
+### Changed
+- `run_java_tests.sh` copies `src/main/resources` onto the test classpath when the base
+  tree has that directory, so `connectome/neuron_index.json` is visible to
+  `Cb2514NeuronIndexTest` after the CB2514 retrofit. The hemibrain CSV converter is
+  unchanged. male-cns CB2514 is documented as a different dataset under Known limits.
+
 ## [1.0.3] - 2026-10-19
 ### Fixed
 - SKILL.md and `assets/context.json` no longer say `port380_mcp.py` reads `SovereignMain --chat`

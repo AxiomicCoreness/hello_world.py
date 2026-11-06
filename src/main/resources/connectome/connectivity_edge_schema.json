@@ -1,0 +1,18 @@
+{
+  "edge_required_fields": [
+    "pre_bodyId",
+    "post_bodyId",
+    "weight"
+  ],
+  "edges_in_tree": false,
+  "notes": [
+    "Authentic edge export required. None is packaged here.",
+    "Chart tables / donut percentages are not accepted as edge input."
+  ],
+  "required_fields": [
+    "dataset_id",
+    "source",
+    "edges"
+  ],
+  "schema": "clarke_cb2514_connectivity_edges/v1"
+}

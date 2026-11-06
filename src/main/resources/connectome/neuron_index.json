@@ -1,0 +1,106 @@
+{
+  "bodyIds": [
+    60536,
+    64328,
+    124180,
+    125402,
+    167164
+  ],
+  "cell_type": "CB2514",
+  "connectivity_resource": "connectome/connectivity_edge_schema.json",
+  "count": 5,
+  "dataset_id": "male-cns:v1.0",
+  "dataset_uuid": "4b2087c0fbe046bfaf0d60bc970e3e5d",
+  "edges_included": false,
+  "laterality": {
+    "L": 3,
+    "R": 2
+  },
+  "missing_skeletons": [
+    60536,
+    64328,
+    124180,
+    125402,
+    167164
+  ],
+  "neurons": [
+    {
+      "bodyId": 60536,
+      "instance": "CB2514_R",
+      "skeleton_bytes_in_tree": false,
+      "skeleton_checksum_record": "skeletons/60536.swc",
+      "skeleton_present": false,
+      "skeleton_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/60536.swc",
+      "somaSide": "R",
+      "status": "Traced",
+      "statusLabel": "Roughly traced",
+      "superclass": "cb_intrinsic",
+      "type": "CB2514",
+      "vfbId": "VFB_jrmc39qm"
+    },
+    {
+      "bodyId": 64328,
+      "instance": "CB2514_R",
+      "skeleton_bytes_in_tree": false,
+      "skeleton_checksum_record": "skeletons/64328.swc",
+      "skeleton_present": false,
+      "skeleton_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/64328.swc",
+      "somaSide": "R",
+      "status": "Traced",
+      "statusLabel": "Roughly traced",
+      "superclass": "cb_intrinsic",
+      "type": "CB2514",
+      "vfbId": "VFB_jrmc39qj"
+    },
+    {
+      "bodyId": 124180,
+      "instance": "CB2514_L",
+      "skeleton_bytes_in_tree": false,
+      "skeleton_checksum_record": "skeletons/124180.swc",
+      "skeleton_present": false,
+      "skeleton_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/124180.swc",
+      "somaSide": "L",
+      "status": "Traced",
+      "statusLabel": "Roughly traced",
+      "superclass": "cb_intrinsic",
+      "type": "CB2514",
+      "vfbId": "VFB_jrmc39qn"
+    },
+    {
+      "bodyId": 125402,
+      "instance": "CB2514_L",
+      "skeleton_bytes_in_tree": false,
+      "skeleton_checksum_record": "skeletons/125402.swc",
+      "skeleton_present": false,
+      "skeleton_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/125402.swc",
+      "somaSide": "L",
+      "status": "Traced",
+      "statusLabel": "Roughly traced",
+      "superclass": "cb_intrinsic",
+      "type": "CB2514",
+      "vfbId": "VFB_jrmc39qk"
+    },
+    {
+      "bodyId": 167164,
+      "instance": "CB2514_L",
+      "skeleton_bytes_in_tree": false,
+      "skeleton_checksum_record": "skeletons/167164.swc",
+      "skeleton_present": false,
+      "skeleton_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/167164.swc",
+      "somaSide": "L",
+      "status": "Traced",
+      "statusLabel": "Roughly traced",
+      "superclass": "cb_intrinsic",
+      "type": "CB2514",
+      "vfbId": "VFB_jrmc39ql"
+    }
+  ],
+  "notes": [
+    "Built only from the CB2514 annotation CSV subset.",
+    "Skeleton bytes are not in the tree; checksum records are preserved.",
+    "Does not encode synaptic edges or ROI membership claims."
+  ],
+  "roi_context_resource": "connectome/roi_context_PVLP_R.json",
+  "schema": "clarke_cb2514_neuron_index/v1",
+  "source_csv": "data/cb2514/source/annotations/CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv"
+}

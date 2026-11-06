@@ -1,0 +1,64 @@
+{
+  "checksums_recomputed": false,
+  "files": [
+    {
+      "bytes": 14483314,
+      "checksum_recomputed": false,
+      "path": "annotations/body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather"
+    },
+    {
+      "bytes": 1610653,
+      "checksum_recomputed": false,
+      "path": "catalog/neurons.json",
+      "sha256": "cbbb8a35d0aac077f64d5f98d51d19f6d3ed40331b5c49fb4edb7e2f1e6b1180",
+      "url": "https://raw.githubusercontent.com/reiserlab/celltype-explorer-drosophila-male-cns/main/data/neurons.json"
+    },
+    {
+      "bytes": 103594,
+      "checksum_recomputed": false,
+      "path": "pages/CB2514.html",
+      "sha256": "930693c755b43fa79ccf6c8b13d9d4f2989dae49b1c3d1a7a6a4368898051adb",
+      "url": "https://reiserlab.github.io/celltype-explorer-drosophila-male-cns/types/CB2514.html"
+    },
+    {
+      "bytes": 48974,
+      "checksum_recomputed": false,
+      "path": "skeletons/124180.swc",
+      "sha256": "cfee09a23a1f4fc58fc34e509687f5a5980b03b34d9bd1af1241e38edeacc4a4",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/124180.swc"
+    },
+    {
+      "bytes": 51163,
+      "checksum_recomputed": false,
+      "path": "skeletons/125402.swc",
+      "sha256": "33a86d735ca94487769bc00e386efae8f3ac49f58a8f1cd9c557678a1720740c",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/125402.swc"
+    },
+    {
+      "bytes": 53129,
+      "checksum_recomputed": false,
+      "path": "skeletons/167164.swc",
+      "sha256": "bd3e003864815cb4677ea5084908fadc007b6344864206cda6a6f739c0ed0251",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/167164.swc"
+    },
+    {
+      "bytes": 53788,
+      "checksum_recomputed": false,
+      "path": "skeletons/60536.swc",
+      "sha256": "a927658adaf2ccf9bd2adba1ef8700bc220cf45c41792269301d67c42b1776e7",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/60536.swc"
+    },
+    {
+      "bytes": 54560,
+      "checksum_recomputed": false,
+      "path": "skeletons/64328.swc",
+      "sha256": "672ca5bcfaf4a46c232f3ea2689453d3107f89de011011fab6477b4825f03a46",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/segmentation/skeletons-malecns/skeletons-swc/64328.swc"
+    }
+  ],
+  "note": "Listed sha256 and byte sizes are copied from data/cb2514/source/checksums.json. Those bytes are not in the git tree.",
+  "preserved_checksums_json_sha256": "69b6934fa9339bbfac7cb6d73d5b12f8c5215bc13a5a3c665a23c376031814ef",
+  "schema": "cb2514_omitted_sources/v1"
+}

@@ -7,6 +7,7 @@ hello_world.py — Sovereign Garden FastAPI surface with async DeepSeek client.
 Endpoints:
   /  /health
   /deepseek  /deepseek/status  /deepseek/events  /deepseek/complete  /deepseek/stream
+  /deepseek/distill/validate
   /step  /mesh
 
 Run:
@@ -23,6 +24,8 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
+from cb2514_opd import validate_distillation_input
+
 GARDEN_SECRET = os.environ.get("GARDEN_SECRET")
 PHI = (1 + math.sqrt(5)) / 2
 PHASE_TARGET = 202.6
@@ -203,6 +206,16 @@ async def deepseek_stream(body: CompleteRequest) -> StreamingResponse:
     return StreamingResponse(event_gen(), media_type="text/event-stream")
 
 
+class DistillValidateRequest(BaseModel):
+    payload: Optional[Dict[str, Any]] = None
+
+
+@deepseek_router.post("/distill/validate")
+async def deepseek_distill_validate(body: DistillValidateRequest) -> Dict[str, Any]:
+    """Check OPD distillation inputs. Does not load weights, call a model, or train."""
+    return validate_distillation_input(body.payload)
+
+
 app.include_router(deepseek_router)
 
 
@@ -323,6 +336,7 @@ async def root() -> Dict[str, Any]:
             "/deepseek/events",
             "/deepseek/complete",
             "/deepseek/stream",
+            "/deepseek/distill/validate",
             "/step",
             "/mesh",
         ],

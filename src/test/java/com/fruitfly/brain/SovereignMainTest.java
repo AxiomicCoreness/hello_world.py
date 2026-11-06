@@ -119,6 +119,7 @@ class SovereignMainTest {
                 {"--sim", "--repl"},
                 {"--repl", "--chat", "hi"},
                 {"--chat", "hi", "--sim", "--repl"},
+                {"--cb2514-index", "--sim"},
         }) {
             Result r = run(args);
             assertEquals(2, r.code, String.join(" ", args));
@@ -211,6 +212,27 @@ class SovereignMainTest {
         Result nd = run("--no-demo");
         assertEquals(0, nd.code);
         assertEquals("", nd.out);
+    }
+
+    @Test
+    void cb2514IndexPrintsIdentificationAndDoesNotLoadSynapses() {
+        Result r = run("--cb2514-index");
+        assertEquals(0, r.code, r.err);
+        assertEquals("cb2514 dataset=male-cns:v1.0 cell_type=CB2514 count=5 "
+                + "bodyIds=60536,64328,124180,125402,167164 laterality_L=3 laterality_R=2 "
+                + "edges=0 roi=PVLP(R) chart_membership_unverified=true"
+                + System.lineSeparator(), r.out);
+        assertTrue(r.err.contains("ConnectomeLoader was not called"), r.err);
+        assertTrue(r.err.contains("chart ROI context"), r.err);
+        assertFalse(r.out.contains("synapses="), r.out);
+    }
+
+    @Test
+    void cb2514IndexRejectsConnectomeFile() {
+        Result r = run("--cb2514-index", "--connectome-file", PLACEHOLDER);
+        assertEquals(2, r.code);
+        assertEquals("", r.out);
+        assertTrue(r.err.contains("does not load a connectome file"), r.err);
     }
 
     @Test

@@ -277,7 +277,8 @@ public final class Main {
                 () -> ControlMode.id(mode),
                 () -> clock.now(),
                 () -> moves == null ? -1 : moves.verifyKept(),
-                Sha256::hex);
+                Sha256::hex,
+                NeuronSnapshot::cb2514IdentityAside);
         Dom.onVisibilityChange(Main::visibilityChanged);
         String connectomeUrl = param(q, "connectome");
         Long fromUrl = parseSeed(q);

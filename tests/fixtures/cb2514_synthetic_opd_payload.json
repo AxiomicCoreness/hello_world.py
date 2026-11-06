@@ -1,0 +1,37 @@
+{
+  "compatible_tokenizer_vocab_context": {
+    "alignment": {
+      "context_axis": "sequence",
+      "mode": "records_not_axes",
+      "probability_axis": "vocab",
+      "step_id": 0
+    },
+    "records": [
+      {"position": 0, "token_id": 1},
+      {"position": 1, "token_id": 0}
+    ],
+    "tokenizer_id": "fixture-tok",
+    "vocab_size": 2
+  },
+  "label": "synthetic_test_only_never_production",
+  "model_ids": {
+    "student_model_id": "fixture-student",
+    "student_roles_not_teachers": ["DeepInfer", "DeepTutor"]
+  },
+  "normalized_expert_distributions": [
+    {"expert_id": "fixture-expert-a", "probs": [0.5, 0.5], "weight": 1.0},
+    {"expert_id": "fixture-expert-b", "probs": [0.9, 0.1], "weight": 0.5}
+  ],
+  "normalized_student_distribution": {
+    "mask": [true, true],
+    "probs": [0.5, 0.5]
+  },
+  "on_policy": false,
+  "self_distillation": false,
+  "student_trajectory_provenance": {
+    "declarations_are_not_proof": true,
+    "on_policy_self_report": false,
+    "trajectories": []
+  },
+  "synthetic_test_only": true
+}

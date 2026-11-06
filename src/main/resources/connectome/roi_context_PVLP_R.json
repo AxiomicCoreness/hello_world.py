@@ -1,0 +1,30 @@
+{
+  "associated_cell_type_for_page_context": "CB2514",
+  "chart_membership_unverified": true,
+  "config_echo": {
+    "chart_membership_unverified": true,
+    "display": "PVLP(R)",
+    "edges_inferred_from_charts": false,
+    "laterality": "R",
+    "not_a_cell_type": true,
+    "not_per_body_annotation": true,
+    "note": "PVLP(R) is screenshot/chart-observed ROI context. It does not assert verified per-body ROI membership from the annotation CSV, and must not be used to fabricate edges.",
+    "roi_name": "PVLP",
+    "role": "observed_chart_roi_context_only"
+  },
+  "dataset_id": "male-cns:v1.0",
+  "display": "PVLP(R)",
+  "edges_inferred_from_charts": false,
+  "laterality": "R",
+  "limits": [
+    "Observed on Cell Type Explorer / screenshot charts for CB2514 page context.",
+    "Does not verify that each CB2514 body innervates PVLP(R).",
+    "Must not be concatenated into teacher distributions or edge lists.",
+    "Must not be used to reconstruct connectivity weights from chart percentages."
+  ],
+  "not_a_cell_type": true,
+  "not_per_body_annotation": true,
+  "roi_name": "PVLP",
+  "role": "observed_chart_roi_context_only",
+  "schema": "clarke_cb2514_roi_context/v1"
+}

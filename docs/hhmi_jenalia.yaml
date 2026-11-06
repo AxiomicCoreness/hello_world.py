@@ -1,0 +1,15 @@
+# Provenance pointer for HHMI Janelia / neuPrint male-cns sources
+# Filename keeps historical "jenalia" spelling used in project notes.
+dataset_id: "male-cns:v1.0"
+dataset_uuid: "4b2087c0fbe046bfaf0d60bc970e3e5d"
+cell_type: "CB2514"
+neuprint: "https://neuprint.janelia.org/?dataset=male-cns:v1.0"
+celltype_explorer: "https://reiserlab.github.io/celltype-explorer-drosophila-male-cns/types/CB2514.html"
+bulk_annotations: "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather"
+roi_context:
+  display: "PVLP(R)"
+  role: observed_chart_roi_context_only
+  chart_membership_unverified: true
+limits:
+  - no_chart_derived_edges
+  - no_teacher_logits_from_annotations

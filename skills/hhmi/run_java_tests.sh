@@ -47,6 +47,10 @@ mkdir -p "$WORK/src/main" "$WORK/src/test" "$WORK/out/main" "$WORK/out/test"
 cp -r "$BASE/src/main/java" "$WORK/src/main/"
 cp -r "$BASE/src/test/java" "$WORK/src/test/" 2>/dev/null || mkdir -p "$WORK/src/test/java"
 cp -r "$SKILL/java/src/." "$WORK/src/"
+if [ -d "$BASE/src/main/resources" ]; then
+  mkdir -p "$WORK/out/main"
+  cp -a "$BASE/src/main/resources/." "$WORK/out/main/"
+fi
 grep -q connectomeFile "$WORK/src/main/java/com/fruitfly/brain/SovereignMain.java" \
   || echo "[!] warning: SovereignMain has no --connectome-file (apply java/SovereignMain.diff)"
 

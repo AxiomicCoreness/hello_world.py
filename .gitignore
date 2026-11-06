@@ -91,6 +91,8 @@ tests/models/offline_decode_ppl.json.tmp
 # If vendor eval fixtures must be tracked later, add a narrow exception only, e.g.:
 #   !vendor/DeepInfer/eval/**/*.csv
 *.csv
+# Five-row male-cns CB2514 annotation subset. Checksum is in data/cb2514/source/checksums.json.
+!data/cb2514/source/annotations/CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv
 *.pkl
 
 # --- Local builds / Merge state -----------------------------------
