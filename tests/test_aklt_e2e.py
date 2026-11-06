@@ -74,15 +74,32 @@ def test_string_order_ed_small_chain():
     assert abs(val + 4 / 9) < 5e-3   # finite-size: -0.44809 at N=6
 
 
-@pytest.mark.parametrize("N,pbc,nb,deg", [(6, True, 6, 1), (4, False, 3, 4)])
+@pytest.mark.parametrize(
+    "N,pbc,nb,deg",
+    [
+        (3, True, 3, 1),
+        (4, True, 4, 1),
+        (5, True, 5, 1),
+        (6, True, 6, 1),
+        (2, False, 1, 4),
+        (3, False, 2, 4),
+        (4, False, 3, 4),
+        (5, False, 4, 4),
+    ],
+)
 def test_form_A_equals_2B_minus_two_thirds_per_bond(N, pbc, nb, deg):
+    """E_0^(B) = 0 on this set. E_0^(A) = -(2/3) * n_bonds, not -(2/3) * N for OBC."""
     bonds = [(k, k + 1) for k in range(N - 1)] + ([(N - 1, 0)] if pbc else [])
+    assert len(bonds) == nb
     HA = np.zeros((3 ** N,) * 2, dtype=complex)
     for i, j in bonds:
         SS = sum(a.total_two_site_op(S, S, i, j, N) for S in (a.Sx, a.Sy, a.Sz))
         HA += SS + SS @ SS / 3
     HB = a.aklt_hamiltonian(N, periodic=pbc)
     assert np.allclose(HA, 2 * HB - (2 / 3) * nb * np.eye(3 ** N))
+    eb = np.linalg.eigvalsh(HB)
+    assert abs(eb[0]) < 1e-8
+    assert int(np.sum(np.abs(eb) < 1e-8)) == deg
     ea = np.linalg.eigvalsh(HA)
-    assert abs(ea[0] + 2 * nb / 3) < 1e-9
-    assert int(np.sum(np.abs(ea - ea[0]) < 1e-9)) == deg
+    assert abs(ea[0] + 2 * nb / 3) < 1e-8
+    assert int(np.sum(np.abs(ea - ea[0]) < 1e-8)) == deg

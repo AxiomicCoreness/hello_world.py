@@ -113,7 +113,7 @@ def gate_G3():
 
 
 def gate_G4_G5_G6(N=6):
-    """Spectrum of AKLT for periodic BC, even N."""
+    """Spectrum of AKLT for periodic BC at this N (default 6)."""
     H = aklt_hamiltonian(N, periodic=True)
     evals = np.linalg.eigvalsh(H)
     min_e = evals[0]
