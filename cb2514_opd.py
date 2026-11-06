@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
+from deepinfer_teacher_adapter import assess_deepinfer_expert
+
 REPO_ROOT = Path(__file__).resolve().parent
 
 CONFIGURED_GGUF_PATH = (
@@ -600,13 +602,19 @@ def validate_distillation_input(
 
     student_model_id = str(model_ids.get("student_model_id")).strip()
     parsed_experts: List[Dict[str, Any]] = []
+    deepinfer_report: Optional[Dict[str, Any]] = None
+    deepinfer_frozen_specified = False
     for expert in experts:
         expert_id = expert.get("expert_id")
         if not isinstance(expert_id, str) or not expert_id.strip():
             problems.append("expert_identity_not_supplied")
             continue
-        if expert_id in STUDENT_ROLE_NAMES:
-            problems.append("deepinfer_deeptutor_are_student_roles_not_two_teachers")
+        if expert_id == "DeepTutor":
+            problems.append("deeptutor_is_student_role_not_a_teacher")
+        elif expert_id == "DeepInfer":
+            gaps, deepinfer_report = assess_deepinfer_expert(payload, expert, root)
+            problems.extend(gaps)
+            deepinfer_frozen_specified = bool(deepinfer_report.get("frozen_reference_specified"))
         parsed_experts.append(expert)
 
     on_policy = bool(payload.get("on_policy") or provenance.get("on_policy") or provenance.get("on_policy_self_report"))
@@ -624,7 +632,7 @@ def validate_distillation_input(
     if any(isinstance(item.get("expert_id"), str) and item.get("expert_id") == student_model_id for item in parsed_experts):
         self_distillation = True
     checkpoint = payload.get("frozen_reference_checkpoint", model_ids.get("frozen_reference_checkpoint"))
-    if self_distillation:
+    if self_distillation and not deepinfer_frozen_specified:
         if not isinstance(checkpoint, str) or not checkpoint.strip():
             problems.append("frozen_reference_checkpoint")
         elif checkpoint != CONFIGURED_GGUF_PATH:
@@ -633,12 +641,18 @@ def validate_distillation_input(
             problems.append("frozen_reference_checkpoint_not_accessible")
 
     if problems:
+        details: Dict[str, Any] = {
+            "on_policy_requested": on_policy,
+            "self_distillation_requested": self_distillation,
+        }
+        if deepinfer_report is not None:
+            details["deepinfer_teacher"] = deepinfer_report
         return _fail(
             problems,
             "Distillation input rejected before any loss was computed.",
             root,
             exit_code=EXIT_VALIDATION,
-            details={"on_policy_requested": on_policy, "self_distillation_requested": self_distillation},
+            details=details,
         )
 
     try:

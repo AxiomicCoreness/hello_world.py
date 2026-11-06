@@ -189,8 +189,11 @@ def test_deepinfer_and_deeptutor_are_not_two_teachers():
         {"expert_id": "DeepTutor", "weight": 1.0, "probs": [0.5, 0.5]},
     ]
     report = opd.validate_distillation_input(payload, REPO)
-    assert "deepinfer_deeptutor_are_student_roles_not_two_teachers" in report["missing_prerequisites"]
+    assert "deeptutor_is_student_role_not_a_teacher" in report["missing_prerequisites"]
+    assert "deepinfer_alias_requires_frozen_reference" in report["missing_prerequisites"]
+    assert "deepinfer_deeptutor_are_student_roles_not_two_teachers" not in report["missing_prerequisites"]
     assert report["on_policy_accepted"] is False
+    assert report["details"]["deepinfer_teacher"]["teacher_probabilities_returned"] is False
 
 
 def test_on_policy_declaration_is_not_proof():
