@@ -25,10 +25,18 @@ spin-1 as the symmetric triplet of two auxiliary spin-1/2's, then pairing
 auxiliary spins on adjacent sites into singlets. Source: arXiv 1906.12207
 lines 18–32; InspireHEP lines 7–15.
 
-Consequences:
-- E_0 = 0 exactly (for any boundary condition, even N).
-- Ground state is unique for periodic BC.
-- **Ground state is 4-fold degenerate for open BC.** The two free spin-1/2 edges form a total spin of (1/2) ⊗ (1/2) = 0 ⊕ 1. This results in 1 singlet state and 3 triplet states, totaling 4 states.
+Consequences, from exact diagonalization of H_B = Σ π_2
+(`tests/test_aklt_e2e.py`). Eigenvalue 1 of π_2 does not annihilate;
+the kernel is eigenvalue 0.
+- E_0^(B) = 0 for periodic N = 3, 4, 5, 6, with dim ker H_B = 1.
+  Odd periodic length is in the kernel. Even N is not a condition on this set.
+- E_0^(B) = 0 for open N = 2, 3, 4, 5, with dim ker H_B = 4.
+- **Open BC is 4-fold.** The two free spin-1/2 edges form
+  (1/2) ⊗ (1/2) = 0 ⊕ 1: one singlet and one triplet, four states.
+- Per bond, x + x²/3 = 2 π_2 − 2/3 with x ∈ {+1, −1, −2}. On the kernel,
+  E_0^(A) = −(2/3) · n_bonds. Periodic chains have n_bonds = N, so
+  E_0^(A) = −2N/3. Open chains have n_bonds = N − 1, so
+  E_0^(A) = −2(N−1)/3.
 
 Sources: search result [12] lines 38–41 (periodic: 1; open: 4);
 search result [1] lines 13–18 (edge states, Haldane gap).
@@ -48,9 +56,10 @@ Eq. 4.5–4.6.
 Single-site transfer matrix T = Σ_s A^{s} ⊗ conj(A^{s}), 4×4. Source:
 Stuttgart iMPS notes lines 6–8; PEPSKit issue #199 lines 18–22.
 
-Eigenvalue structure: exactly one eigenvalue has |λ| = 1 (the singlet
-normalization). The other three are λ = -1/3 (triply degenerate), so the
-next-largest magnitude is |λ_2| = 1/3. Checked numerically in scripts/aklt_e2e_test.py G8.
+Eigenvalue structure for the AKLT matrices A^s used in G8: exactly one
+eigenvalue has |λ| = 1 (the singlet normalization). The other three are
+λ = −1/3, multiplicity 3, so the next-largest magnitude is |λ_2| = 1/3.
+That multiplicity belongs to those A^s. Checked in scripts/aklt_e2e_test.py G8.
 
 Bulk correlation length from MPS:
 
