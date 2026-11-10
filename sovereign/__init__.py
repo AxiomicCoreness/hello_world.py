@@ -3,8 +3,9 @@
 """Sovereign package entry. Dependency-light.
 
 ``PlanckEngine`` is imported immediately. ``kernel``, ``octonion_table``,
-and ``phi_mod_mean`` are stdlib re-exports loaded on first access.
-``engine`` and ``aklt_e2e`` load numpy when first requested.
+``phi_mod_mean``, and ``paper_mcp`` load on first access. ``engine`` and
+``aklt_e2e`` load numpy when first requested. ``paper_mcp`` imports the
+``paper_mcp`` package only when an attribute is used.
 """
 from __future__ import annotations
 
@@ -19,9 +20,17 @@ __all__ = [
     "phi_mod_mean",
     "engine",
     "aklt_e2e",
+    "paper_mcp",
 ]
 
-_LAZY = ("kernel", "octonion_table", "phi_mod_mean", "engine", "aklt_e2e")
+_LAZY = (
+    "kernel",
+    "octonion_table",
+    "phi_mod_mean",
+    "engine",
+    "aklt_e2e",
+    "paper_mcp",
+)
 
 
 def __getattr__(name: str):
