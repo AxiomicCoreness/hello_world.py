@@ -1,13 +1,13 @@
 entry_index: 9007
 event: /workflow_dispatch_wood_dragon_mistral
 status: SUCCESS
-timestamp: '2026-11-08T01:51:25Z'
+timestamp: '2026-11-02T08:18:43Z'
 hash_algo: sha3_256
 observation_channel: wood_dragon_dispatch
 dispatcher: quantum.wood_dragon_dispatch
-terminal_count: 57
+terminal_count: 42
 last_observed_count: 26
-terminals_sha3_256: c861bb9e94f04d5763f7c35069b2865f32b9e54c64986be0317d8f451e7930f6
+terminals_sha3_256: bddfd585e53e032a912dbbc7b2458cfbaec80c273493e28c17ceb2bd43ed3b18
 i_of_144: '1'
 grava_star_fired: false
 mcp_pulse: skipped
@@ -16,4 +16,4 @@ mcp_port: '13800'
 mcp_namespace: wood-dragon-dispatch
 prev_hash: SEALED
 witness: 9006 → 9007 — UNBROKEN
-seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED · 48b8ff66781801c84fb35dd1878fadba9490581042dedd9e9da3bc62f0953ca3
+seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED · 0e32d4f666ed6f8b14855848b222635ed6978b2deb1b213523ca962d12c3b737

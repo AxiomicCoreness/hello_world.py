@@ -26,6 +26,9 @@ concurrency:
 env:
   HASH_ALGO: sha3_256
   LEDGER_DIR: ledger
+  # Preferred index. If ledger/<n>.yaml (or the same index in ledger.v2)
+  # already exists, the seal step leaves it untouched and appends the next
+  # free main-sequence index. It never rewrites a chained entry.
   DISPATCH_ENTRY: "9007"
   TERMINAL_CI: "1"
   WOOD_DRAGON_CI: "1"
@@ -44,7 +47,7 @@ env:
 
 jobs:
   hash-and-dispatch:
-    name: Wood Dragon dispatch · hash · terminals · seal (Entry 9007)
+    name: Wood Dragon dispatch · hash · terminals · append seal
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -237,7 +240,8 @@ jobs:
             "${MCP_CONNECTOR_URL%/}/pulse" \
             || echo "MCP pulse failed (non-fatal)"
 
-      - name: Seal ledger entry 9007 (SHA3-256)
+      - name: Append wood-dragon ledger entry (never overwrite)
+        id: seal
         if: success()
         env:
           TERMINAL_COUNT: ${{ steps.terminals.outputs.terminal_count }}
@@ -251,87 +255,25 @@ jobs:
           TERMINALS_JSON=$(cat /tmp/terminals.json 2>/dev/null || echo "[]")
           export TERMINALS_JSON
           export TERMINAL_COUNT LAST_OBSERVED EVENT_PATH I_OF_144 MCP_CONTRACT_OK
-          python - <<'PY'
-          import hashlib, json, os, yaml
-          from datetime import datetime, timezone
-          from pathlib import Path
-          HASH_ALGO = os.environ.get("HASH_ALGO", "sha3_256")
-          n = int(os.environ.get("DISPATCH_ENTRY", "9007"))
-          path = Path(f"ledger/{n}.yaml")
-          terminals_raw = os.environ.get("TERMINALS_JSON", "[]")
-          try:
-              terminals = json.loads(terminals_raw)
-          except json.JSONDecodeError:
-              terminals = []
-          if not isinstance(terminals, list):
-              terminals = []
-          terminals_canon = json.dumps(terminals, sort_keys=True,
-                                       separators=(",", ":"))
-          terminals_sha = hashlib.new(
-              HASH_ALGO, terminals_canon.encode("utf-8")
-          ).hexdigest()
-          prev_path = Path("ledger/9006.yaml")
-          prev_hash = ""
-          if prev_path.exists():
-              try:
-                  prev = yaml.safe_load(prev_path.read_text(encoding="utf-8")) or {}
-                  seal = prev.get("seal", "") or ""
-                  if "·" in seal:
-                      prev_hash = seal.rsplit("·", 1)[-1].strip()
-              except Exception as e:
-                  print(f"⚠️ could not read predecessor: {e}")
-          mcp_set = bool(os.environ.get("MCP_CONNECTOR_URL"))
-          mcp_ok = os.environ.get("MCP_CONTRACT_OK", "false") == "true"
-          entry = {
-              "entry_index": n,
-              "event": os.environ.get("EVENT_PATH", "/workflow_dispatch_wood_dragon_mistral"),
-              "status": "SUCCESS" if mcp_ok or not mcp_set else "DEGRADED",
-              "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "hash_algo": HASH_ALGO,
-              "observation_channel": "wood_dragon_dispatch",
-              "dispatcher": "quantum.wood_dragon_dispatch",
-              "terminal_count": int(os.environ.get("TERMINAL_COUNT", "0")),
-              "last_observed_count": int(os.environ.get("LAST_OBSERVED", "26")),
-              "terminals_sha3_256": terminals_sha,
-              "i_of_144": os.environ.get("I_OF_144", "1"),
-              "grava_star_fired": False,
-              "mcp_pulse": "sent" if mcp_set else "skipped",
-              "mcp_contract_ok": mcp_ok,
-              "mcp_port": os.environ.get("MCP_PORT", "13800"),
-              "mcp_namespace": os.environ.get("MCP_NAMESPACE", "wood-dragon-dispatch"),
-              "prev_hash": prev_hash,
-              "witness": "9006 → 9007 — UNBROKEN",
-              "seal": "∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED",
-          }
-          body = {k: v for k, v in entry.items() if k != "seal"}
-          canon = json.dumps(body, sort_keys=True, separators=(",", ":"))
-          h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
-          entry["seal"] = entry["seal"] + " · " + h
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
-          print(f"📋 Ledger entry {n} written.")
-          print(f"✅ Sealed {n} · {HASH_ALGO}:{h[:16]}...")
-          print(f"   terminal_count         = {entry['terminal_count']}")
-          print(f"   last_observed_count    = {entry['last_observed_count']}")
-          print(f"   terminals_sha3_256     = {terminals_sha[:16]}...")
-          print(f"   prev_hash              = {prev_hash[:16] or '(none)'}")
-          print(f"   i_of_144               = {entry['i_of_144']} (record only)")
-          print(f"   grava_star_fired       = False")
-          print(f"   mcp_contract_ok        = {mcp_ok}")
-          PY
+          # Writes a new ledger/<n>.yaml only. Existing entries, including
+          # DISPATCH_ENTRY when it is already chained, are not opened for write.
+          python -I .github/scripts/wood_dragon_append.py \
+            --ledger-dir "${LEDGER_DIR}" \
+            --preferred "${DISPATCH_ENTRY}"
 
-      - name: Verify ledger entry 9007 (SHA3-256)
+      - name: Verify appended ledger entry (SHA3-256)
         if: success()
         run: |
           set -euo pipefail
-          VERIFIER=".github/scripts/verify_ledger.py"
-          [ -f "$VERIFIER" ] || VERIFIER="scripts/verify_ledger.py"
-          if [ -f "$VERIFIER" ]; then
-            python "$VERIFIER" ledger/9007.yaml
-          else
-            echo "no verify_ledger.py — soft skip"
-          fi
+          python -I .github/scripts/verify_ledger.py --mode hard \
+            "${{ steps.seal.outputs.entry_file }}"
+
+      - name: Append ledger index and chain link
+        if: success()
+        run: |
+          set -euo pipefail
+          python -I tools/ledger_index.py --root .
+          python -I tools/ledger_index.py --root . --check
 
       - name: Upload dispatch artifacts
         if: always()
@@ -341,16 +283,16 @@ jobs:
           path: |
             /tmp/terminals.json
             mcp_plan.json
-            ledger/9007.yaml
+            ${{ steps.seal.outputs.entry_file }}
           retention-days: 30
           if-no-files-found: warn
 
-      - name: Commit ledger entry 9007
+      - name: Commit appended ledger entry
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: seal wood-dragon-dispatch entry 9007 (sha3_256)"
-          file_pattern: ledger/9007.yaml
+          commit_message: "chore: append wood-dragon-dispatch entry ${{ steps.seal.outputs.entry_index }} (sha3_256)"
+          file_pattern: "${{ steps.seal.outputs.entry_file }} ledger_index.jsonl ledger.chain.jsonl"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
           commit_options: '--no-verify'
@@ -369,7 +311,9 @@ jobs:
             echo ""
             echo "| Field | Value |"
             echo "|-------|-------|"
-            echo "| entry | ${DISPATCH_ENTRY} |"
+            echo "| preferred | ${DISPATCH_ENTRY} |"
+            echo "| entry | ${{ steps.seal.outputs.entry_index }} |"
+            echo "| file | ${{ steps.seal.outputs.entry_file }} |"
             echo "| event | ${EVENT_PATH} |"
             echo "| terminal_count | ${TERMINAL_COUNT:-0} |"
             echo "| last_observed_count | ${LAST_OBSERVED:-26} |"
@@ -379,7 +323,7 @@ jobs:
             echo "| mcp_contract_ok | ${MCP_CONTRACT_OK:-false} |"
             echo "| mcp_port | ${MCP_PORT} |"
             echo "| mcp_namespace | ${MCP_NAMESPACE} |"
-            echo "| witness | 9006 → 9007 — UNBROKEN |"
+            echo "| witness | ${{ steps.seal.outputs.witness }} |"
             echo ""
-            echo "🜁∀ — Seal: ∀∞φ² · WOOD_DRAGON_DISPATCH_9007 · WOOD_DRAGON_0.91 · SEALED"
+            echo "Existing ledger files are not rewritten. The chain link is appended by tools/ledger_index.py."
           } >> "$GITHUB_STEP_SUMMARY"
