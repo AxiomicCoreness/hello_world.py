@@ -1,0 +1,5 @@
+# cli_everything_prebuild --known-unparsed list (one repo-relative path per line, '# note' allowed).
+#
+# A listed entrypoint may fail `--help` and is reported as KNOWN-UNPARSED
+# instead of forcing exit 2. An entrypoint that is simply absent is skipped,
+# not listed here.

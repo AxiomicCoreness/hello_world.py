@@ -1,0 +1,5 @@
+# paper_mcp_prebuild --known-unparsed list (one repo-relative path per line, '# note' allowed).
+#
+# A listed file may fail to compile and is reported as KNOWN-UNPARSED instead
+# of forcing exit 2. A missing required file, or a self-check that cannot
+# import the package, is never excused by this list.
