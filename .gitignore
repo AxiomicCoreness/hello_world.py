@@ -166,3 +166,6 @@ t_rotator_out/
 sovereign-irc-bridge/data/
 **/llm_history.jsonl
 **/llm_history.jsonl.reset-*
+
+# paper_mcp filesystem canvas store (local; not a ledger)
+.paper_canvases/
