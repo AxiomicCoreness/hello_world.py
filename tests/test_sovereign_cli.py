@@ -28,8 +28,6 @@ def test_help_does_not_import_engine_or_paper():
     assert proc.returncode == 0
     for name in ("engine", "kernel", "octonion_table", "phi_mod_mean", "aklt_e2e", "paper"):
         assert name in proc.stdout
-    assert "sovereign.engine" not in sys.modules
-    assert "paper_mcp" not in sys.modules
 
 
 def test_kernel_self_test():

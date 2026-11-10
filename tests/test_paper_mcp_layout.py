@@ -37,7 +37,7 @@ def _bash(args, env=None, timeout=30):
 
 
 def test_tree_matches_cors_anywhere_shape():
-    for name in ("README.md", "help.txt", "launch.sh", "config.env", ".gitignore"):
+    for name in ("README.md", "help.txt", "launch.sh", "defaults.conf", ".gitignore"):
         assert (TOOL / name).is_file(), name
     assert (ROOT / "tools" / "cors-anywhere" / "README.md").is_file()
     assert (ROOT / "tools" / "cors-anywhere" / "help.txt").is_file()

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
 # SPDX-License-Identifier: MIT
-# tools/paper-mcp/launch.sh — defaults from config.env, then scripts/paper_mcp.sh.
+# tools/paper-mcp/launch.sh — defaults from defaults.conf, then scripts/paper_mcp.sh.
 # Values already in the environment are kept.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-CONFIG="$HERE/config.env"
+CONFIG="$HERE/defaults.conf"
 
 if [[ -f "$CONFIG" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do

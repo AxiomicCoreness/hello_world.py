@@ -24,8 +24,8 @@ as `tools/cors-anywhere/server.js`.
 tools/paper-mcp/
 ├── README.md      this file
 ├── help.txt       plain-text help (cors-anywhere/help.txt shape)
-├── launch.sh      sources config.env, execs scripts/paper_mcp.sh
-├── config.env     default bind 127.0.0.1 and port 8765
+├── launch.sh      reads defaults.conf, execs scripts/paper_mcp.sh
+├── defaults.conf  default bind 127.0.0.1 and port 8765
 └── .gitignore     local canvas dir, bytecode, env files
 
 scripts/paper_mcp.sh          stdio serve and serve-http

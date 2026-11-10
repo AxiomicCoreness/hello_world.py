@@ -138,8 +138,12 @@ def _cmd_paper(paper_args: Sequence[str]) -> int:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    # paper_mcp flags such as --root must not be parsed by this dispatcher.
+    if raw and raw[0] == "paper":
+        return _cmd_paper(raw[1:])
     parser = _parser()
-    args = parser.parse_args(None if argv is None else list(argv))
+    args = parser.parse_args(raw)
     if args.command == "engine":
         return _cmd_engine_phi()
     if args.command == "kernel":
