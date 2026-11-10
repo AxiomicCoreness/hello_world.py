@@ -400,33 +400,46 @@ def test_serve_http_cli_and_loopback_cors(tmp_path):
 
 
 def test_import_without_cwd_on_path(tmp_path):
+    sources = (
+        "paper_mcp/__init__.py",
+        "paper_mcp/__main__.py",
+        "paper_mcp/server.py",
+        "paper_mcp/cli.py",
+        "tests/test_paper_mcp.py",
+    )
+    # python -I ignores PYTHONPYCACHEPREFIX, and py_compile -m writes next
+    # to the source. A read-only checkout (container CI) needs an explicit cfile.
+    for rel in sources:
+        dest = tmp_path / (rel.replace("/", "_") + "c")
+        compiled = subprocess.run(
+            [
+                sys.executable,
+                "-I",
+                "-c",
+                "import py_compile, sys; py_compile.compile(sys.argv[1], cfile=sys.argv[2], doraise=True)",
+                str(ROOT / rel),
+                str(dest),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert compiled.returncode == 0, compiled.stderr
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
-    compiled = subprocess.run(
+    # -P (do not prepend cwd) exists on 3.11+. The process cwd is already
+    # outside the repo, so 3.10 finds the package only through PYTHONPATH.
+    cmd = [sys.executable]
+    if sys.version_info >= (3, 11):
+        cmd.append("-P")
+    cmd.extend(
         [
-            sys.executable,
-            "-I",
-            "-m",
-            "py_compile",
-            "paper_mcp/__init__.py",
-            "paper_mcp/__main__.py",
-            "paper_mcp/server.py",
-            "paper_mcp/cli.py",
-            "tests/test_paper_mcp.py",
-        ],
-        cwd=str(ROOT),
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert compiled.returncode == 0, compiled.stderr
-    imported = subprocess.run(
-        [
-            sys.executable,
-            "-P",
             "-c",
             "import paper_mcp, paper_mcp.cli, paper_mcp.server; print(paper_mcp.__version__)",
-        ],
+        ]
+    )
+    imported = subprocess.run(
+        cmd,
         cwd=str(tmp_path),
         env=env,
         capture_output=True,
