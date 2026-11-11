@@ -1,0 +1,29 @@
+paper-mcp (AxiomicCoreness) — loopback canvas MCP
+================================================
+
+Bind: 127.0.0.1 only. 0.0.0.0, ::, and * are refused.
+This is not an open proxy. The HTTP listener is serve-http.
+
+Modes (scripts/paper_mcp.sh, or tools/paper-mcp/launch.sh):
+
+  serve        MCP JSON-RPC on stdio (default)
+  serve-http   GET /healthz and POST /mcp on 127.0.0.1
+
+Health:
+
+  GET /healthz
+  {"status":"ok","service":"paper-mcp"}
+  Cross-Origin-Resource-Policy: cross-origin
+  No secrets. Same public-probe idea as port380 /healthz.
+  CORS header rules follow tools/cors-anywhere/server.js:
+  reflect Origin, or '*' only when the server is started with that mode.
+
+Env:
+
+  PAPER_MCP_ROOT     canvas directory (python default: ./.paper_canvases)
+  PAPER_MCP_PORT     listen port for serve-http (default 8765)
+  PORT               used when PAPER_MCP_PORT is unset
+  HOST / BIND_HOST   must be 127.0.0.1 or localhost, else FATAL
+  PAPER_MCP_BIND     same refusal rule; the socket is still 127.0.0.1
+
+The Python package paper_mcp is imported, not copied into this directory.
