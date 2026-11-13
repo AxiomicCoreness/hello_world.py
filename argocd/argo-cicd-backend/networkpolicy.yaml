@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+# No ingress (the sink binds 127.0.0.1:8024 inside the pod). Egress: DNS and
+# HTTPS (github.com clone, api.github.com polls) only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: argo-sink
+  namespace: argo-cicd
+  labels:
+    app.kubernetes.io/name: argo-sink
+    app.kubernetes.io/part-of: argo-cicd-backend
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: argo-sink
+  policyTypes: ["Ingress", "Egress"]
+  ingress: []
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - ports:
+        - protocol: TCP
+          port: 443

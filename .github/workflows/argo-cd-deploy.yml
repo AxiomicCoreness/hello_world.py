@@ -1,0 +1,117 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Argo CD Deploy
+
+# Deployment gate for the backend Argo CI/CD sink (argocd/application-argo-cicd-backend.yaml
+# + argocd/argo-cicd-backend/). Validate always; live sync only on main when
+# ARGOCD_SERVER and ARGOCD_AUTH_TOKEN secrets exist, otherwise skip (docs/ci_cd.md).
+# argo-ci.yml and cd-combinator.yml bodies are not rewritten. No ledger write.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "argocd/application-argo-cicd-backend.yaml"
+      - "argocd/argo-cicd-backend/**"
+      - "pythonIDE/argo_sink.py"
+      - "pythonIDE/toolkit.py"
+      - "tests/test_argo_cd_backend.py"
+      - ".github/workflows/argo-cd-deploy.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "argocd/application-argo-cicd-backend.yaml"
+      - "argocd/argo-cicd-backend/**"
+      - "pythonIDE/argo_sink.py"
+      - "pythonIDE/toolkit.py"
+      - "tests/test_argo_cd_backend.py"
+      - ".github/workflows/argo-cd-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: argo-cd-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ARGO_APP: argo-cicd-backend
+
+jobs:
+  validate:
+    name: Argo CD · validate (pins, syncPolicy, sink tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test deps
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install "pyyaml>=6,<7" "pytest>=8,<9"
+
+      - name: Sink + manifest tests (offline)
+        run: |
+          set -euo pipefail
+          python -P -m pytest tests/test_argo_cd_backend.py -q --tb=short --import-mode=importlib -p no:cacheprovider
+
+      - name: Toolkit honest count stays 54
+        run: |
+          set -euo pipefail
+          python -P pythonIDE/toolkit.py
+
+      - name: kubeconform offline schema validation (CRDs skipped)
+        run: |
+          set -euo pipefail
+          KC_VERSION=v0.6.7
+          KC_SHA256=95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73
+          curl -sSfL -o "$RUNNER_TEMP/kubeconform.tar.gz" \
+            "https://github.com/yannh/kubeconform/releases/download/${KC_VERSION}/kubeconform-linux-amd64.tar.gz"
+          echo "${KC_SHA256}  $RUNNER_TEMP/kubeconform.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/kubeconform.tar.gz" -C "$RUNNER_TEMP" kubeconform
+          "$RUNNER_TEMP/kubeconform" -strict -ignore-missing-schemas -summary \
+            argocd/application-argo-cicd-backend.yaml argocd/argo-cicd-backend/*.yaml
+
+  sync:
+    name: Argo CD · sync (secrets-gated)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: validate
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Sync and wait for Healthy/Synced
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ARGOCD_SERVER:-}" ] || [ -z "${ARGOCD_AUTH_TOKEN:-}" ]; then
+            echo "::notice::ARGOCD_SERVER / ARGOCD_AUTH_TOKEN not set — live sync skipped"
+            exit 0
+          fi
+          api="https://${ARGOCD_SERVER#https://}/api/v1/applications/${ARGO_APP}"
+          curl -sSf -X POST -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"revision\":\"${GITHUB_SHA}\",\"prune\":true}" "${api}/sync" >/dev/null
+          for i in $(seq 1 40); do
+            body="$(curl -sSf -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" "${api}")"
+            sync="$(printf '%s' "$body" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["status"]["sync"]["status"])')"
+            health="$(printf '%s' "$body" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["status"]["health"]["status"])')"
+            echo "attempt ${i}: sync=${sync} health=${health}"
+            if [ "$sync" = "Synced" ] && [ "$health" = "Healthy" ]; then
+              echo "✅ ${ARGO_APP} Synced/Healthy at ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::${ARGO_APP} did not reach Synced/Healthy"
+          exit 1

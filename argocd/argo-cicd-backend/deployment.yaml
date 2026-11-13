@@ -1,0 +1,124 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+# Images are pinned by digest (multi-arch index digests from Docker Hub,
+# resolved 2026-11-13): python:3.12-slim and alpine/git:2.47.2.
+# In-cluster the sink polls and serves 127.0.0.1:8024 only; the WS push to
+# ws://127.0.0.1:6680/cli is a workstation loopback path, so ARGO_SINK_PUSH=0.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-sink
+  namespace: argo-cicd
+  labels:
+    app.kubernetes.io/name: argo-sink
+    app.kubernetes.io/part-of: argo-cicd-backend
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argo-sink
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argo-sink
+        app.kubernetes.io/part-of: argo-cicd-backend
+    spec:
+      serviceAccountName: argo-sink
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: fetch-source
+          image: alpine/git:2.47.2@sha256:062a01ad7a0eb17cff382bc5e26086b4d710e56dfdfdf001109a49b6d9bd378c
+          imagePullPolicy: IfNotPresent
+          args:
+            - clone
+            - --depth=1
+            - --branch=main
+            - --single-branch
+            - https://github.com/AxiomicCoreness/hello_world.py.git
+            - /src/repo
+          env:
+            - name: HOME
+              value: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: src
+              mountPath: /src
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: argo-sink
+          image: python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+          imagePullPolicy: IfNotPresent
+          workingDir: /src/repo
+          command: ["python", "-P", "-m", "pythonIDE.argo_sink", "--serve"]
+          env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: "1"
+            - name: PYTHONPATH
+              value: /src/repo
+            - name: ARGO_SINK_PUSH
+              value: "0"
+            - name: ARGO_SINK_INTERVAL
+              value: "120"
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: argo-sink-github
+                  key: token
+                  optional: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 20m
+              memory: 48Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+          readinessProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8024/health',timeout=2)"]
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          livenessProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8024/health',timeout=2)"]
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          volumeMounts:
+            - name: src
+              mountPath: /src
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: src
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

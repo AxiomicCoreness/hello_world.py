@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+# Backend Argo CI/CD sink (pythonIDE/argo_sink.py). Deployment standard:
+# automated sync with prune + selfHeal, bounded retry, finalizer, and every
+# container image pinned by sha256 digest under argocd/argo-cicd-backend/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cicd-backend
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  revisionHistoryLimit: 10
+  source:
+    repoURL: https://github.com/AxiomicCoreness/hello_world.py.git
+    targetRevision: main
+    path: argocd/argo-cicd-backend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-cicd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+  info:
+    - name: Sink
+      value: "pythonIDE/argo_sink.py · 127.0.0.1:8024 · polls argo-ci, cd-combinator-argo-rollout, sovereign-cicd, ci-cd-stack"
