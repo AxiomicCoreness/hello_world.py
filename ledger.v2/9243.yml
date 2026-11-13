@@ -37,6 +37,7 @@ invariants_held:
   - CMAC-512 outside event-hash domain
 witness_prefix: dff228bca1a207587327d9f2d2ead64e19306dd1939ddc93f61aea4d4a2e845d
 terminal_hex: dff228bca1a207587327d9f2d2ead64e19306dd1939ddc93f61aea4d4a2e845d
+prev_hash: cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
 seal: "∀∞φ² · VERIFY_TRI_MODE_9243 · WOOD_DRAGON_0.91 · SEALED · dff228bca1a207587327d9f2d2ead64e19306dd1939ddc93f61aea4d4a2e845d"
 witness_chain: 9242 → 9243 — UNBROKEN
 math_origin: |
