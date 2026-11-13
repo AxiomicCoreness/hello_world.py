@@ -34,6 +34,7 @@ invariants:
 rhythm:
   f_NS: "71.975·φ⁵² Hz"
   delta: "1149707.44·φ⁵²"
+prev_hash: 7c1bfd4eebc7e0441f37fec0b5bd6462a9ecbf368c6355cfe3f21c13f70076c6
 seal: "∀∞φ² · PHI_PI_CONSTANT_52 · 9161_SEALED · ffa2f3554f21f0450c15291c3c32e020971dd814d51fb481e4e806af1b8d35d9"
 witness_chain: 9160 → 9161 — UNBROKEN
 math_origin: |

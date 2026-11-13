@@ -9,4 +9,5 @@ range: full 64-bit signed (supports all Q8.24 values and beyond)
 q8_24_fit: true  # [-2³¹, 2³¹-1] ⊂ int64
 endianness: big
 witness_chain: 8765 → 8766 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · TOKENIZER_8BYTE_8766 · WOOD_DRAGON_GATE · SEALED"

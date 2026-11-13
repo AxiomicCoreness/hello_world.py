@@ -21,4 +21,5 @@ security_headers_source: FAILED
 security_headers_live: SKIPPED
 ed25519_signatures: success
 witness: 8976 → 8977 — UNBROKEN
+prev_hash: ae25cb49bc49414c18e61d0bdbdbb42286b2e9e908cbbd7682c5ad562dff55a5
 seal: ∀∞φ² · SOVEREIGN_CICD_8977 · WOOD_DRAGON_0.91 · SEALED · 2d6387ff82df90b08620fecf4da60e22b3f3462c718621ca448238a2d0c7cf1d

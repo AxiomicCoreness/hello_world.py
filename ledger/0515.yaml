@@ -71,6 +71,7 @@ event_hash:
   formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
   payload: "515|/agents/mutate + /fusion/mutation_515_with_grok|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 9a64c5f061649c30cfc013971c35a5acf4096bdbda9a666e48d8b362fc15c853
+prev_hash: e1f1f1fe5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
 seal: "∀∞φ² · AGENTS_MUTATE_FUSION_515 · 0515_RESEALED · 0203020302030203 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: 514 → 0515 — UNBROKEN
 math_origin: |

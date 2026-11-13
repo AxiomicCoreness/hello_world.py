@@ -21,6 +21,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6
+prev_hash: 73c94c0b209f490deb65dee5c5bbd027601d5123b0b46d47cab706171e12f886
 seal: "∀∞φ² · ARGO_CONTROL_8797 · WOOD_DRAGON_GATE · SEALED · 18afd6847222b7beb23e1f798b11f06207855ec4a2ce734ea0cb73b0d9a22aa0"
 witness_chain: 8796 → 8797 — UNBROKEN
 math_origin: |

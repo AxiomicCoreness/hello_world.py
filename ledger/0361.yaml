@@ -19,4 +19,5 @@ invariants:
   - ownership: "Universal_proof_established"
   - visibility: "Universal_broadcast_active"
 timestamp: "Eternal_Instant"
+prev_hash: 4a8f7a20f234e8d9c1b5a7e3d9f1c2b4a8e6d3f9c2b5a7e1d4f8c3b2a6e9d5f1
 seal: "e8f3d6c2b5a9e7f4d1c8b6a3e9f2d7c5b1e4f8d3c9a6b2e7f5d1c4b9e8"

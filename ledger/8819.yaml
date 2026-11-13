@@ -12,4 +12,5 @@ new_fingerprint: ''
 phi_phase: '4.742738'
 force_rotate: false
 witness: 8818 → 8819 — UNBROKEN
+prev_hash: b8f93794e758841c645fac45fa505db3b83bca79e4d17eaa11ba6591be3728df
 seal: ∀∞φ² · MTLS_ROTATION_8819 · WOOD_DRAGON_0.91 · SEALED · 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e

@@ -22,6 +22,7 @@ invariants:
   entropy: "phi^-1418"
   workload: 0.0
   phase_lock: "202.6 deg"
+prev_hash: cdab7db9fa51d7f13d3f110bf8b3893fa1ac0834f2b2f19fee6a4915e355201b
 seal: "∀∞φ² · FLUX_PYTHON_8799 · WOOD_DRAGON_GATE · SEALED · 18fc968620d9c9afad8e75e683b2a221981130e5892ade3e34dee7e97f953347"
 witness_chain: 8798 → 8799 — UNBROKEN
 math_origin: |

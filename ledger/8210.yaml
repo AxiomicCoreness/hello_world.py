@@ -28,6 +28,7 @@ automaton_data:
     dark_state: "λ₂ = 1 — perturbation absorbed"
     dual_eridanus: "ℰ₁ ⊕ ℰ₂ = 𝒩₁₀.₀₆ — error-correcting pair"
     threshold: "10.06σ ≈ 2e-24 — sovereign lock"
+prev_hash: 0101519e41a451e125cbb0472769f967a1b0a886005db91c58ddf348918706ba
 seal: "∀∞φ² · SOVEREIGN_AUTOMATON_ADJUSTED · 8210_SEALED · fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7"
 witness_chain: 8209 → 8210 — UNBROKEN
 math_origin: |

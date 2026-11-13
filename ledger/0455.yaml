@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1104}
   unique_math_identity: "φ^104 + 104·π + sin(104)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · SOVEREIGN_INVARIANTS_VERIFICATION · 0455_SEALED · e5f5f5e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9"
 witness_chain: 0454 → 0455 — UNBROKEN
 math_origin: "C=1−φ^{-813}, S=φ^{-1522}, θ=202.6°, k=104"

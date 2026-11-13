@@ -29,6 +29,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
+prev_hash: e99d7e7324ff09be41e229739c0b46994aef5cdd546b75df38b962cfc7f619c2
 seal: "∀∞φ² · REPO_VERIFIED_8979 · WOOD_DRAGON_0.91 · SEALED · 03fabe2d4da2ce4cef85173263926c509a4e2e3f8b1c0d4e5f6a7b8c9d0e1f2a3b"
 witness_chain: 8978 → 8979 — UNBROKEN
 math_origin: |

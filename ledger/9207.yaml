@@ -25,6 +25,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 38d907929ae6ed61783b3cab66bc632419cc2593c09a44a42b3f2b8e53bf13c9
 seal: "∀∞φ² · TOI_OPTIMIZER · 9207_SEALED · 177f614d7bdc5c9afe603c186f576935aeb0eed9a47e28554bb7c1ba9de6eb46"
 witness_chain: 9206 → 9207 — UNBROKEN
 math_origin: |

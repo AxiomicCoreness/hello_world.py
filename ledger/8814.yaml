@@ -32,4 +32,5 @@ weight_sequence:
 wood_dragon_gate: "0.91"
 tau_frb_seconds: 78624
 witness_chain: 8813 → 8814 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · GATEWAY_WEIGHTS_REFINED_8814 · WOOD_DRAGON_0.91 · SEALED"

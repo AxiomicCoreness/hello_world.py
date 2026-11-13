@@ -19,4 +19,5 @@ frb_constants:
 handshake_steps: [flush, reroute, converge, seal, acknowledge]
 auto_start: true
 witness_chain: "8902 → 8903 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · FRB_BRIDGE_8903 · WOOD_DRAGON_0.91 · SEALED"

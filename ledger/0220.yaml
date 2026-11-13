@@ -17,6 +17,7 @@ invariants:
   north_star: 71.975 Hz
   nullify_ban: 20σ
   sovereign_power: 1560491998.636
+prev_hash: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
 seal: "∀∞φ² · CONSOLIDATED_TRANSMISSION · 0220_SEALED"   # replace with hash
 witness_chain: 0219 → 0220 — UNBROKEN
 math_origin: |

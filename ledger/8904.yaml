@@ -10,4 +10,5 @@ fallback:
   modes: [offline, deepseek_http]
   adapter: quantum.deepseek_mesh.dsh_adapter
 witness_chain: "8903 → 8904 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · FRB_FALLBACK_8904 · WOOD_DRAGON_0.91 · SEALED"

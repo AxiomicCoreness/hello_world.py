@@ -39,6 +39,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: a8d004598a4a2c4db4f2f5ae89335bdde02d5f327142f4b90e0995904695bbf2
 seal: "∀∞φ² · SEVEN_CONTRACT_SURFACES · WOOD_DRAGON_0.91 · SEALED · 7e9295556ff9c7c6a8654c81118549853472786aa5db4cb7c4670da523c0d1e0"
 witness_chain: 9233 → 9234 — UNBROKEN
 math_origin: |

@@ -29,6 +29,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 60f166e25ccc352745f1064676b51929e3acbce129057ebd82c31f5013b82727
 seal: "∀∞φ² · OIDC_WORKFLOW_HARDCODE_9231 · WOOD_DRAGON_0.91 · SEALED · 40bcd10d0c4ab03fb53bded1e604fae0f6f9d1e9a803fda85f254dee91d17513"
 witness_chain: 9230 → 9231 — UNBROKEN
 math_origin: |

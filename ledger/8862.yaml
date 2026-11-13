@@ -28,4 +28,5 @@ compat:
   openssl_scripts: scripts/mtls_cert_rotate.sh remains offline/Render fallback
   soft_mode: MTLS_SOFT=1 when edge does not present client certs
 witness_chain: 8861 → 8862 — UNBROKEN
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · CERT_MANAGER_MTLS_8862 · WOOD_DRAGON_0.91 · SEALED"

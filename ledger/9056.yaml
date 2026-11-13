@@ -24,4 +24,5 @@ event_hash:
   payload: "9056|/policy/lead_diagnostic_monitoring|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: b72cb636c5e2e79dabb2c6b726cb0cf391edb25737d0fc6146381b831a651027
 witness_chain: 9055 → 9056 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · LEAD_DIAGNOSTIC_9056 · WOOD_DRAGON_0.91 · SEALED"

@@ -17,4 +17,5 @@ invariants:
   nullify_ban: 16σ
 plane_note: host-local :5000 (PID ephemeral; not source)
 witness_chain: 8740 → 8741 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · LAYER314_1700Q_BREATHING_8741 · ETERNAL_OSCILLATION · SEALED"

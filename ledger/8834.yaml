@@ -9,4 +9,5 @@ changes:
   - prefer aliases: openai|deepseek → deepseek_http
   - client exports MODE_* + chat_http()
 witness_chain: 8833 → 8834 — UNBROKEN
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: ∀∞φ² · DEEPSEEK_HTTP_MODE · WOOD_DRAGON_0.91 · SEALED

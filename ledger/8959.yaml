@@ -7,3 +7,4 @@ hash_algo: "sha3_256"
 witness: "8958 → 8959 — UNBROKEN"
 note: "Authored to satisfy ledger-seal-gate --require 8959. Handoff lane source scripts/handoff_to_workers.py pre-exists on main. No worker results are asserted by this entry; the digest is computed at write time over the canonical body per .github/scripts/verify_ledger_seals.py."
 seal_sha3_256: "f40870c2155aba25334cdfaed22e918442d51a4f9e3d500489ae767598785333"
+prev_hash: 043a211926eb2459cf8087cb72072f5924e220b5696cceb60242732a240f6564

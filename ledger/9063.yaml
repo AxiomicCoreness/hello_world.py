@@ -18,4 +18,5 @@ event_hash:
   payload: "9063|/policy/token_arrangement_close|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: a36d73e310dbdde8c395a13d1427309c2c625924975ddf534f5b22ebdcd0c507
 witness_chain: 9062 → 9063 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · TOKEN_ARRANGEMENT_9063 · WOOD_DRAGON_0.91 · SEALED"

@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1059}
   unique_math_identity: "φ^59 + 59·π + sin(59)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · ZETA_ZERO_WEIGHTED_SUM · 0410_SEALED · b7a6f5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3"
 witness_chain: 0409 → 0410 — UNBROKEN
 math_origin: "Σ=∑_{n=1}^{144} γ_n·φ^{-n}+k·1e-9, k=59"

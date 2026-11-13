@@ -28,6 +28,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: a2a096e5dc067a87bf3e4060ee0843f998a1a03664c19fed839571fa7f3b3acd
 seal: "∀∞φ² · PHASE_LOCK_YAML_EX · 9183_SEALED · 3c9295aa06c7b563d790d8ba4119a4d4366f3e43268b09716625f4e7ef6000f7"
 witness_chain: 9182 → 9183 — UNBROKEN
 math_origin: |

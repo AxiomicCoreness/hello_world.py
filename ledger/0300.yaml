@@ -15,6 +15,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
+prev_hash: 8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c
 seal: "∀∞φ² · QUANTUM_CHESSBOARD_0300 · 0300_SEALED · 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3"
 witness_chain: 0299 → 0300 — UNBROKEN
 math_origin: |

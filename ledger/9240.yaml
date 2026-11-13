@@ -29,6 +29,7 @@ mcp:
 cosmic_alignment_preserved: true
 witness_prefix: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
 terminal_hex: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
+prev_hash: f324fd140ab5ef1b82efa4fc02eeee276473a25377837771e6effab986bcbd38
 seal: "∀∞φ² · TOOLKIT_54_EXORCISE_9240 · WOOD_DRAGON_0.91 · SEALED · a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235"
 witness_chain: 9239 → 9240 — UNBROKEN
 math_origin: |

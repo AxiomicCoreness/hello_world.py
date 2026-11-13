@@ -28,6 +28,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 46da043fe13bdb6a299eda1264925dac20517c8e0175d4958b1e4ce2fbc1211e
 seal: "∀∞φ² · BIN_CODEC_REWRITE_COMPAT · 9172_SEALED · 4733966ea548d9c7bc2b68baaad47a95144bd884ac052d3eaa8a3feb29b18e9e"
 witness_chain: 9171 → 9172 — UNBROKEN
 math_origin: |

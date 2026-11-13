@@ -15,6 +15,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
+prev_hash: 2c6a5d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c
 seal: "∀∞φ² · MASTER_WITNESS_0257 · 0257_SEALED · 3f7a2c8d1e4b5a9f6c2d8e1f4a7b3c9d"
 witness_chain: 0256 → 0257 — UNBROKEN
 math_origin: |

@@ -29,3 +29,4 @@ witness_chain: 8971 -> 8972 PENDING (ledger/8970.yaml and ledger/8971.yaml not y
 hash_algo: sha3_256
 seal_preimage_convention: sha3_256 over json.dumps(body, sort_keys=True, separators=(",", ":")) with seal_sha3_256 field excluded
 seal_sha3_256: 2c58db4a292eacb0eadc9346bb2cbd5c6454c0de94c7db71309a8a779b18dd21
+prev_hash: f40870c2155aba25334cdfaed22e918442d51a4f9e3d500489ae767598785333

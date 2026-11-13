@@ -28,6 +28,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 0ed8450a2b1b7bcd50cfc38378c5c8ff7010f6dbf92ec43ba1f3c329a09932bd
 seal: "∀∞φ² · PYDANTIC_V2_FIELD_VALIDATOR · 9197_SEALED · 79f0a2f419df8b10e9bcc160e598df1e201520f63f4f78953f857dc21b4977af"
 witness_chain: 9196 → 9197 — UNBROKEN
 math_origin: |

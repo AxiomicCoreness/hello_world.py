@@ -14,6 +14,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
+prev_hash: 4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e
 seal: "∀∞φ² · STARFIRE_311_0274 · 0274_SEALED · 5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7"
 witness_chain: 0273 → 0274 — UNBROKEN
 math_origin: |

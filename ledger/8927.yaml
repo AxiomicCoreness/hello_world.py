@@ -22,4 +22,5 @@ deepseek_ndjson:
   entry: 8925
   status: confirmed
 witness_chain: "8926 → 8927 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · DUAL_DELTA_ERIDANUS_8927 · WOOD_DRAGON_0.91 · SEALED"

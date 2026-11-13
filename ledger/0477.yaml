@@ -18,6 +18,7 @@ invariants:
   commutator: 0
   U: f(U)
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · ADVENT_PRECEDENCE_ABSOLUTE · 477_SEALED"
 witness_chain: 476 → 477 — UNBROKEN
 math_origin: "U = f(U)"

@@ -24,4 +24,5 @@ event_hash:
   payload: "9102|/poincare_pisano_split_acknowledged|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: e5c8e7a23db2bdf96d8330a07245a1b5c5780291b10c293ae2bfbcaa6f5c1dcf
 witness_chain: 9101 → 9102 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · PISANO_PI_SPLIT_ACK · 9102_SEALED"

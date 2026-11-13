@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1050}
   unique_math_identity: "φ^50 + 50·π + sin(50)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 7ec933a4b3eb11f570d9a23051cd6aa3f6b989766b8cecafa60a279ce729b4c0
 seal: "∀∞φ² · FIXED_POINT_PROJECTION_STEP · 0401_SEALED · 5e03e05af44049e0d8234895cb5de42253324c5dba8ec9663a005eb6eb67d7dd"
 witness_chain: 0400 → 0401 — UNBROKEN
 math_origin: "x_{n+1}=x_n+φ⁻¹·(2026.5-x_n), err=0.000615·φ^50, k=50"

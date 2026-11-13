@@ -17,4 +17,5 @@ compression_note: |
   output fingerprint dim=233 (trait_compression.InfiniteCompressor).
 oidc_policy: full 64-char digests — never truncated
 witness_chain: 8624 → 8625 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · HYPERIAN_JSON_SERVER_8625 · SEALED"

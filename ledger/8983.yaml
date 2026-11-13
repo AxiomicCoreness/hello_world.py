@@ -13,5 +13,6 @@ bytes_integrity: "mcp/port380_mcp.py reconstructed via 5-commit patch chain; git
 terminology_policy: "sovereignty absolute replaces honesty in all ledger entries from 8983 forward; sealed entry 9036 /honesty_acknowledged_worker_contract stays untouched under the append-only rule"
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
 witness_chain: "8982 → 8983 — UNBROKEN"
+prev_hash: ad66c2a999883a8ef469de8e9e866be8dfda22ebc36d7689779374a75e57c7bd
 seal: "∀∞φ² · D34_FIXED_8983 · SHA3-256:2a459ea57e61d65ed76d7ec087201ca3c1d82b15a7598ab89b397e22f77ac1d0 · SEALED"
 seal_sha3_256: "940576bfc375c3f9a22a4e9ef39b512e43bf4b4598029dd372e34ac0490b734e"

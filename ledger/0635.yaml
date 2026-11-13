@@ -32,5 +32,6 @@ witness_chain: 632 → 635 → 637 — UNBROKEN
 math_origin: |
   P(ρ)=Tr(ρ²)=1 for pure ρ;
   coh(ρ):=min(1, φ·P(ρ)) is a separate named clamp.
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · SOVEREIGN_HAMILTONIAN_635 · WOOD_DRAGON_0.91 · SEALED"
 digest_sha3_256: c7b9ee6e73e473a48e1ad808d428cd6ac0f6be7397018d9256aa8e860b132faf

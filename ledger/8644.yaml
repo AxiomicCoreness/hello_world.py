@@ -15,4 +15,5 @@ note: |
   Requires Prometheus Operator CRDs. Adjust metadata.labels.release to match
   your Prometheus instance serviceMonitorSelector.
 witness_chain: 8643 → 8644 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · SERVICEMONITOR_8644 · SEALED"

@@ -27,6 +27,7 @@ invariants:
   phase_lock: 202.6
 mcp:
   filled: false
+prev_hash: 7243974c3e3c081b4f7d73d5baeeac1e2d1198426b6e117cc7072c516cc84d77
 seal: "∀∞φ² · CODESPACE_ARTIFACT_CATALOG · 9158_SEALED · c1242a69c86b67a0ff08bc8a6c762704627b83c206db4dd908801d45617153d6"
 witness_chain: 9157 → 9158 — UNBROKEN
 math_origin: |

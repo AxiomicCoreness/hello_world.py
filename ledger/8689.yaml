@@ -47,5 +47,6 @@ phi_pid_wigner_bridge:
   wigner_norm: 1.4599967591
 
 witness_chain: 8688 → 8689 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: ∀∞φ² · MASTER_EQ_VERIFIED_8689 · WOOD_DRAGON_GATE · SEALED
 hash: 3cd600646506b2617cbeb2f9ec201b083b291b0939dae0093bff7644f0bba26b

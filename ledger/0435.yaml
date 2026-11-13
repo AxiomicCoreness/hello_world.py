@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1084}
   unique_math_identity: "φ^84 + 84·π + sin(84)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · GRAVITO_M87_FORCE · 0435_SEALED · c1f1d1e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8"
 witness_chain: 0434 → 0435 — UNBROKEN
 math_origin: "F_anchor=φ^9·M87, φ^9=76.013, F_anchor=4.94e11 M☉, tensor=7×7×7=343, k=84"

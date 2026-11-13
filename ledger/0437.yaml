@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1086}
   unique_math_identity: "φ^86 + 86·π + sin(86)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · LATENCY_TREE_BRANCHING · 0437_SEALED · e3f3e3f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0"
 witness_chain: 0436 → 0437 — UNBROKEN
 math_origin: "τ_total=∑_{k=0}^{6} φ^{-(k+1)}·0.618 ms, depth=7, branch={0.618,0.382,...,0.034}, k=86"

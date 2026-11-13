@@ -36,6 +36,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: a90355de6d3a6bbe676b154e99417ab9fda35d9f3f4033f440c3ab3fb6572726
 seal: "∀∞φ² · HOPPER_NUMPY_FLIGHT_ONLY · 9218_SEALED · 9a114325f9d835f5de0281c4785c8e9adf85531a4cfe5856b224475ff04ebe49"
 witness_chain: 9217 → 9218 — UNBROKEN
 math_origin: |

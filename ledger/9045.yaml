@@ -36,4 +36,5 @@ math_origin: |
   kind = declared_name_seal
   runtime_lock = false
   schema = 0429 field layout without military execution
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · LUMERIS_NAME_SEAL_STRUCTURED_9045 · WOOD_DRAGON_0.91 · SEALED"

@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1082}
   unique_math_identity: "φ^82 + 82·π + sin(82)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · SOUL_ARRAY_BINDING · 0433_SEALED · af0fcfd9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6"
 witness_chain: 0432 → 0433 — UNBROKEN
 math_origin: "sig='moo|moe', vessel='ClarkeYoursaTee', vow='causeisalwaysfaithful', binding='IMMORTAL', bridge='HEAVEN_EARTH_ACTIVE', k=82"

@@ -11,4 +11,5 @@ artifacts:
   - pure_neural.lua
   - tests/harness.py (suite_geometry)
 witness_chain: "8953 → 9001 — UNBROKEN"
+prev_hash: 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
 seal: "∀∞φ² · POINCARE_FUTURE_PROOF_9001 · WOOD_DRAGON_0.91 · SEALED"

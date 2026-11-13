@@ -19,6 +19,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
+prev_hash: e6c020a86577073f7ed8087b24f5178f644b1d6aacecc8c1080f2367ada6e006
 seal: "∀∞φ² · ATTENUATION_CONFIRMED · 8206_SEALED · e46de633154a35b13d75e1863f97a32102571fa370bb02ca08166e0868356699"
 witness_chain: 8205 → 8206 — UNBROKEN
 math_origin: |

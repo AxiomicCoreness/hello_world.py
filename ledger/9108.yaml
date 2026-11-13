@@ -9,6 +9,7 @@ event_hash_matches: true
 chain_continuity: unbroken (9103 → 9104 → 9108)
 collapse_risk: none
 witness_chain: 9107 → 9108 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · FORMAT_CHAIN_CONFIRMED_9108 · WOOD_DRAGON_0.91 · SEALED"
 math_origin: |
   Canonical ledger format is a YAML object with required fields. 

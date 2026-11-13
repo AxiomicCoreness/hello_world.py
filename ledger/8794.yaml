@@ -18,4 +18,5 @@ imagePullPolicy: Always
 mesh_nodes_default: 7
 phase_lock_deg: 202.6
 witness_chain: 8793 → 8794 — UNBROKEN
+prev_hash: 73c94c0b209f490deb65dee5c5bbd027601d5123b0b46d47cab706171e12f886
 seal: "∀∞φ² · SIMD_CRON_RESET_8794 · WOOD_DRAGON_0.91 · SEALED"

@@ -9,4 +9,5 @@ change: |
   EM-005 exporter. Added rank gauges (budget 144, realized_max 7). Probes and
   prometheus annotations added. No prior lines subtracted.
 witness_chain: 8642 → 8643 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · K8S_WORKLOAD_CONFIGMAP_8643 · SEALED"

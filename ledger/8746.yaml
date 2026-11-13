@@ -12,4 +12,5 @@ expected_root: 08c344fe89bb5d476e34f693c6655efabf3731cab43919e8bdc18591377aca31
 match: true
 test_module: quantum/anchor_mint_test.py
 witness_chain: 8745 → 8746 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · ANCHOR_MINTING_TEST_8746 · WOOD_DRAGON_0.91 · SEALED"

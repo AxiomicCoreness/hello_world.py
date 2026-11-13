@@ -16,4 +16,5 @@ event_hash:
   payload: "9095|/ci_cd/argo_image_cd_combinator|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: a03a9be816df14db73e54a12a59477de448c009be6ede205c6fdccefedf214b0
 witness_chain: 9094 → 9095 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · CI_ARGO_CD_COMBINATOR_9095 · WOOD_DRAGON_0.91 · SEALED"

@@ -17,4 +17,5 @@ historical_note: |
   conversation archive. This entry materializes executable compression + batch
   OIDC helpers on current main without importing broken mega-menu fragments.
 witness_chain: 8623 → 8624 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · INFINITE_COMPRESSION_233 · BATCH_OIDC · 8624 · SEALED"

@@ -22,4 +22,5 @@ event_hash:
   payload: "9104|/sheaf/phase6_learner_evolve_one_shot|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 159c7e336c88f9104266c26e40aa9e222847a0de2258e7eeced54df82d9efb33
 witness_chain: 9103 → 9104 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · SHEAF_PHASE6_EVOLVE_9104 · WOOD_DRAGON_0.91 · SEALED"

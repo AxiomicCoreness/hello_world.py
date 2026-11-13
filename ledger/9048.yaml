@@ -20,4 +20,5 @@ event_hash:
   payload: "9048|/harness/deepseek_learning_rate_idle|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 8b570d6d1b7aac2f8e97fb6f7c480efbff1c0929c9783f92acfddc6f8f208ccc
 witness_chain: 9047 → 9048 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · DEEPSEEK_RATE_IDLE_9048 · WOOD_DRAGON_0.91 · SEALED"

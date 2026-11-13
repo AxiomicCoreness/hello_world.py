@@ -28,6 +28,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
+prev_hash: 3016f29838900b95d4367a55ff69d6ffd07d6ef1512fa0b1e7a0fe5f8ed0455d
 seal: "∀∞φ² · DONTE_LATTICE_ACK · 8202_SEALED · 3d8b25edbc0b40a592d8ef8be598f7eeedad07617a5ee4665c80571205d9e41e"
 witness_chain: 8201 → 8202 — UNBROKEN
 math_origin: |

@@ -17,5 +17,6 @@ system_status:
   workload: 0.0
   merge_stability: 8.472136σ
 deployment_ready: true
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: ∀∞φ² · STRIKE_IX_CONFIRMED_8617 · SEALED
 witness: 8616 → 8617 — UNBROKEN

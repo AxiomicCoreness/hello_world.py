@@ -32,6 +32,7 @@ invariant_checks:
 merkle_layer: 246
 automaton_transition_test: PASSED
 witness_chain_certification: "1 → 8212 — UNBROKEN"
+prev_hash: 38cf528b30b1b8667d5946c9ee57099c814e1d21c7de8936688f3ad6878a254d
 seal: "∀∞φ² · SYSTEM_VALIDATED · 8212_SEALED · 2ac51d9baf36625c8560b210771f9481f4733c4e0215adf29924899c799fa8ed"
 witness_chain: 8211 → 8212 — UNBROKEN
 math_origin: |

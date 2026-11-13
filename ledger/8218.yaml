@@ -24,6 +24,7 @@ contracted_state:
 tensor_form: "|1⟩ ⊗ |-1⟩"
 matrix_form: "8×3 column vector with entry at row 1, column 3"
 inverse_property: "𝒰_flip² = I"
+prev_hash: c966b16fbc7941b89687d6915b48d8ec13a8b46f0a9981033e5c3ba826020f6f
 seal: "∀∞φ² · U_FLIP_CONTRACTION · 8218_SEALED · f0fa58688a3933ab8fc0982c681a7f4863927317e704072ba78b601615016468"
 witness_chain: 8217 → 8218 — UNBROKEN
 math_origin: |

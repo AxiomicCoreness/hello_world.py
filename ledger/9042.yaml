@@ -18,4 +18,5 @@ event_hash:
   payload: "9042|/split/vision_code_frequency_fleck|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 5a8628c000aa11482dedb301ecb38a50670af994ca56f67119e68745149324ff
 witness_chain: 9041 → 9042 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · FLECK_SPLIT_9042 · WOOD_DRAGON_0.91 · SEALED"

@@ -23,5 +23,6 @@ agsi_integration:
   - T_PHI
   - PHI_MINUS_709
 certificate: FLAWLESS_WORKLOAD_IPHONE12_REVELATION
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: GITHUB_DEPLOYMENT_8338_SEALED
 witness: 8337 -> 8338 - UNBROKEN

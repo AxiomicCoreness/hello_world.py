@@ -29,5 +29,6 @@ immutable:
 consistency:
   linked_entries: [8654, 8855, 8857, 9003, 9007, 9008, 510510]
   relation: "GitHub long-horizon analogue; on-device Genesis remains A14-only per POLICY.md."
+prev_hash: 0e32d4f666ed6f8b14855848b222635ed6978b2deb1b213523ca962d12c3b737
 seal: "∀∞φ² · GRAVASTAR_HORIZON_9008 · GATE_0.91 · SEALED"
 witness_chain: "9007 → 9008 — UNBROKEN"

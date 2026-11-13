@@ -10,5 +10,6 @@ hash_seed: "98b8e303f309e2dd098cff1726c31109"
 gate_count_per_agent: 20
 metadata_embedded: true
 terminal_hex: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
+prev_hash: a7e8f65e2fd3b689cff55d92e54aafdb309c2d421b018439bc8213deeb5f83da
 seal: "∀∞φ² · COMPLETE_JSONL_SWARM_8337 · WOOD_DRAGON_0.91 · SEALED · 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882"
 witness_chain: 8336 → 8337 — UNBROKEN

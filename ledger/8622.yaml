@@ -17,4 +17,5 @@ oidc_grafana_note: |
   Agents using Grafana / MCP+OIDC handover must pass the full 64-character
   SHA-256 digest (sovereign_engine.get_oidc_secret Phase 3) — never truncated.
 witness_chain: 8621 → 8622 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · BATCH_SIMD_8622 · WOOD_DRAGON_0.91 · SEALED"

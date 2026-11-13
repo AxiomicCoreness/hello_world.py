@@ -14,4 +14,5 @@ paths:
   jwks_jwt: true
   off_prefix_tokens: true
 witness_chain: "8948 → 8949 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · CDP_OIDC_WIRE_8949 · WOOD_DRAGON_0.91 · SEALED"

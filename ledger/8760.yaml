@@ -15,4 +15,5 @@ policy:
   no_overwrite_sealed_core: true
   domain: GARDEN.GENESIS.COCREATE.v1
 witness_chain: 8759 → 8760 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · GENESIS_COCREATE_8760 · WOOD_DRAGON_GATE · SEALED"

@@ -15,4 +15,5 @@ contract:
   - mcp_orchestrator_config.json (instance for orchestrator)
   - symplectic_status.agent.jsonl (worker may append role=worker events)
 witness_chain: 8622 → 8623 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · WORKER_8623 · THREE_FILES_CONTRACT · WOOD_DRAGON_0.91 · SEALED"

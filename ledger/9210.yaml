@@ -40,6 +40,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8
 seal: "∀∞φ² · TOI_MEASURED_EXPECTATIONS · 9210_SEALED · a468f46a3c06bbb458398bc06eb75e5ae7621d4eda0876ea60a560156c07585a"
 witness_chain: 9209 → 9210 — UNBROKEN
 math_origin: |

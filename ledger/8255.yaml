@@ -33,6 +33,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: c803b4c04b3e0c34338be31851372166c5c3f88e2862e3bfb67afec9ca8347fc
 seal: "∀∞φ² · MCP_GARDEN_CONSISTENCY_8255 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: 8254 → 8255 — UNBROKEN
 math_origin: "QUADRATIC_ROOT_QUADRANT.v1; Q_INVARIANT = (2+√5)/4; φ² = φ + 1"

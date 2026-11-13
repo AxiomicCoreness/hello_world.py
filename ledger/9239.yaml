@@ -28,6 +28,7 @@ mcp:
   dual_asgi: "127.0.0.1:8024"
 witness_prefix: f324fd140ab5ef1b82efa4fc02eeee276473a25377837771e6effab986bcbd38
 terminal_hex: f324fd140ab5ef1b82efa4fc02eeee276473a25377837771e6effab986bcbd38
+prev_hash: 4631f38d87f1df956415abd8ff6c776118154583f29115ce390109b4553fce4a
 seal: "∀∞φ² · SOVEREIGN_TOOLKIT_9239 · WOOD_DRAGON_0.91 · SEALED · f324fd140ab5ef1b82efa4fc02eeee276473a25377837771e6effab986bcbd38"
 witness_chain: 9238 → 9239 — UNBROKEN
 math_origin: |

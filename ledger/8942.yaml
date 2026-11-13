@@ -15,4 +15,5 @@ watches:
 auto_rotate: optional
 poll_default_seconds: 37.08
 witness_chain: "8941 → 8942 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · KEY_EXPIRY_MONITOR_8942 · WOOD_DRAGON_0.91 · SEALED"

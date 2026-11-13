@@ -29,6 +29,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 9bbb38f86173ef6abe53de0c5b5e43438ab42463c4f7315daf40e827c8120a61
 seal: "∀∞φ² · TRACE_STUB_9176 · 9177_SEALED · 16431245bec6c101fad0030f7d26f502a4e08d7a6bb3c8c75e147cceebf5b5b4"
 witness_chain: 9176 → 9177 — UNBROKEN
 math_origin: |

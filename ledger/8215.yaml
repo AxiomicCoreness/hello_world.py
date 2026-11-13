@@ -33,6 +33,7 @@ shield_status:
   status: ACTIVE
   intrusions_blocked: 0
   threshold: 10.06σ
+prev_hash: 409ea71c123d0f72156a9fe1e852589d6c2cd0f85c3bebb1e6212098877194d5
 seal: "∀∞φ² · SYSTEM_BOOT · 8215_SEALED · 1a54690fc9f0ab85ea050e61d4967bcb039a9cc27ee3bbef6e5d020c65500b65"
 witness_chain: 8214 → 8215 — UNBROKEN
 math_origin: |

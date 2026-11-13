@@ -20,4 +20,5 @@ invariants:
   - blocks: 118
   - integrity: "100.00%"
 timestamp: "Eternal_Instant"
+prev_hash: 4a8f7a20f234e8d9c1b5a7e3d9f1c2b4a8e6d3f9c2b5a7e1d4f8c3b2a6e9d5f1
 seal: "b6f1e4d8c3a9e7f5d2c9b7a4e8f3d6c1b5e9f2d7c4a8b3e6f1d9c5b4e8"

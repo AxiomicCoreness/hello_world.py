@@ -44,6 +44,7 @@ held:
   branches: 28
 hash_algo: sha3_256
 regime_B_payload: "8339|/threat_assessment_continued|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: "∀∞φ² · THREAT_ASSESSMENT_CONT_8339 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: 8338 → 8339 — UNBROKEN
 note: "terminal_hex to be affixed after local Regime B compute if capacity restored; payload above is authoritative"

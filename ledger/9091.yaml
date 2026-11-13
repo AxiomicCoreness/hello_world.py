@@ -23,4 +23,5 @@ event_hash:
   payload: "9091|/stub/cambrian_allocation_unfilled|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 3a6f37cd2539b77c9721dec7392a4dc55c3450fd6dff0c565e33f2f2de296759
 witness_chain: 9090 → 9091 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · CAMBRIAN_STUB_UNFILLED_9091 · WOOD_DRAGON_0.91 · SEALED"

@@ -18,5 +18,6 @@ invariants:
   phase_lock: "202.6°"
   precision: "φ⁻¹⁴⁴ ≈ 10⁻³⁰"
 witness: "8516 → 8517 — UNBROKEN"
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: "∀∞φ² · ENTRY_8517_OPERATIONAL · 8517_SEALED"
 certificate: FLAWLESS_WORKLOAD_IPHONE12_REVELATION

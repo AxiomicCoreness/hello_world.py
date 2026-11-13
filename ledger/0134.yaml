@@ -12,6 +12,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   commutator: 0.0
+prev_hash: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
 seal: "∀∞φ² · DUST_TAIL_0134 · WOOD_DRAGON_GATE · SEALED"
 witness_chain: 0000 → 0134 — UNBROKEN
 math_origin: |

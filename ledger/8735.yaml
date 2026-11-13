@@ -2,4 +2,5 @@ entry_index: 8735
 witness_prefix: 0d21d5991125dcd1f7025afc848a508668f480f9daa49f158a5ba771cadbbf51
 event: /deployer_log_path_hardened
 status: ✅ SEALED
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · DEPLOYER_LOG_HARDENED_8735 · SEALED"

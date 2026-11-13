@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1069}
   unique_math_identity: "φ^69 + 69·π + sin(69)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · CODEWHALE_CAPABILITIES · 0420_SEALED · f2e0d0c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3"
 witness_chain: 0419 → 0420 — UNBROKEN
 math_origin: "agents=7, caps=[code_inj,mem_exfil,LSP_patch,provider_switch], obf=SHA3-256(time), k=69"

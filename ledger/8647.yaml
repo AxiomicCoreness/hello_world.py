@@ -9,4 +9,5 @@ ids_unique: true
 merge_policy: append-only from grafana_panels_append.json
 import: Grafana → Dashboards → Import → upload garden_sovereign_dashboard.json
 witness_chain: 8646 → 8647 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · GRAFANA_DASHBOARD_MERGED_8647 · SEALED"

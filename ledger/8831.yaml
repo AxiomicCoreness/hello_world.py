@@ -8,4 +8,5 @@ files:
   - docs/deepseek-api-key-setup.md
   - quantum/deepseek_mesh/context.md
 witness_chain: 8830 → 8831 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: ∀∞φ² · DEEPSEEK_KEY_SETUP · WOOD_DRAGON_0.91 · SEALED

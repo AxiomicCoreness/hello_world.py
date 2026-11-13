@@ -17,4 +17,5 @@ mathematical_constants:
   boost_factor: 0.618
 long_tide_note: "The heal epoch is 2060 years in the future. The long tide is measured in real-time via Chiron's ephemeris; it is not simulated as 'near' in 2026."
 witness_chain: 8619 → 8620 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · CHIRON_HEAL_8620 · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SATURN_111.246 · SEALED"

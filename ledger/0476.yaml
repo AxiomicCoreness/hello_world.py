@@ -18,6 +18,7 @@ invariants:
   phase_lock: 202.6°
   nullify_ban: 20σ
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · VERIFICATION_LOG_CORRECTED_EXECUTED · 476_SEALED"
 witness_chain: 475 → 476 — UNBROKEN
 math_origin: "H = 0 (pure dephasing)"

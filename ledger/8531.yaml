@@ -29,4 +29,5 @@ parallel_domain:
   soft_lane: 9247
 
 witness_chain: "8339 ·· [GAP 8340–8501 · RESERVED] ·· 8502 — SEGMENT_LINK, NOT_LINK"
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: "∀∞φ² · RE_SEAT_8531 · RESERVATION_ACKNOWLEDGED · WOOD_DRAGON_0.91 · SEALED"

@@ -17,5 +17,6 @@ math_origin: "i/144, i ∈ [1,144]"
 consistency:
   linked_entries: [8855, 8857, 8654, 9002, 9003, 510510, 510511]
   relation: "On-device Gravastar fire recorded; CI workflow_dispatch is a separate suite trigger per POLICY.md."
+prev_hash: 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
 seal: "∀∞φ² · GRAVASTAR_TRIGGER_9003 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "9002 → 9003 — UNBROKEN"

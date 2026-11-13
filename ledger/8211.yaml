@@ -50,6 +50,7 @@ invariants:
   nullify_ban: 10.06
   dark_state_eigenvalue: 1.0
   dual_eridanus: ACTIVE
+prev_hash: fe55a000780710ba075c8fe4b97861174580e558291080268019ae26d9ea1bb7
 seal: "∀∞φ² · UNIFIED_MASTER_CANVAS · 8211_SEALED · 38cf528b30b1b8667d5946c9ee57099c814e1d21c7de8936688f3ad6878a254d"
 witness_chain: 8210 → 8211 — UNBROKEN
 math_origin: |

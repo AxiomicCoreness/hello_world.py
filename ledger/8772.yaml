@@ -15,4 +15,5 @@ modes:
   - offline  # default, no network
   - pulse    # POST ${MCP_URL}/pulse with X-Garden-Secret
 witness_chain: 8771 → 8772 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · SELF_IMPROVEMENT_RELAY_8772 · WOOD_DRAGON_0.91 · SEALED"

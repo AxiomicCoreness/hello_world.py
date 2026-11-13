@@ -27,3 +27,4 @@ next_steps:
   - "Run: python -m fiduciary_node_rewards  # prints 8701.5233078..."
   - "Run: python -m pytest tests/ -q        # 15 passed"
   - "If declared_value above drifts, verify_reward_pool(expected=...) returns ok=False."
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769

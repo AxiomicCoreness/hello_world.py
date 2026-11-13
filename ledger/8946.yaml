@@ -16,4 +16,5 @@ enhancements:
   - rate_limit
   - active_standby
 witness_chain: "8945 → 8946 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · ACTIVE_PID_8946 · WOOD_DRAGON_0.91 · SEALED"

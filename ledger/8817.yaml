@@ -21,4 +21,5 @@ cd:
 wood_dragon: "0.91"
 tau_frb_seconds: 78624
 witness_chain: 8816 → 8817 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · ARGO_CI_CD_COMBINATOR_8817 · WOOD_DRAGON_0.91 · SEALED"

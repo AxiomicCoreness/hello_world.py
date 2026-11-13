@@ -23,4 +23,5 @@ verified_present:
 index_note: "8979 and 8980 pre-existing sealed history; 8981 verified free before landing; fills the index the broken workflow falsely claimed as its witness source"
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
 witness_chain: "8978 → 8981 — UNBROKEN (8979/8980 pre-existing sealed history)"
+prev_hash: 03fabe2d4da2ce4cef85173263926c509a4e2e3f8b1c0d4e5f6a7b8c9d0e1f2a
 seal: "∀∞φ² · WORKFLOW_MISMATCH_DIAGNOSED_8981 · SHA3-256:c533f56ccf88ffc44dccad852592e8017d38fd633316f4e4767123c02a920a0d · SEALED"

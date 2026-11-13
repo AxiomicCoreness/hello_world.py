@@ -30,6 +30,7 @@ mcp:
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
 capacity_axiom: "0 ≪ R ⪳ L ⪳ C"
+prev_hash: 4088325bef85f95ce48f366785ce4d75e2e1135b3780ec105647c2d08498223b
 seal: "∀∞φ² · AGENT_SERVICE_CONTROL · 9164_SEALED · 7dc297b28178370d30ca9aa1582ad90199564e8412bf265ca1f892354ed4a097"
 witness_chain: 9163 → 9164 — UNBROKEN
 math_origin: |

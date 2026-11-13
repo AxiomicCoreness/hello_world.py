@@ -20,4 +20,5 @@ invariants:
   secrets: never exported
   digests: full length only
 witness_chain: 8634 → 8635 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · SOVEREIGN_WORKLOAD_8635 · EM005 · SEALED"

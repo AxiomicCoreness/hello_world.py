@@ -24,6 +24,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: e1f1f1fe5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c
 seal: "∀∞φ² · PORT_380_GATE_INIT · 377_SEALED · b17d1e225bcf8534923299e0bf824fb4f8b06736cd6b3a152d6ce234eea27f19"
 witness_chain: 0376 → 377 — ALIAS_PATH_ONLY
 math_origin: |

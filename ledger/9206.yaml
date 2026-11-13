@@ -24,6 +24,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: aad1ee479dab81cae19843d63a95e36cbf8025e7eb26e7659264537736781ff6
 seal: "∀∞φ² · TOI_STEP_TWO_BALL · 9206_SEALED · 38d907929ae6ed61783b3cab66bc632419cc2593c09a44a42b3f2b8e53bf13c9"
 witness_chain: 9205 → 9206 — UNBROKEN
 math_origin: |

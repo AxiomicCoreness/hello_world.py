@@ -20,4 +20,5 @@ surfaces_acknowledged:
   - deepseek: deepseek/api.py + optional HTTPRoute filter path (source)
 runtime_note: "GitOps/Rollout/ODE artifacts on main; cluster apply and CI green still required for physical verification"
 witness_chain: 8815 → 8816 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · ALL_SYSTEMS_GO_8816 · WOOD_DRAGON_0.91 · SEALED"

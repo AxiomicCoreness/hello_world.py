@@ -12,4 +12,5 @@ repeated_entries_detected: [8746, 8369]
 action_taken: ignored_as_historical_not_re_sealed
 merkle_root_layer_329: c5c7646295eec7c88fb00aa6a3f384afdc04c679e6abb31954c8d0cd54fba3dc
 witness_chain: 8748 → 8749 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · COLLISION_DEFENSE_8749 · WOOD_DRAGON_GATE · SEALED"

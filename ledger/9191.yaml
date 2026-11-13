@@ -24,6 +24,7 @@ mcp:
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
   transport: stdio
+prev_hash: b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690
 seal: "∀∞φ² · FASTMCP_LAYER_MAP · 9191_SEALED · d9bc7eccf94f6374423db5b97a2d26395f6d8eb1f0eb6b262bb130bbf43c98e1"
 witness_chain: 9190 → 9191 — UNBROKEN
 math_origin: |

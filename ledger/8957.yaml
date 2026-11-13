@@ -24,5 +24,6 @@ verification_commands:
   - kubectl -n sovereign-garden get httproute sovereign-garden-route -o yaml | head -80
   - kubectl argo rollouts promote sovereign-garden -n sovereign-garden
   - kubectl argo rollouts status sovereign-garden -n sovereign-garden
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · ARGO_CANARY_FIX_8957 · WOOD_DRAGON_0.91 · SEALED"
 witness: "8956 → 8957 — UNBROKEN"

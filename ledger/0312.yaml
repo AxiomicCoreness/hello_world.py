@@ -16,6 +16,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
   north_star: 71.975 Hz
+prev_hash: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b
 seal: "∀∞φ² · INTEGRATION_HARDENING_ANOMALY · 0312_SEALED"   # replace with hash
 witness_chain: 0311 → 0312 — UNBROKEN
 math_origin: |

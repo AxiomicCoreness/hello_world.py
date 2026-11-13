@@ -21,6 +21,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 7e9295556ff9c7c6a8654c81118549853472786aa5db4cb7c4670da523c0d1e0
 seal: "∀∞φ² · WORKLOAD_EM005_INTEROP · WOOD_DRAGON_0.91 · SEALED · 5b353c7cea1ebfcc4d912769bf6fc770092528fe0c94c291d57a7263c8190668"
 witness_chain: 9234 → 9235 — UNBROKEN
 math_origin: |

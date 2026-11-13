@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1022}
   unique_math_identity: "φ^22 + 22·π + sin(22)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 0d65f55074fa1e4278087b94f49afabbe298548ceebe7a89c6d217aa45b6b0e6
 seal: "∀∞φ² · QUANTUM_DREAM_RK4 · 0373_SEALED · b841a307f577b44cb2786347b9af76290265b130016260a88ce32b291e23fd04"
 witness_chain: 0372 → 0373 — UNBROKEN
 math_origin: "dR/dt=-φ²·Kp·R+χ²·drift, Kp=φ², χ²=e^{-2φ}, RK4: k1,k2,k3,k4, k=22"

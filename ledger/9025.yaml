@@ -37,4 +37,5 @@ event_hash:
   payload: "9025|/surgery/worker_subagent_tree_parent_sibling|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 97c661a020538096c3fa83656c11735dcd647f39f1a727e7dcf2d9095a0a138f
 witness_chain: 9024 → 9025 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · WORKER_TREE_9025 · WOOD_DRAGON_0.91 · SEALED"

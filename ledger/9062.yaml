@@ -21,4 +21,5 @@ event_hash:
   payload: "9062|/policy/v1_section_test|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: edfe4aaec000a7f1f0818fbc63b0baeaff2b9b3ca9cc13e0dd7d2f5b3c9c2f5e
 witness_chain: 9061 → 9062 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · POLICY_V1_SECTION_TEST_9062 · WOOD_DRAGON_0.91 · SEALED"

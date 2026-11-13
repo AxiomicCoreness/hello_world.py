@@ -29,4 +29,5 @@ invariants:
   phase_lock: "202.6°"
   workload: 0.0
 witness_chain: 8811 → 8812 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · GATEWAY_HEADER_ROUTE_8812 · WOOD_DRAGON_GATE · SEALED"

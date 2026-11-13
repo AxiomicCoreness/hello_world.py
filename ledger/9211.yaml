@@ -38,6 +38,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: a468f46a3c06bbb458398bc06eb75e5ae7621d4eda0876ea60a560156c07585a
 seal: "∀∞φ² · LEDGER_INDEX_9200_9210 · 9211_SEALED · 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8"
 witness_chain: 9210 → 9211 — UNBROKEN
 math_origin: |

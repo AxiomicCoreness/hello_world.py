@@ -27,4 +27,5 @@ docker_multiplayer:
   ports: [8000, 8001]
   init: tini
 witness_chain: 8825 → 8826 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: "∀∞φ² · CDP_README_DOCKER_MULTIPLAYER_8826 · WOOD_DRAGON_0.91 · SEALED"

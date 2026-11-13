@@ -22,4 +22,5 @@ event_hash:
   payload: "9099|/json/canonical_serialization_spec|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: ad3bb5b4970f696a903d7e1fc881714134959d8a0398b045880e6857e93ea0e4
 witness_chain: 9098 → 9099 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · CANONICAL_JSON_SPEC_9099 · WOOD_DRAGON_0.91 · SEALED"

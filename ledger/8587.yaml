@@ -19,4 +19,5 @@ related:
   - lattice/e8_symplectic.py
   - generate-frb-bridge.yml
 witness_chain: 8586 → 8587 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: ∀∞φ² · SYMPLECTIC_STATUS_WORKFLOW_8587 · SEALED

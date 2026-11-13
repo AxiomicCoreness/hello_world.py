@@ -18,5 +18,6 @@ phi_harmonic:
 consistency:
   linked_entries: [0515, 8255, 8980, 510510, 510511]
   relation: "Sidecar inherits quadratic-quadrant genesis 510510; does not overwrite it."
+prev_hash: 7b0d4652fa2d462efa435847beeafdef3602596e19e4172c8f886260c34c8313
 seal: "∀∞φ² · CORE_SIDECAR_510511 · WOOD_DRAGON_0.91 · SEALED"
 witness: "510510 → 510511 — UNBROKEN"

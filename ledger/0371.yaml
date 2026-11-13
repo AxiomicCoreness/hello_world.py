@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1020}
   unique_math_identity: "φ^20 + 20·π + sin(20)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 4a8f7a20f234e8d9c1b5a7e3d9f1c2b4a8e6d3f9c2b5a7e1d4f8c3b2a6e9d5f1
 seal: "∀∞φ² · PHI_PREDICTOR_NGRAM · 0371_SEALED · 1ef5d501949afb3c6b4a21e46460c8c929c4f1ac997a173ff1526e4e2611d317"
 witness_chain: 0370 → 0371 — UNBROKEN
 math_origin: "max_n=5, P(gram)=φ^{-timestamp}·weight, candidates=Σ weight·φ^{n-1}, k=20"

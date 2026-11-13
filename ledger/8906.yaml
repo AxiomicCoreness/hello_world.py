@@ -11,4 +11,5 @@ new_strategy:
   - sampled_logging (1/φ²)
   - merkle_rooted_summaries
 witness_chain: "8905 → 8906 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · SWARM_THROUGHPUT_8906 · WOOD_DRAGON_0.91 · SEALED"

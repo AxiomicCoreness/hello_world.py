@@ -19,4 +19,5 @@ event_hash:
   payload: "9035|/surgery/three_file_contract_worker_score|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 7eed0aa281c1484090ce8358e520bd02d6984f801617baff856c1f09e1a8d2ed
 witness_chain: 9034 → 9035 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · THREE_FILE_CONTRACT_9035 · WOOD_DRAGON_0.91 · SEALED"

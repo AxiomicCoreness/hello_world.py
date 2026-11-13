@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1101}
   unique_math_identity: "φ^101 + 101·π + sin(101)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · QUANTUM_WORKLOAD_OPTIMAL · 0452_SEALED · b2f2f2b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6"
 witness_chain: 0451 → 0452 — UNBROKEN
 math_origin: "W_opt=1.193344·φ^101, Q_opt=-π/(2φ), k=101"

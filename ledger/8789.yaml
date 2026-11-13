@@ -20,4 +20,5 @@ branch_logic:
   - B: wait_for_cron_cycle
   - C: reroute_to_trappist_harmony
 witness_chain: 8788 → 8789 — UNBROKEN
+prev_hash: 73c94c0b209f490deb65dee5c5bbd027601d5123b0b46d47cab706171e12f886
 seal: "∀∞φ² · PORT380_MCP_8789 · WOOD_DRAGON_0.91 · SEALED"

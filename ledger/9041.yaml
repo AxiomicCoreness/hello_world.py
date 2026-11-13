@@ -17,4 +17,5 @@ event_hash:
   payload: "9041|/anchor/first_one_seed_8338_f0724e3|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: efbc76474fa2e7dbcdd5ff2e37d5b1159b158efeffb350f4463f3db801cd0163
 witness_chain: 9040 → 9041 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · TEMPORAL_ANCHOR_9041 · WOOD_DRAGON_0.91 · SEALED"
