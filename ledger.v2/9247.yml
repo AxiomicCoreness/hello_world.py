@@ -25,6 +25,7 @@ cosmic_alignment_preserved: true
 hard_target: false
 witness_prefix: 487f3b09d7931b9e4d80e711c3e9765f7d788c610921ff74440ad1e1564fa474
 terminal_hex: 487f3b09d7931b9e4d80e711c3e9765f7d788c610921ff74440ad1e1564fa474
+prev_hash: c034f1d33519005b506bb241fd31377f37022eedc69184d27cb9c3db7369a247
 seal: "∀∞φ² · WOOD_DRAGON_091_9247 · WOOD_DRAGON_0.91 · SEALED · 487f3b09d7931b9e4d80e711c3e9765f7d788c610921ff74440ad1e1564fa474"
 witness_chain: 9246 → 9247 — UNBROKEN
 math_origin: |

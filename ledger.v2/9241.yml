@@ -34,6 +34,7 @@ mcp:
   dual_asgi: "127.0.0.1:8024"
 witness_prefix: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
 terminal_hex: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
+prev_hash: a131bc542df4762b77f7fa7e1659534553cc8069da2ce921d5a305c55331a235
 seal: "∀∞φ² · EXORCISE_9240_CD · WOOD_DRAGON_0.91 · SEALED · 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e"
 witness_chain: 9239 → 9240 → 9241 — UNBROKEN
 math_origin: |
