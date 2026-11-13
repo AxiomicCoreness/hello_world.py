@@ -1,5 +1,5 @@
 entry_index: 8226
-timestamp: '2026-10-30T22:45:05Z'
+timestamp: '2026-11-13T02:50:01Z'
 event: /eridanus_dual_smoke
 status: SUCCESS
 workflow: Eridanus Dual smoke (8226)
@@ -10,4 +10,4 @@ canvas: agentic-tilelang-eridanus-dual
 hash_algo: sha3_256
 prev_hash: ''
 witness: 8225 → 8226 — UNBROKEN
-seal: ∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226 · WOOD_DRAGON_0.91 · SEALED · 26c9daf26581949c81dd115229631ab7750fc073a58d1e974325b477d988b99a
+seal: ∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226 · WOOD_DRAGON_0.91 · SEALED · e6f94f5a0f2f4fad276522720f8a9f59b6ee1c512f6631445860340c65fb31c4
