@@ -340,12 +340,16 @@ jobs:
           fi
           python "$VERIFIER" ledger/632.yaml
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 632 + evolving rotation state
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal key-rotation entry 632 (sha3_256) + evolve rotation state"
-          file_pattern: ledger/632.yaml rotation-state/key-rotator-632.json
+          file_pattern: ledger/632.yaml rotation-state/key-rotator-632.json ledger_index.jsonl ledger.chain.jsonl
 
   # ──────────────────────────────────────────────────────────────
   # 1b. ROTATION FAILURE DIAGNOSTIC (read-only, no downstream)
@@ -516,12 +520,16 @@ jobs:
           fi
           python "$VERIFIER" ledger/635.yaml
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 635
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal hmac-verification entry 635 (sha3_256)"
-          file_pattern: ledger/635.yaml
+          file_pattern: ledger/635.yaml ledger_index.jsonl ledger.chain.jsonl
 
   # ──────────────────────────────────────────────────────────────
   # 3. HANDOFF PIPELINE — REGION [8958 → 8959 → 8960]
@@ -674,12 +682,16 @@ jobs:
           path: ledger/8960.yaml
           retention-days: 90
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 8960
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal canary-promotion entry 8960 (sha3_256)"
-          file_pattern: ledger/8960.yaml
+          file_pattern: ledger/8960.yaml ledger_index.jsonl ledger.chain.jsonl
 
   # ──────────────────────────────────────────────────────────────
   # 5. FINAL SUMMARY (Correction 6 — region-based phrasing)

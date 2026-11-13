@@ -320,12 +320,16 @@ jobs:
             echo "⚠️ verify_ledger.py absent — soft skip"
           fi
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 8970
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal oidc-handshake entry 8970 (sha3_256, handshake-only, AST header present)"
-          file_pattern: ledger/8970.yaml
+          file_pattern: ledger/8970.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -439,12 +443,16 @@ jobs:
             echo "⚠️ verify_ledger.py absent — soft skip"
           fi
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 8971
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal subagent-swarm-registry entry 8971 (sha3_256, no data to MCP)"
-          file_pattern: ledger/8971.yaml
+          file_pattern: ledger/8971.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 

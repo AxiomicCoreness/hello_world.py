@@ -199,6 +199,10 @@ jobs:
           timeout 120 bash quantum/install_k8s.sh \
             || echo "install_k8s.sh returned non-zero or timed out (soft)"
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: steps.check_script.outputs.exists == 'true'
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit artifacts if changed
         if: steps.check_script.outputs.exists == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -208,6 +212,8 @@ jobs:
             symplectic_status.json
             symplectic_status.agent.jsonl
             ledger/8984.yaml
+            ledger_index.jsonl
+            ledger.chain.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
           commit_options: '--no-verify'
