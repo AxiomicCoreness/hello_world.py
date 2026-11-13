@@ -12,6 +12,7 @@ ledger_references:
   - 8598 (OIDC key handover)
   - 8767 (key digest cleanup)
 witness_chain: 9111 → 9112 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · KIN_KEY_KET_9112 · WOOD_DRAGON_GATE · SEALED"
 math_origin: |
   Ket |ψ⟩ is an element of Hilbert space. Key is a cryptographic secret. 

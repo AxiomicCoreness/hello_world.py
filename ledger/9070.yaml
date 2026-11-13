@@ -18,6 +18,7 @@ protected_unchanged:
 - 515
 - 516
 witness: 9069 → 9070 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: ∀∞φ² · GRAVASTAR_LONG_HORIZON_9070 · WOOD_DRAGON_0.91 · SEALED · 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 proof_class: computational
 witness_prefix: dd105cfb0d152c1cc9ded0237f5cc9a3f17111af200cd4eaf0a73cb38b3e144f

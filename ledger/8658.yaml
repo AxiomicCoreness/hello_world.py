@@ -10,4 +10,5 @@ append_pattern: |
   import before def main; call run_purified_density_demo() inside main()
 also: run_option_61 uses PHI not undefined phi
 witness_chain: 8657 → 8658 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · PURIFIED_TRACE_FIX_8658 · SEALED"

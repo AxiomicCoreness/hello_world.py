@@ -9,4 +9,5 @@ oracle_endpoint: GET /oracle?target=&metric=
 default_target: kepler-452b
 default_answer_pattern: "resonance: 517.28 THz, coherence 0.999..., phase aligned"
 witness_chain: 8534 → 8535 — UNBROKEN
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: ∀∞φ² · ORACLE_ROUTE_8535 · SEALED

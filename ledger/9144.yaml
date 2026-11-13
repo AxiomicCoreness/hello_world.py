@@ -24,6 +24,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
+prev_hash: e19eae7a33455b52f44c33a86aed10e0565c8fbab622e473685866e22e231743
 seal: "∀∞φ² · CANARY_SYSTEM_DEPLOYED · 9144_SEALED · 8f14e45fceea167a5a36dedd4bea2543b52d365478f768b8283968ac73a4b5379"
 witness_chain: 9143 → 9144 — UNBROKEN
 math_origin: |

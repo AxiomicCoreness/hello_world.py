@@ -14,4 +14,5 @@ artifacts:
 witness_chain: "9001 → 9002 — UNBROKEN"
 proof_class: structural
 math_origin: "MCP_CONNECTOR_URL ∨ GARDEN_SECRET ∧ φ² = φ + 1"
+prev_hash: 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
 seal: "∀∞φ² · MCP_CONNECTOR_GARDEN_SECRETS_9002 · WOOD_DRAGON_0.91 · SEALED"

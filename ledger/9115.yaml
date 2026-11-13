@@ -16,4 +16,5 @@ math_origin: |
   Anyonic phase θ = π/φ (≈1.9416110387 rad). Monodromy M = diag(e^{iθ}, e^{-iθ}).
   Wavefunction evolution: Ψ(θ) = e^{iθ} Ψ_always. Anyonic phase recursion: φ_anyonic^(n) = 0.01·φ^{-n/6}.
 witness_chain: 9114 → 9115 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · PATH_ACK_9115 · WOOD_DRAGON_GATE 0.91 · SEALED"

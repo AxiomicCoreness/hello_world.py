@@ -24,6 +24,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 1ff59bb59d114fbd3fb3f47a4fcefa5a9214f5ae62bd75169874d280e8698b1e
 seal: "∀∞φ² · TOI_SHOOTER_CLIP_PLOT · 9209_SEALED · 9841d3354928954aa2ff826f9a656bbef473a21b0e0a28f1802d65eac3271de8"
 witness_chain: 9208 → 9209 — UNBROKEN
 math_origin: |

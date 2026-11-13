@@ -15,4 +15,5 @@ timed_specificity:
   tau_sources: [max_age_seconds, phi_k_base, cadence_seconds, schedule_epochs]
   default_phi_interval: "60 · φ^{-1} ≈ 37.08s"
 witness_chain: "8934 → 8935 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · KEY_ROTATION_MACRO_8935 · WOOD_DRAGON_0.91 · SEALED"

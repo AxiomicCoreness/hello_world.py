@@ -7,4 +7,5 @@ gap_closed: density field phase in SIMD
 implementation: "orchestrator/simd_step.py --phase-rho"
 cron_env: PHASE_RHO=true
 witness_chain: 8803 → 8804 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · SIMD_RHO_CLOSED_8804 · WOOD_DRAGON_GATE · SEALED"

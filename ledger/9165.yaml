@@ -34,6 +34,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 7dc297b28178370d30ca9aa1582ad90199564e8412bf265ca1f892354ed4a097
 seal: "∀∞φ² · ADAI_OCTONIAN_POINTER · 9165_SEALED · 42be11918cd6c7cbee18489be17b1ed99441b141d56c3d1c6afdaa3ff6679b45"
 witness_chain: 9164 → 9165 — UNBROKEN
 math_origin: |

@@ -35,4 +35,5 @@ event_hash:
   payload: "9023|/surgery/excavate_self_improvement_trigger|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 8de2574ff1e3ff1b4a9ac55bea7222a6f9c2f222395882b6d1282ebde1d1c523
 witness_chain: 9022 → 9023 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · EXCAVATE_SELF_IMPROVEMENT_9023 · WOOD_DRAGON_0.91 · SEALED"

@@ -67,6 +67,7 @@ event_hash:
   payload: "9118|/ontological_equation_eq|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 3a375b13465316df707778181b5c143a59cc61d1514bb5ad88b16dbf94347f11
 witness_chain: 9117 → 9118 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · ONTOLOGICAL_EQUATION_9118 · WOOD_DRAGON_0.91 · SEALED"
 math_origin: |
   phi = (1+sqrt(5))/2

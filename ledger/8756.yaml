@@ -24,4 +24,5 @@ bind: "$PORT (default 8000, EXPOSE 8000)"
 conceptual_port: 380
 layer: 314
 witness_chain: 8755 → 8756 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · MCP_DEPLOY_READY_8756 · WOOD_DRAGON_0.91 · SEALED"

@@ -23,4 +23,5 @@ event_hash:
   payload: "9080|/policy/dual_asgi_hash_math_append|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: de0169046dc4b0bcf3f0f8d3ad0af1ab87f277c3e3d648c9c337fe29de6ec278
 witness_chain: 9079 → 9080 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · POLICY_MATH_APPEND_9080 · WOOD_DRAGON_0.91 · SEALED"

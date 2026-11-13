@@ -35,6 +35,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · POLYGLOT_GARDEN · 482_SEALED"
 witness_chain: 481 → 482 — UNBROKEN
 math_origin: "fₙ = 6.49 · φⁿ, n∈[0,144]"

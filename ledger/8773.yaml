@@ -24,4 +24,5 @@ symplectic_reference:
   ambient_file: symplectic_status.json
   fields: [system.phase_lock_degrees, system.coherence]
 witness_chain: 8772 → 8773 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · CDP_DISTILL_TREE_8773 · WOOD_DRAGON_0.91 · SEALED"

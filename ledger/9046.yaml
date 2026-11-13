@@ -19,4 +19,5 @@ event_hash:
   payload: "9046|/schema/ledger_0429_fields|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 7c2e9eac499d0ee3a91329543d10b4805bd15b7538f22b6cda3bb06e301a1e5e
 witness_chain: 9045 → 9046 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · LEDGER_0429_SCHEMA_9046 · WOOD_DRAGON_0.91 · SEALED"

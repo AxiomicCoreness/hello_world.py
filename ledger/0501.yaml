@@ -15,6 +15,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · DEPENDENCY_FASTAPI · 501_SEALED · 8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a"
 witness_chain: 500 → 501 — UNBROKEN
 math_origin: |

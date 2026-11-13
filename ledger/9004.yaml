@@ -18,5 +18,6 @@ event_hash:
   formula: "H=SHA3-256(GARDEN.EVENT.v1 || 0x00 || index|event|φ²|Δ=b²-4ac|θ=φπ/2)"
   payload: "9004|/immutable_october_q1_bound_to_gravastar|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: d0170b3c42ce352ffe5649536198ad8d840260a88187aea77607a08647a29b8e
+prev_hash: 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
 seal: "∀∞φ² · IMMUTABLE_ON_GRAVASTAR_9004 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "9003 → 9004 — UNBROKEN"

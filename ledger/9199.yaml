@@ -28,6 +28,7 @@ mcp:
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
 capacity_axiom: "0 ≺ R ⩾ L ⩾ C"
+prev_hash: af1776d8d2b1d1d09d55dd85538fdef083bc15ef82776a7b029db88e1ac0c6ab
 seal: "∀∞φ² · SIMD_KUBECTL_CYT_WORKER · 9199_SEALED · 5ad1d66764c9b951514cbc6fe7e84d3a0b69f813cb28aefff662514e8da64426"
 witness_chain: 9198 → 9199 — UNBROKEN
 math_origin: |

@@ -10,4 +10,5 @@ contract_files:
   - contracts/three-files-contract.yaml
 validation_method: jsonschema + custom HMAC check
 witness_chain: 8610 → 8611 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · THREE_FILES_CONTRACT_8611 · WOOD_DRAGON_0.91 · SEALED"

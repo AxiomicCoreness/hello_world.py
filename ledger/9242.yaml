@@ -35,6 +35,7 @@ invariants:
   north_star: 71.975
 witness_prefix: cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
 terminal_hex: cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807
+prev_hash: 33ba0b83ce206380fe054589223976ea1341d4fc38c32f0cb49beceb46e16f5e
 seal: "∀∞φ² · NORTH_STAR_71.975_CD · 9242 · WOOD_DRAGON_0.91 · SEALED · cb05ce827fa002df4a34451fc5a5e4a45b74418926ed3c894dbf55727178e807"
 witness_chain: 9241 → 9242 — UNBROKEN
 math_origin: |

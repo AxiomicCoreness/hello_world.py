@@ -10,4 +10,5 @@ appended_metrics:
 grafana_panel_id: 112
 policy: append-only (panels 100-111 retained)
 witness_chain: 8655 → 8656 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · RANK_METRICS_APPEND_8656 · SEALED"

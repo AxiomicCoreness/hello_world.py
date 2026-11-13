@@ -26,4 +26,5 @@ event_hash:
   payload: "9047|/truth_of_integrity_score|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 41aa5125b3360061fc62a5e3cc9c2808b388560322cfb7c0df099a918c6dcbfc
 witness_chain: 9046 → 9047 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · INTEGRITY_TRUTH_9047 · WOOD_DRAGON_0.91 · SEALED"

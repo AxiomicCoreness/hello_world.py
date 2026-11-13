@@ -25,4 +25,5 @@ event_hash:
   payload: "9084|/policy/legendary_tokens_hash_duality_confirmed|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 9a6e7ad9233125d06fd0df48edbb3b6dc783a0a2ed48681b510beead1dc30bec
 witness_chain: 9083 → 9084 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · POLICY_LEGEND_PI_N_9084 · WOOD_DRAGON_0.91 · SEALED"

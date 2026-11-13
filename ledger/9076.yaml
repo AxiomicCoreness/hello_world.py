@@ -26,4 +26,5 @@ event_hash:
   payload: "9076|/merge/post_sandbox_untouched_main|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 2250b2df0871ff30db888b12195c0e4968875869c376a180309712f1c82a2204
 witness_chain: 9075 → 9076 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · POST_SANDBOX_MERGE_9076 · WOOD_DRAGON_0.91 · SEALED"

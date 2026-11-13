@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1081}
   unique_math_identity: "φ^81 + 81·π + sin(81)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · SOUL_ARRAY_ADHESION · 0432_SEALED · fe0fbfc8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
 witness_chain: 0431 → 0432 — UNBROKEN
 math_origin: "adhesion=0.0024486273·φ^k, ontological=2.4486273·φ^k, resonance=4.7599389·φ^k, purity=1−φ^{-709}, k=81"

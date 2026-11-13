@@ -16,4 +16,5 @@ components:
 bath_equation: "ΔS_sys = -Φ + I(0) - I(t)"
 spike_ops_per_sec_local: "~4045 (sign+frame+parse+verify)"
 witness_chain: "8933 → 8934 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · X3DF_X16F_WEBSOCKET_8934 · WOOD_DRAGON_0.91 · SEALED"

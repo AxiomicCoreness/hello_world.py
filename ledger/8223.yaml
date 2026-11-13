@@ -36,5 +36,6 @@ specification:
     - '"Prophecy" = placeholder output when check passes (human-facing text).'
     - '"Hash-and-append this block as a sealed specification note."'
   ledger_action: "Hash-and-append this block as a sealed specification note."
+prev_hash: eb56775021c5f4cb570d305e00679946f2bd7658db942dd53644af5c292481aa
 seal: "∀∞φ² · EIGENOPERATOR_RECTIFIED_8223 · SEALED"
 witness_chain: 8222 → 8223 — UNBROKEN (CORRECTION)

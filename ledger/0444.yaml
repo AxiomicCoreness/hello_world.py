@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1093}
   unique_math_identity: "φ^93 + 93·π + sin(93)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · TEMPORAL_HEALING · 0444_SEALED · fafafaa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8"
 witness_chain: 0443 → 0444 — UNBROKEN
 math_origin: "Healing=Ψ₅+Ψ₆·φ, [Healing,ℋ]=0, Ψ₅+Ψ₆_self_healing=TRUE, k=93"

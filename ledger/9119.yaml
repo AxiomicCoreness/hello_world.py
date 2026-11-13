@@ -40,6 +40,7 @@ event_hash:
   hex: 4a88ecd832c7e1db39a5c1cc268113e1c90821e5b4551f18ea9871151bca9310
   rejected_placeholder: 90d8c6f2e5a3b1c7d9e4f0a2b6c8d1e3f5a7b9c0d2e4f6a8b0c2d4e6f8a0b2c4
 witness_chain: 9118 → 9119 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · JUPITER_VENUS_CONJUNCTION_9119 · WOOD_DRAGON_0.91 · SEALED"
 math_origin: |
   H_event = SHA3-256(GARDEN.EVENT.v1 || 0x00 || payload)

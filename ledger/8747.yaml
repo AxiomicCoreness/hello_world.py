@@ -9,4 +9,5 @@ policy:
   narrative_non_hex_rejected: true
   domain: GARDEN.LAYER327.MERKLE.v1
 witness_chain: 8746 → 8747 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · LAYER327_8747 · SEALED"

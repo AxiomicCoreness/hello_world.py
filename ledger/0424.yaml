@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1073}
   unique_math_identity: "φ^73 + 73·π + sin(73)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · MANIFOLD_34D_METRIC · 0424_SEALED · d6f4e4a0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7"
 witness_chain: 0423 → 0424 — UNBROKEN
 math_origin: "g_ij=φ^{-|i-j|}·(1 if i=j else 0.618), V=φ^(34·φ^{-1}), curvature=φ⁴·(34/577), k=73"

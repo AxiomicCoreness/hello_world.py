@@ -13,4 +13,5 @@ components_merged:
   - Ledger: 8540, 8598, 8617
   - Three_File_Contract: schemas + agent.jsonl
 witness_chain: "8617 → 8618"
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · COMPLETE_SYSTEM_MERGED · WOOD_DRAGON_0.91 · DEEP_SPACE_16.35 · SATURN_111.246 · SEALED"

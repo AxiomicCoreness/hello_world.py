@@ -12,4 +12,5 @@ files_updated:
   - clients/__init__.py
   - quantum/no_truncation_policy.py
 witness_chain: 8766 → 8767 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · NO_TRUNCATION_CLEANUP_8767 · WOOD_DRAGON_GATE · SEALED"

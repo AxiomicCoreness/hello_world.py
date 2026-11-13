@@ -56,6 +56,7 @@ invariants:
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
 hex: 94d212f01812681a37a6c6f4c746cc3b0481cc9dd80565f9c1055a71e98b891e
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · CHI_UMBRAL_OCTET_E9 · 9124_SEALED"
 witness_chain: 9123 → 9124 — UNBROKEN
 math_origin: |

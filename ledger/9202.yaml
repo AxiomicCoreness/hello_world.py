@@ -40,6 +40,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 29d1415421611bfdb19f4e68c2a9477a435dd2847fb69bb5e8d099bdfba5b7a6
 seal: "∀∞φ² · PYTHONIDE_MD_SEABORN_SCALAR_MATRIX · 9202_SEALED · 52c30a6f4e2a92f17a992e414cefdcbc7e3b4783745224b7f06f79b8b744799f"
 witness_chain: 9201 → 9202 — UNBROKEN
 math_origin: |

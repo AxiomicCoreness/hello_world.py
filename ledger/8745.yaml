@@ -13,4 +13,5 @@ policy:
   no_truncation: true
   narrative_non_hex_rejected: true
 witness_chain: 8741 → 8742 → 8743 → 8744 → 8745 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · ANCHOR_IMPROVEMENT_CONFIRMED_8745 · WOOD_DRAGON_0.91 · SEALED"

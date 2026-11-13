@@ -19,4 +19,5 @@ remaining:
   - 8952: self-improvement-relay → e2e-key-check
 note: "batch_oidc_tokenizer is not modified (prior directive)."
 witness_chain: "8947 → 8948 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · SACL_8948 · WOOD_DRAGON_0.91 · SEALED"

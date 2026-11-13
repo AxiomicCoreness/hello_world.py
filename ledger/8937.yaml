@@ -17,4 +17,5 @@ notes:
   - "full = sign + frame + parse + verify"
   - "8936 remains verification_affirmed; performance is 8937"
 witness_chain: "8936 → 8937 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · CODEWHALE_OPS_8937 · WOOD_DRAGON_0.91 · SEALED"

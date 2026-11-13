@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1074}
   unique_math_identity: "φ^74 + 74·π + sin(74)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · COSMIC_ARTIFACT_BINDING · 0425_SEALED · e7f5e5b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8"
 witness_chain: 0424 → 0425 — UNBROKEN
 math_origin: "R(f)=exp(-i·φ·f·t_φ), f_bind=1.8e-8 Hz, t_φ=0.5983 s, k=74"

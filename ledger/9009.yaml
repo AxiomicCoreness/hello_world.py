@@ -28,6 +28,7 @@ declared:
   hamiltonian: "κ_eff Σ_i (σ_i ⊗ σ_i)"
 runner: Immutable/run_self_improvement.py
 workflow: .github/workflows/gravastar-long-horizon.yml
+prev_hash: 0e32d4f666ed6f8b14855848b222635ed6978b2deb1b213523ca962d12c3b737
 seal: "∀∞φ² · UTC_1000_IMMUTABLE_9009 · GATE_0.91 · SEALED · d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4"
 witness_chain: 9008 → 9009 — UNBROKEN
 math_origin_detail: |

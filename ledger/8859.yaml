@@ -8,4 +8,5 @@ opcode: ALEPH2_PAULI
 rules: "X^2=Y^2=Z^2=I; XY=iZ, YZ=iX, ZX=iY"
 axiom: AXIOM_NONLOCAL_CORE
 witness_chain: "8858 → 8859 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · ALEPH_PAULI_8859 · WOOD_DRAGON_0.91 · SEALED"

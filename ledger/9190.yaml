@@ -28,6 +28,7 @@ mcp:
   dual_asgi: "127.0.0.1:8024"
   transport: stdio
   port_380: false
+prev_hash: 8ca7b656db88f23e2a443bd51cfa5692ae37893f0f996ec6e9a947365dcbfb86
 seal: "∀∞φ² · FASTMCP_EVENT_HASH · 9190_SEALED · b403994069f52b8e05ae0f94e16d1417cd3d390dc6bd1746b15437188f6a8690"
 witness_chain: 9189 → 9190 — UNBROKEN
 math_origin: |

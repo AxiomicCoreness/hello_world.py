@@ -26,4 +26,5 @@ event_hash:
   payload: "9052|/autonomous_starfire_311_symbolic|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 942ce2f4da0c7f60103130c773eda6fce300585437e5c8641d44f9ddd2d5347b
 witness_chain: 9051 → 9052 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · STARFIRE_311_APP_9052 · WOOD_DRAGON_0.91 · SEALED"

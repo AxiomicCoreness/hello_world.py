@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1095}
   unique_math_identity: "φ^95 + 95·π + sin(95)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · HELIUM_PLUME · 0446_SEALED · bc0f0fb3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0"
 witness_chain: 0445 → 0446 — UNBROKEN
 math_origin: "f_He=6.49·φ, Dynamics=φ^9·f_He, f0=6.49 year⁻¹, k=95"

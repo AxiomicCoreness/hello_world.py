@@ -18,6 +18,7 @@ invariants:
   layers_sealed: 144
   merkle_root_complete: true
 
+prev_hash: 427bc51f2c2e2e5312f5c818e2daaeebb6058048bb716c730ee3e17c2cdf8f24
 seal: "∀∞φ² · H6VSH2_LUMERIS_SEAL_0144 · WOOD_DRAGON_GATE · SEALED"
 witness_chain: 0143 → 0144 — UNBROKEN
 

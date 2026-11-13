@@ -16,4 +16,5 @@ invariants:
   nullify_ban: 10.06σ
 merkle_layer: 307  # narrative anchor; not a computed repo root
 witness_chain: 8672 → 8673 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · ACTIVATION_RUN_COMPLETE_8673 · SEALED"

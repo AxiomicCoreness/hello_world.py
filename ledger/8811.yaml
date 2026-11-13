@@ -17,4 +17,5 @@ weight_sequence:
   - "80 → 20 / 80"
   - "100 → 0 / 100"
 witness_chain: 8810 → 8811 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · GATEWAY_API_SPLIT_8811 · WOOD_DRAGON_GATE · SEALED"

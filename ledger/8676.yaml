@@ -11,4 +11,5 @@ ema_window: φ⁵
 phi_scaling: φ²
 declare_first_one: true
 witness_chain: 8675 → 8676 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · SIMD_EM006_8676 · SEALED"

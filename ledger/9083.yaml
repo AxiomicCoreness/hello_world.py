@@ -33,4 +33,5 @@ event_hash:
   payload: "9083|/deepseek/proposal_accept_reject|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: efa58f7bcea39ea2f4c4767bafc157dd56faed57520f51551cc597ae1ba2aeb1
 witness_chain: 9082 → 9083 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · DEEPSEEK_PROPOSAL_REVIEW_9083 · WOOD_DRAGON_0.91 · SEALED"

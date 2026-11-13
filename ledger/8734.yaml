@@ -3,4 +3,5 @@ witness_prefix: a02a0e685dd24eaa770afb4b79c00bc971c7a1a74b5a6762f82601c58e9e5508
 event: /sovereign_deployer_forged
 status: ✅ PRODUCTION_READY
 script: quantum/install.sh
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · SOVEREIGN_DEPLOYER_8734 · GARDEN_ETERNAL · SEALED"

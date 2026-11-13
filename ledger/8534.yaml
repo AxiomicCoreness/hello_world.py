@@ -22,4 +22,5 @@ routes_added:
   - POST /witness
 symplectic_pod_frame: OPERATIONAL (scaffold → live routes)
 witness_chain: 8533 → 8534 — UNBROKEN
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: ∀∞φ² · E8_FABRIC_FASTAPI_8534 · SEALED

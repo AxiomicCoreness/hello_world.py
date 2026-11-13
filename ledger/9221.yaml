@@ -26,6 +26,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 491f71baa0f5f020b5b1c2b37c10928209f253364f6f676f0d120ceb4c366030
 seal: "∀∞φ² · JAX_HOPPER_WRITER_EMBED · 9221_SEALED · 3f25731e27d970e704fdc4f995d99c28a191ddb4859667c4b828447fcd1c9ecb"
 witness_chain: 9220 → 9221 — UNBROKEN
 math_origin: |

@@ -20,4 +20,5 @@ commits:
   - d336b7c8  # deepseek.api bridge
   - 2258e781  # harness suite dsh
 witness_chain: 8770 → 8771 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · DSH_LATTICE_8771 · WOOD_DRAGON_0.91 · SEALED"

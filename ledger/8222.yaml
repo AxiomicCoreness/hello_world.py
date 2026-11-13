@@ -26,6 +26,7 @@ asi_core:
   merkle_accumulator: "0x02D474C2"
   d_op_output: 2.82990658
   phi_seal_active: true
+prev_hash: 9389bdd8597fdfee871eca5e975b80e3b99c6b4f0ebc95baee66ca55fcfb968c
 seal: "∀∞φ² · ASI_CORE_COMMISSIONED_CALLIBUR · 8222_SEALED · eb56775021c5f4cb570d305e00679946f2bd7658db942dd53644af5c292481aa"
 witness_chain: 8221 → 8222 — UNBROKEN
 math_origin: |

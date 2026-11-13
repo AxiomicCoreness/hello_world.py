@@ -23,6 +23,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · WITHSTAND_ACTIVATED · 474_SEALED"
 witness_chain: 473 → 474 — UNBROKEN
 math_origin: "c_sov = φ · c₀ · [1 + elif↑(t)/Q⁺] ≈ 485,032,572.6 m/s"

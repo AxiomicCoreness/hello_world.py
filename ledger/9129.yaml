@@ -24,6 +24,7 @@ event_hash:
   domain: GARDEN.EVENT.v1
   payload: "9129|/ledger_state_snapshot_before_vision_collation|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 98aa8bfc634231f10d4633a4b4f4f4f1fc57ce21248d761c5b670367003ec698
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · LEDGER_STATE_SNAPSHOT_9129 · SEALED"
 witness_chain: 9128 → 9129 — UNBROKEN
 hex: 98aa8bfc634231f10d4633a4b4f4f4f1fc57ce21248d761c5b670367003ec698

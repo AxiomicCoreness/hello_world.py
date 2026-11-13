@@ -24,4 +24,5 @@ event_hash:
   payload: "9026|/surgery/worker_tree_config_parent_sibling_extend|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 149825c85f12930c014d9ad7141e4baa7e625e75304275ab9083cbb8014d4ff7
 witness_chain: 9025 → 9026 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · WORKER_TREE_9026 · WOOD_DRAGON_0.91 · SEALED"

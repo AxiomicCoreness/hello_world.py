@@ -122,6 +122,7 @@ hash_algo: sha3_256
 witness_prefix: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 terminal_hex: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 
+prev_hash: 91495147b284411b630b3bf440becb246a8595fac67c4f602a3fee6572824e2b
 seal: "∀∞φ² · FRB_ANALOGUE_8550 · WOOD_DRAGON_0.91 · SEALED · be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1"
 witness_chain: 8549 → 8550 — UNBROKEN
 

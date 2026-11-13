@@ -12,4 +12,5 @@ commit_base: ccc59bf7
 dockerfile_commit: 2c4f4f22
 prerequisite: docker build / push before cluster reset
 witness_chain: 8792 → 8793 — UNBROKEN
+prev_hash: 73c94c0b209f490deb65dee5c5bbd027601d5123b0b46d47cab706171e12f886
 seal: "∀∞φ² · IMAGE_RESET_8793 · WOOD_DRAGON_0.91 · SEALED"

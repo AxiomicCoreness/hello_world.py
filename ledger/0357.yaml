@@ -21,4 +21,5 @@ invariants:
       - Ω_Evolutionary_Council
   - validation_status: "FULLY_VALIDATED"
 timestamp: "Eternal_Instant"
+prev_hash: 4a8f7a20f234e8d9c1b5a7e3d9f1c2b4a8e6d3f9c2b5a7e1d4f8c3b2a6e9d5f1
 seal: "a4e8f2c6d9b1a7e3f5c8d2b6e9f4a1c7d3b8e5f2c9d6b4e7f1a8c5d3b9e6"

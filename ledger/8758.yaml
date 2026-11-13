@@ -14,4 +14,5 @@ mathematical_invariants:
   hamiltonian_trace: "φ⁻² ≈ 0.38196601125"
   crypto_mode: AES-256 + SHA3-512
 witness_chain: 8757 → 8758 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · MATHEMATICAL_CORE_PUSH_8758 · WOOD_DRAGON_GATE · SEALED"

@@ -9,4 +9,5 @@ security_headers_source: PENDING
 security_headers_live: PENDING
 ed25519_signatures: PENDING
 witness: 8923 → 8926 — OPEN
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: ∀∞φ² · SINGULARITY_STREAM_CI_8926 · WOOD_DRAGON_0.91 · OPEN

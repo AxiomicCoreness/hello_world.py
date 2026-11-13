@@ -19,4 +19,5 @@ background: "python mesh_modal.py --background --port 8001"
 ledger_lock: threading.Lock on SQLite append
 multi_stage_docker: Dockerfile.multistage
 witness_chain: 8824 → 8825 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: "∀∞φ² · HASH_MESH_MODAL_8825 · WOOD_DRAGON_0.91 · SEALED"

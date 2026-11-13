@@ -17,4 +17,5 @@ event_hash:
   payload: "9031|/surgery/qed_sandbox_to_main|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: d7cae5430fd53a17bd22ef39eb6c51ec18b46e5f2c6bcab979e1ff55f8a0e0f2
 witness_chain: 9030 → 9031 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · QED_SANDBOX_TO_MAIN_9031 · WOOD_DRAGON_0.91 · SEALED"

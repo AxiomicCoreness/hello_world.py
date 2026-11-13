@@ -22,4 +22,5 @@ verification:
   truncation: none
   content_drift: none
 witness_chain: "8935 → 8936 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · VERIFICATION_8936 · WOOD_DRAGON_0.91 · SEALED"

@@ -14,4 +14,5 @@ profiles:
   - full
 handoff_default: false
 witness_chain: "8952 → 8953 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · GEMINI_DAEMON_8953 · WOOD_DRAGON_0.91 · SEALED"

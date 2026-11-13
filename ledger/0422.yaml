@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1071}
   unique_math_identity: "φ^71 + 71·π + sin(71)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · FANO_PLANE_OCTONION · 0422_SEALED · b4f2e2d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5"
 witness_chain: 0421 → 0422 — UNBROKEN
 math_origin: "e123=+1,e145=+1,e167=+1,e246=+1,e257=-1,e347=-1,e356=-1, Aut(𝒫)≅G₂(2), k=71"

@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1113}
   unique_math_identity: "φ^113 + 113·π + sin(113)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: adfdfdfa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e
 seal: "∀∞φ² · PURIFIED_DENSITY_NORMALIZATION · 0464_SEALED · befefefb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a"
 witness_chain: 0463 → 0464 — UNBROKEN
 math_origin: "ρ=φ^3·|ψ₀⟩⟨ψ₀|, Tr=φ^3, norm=1, k=113"

@@ -17,4 +17,5 @@ validation:
 hash_policy: non-truncated full FRB_BRIDGE_GENERATOR_HASH
 append_only: true
 witness_chain: 8585 → 8586 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: ∀∞φ² · FRB_BRIDGE_POINTED_8586 · SEALED

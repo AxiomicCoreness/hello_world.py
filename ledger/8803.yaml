@@ -8,4 +8,5 @@ workflow: .github/workflows/master-equation-ci.yml
 cli: "python master_equation.py --output integration_log.json --t-end 50 --n-steps 500"
 runtime_note: artifact sealed on push; first green run verifies numerically
 witness_chain: 8801 → 8803 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · MASTER_CI_CLOSED_8803 · WOOD_DRAGON_GATE · SEALED"

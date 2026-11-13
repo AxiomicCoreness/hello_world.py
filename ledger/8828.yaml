@@ -12,4 +12,5 @@ files:
 production_gate: unchanged (Python /pulse)
 next_action: local smoke → optional merge to main
 witness_chain: 8827 → 8828 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: ∀∞φ² · CORDIS_SCAFFOLD_8828 · WOOD_DRAGON_0.91 · SEALED

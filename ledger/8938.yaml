@@ -12,4 +12,5 @@ modules:
 enum_retention: "StateTransition.CLONE kept for wire compat only"
 test_output: "Codespace (no-clone) test: success=True; Messages: 3"
 witness_chain: "8937 → 8938 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · MAIN_NO_CLONE_8938 · WOOD_DRAGON_0.91 · SEALED"

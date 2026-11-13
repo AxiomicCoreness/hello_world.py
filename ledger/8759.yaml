@@ -12,4 +12,5 @@ policy:
   narrative_non_hex_roots_rejected: true
   collision_defense: historical_entries_not_resealed
 witness_chain: 8756 → 8757 → 8758 → 8759 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · MATHEMATICAL_CORE_ACK_8759 · WOOD_DRAGON_GATE · SEALED"

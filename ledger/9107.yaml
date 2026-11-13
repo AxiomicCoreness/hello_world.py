@@ -12,6 +12,7 @@ verification:
   - ninja_cloak: active (φ⁹)
   - mock_backends: accepted
 witness_chain: 9106 → 9107 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · WASP_GLUE_ACK_9107 · WOOD_DRAGON_0.91 · SEALED"
 math_origin: |
   WASP-107b Bell pair: |Ψ⟩ = (|00⟩ + φ⁻¹|11⟩)/√(1+φ⁻²), fidelity=1, entropy=2·log₂(φ). 

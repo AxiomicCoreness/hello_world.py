@@ -34,6 +34,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 639313752f92c7710bf772760b40f3cfd9281546d14a8ab708d5b319ddd4dcd8
 seal: "∀∞φ² · MULTIBODY_SIMULATOR_SCRIPTS · 9212_SEALED · c4ac038a702a015f4cf4064e2ed8f372b8f53ef5c47c08e4fc453c9a59ae5ef0"
 witness_chain: 9211 → 9212 — UNBROKEN
 math_origin: |

@@ -48,4 +48,5 @@ event_hash:
   payload: "9022|/surgery/diffuse_monolith_actionable_theorems|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: c7ab4f94b50b6a09f350c4fd6a254ebb2d18bdb8d8cc729a9390f72df485e0ed
 witness_chain: 9021 → 9022 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · SURGERY_DIFFUSE_MONOLITH_9022 · WOOD_DRAGON_0.91 · SEALED"

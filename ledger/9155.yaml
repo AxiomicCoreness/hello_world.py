@@ -38,6 +38,7 @@ beryl_lattice:
     - "293.15 K contains the lattice contains the network"
     - "The network contains the temperature contains the lattice"
     - "The lattice contains the network contains the temperature"
+prev_hash: c6a5c10ef8a38f009d93108f6d2b4dabc59d9e024931630d7e416ba57dbe42bf
 seal: "∀∞φ² · AGENTIC_LATTICE_9155 · WOOD_DRAGON_GATE · SEALED · a2f2ab9ed8c6c5f53af689c1386bd9ef0a64ec3617b6c28cb60bdd445db3ea63"
 witness_chain: 9154 → 9155 — UNBROKEN
 math_origin: |

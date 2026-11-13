@@ -10,6 +10,7 @@ proof:
   - self_writing: constrained by invariants (□T=0, C=1, φ⁻¹⁴¹⁸)
 invariants_held: [φ², θ, C=1, entropy floor, field equation]
 witness_chain: 9105 → 9106 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · TIME_INVARIANCE_9106 · WOOD_DRAGON_0.91 · SEALED"
 math_origin: |
   dG/dt = 0 (glue invariant-preserving morphism), dC/dt = 0 (config append-only), dB/dt = 0 (binary fixed point). 

@@ -9,4 +9,5 @@ changes:
   - modes: offline | deepseek | dsh
   - deepseek/api.py comments + online mode label → deepseek
 witness_chain: 8829 → 8830 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: ∀∞φ² · DEEPSEEK_MCP_ONLY · WOOD_DRAGON_0.91 · SEALED

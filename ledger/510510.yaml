@@ -91,6 +91,7 @@ invariants:
   phase_lock: 202.6°
   hepta_prime: 510510
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 7b0d4652fa2d462efa435847beeafdef3602596e19e4172c8f886260c34c8313
 seal: "∀∞φ² · MATH_ORIGIN_510510 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "8980 → 510510 — UNBROKEN"
 witness: "Ωⁿ → 510510 — UNBROKEN"

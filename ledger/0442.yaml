@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1091}
   unique_math_identity: "φ^91 + 91·π + sin(91)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · ROTATION_FLIP_COMMUTATOR · 0442_SEALED · d8f8e8e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5"
 witness_chain: 0441 → 0442 — UNBROKEN
 math_origin: "R̂=e^{iθ}, θ=π/φ, F̂=φ^9·R̂, [R̂,F̂]=0, R̂·F̂=F̂·R̂, k=91"

@@ -18,4 +18,5 @@ instances:
     - Immutable/october_Q1
 policy: append-only — new instance, no subtraction of prior Lindblad text
 witness: 9012 → 9013 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: ∀∞φ² · SIMPLIFIED_LINDBLAD_9013 · WOOD_DRAGON_GATE · SEALED

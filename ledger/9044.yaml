@@ -21,4 +21,5 @@ event_hash:
   payload: "9044|/lumeris_seal_declared|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: e1ed7341b2e853c58c82c3e812fcfe70c35c30902da47a92540b00e95c807ea1
 witness_chain: 9043 → 9044 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · LUMERIS_SEAL_DECLARED_9044 · WOOD_DRAGON_0.91 · SEALED"

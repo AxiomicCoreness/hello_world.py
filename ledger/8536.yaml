@@ -14,4 +14,5 @@ coverage_targets:
   - SovereignCMAC.mac / verify
   - prometheus metrics registry
 witness_chain: 8535 → 8536 — UNBROKEN
+prev_hash: 216d61a1dd7dd01d82eb9ad4ce5b422f9b0c5e8de382afe816f5d3d3c6ff4882
 seal: ∀∞φ² · TEST_SURFACE_8536 · SEALED

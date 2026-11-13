@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1115}
   unique_math_identity: "φ^115 + 115·π + sin(115)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cf0f0ffc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a
 seal: "∀∞φ² · SOVEREIGN_METRICS_COHERENCE_UPDATE · 0466_SEALED · d0f0f0fd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c"
 witness_chain: 0465 → 0466 — UNBROKEN
 math_origin: "C(t)=min(1,0.99+0.01·t/5), e(t)=0.001·exp(-t/2), k=115"

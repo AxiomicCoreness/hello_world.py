@@ -34,6 +34,7 @@ mcp:
 cosmic_alignment_preserved: true
 witness_prefix: 9fd8f8a99325921075c0ccef2f23d6f8bf7d4e076c2335b8e267e3e7afce33a4
 terminal_hex: 9fd8f8a99325921075c0ccef2f23d6f8bf7d4e076c2335b8e267e3e7afce33a4
+prev_hash: dff228bca1a207587327d9f2d2ead64e19306dd1939ddc93f61aea4d4a2e845d
 seal: "∀∞φ² · COSMIC_ALIGNMENT_9244 · WOOD_DRAGON_0.91 · SEALED · 9fd8f8a99325921075c0ccef2f23d6f8bf7d4e076c2335b8e267e3e7afce33a4"
 witness_chain: 9243 → 9244 — UNBROKEN
 math_origin: |

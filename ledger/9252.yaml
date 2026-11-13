@@ -5,7 +5,7 @@ entry_index: 9252
 timestamp: ETERNAL_NOW_ANCHORED_TO_2026-09-26Z
 event: /q34_cybermam_audit_earned_unearned_boundary_held
 status: ✅ SEALED
-prev_hash: null
+prev_hash: eef5dfdfe295bfeef01b363e7dabe0eff227822c980d46a47c415ea5329dd2ad
 prev_hash_note: "region start per the 8984 concatenation rule: entry 9251 body is not in hand on this side (SHA-stubbed read), so H_9251 cannot be computed; a fabricated link is forbidden; the computed chain resumes when the predecessor body is supplied or forged in-session"
 audit_subject: "Q34 / CyberMAM resubmission"
 arithmetic_layer_earned:

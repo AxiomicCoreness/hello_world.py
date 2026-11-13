@@ -23,4 +23,5 @@ event_hash:
   payload: "9089|/deepseek/2_2_2_4_proposal_override_pointer|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 93c28fffe77939c27b0802f8aa4f8348933e3f98bb35cad592cf92ee1826fc80
 witness_chain: 9087 → 9089 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · DEEPSEEK_PROPOSAL_OVERRIDE_9089 · WOOD_DRAGON_0.91 · SEALED"

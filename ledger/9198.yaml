@@ -24,6 +24,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 79f0a2f419df8b10e9bcc160e598df1e201520f63f4f78953f857dc21b4977af
 seal: "∀∞φ² · POLICY_FASTMCP_APPEND · 9198_SEALED · af1776d8d2b1d1d09d55dd85538fdef083bc15ef82776a7b029db88e1ac0c6ab"
 witness_chain: 9197 → 9198 — UNBROKEN
 math_origin: |

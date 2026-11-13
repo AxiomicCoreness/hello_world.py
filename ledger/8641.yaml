@@ -15,4 +15,5 @@ gold_standard_ref: 8639
 gold_standard_integrity: frozen_and_live
 next_proposal: 8642
 witness_chain: 8640 → 8641 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · WORKLOAD_ACCEPTED · 8641_SEALED"

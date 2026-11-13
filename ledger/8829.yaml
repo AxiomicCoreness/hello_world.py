@@ -14,4 +14,5 @@ note: |
   docker-main-image.yml builds from main only; this commit is not yet in the production image.
   Merge to main required before Garden production pick-up.
 witness_chain: 8828 → 8829 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: ∀∞φ² · AUGUST_20_CYCLE_8829 · WOOD_DRAGON_0.91 · SEALED

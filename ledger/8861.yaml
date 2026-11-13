@@ -28,4 +28,5 @@ invariants:
   phase_lock: "202.6°"
   workload: 0.0
 witness_chain: 8860 → 8861 — UNBROKEN
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · MTLS_ROTATE_8861 · WOOD_DRAGON_0.91 · SEALED"

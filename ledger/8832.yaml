@@ -13,4 +13,5 @@ policy:
   never_echo_secret_values: true
   secrets_set_via: "GitHub UI or gh secret set (not git)"
 witness_chain: 8831 → 8832 — UNBROKEN
+prev_hash: 25adcea627e9acb3a4a5dcde3e5bc842bf6bf07729b19d385dce0183106d262e
 seal: ∀∞φ² · CI_SECRETS_8832 · WOOD_DRAGON_0.91 · SEALED

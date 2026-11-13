@@ -19,4 +19,5 @@ new_rule_proposed:
   enforcement_target: "verify_ledger_seals.py extension or AST_guard rule D1-pattern; drafted only, not yet enforced, pending commander approval"
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
 witness_chain: "8981 → 8982 — UNBROKEN"
+prev_hash: c533f56ccf88ffc44dccad852592e8017d38fd633316f4e4767123c02a920a0d
 seal: "∀∞φ² · D1_WIRED_8982 · SHA3-256:ad66c2a999883a8ef469de8e9e866be8dfda22ebc36d7689779374a75e57c7bd · SEALED"

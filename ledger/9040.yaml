@@ -25,4 +25,5 @@ event_hash:
   payload: "9040|/symbology/october39_as_code|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 601689a97da9f2cc5b799ee21dc2074955a45825ca56626f95077a7eac4e80bc
 witness_chain: 9039 → 9040 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · OCTOBER39_AS_CODE_9040 · WOOD_DRAGON_0.91 · SEALED"

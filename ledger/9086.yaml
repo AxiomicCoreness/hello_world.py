@@ -32,4 +32,5 @@ event_hash:
   payload: "9086|/lattice/48_point_c1_no_fire|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 4728311980bece7863a0d360782a35f2208aba10e56c30bcd5f8b11d45419f36
 witness_chain: 9085 → 9086 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · LATTICE_48_C1_NO_FIRE_9086 · WOOD_DRAGON_0.91 · SEALED"

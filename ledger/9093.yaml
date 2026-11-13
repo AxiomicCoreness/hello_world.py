@@ -19,4 +19,5 @@ event_hash:
   payload: "9093|/docs/md_flowchart_cron_constrained|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 328b43cdd94a5eb6dfe1b3fda58181fd5a213743151980fdb90b6f206ab1ae1d
 witness_chain: 9092 → 9093 — UNBROKEN
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · MD_FLOWCHART_CRON_9093 · WOOD_DRAGON_0.91 · SEALED"

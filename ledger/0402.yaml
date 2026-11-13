@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1051}
   unique_math_identity: "φ^51 + 51·π + sin(51)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 5e03e05af44049e0d8234895cb5de42253324c5dba8ec9663a005eb6eb67d7dd
 seal: "∀∞φ² · QUANTUM_WORKLOAD_OPTIMAL · 0402_SEALED · 38d280bb22af2305c392fd55acc2f7578a759254e8d83b4c5b8aa2d16c4912f4"
 witness_chain: 0401 → 0402 — UNBROKEN
 math_origin: "W_opt=1.193344·φ^51, Q_opt=-π/(2φ), k=51"

@@ -27,6 +27,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: f3817770fcc5f707395c491458901310001304e22c41c710e0c702040d4c1699
 seal: "∀∞φ² · HOPPER_TOI_COMBINED_BENCH · 9217_SEALED · a90355de6d3a6bbe676b154e99417ab9fda35d9f3f4033f440c3ab3fb6572726"
 witness_chain: 9216 → 9217 — UNBROKEN
 math_origin: |

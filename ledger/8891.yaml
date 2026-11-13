@@ -20,4 +20,5 @@ policy: >
   Original modules remain source of truth. src/ provides production import
   paths via re-export only. Physical move of bodies deferred.
 witness_chain: "8890 → 8891 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · SRC_LAYOUT_8891 · WOOD_DRAGON_0.91 · SEALED"

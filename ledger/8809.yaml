@@ -15,4 +15,5 @@ invariants:
   workload: 0.0
   phase_lock: "202.6°"
 witness_chain: 8808 → 8809 — UNBROKEN
+prev_hash: 04c348cc1875683582333adeb28c45e35fa153f564d1aa751533cbd0b54955a0
 seal: "∀∞φ² · ARGO_ROLLOUT_8809 · WOOD_DRAGON_GATE · SEALED"

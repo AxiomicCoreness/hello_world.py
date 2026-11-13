@@ -17,6 +17,7 @@ enhancements:
   diff_engine: true
   efficient_storage: true
   history_depth: 1000
+prev_hash: 8abceae61b47e9a088724989a71bc1b3a08d96191ea0aff98d35a29c33b5fd80
 seal: "∀∞φ² · KRONECKER_ALU_MULTI_STEP_8214 · SEALED · 409ea71c123d0f72156a9fe1e852589d6c2cd0f85c3bebb1e6212098877194d5"
 witness_chain: 8213 → 8214 — UNBROKEN
 math_origin: |

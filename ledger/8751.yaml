@@ -19,4 +19,5 @@ invariants:
   phase_lock: 202.6°
   workload: 0.0
 witness_chain: 8750 → 8751 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · MATHEMATICAL_CORE_8751 · WOOD_DRAGON_GATE · SEALED"

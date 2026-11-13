@@ -24,4 +24,5 @@ engine_ref:
   systems_go: true
   pauli_trace: 0.3819660112501051  # φ^{-2}
 witness_chain: 8665 → 8666 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · MCP_OIDC_PAULI_CAPABILITIES_8666 · WOOD_DRAGON_0.91 · SEALED"

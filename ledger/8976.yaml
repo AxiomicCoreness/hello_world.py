@@ -38,4 +38,5 @@ remediation_pending:
   - "fill <digest> placeholders in k8s/ and prometheus/ locally or via pasted bytes"
 seal_method: "sha3_256 over canonical JSON (recursively sorted keys, no whitespace), seal field excluded"
 witness_chain: "8975 → 8976 — UNBROKEN"
+prev_hash: 843d67ecf698343bc82d20a69a114170f36b4ad8965d6d1170d7a7b0366a16c7
 seal: "∀∞φ² · CI_DIAGNOSED_8976_ae25cb49bc49414c · WOOD_DRAGON_0.91 · SHA3-256:ae25cb49bc49414c18e61d0bdbdbb42286b2e9e908cbbd7682c5ad562dff55a5 · SEALED"

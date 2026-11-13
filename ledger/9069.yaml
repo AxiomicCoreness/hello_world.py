@@ -18,6 +18,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · LEDGER_INDEX_SHA3_9069 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: 9068 → 9069 — UNBROKEN
 math_origin: "SHA3-256(file_bytes)"

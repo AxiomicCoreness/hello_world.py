@@ -18,4 +18,5 @@ event_hash:
   payload: "9037|/surgery/standby_arrow_identities|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 070ea1a0c7ad0ac3d9ead88121837e9d9df161ed5a670b665a72cf0313c2ca64
 witness_chain: 9036 → 9037 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · STANDBY_ARROW_9037 · WOOD_DRAGON_0.91 · SEALED"

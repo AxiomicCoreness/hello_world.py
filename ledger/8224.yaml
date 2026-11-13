@@ -21,6 +21,7 @@ corrections:
 smoke_test:
   off_diagonal_decay: [0.85, 0.25, 0.075, 0.023, 0.007, 0.002]
   behavior: contractive
+prev_hash: eb56775021c5f4cb570d305e00679946f2bd7658db942dd53644af5c292481aa
 seal: "∀∞φ² · SOVEREIGN_CLAIMS_CORRECTION · 8224_SEALED · 2cec979afc57fc15a4ad34aa2ee677dc693669a5be824c70cf1160ea019ae7e4"
 witness_chain: 8221 → 8224 — UNBROKEN
 math_origin: |

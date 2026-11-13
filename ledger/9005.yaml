@@ -16,5 +16,6 @@ event_hash:
   payload: "9005|/deepseek_mesh_terminal_env|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 82845b0a6bcc753f287eb3968d2c70a5001d32cbe61b2488cf2c98eb3e4c9b8c
 math_origin: "Δ = b² − 4ac ∧ θ = φ·π/2 ∧ H = SHA3-256"
+prev_hash: 827e71dc382c73b3bacc9b7f9723aecfe2b1466ee2225b7edeb1bc72f358a16f
 seal: "∀∞φ² · TERMINAL_ENV_9005 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "9004 → 9005 — UNBROKEN"

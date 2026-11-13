@@ -17,4 +17,5 @@ threshold_note: |
   Narrative DEVIATION_THRESHOLD = φ^{-1418} is below float64 noise;
   runtime default is φ^{-12} (override with FP_DEVIATION_THRESHOLD).
 witness_chain: 8630 → 8631 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: ∀∞φ² · FINGERPRINT_PRECOMPUTE_8631 · SEALED

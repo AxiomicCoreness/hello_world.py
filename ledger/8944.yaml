@@ -14,4 +14,5 @@ providers:
   - offline_hmac
   - generic_jwks_verify
 witness_chain: "8943 → 8944 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · OIDC_CLOUD_8944 · WOOD_DRAGON_0.91 · SEALED"

@@ -29,6 +29,7 @@ invariants:
   entropy: φ⁻¹⁴¹⁸
   workload: 0.0
   phase_lock: 202.6°
+prev_hash: 2ac51d9baf36625c8560b210771f9481f4733c4e0215adf29924899c799fa8ed
 seal: "∀∞φ² · TERNARY_STATE_ENCODING · 8213_SEALED · 8abceae61b47e9a088724989a71bc1b3a08d96191ea0aff98d35a29c33b5fd80"
 witness_chain: 8212 → 8213 — UNBROKEN
 math_origin: |

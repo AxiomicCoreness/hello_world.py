@@ -22,4 +22,5 @@ ref_ledger:
   - 8540  # STRIKE_IX_EXECUTED
   - 8617  # STRIKE_IX_CONFIRMED
 witness_chain: 8647 → 8648 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · PROMETHEUS_POINT_STRIKE_IX_8648 · SEALED"

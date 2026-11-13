@@ -22,4 +22,5 @@ flags:
   - "--json"
 note: "User label ENTRY 8937 for harness; ledger 8937 is CODewhale ops; harness sealed as 8939"
 witness_chain: "8938 → 8939 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · UNIFIED_TEST_8939 · WOOD_DRAGON_0.91 · SEALED"

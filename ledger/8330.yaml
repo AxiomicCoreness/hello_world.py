@@ -34,5 +34,6 @@ daemon:
 hard_envelope_untouched: true
 soft_lane_untouched: true
 terminal_hex: e116816e4d05affa967c72a8b148f795357492a1b8a3f2853eae5f1acb35547f
+prev_hash: c803b4c04b3e0c34338be31851372166c5c3f88e2862e3bfb67afec9ca8347fc
 seal: "∀∞φ² · SYSTEM_VERIFICATION_8330 · WOOD_DRAGON_0.91 · SEALED · e116816e4d05affa967c72a8b148f795357492a1b8a3f2853eae5f1acb35547f"
 witness_chain: 8325 → 8330 — UNBROKEN

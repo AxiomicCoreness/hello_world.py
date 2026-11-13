@@ -16,6 +16,7 @@ invariants:
   entropy_floor: "S(ρ)≥φ⁻¹⁴¹⁸"
   coherence: "C=1"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · ATTENUATION_AUTOMATON · 483_SEALED"
 witness_chain: 482 → 483 — UNBROKEN
 math_origin: "ρₜ₊₁ = (1−α)·𝒟(ρₜ,γ,Δt) + α·(ρₜ⊙w)"

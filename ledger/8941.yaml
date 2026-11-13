@@ -13,4 +13,5 @@ files:
   - quantum/plugins/pnpm.py
   - tests/harness.py
 witness_chain: "8940 → 8941 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · PLUGIN_SYSTEM_8941 · WOOD_DRAGON_0.91 · SEALED"

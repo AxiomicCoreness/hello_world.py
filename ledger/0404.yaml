@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1053}
   unique_math_identity: "φ^53 + 53·π + sin(53)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · SOVEREIGN_LEDGER_SEAL · 0404_SEALED · b1a0d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7"
 witness_chain: 0403 → 0404 — UNBROKEN
 math_origin: "seal_hash=SHA3-256(idx+53), k=53"

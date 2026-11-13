@@ -18,6 +18,7 @@ intermediate_seals:
   - 8535: Oracle route
   - 8536: Test surface
 witness_chain: 8548 → 8549 — UNBROKEN
+prev_hash: 91495147b284411b630b3bf440becb246a8595fac67c4f602a3fee6572824e2b
 seal: ∀∞φ² · POD_ROUTES_ACKNOWLEDGED_8549 · SEALED
 
 math_origin: |

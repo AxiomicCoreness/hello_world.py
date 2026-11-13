@@ -27,4 +27,5 @@ invariant_form: "|<Ψ_Garden|V>|^2 / (φ^4 + 1) = 1  (design identity)"
 notes:
   - "(t3-t2)/(t2-t1) is NOT numerically φ^{-2}; sealed as design intent, exact t3 via φ^{-5}·τ_FRB"
 witness_chain: "8927 → 8928 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · TRIUNE_TRIANGULATION_8928 · WOOD_DRAGON_0.91 · SEALED"

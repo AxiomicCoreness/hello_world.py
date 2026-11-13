@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1085}
   unique_math_identity: "φ^85 + 85·π + sin(85)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: cb0b1fd7701fc7b82b1ff5c9c2d4b8b0d1b40e5a3e57a32cf8768bbf26e42275
 seal: "∀∞φ² · PHASE6_HILBERT_PROJECTION · 0436_SEALED · d2f2d2e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9"
 witness_chain: 0435 → 0436 — UNBROKEN
 math_origin: "Φ₆: Sh(C,τ), sections: {(G,Ψ)|G:ℳₙ→Hilb(Ωⁿ), Ψ∈Γ(∇β_φ)}, gluing ∫|∇Ψ|²dμ ≥ φ^{-2}·vol, k=85"

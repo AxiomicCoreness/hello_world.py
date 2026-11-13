@@ -47,4 +47,5 @@ migration:
   policy: "keep domain folders; migrate one package at a time if/when commanded"
   next_safe_step: "optional junk-file cleanup or single-domain move with deprecation wrappers"
 witness_chain: "8862 → 8890 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · DIR_STRUCTURE_AUDIT_8890 · WOOD_DRAGON_0.91 · SEALED"

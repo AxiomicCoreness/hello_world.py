@@ -24,6 +24,7 @@ mcp:
   filled: false
   bind_0000: false
   dual_asgi: "127.0.0.1:8024"
+prev_hash: 23fe52f39d904145492a52a7e859f0b793b594cbd4d55913a88111db8333029a
 seal: "∀∞φ² · SHEAF_REORG_FILE_LIST · 9204_SEALED · 0c038fb1058055aa665f4a3c588beac1107693872d51109e095eb965e38d4db4"
 witness_chain: 9203 → 9204 — UNBROKEN
 math_origin: |

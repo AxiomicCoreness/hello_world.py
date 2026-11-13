@@ -25,4 +25,5 @@ event_hash:
   payload: "9033|/pisano_dodecahedron_transition|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: c9348f53ee394cd04e1f58041777bf2d2426175867f4d06215b4e8d00211aeae
 witness_chain: 9032 → 9033 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · PISANO_DODECAHEDRON_9033 · WOOD_DRAGON_0.91 · SEALED"

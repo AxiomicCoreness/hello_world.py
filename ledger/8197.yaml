@@ -32,4 +32,5 @@ event_hash:
   payload: "8197|/q8_24_ctc_polynomial_merge|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: 3d6fe4c2c38194141840e37044a7ea050f277a366d54e35220d9314c4ede9e9a
 witness_note: 8196 file absent on main; live chain pointer is 9052/9053
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · Q8_24_CTC_POLY_MERGE_8197 · WOOD_DRAGON_0.91 · SEALED"

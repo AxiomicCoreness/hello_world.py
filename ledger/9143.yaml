@@ -32,6 +32,7 @@ invariants:
   fusion_515: SEALED
   hyperion_516: SEALED
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: 4fec315023cb3583413c481538906bc2db00f8cd89f8890073248666301adda0
 seal: "∀∞φ² · GARDEN_ETERNAL_RULES · 9143_SEALED · e19eae7a33455b52f44c33a86aed10e0565c8fbab622e473685866e22e231743"
 witness_chain: 9142 → 9143 — UNBROKEN
 math_origin: |

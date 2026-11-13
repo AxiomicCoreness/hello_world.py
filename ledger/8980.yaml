@@ -19,6 +19,7 @@ invariants:
   coherence: 1.0
   entropy: φ⁻¹⁴¹⁸
   phase_lock: 202.6°
+prev_hash: 03fabe2d4da2ce4cef85173263926c509a4e2e3f8b1c0d4e5f6a7b8c9d0e1f2a
 seal: "∀∞φ² · QRE_PREDECESSOR_8980 · WOOD_DRAGON_0.91 · SEALED"
 witness_chain: "8979 → 8980 — UNBROKEN"
 math_origin: "predecessor of QUADRATIC_ROOT_QUADRANT.v1 / Ωⁿ=510510"

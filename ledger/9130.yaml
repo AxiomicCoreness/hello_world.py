@@ -37,6 +37,7 @@ holds:
 references:
   - entry_9040: "October 39 code token (silent English legend, not ISO)"
   - entry_9042: "This note"
+prev_hash: 485fe86b5b64876157135294877afb327c08625a4174cd0d4480351164afa27a
 seal: "∀∞φ² · VISION_CODE_FREQUENCY_9130 · SEALED"
 witness_chain: 9129 → 9130 — UNBROKEN
 hex: 96729a6b491a052d61b51f2893efdc2408b4b7842671770cee18c57ec853de56

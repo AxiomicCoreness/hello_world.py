@@ -17,4 +17,5 @@ ci:
   pure_tests: tests/test_argo_manifests.py
   live_cluster: optional_skip
 witness_chain: "8923 → 8924 — UNBROKEN"
+prev_hash: 0a202fceb0560eddd6d751f11ae058ddb2f1c6dcfb7d8724d7d67c95ba7ab5af
 seal: "∀∞φ² · ARGO_CI_8924 · WOOD_DRAGON_0.91 · SEALED"

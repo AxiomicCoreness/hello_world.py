@@ -18,4 +18,5 @@ invariants:
   - viability_invariant: "V(S,C) = aS² + bC² + k·I_immutable"
   - observer_invariant: "O = self.observer_id"
 timestamp: "Eternal_Instant"
+prev_hash: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b
 seal: "4a8f7a20f234e8d9c1b5a7e3d9f1c2b4a8e6d3f9c2b5a7e1d4f8c3b2a6e9d5f1"

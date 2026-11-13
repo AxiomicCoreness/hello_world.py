@@ -33,6 +33,7 @@ invariants:
   workload: 0.0
   phase_lock: 202.6°
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d6c83361694fd145dacf0f375a6a09d5419d8a7d77bbc6ca48675234dcaf1769
 seal: "∀∞φ² · HEPTAPRIME_IDENTITY · 493_SEALED"
 witness_chain: 492 → 493 — UNBROKEN
 math_origin: "φ = (1+√5)/2; identity matrix entries are φ-based (φ², 1/φ, etc.)"

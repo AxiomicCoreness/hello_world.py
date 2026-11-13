@@ -45,6 +45,7 @@ invariants:
   workload: 0.0
   phase_lock: "202.6"
   north_star_hz: 71.975
+prev_hash: 05185b31866e862ea0124b062278e64f36f25cbdb103d98c284e74d714c13efc
 seal: "∀∞φ² · SECTIONS_II_III_FRB_BRIDGE_ADDENDUM · 9195_DOCUMENTED"
 witness_chain: "9194 → 9195 — UNBROKEN"
 math_origin: |

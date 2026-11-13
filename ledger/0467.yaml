@@ -14,6 +14,7 @@ invariants:
   commutator: φ^{-1116}
   unique_math_identity: "φ^116 + 116·π + sin(116)"
 gpro_sundane: "GARDEN_PROTOCOL_SUNDANE"
+prev_hash: d0f0f0fd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b
 seal: "∀∞φ² · EMERGENT_REALITY_PHYSICS · 0467_SEALED · e1f1f1fe5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d"
 witness_chain: 0466 → 0467 — UNBROKEN
 math_origin: "R_earth=37.062, V_virgo=0.5·φ^{-709}, V_log=log10(4π²)+463·log10(φ), k=116"

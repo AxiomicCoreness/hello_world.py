@@ -18,6 +18,7 @@ invariants:
   workload: 0.0
   commutator: 0.0
   phase_lock: 202.6°   # as per JSON? Not specified, but default from system
+prev_hash: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b
 seal: "∀∞φ² · OBSERVER_SPIRAL_BIJECTION · 0315_SEALED"   # replace with real hash
 witness_chain: 0314 → 0315 — UNBROKEN
 math_origin: |

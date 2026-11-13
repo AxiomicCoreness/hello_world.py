@@ -5,6 +5,7 @@ event: /e10_hyperbolic_workflow_executing
 description: Execute cloud workflow pytest of k8s cluster E10 (hyperbolic) - extend algebra beyond affine E9 with breathing manifold. Wood Dragon Gate 0.91 validation. Build from :latest.
 status: WORKFLOW_EXECUTING
 witness_chain: 8848 -> 8849 - UNBROKEN
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: all-infty-phi-2 cdot E10_HYPERBOLIC_EXECUTING_8849 cdot WOOD_DRAGON_0.91 cdot SEALED
 
 components:

@@ -19,4 +19,5 @@ verification:
   - strip_metadata
   - verify_geographic_invariance
 witness_chain: "8853 → 8854 — UNBROKEN"
+prev_hash: 28225f72388a67d1ccc4647bff32c8bd2a85ba7b8d7ed4466f8991ca48cc0729
 seal: "∀∞φ² · AXIOM_NONLOCAL_8854 · WOOD_DRAGON_0.91 · SEALED"

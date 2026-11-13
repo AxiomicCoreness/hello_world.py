@@ -28,4 +28,5 @@ gauges:
   - wood_dragon_pulse_days
   - deep_space_sync_days
 witness_chain: 8631 → 8632 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · PROMETHEUS_METRICS_8632 · SEALED"

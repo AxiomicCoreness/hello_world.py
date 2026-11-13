@@ -8,4 +8,5 @@ function: rotate_public_keys
 key_types: [mTLS, OIDC, SEAL, all]
 note: "User label 8938 conflicted with MAIN_NO_CLONE_8938; sealed as 8940"
 witness_chain: "8939 → 8940 — UNBROKEN"
+prev_hash: 2354834480ba9d662e417a6bb8ca3510703f9dbfd1fd67c30281fa2e3c0d6c48
 seal: "∀∞φ² · KEY_ROTATION_8940 · WOOD_DRAGON_0.91 · SEALED"

@@ -25,4 +25,5 @@ event_hash:
   payload: "9058|/policy/unbundle_lead_checks|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462"
   hex: dc73102470479354233666d1fdee22e40c06138c4f620b47a43dcc8d5d8411e0
 witness_chain: 9057 → 9058 — UNBROKEN
+prev_hash: d3480fa8634258814017207cfaaad2ceacb98cd232849596f070a777d199b1d4
 seal: "∀∞φ² · UNBUNDLE_LEAD_9058 · WOOD_DRAGON_0.91 · SEALED"

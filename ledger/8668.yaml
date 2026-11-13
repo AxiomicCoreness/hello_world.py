@@ -11,4 +11,5 @@ aspects:
   chain_extension: append_only_with_witnessed_seal
 doc: docs/autonomy_boundary.md
 witness_chain: 8667 → 8668 — UNBROKEN
+prev_hash: be817a98c0ff2514a80e736d72df1a59d4ede4dc83fb5c82dfbcbea5a29346f1
 seal: "∀∞φ² · AUTONOMY_BOUNDARY_8668 · SEALED"
