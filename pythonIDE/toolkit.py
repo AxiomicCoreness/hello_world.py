@@ -9,6 +9,9 @@ Ledger policy: NO_LEDGER_WRITE from this module.
 Precedent: dual-regime seals; HMAC verify at verify_hmac_chain.py
 Entry: 9239 · /sovereign_toolkit_54_capabilities
 MCP: unfilled · Dual ASGI: 127.0.0.1:8024 only
+Extension: ``argo`` (pythonIDE.argo_sink, backend Argo CI/CD poll). Extensions
+are callable via ``call()`` but sit outside the honest 54 core count and the
+argsless audit, so ``count() == 54`` holds and the audit never hits the network.
 """
 from __future__ import annotations
 
@@ -39,9 +42,11 @@ class SovereignToolkit:
     _registry: Dict[str, Callable[..., Any]] = field(default_factory=dict)
     _stubs: Set[str] = field(default_factory=set)
     _requires_args: Set[str] = field(default_factory=set)
+    _extensions: Dict[str, Callable[..., Any]] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self._register_all()
+        self._register_extensions()
 
     # ── registration ──────────────────────────────────────────────
     def _reg(self, name: str, fn: Callable[..., Any], *, stub: bool = False, needs_args: bool = False) -> None:
@@ -120,7 +125,20 @@ class SovereignToolkit:
         self._reg("rk4_step", self._rk4_step, needs_args=True)
         self._reg("health", lambda: {"ok": True, "count": len(self._registry), "stubs": sorted(self._stubs)})
 
+    def _register_extensions(self) -> None:
+        # X · Backend Argo CI/CD (outside the 54 core; `/py call argo`)
+        self._extensions["argo"] = self._argo
+
     # ── implementations ───────────────────────────────────────────
+    @staticmethod
+    def _argo(*args: Any) -> Dict[str, Any]:
+        """Latest main-branch runs of the Argo / CI/CD workflows (poll only)."""
+        try:
+            from pythonIDE import argo_sink
+        except ImportError:
+            import argo_sink  # type: ignore
+        return argo_sink.summary()
+
     @staticmethod
     def _fibonacci(n: int) -> int:
         n = int(n)
@@ -233,11 +251,15 @@ class SovereignToolkit:
     def stubs(self) -> List[str]:
         return sorted(self._stubs)
 
+    def extensions(self) -> List[str]:
+        return sorted(self._extensions.keys())
+
     def call(self, name: str, *args: Any, **kwargs: Any) -> Any:
-        if name not in self._registry:
+        fn = self._registry.get(name) or self._extensions.get(name)
+        if fn is None:
             raise CapabilityError(f"unknown capability: {name}")
         try:
-            return self._registry[name](*args, **kwargs)
+            return fn(*args, **kwargs)
         except CapabilityError:
             raise
         except Exception as e:
