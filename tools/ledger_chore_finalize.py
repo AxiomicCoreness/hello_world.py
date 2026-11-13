@@ -8,7 +8,8 @@
    restored from HEAD (the rewrite is discarded, never committed).
 2. prev_hash: a new entry with an empty or missing prev_hash gets the terminal hex of
    the seal of the nearest lower entry_index in ledger/ or ledger.v2/ (the convention the
-   chained ledger.v2 entries use). The fill is skipped if it would turn a verified seal
+   chained ledger.v2 entries use). A predecessor without a `seal` contributes its
+   `seal_sha3_256` instead (the 9250..9281 convention). The fill is skipped if it would turn a verified seal
    into an unverified one; such writers must fill prev_hash before they seal.
 3. Index and chain: runs tools/ledger_index.py (write) and then --check, so the commit
    carries ledger_index.jsonl and the appended ledger.chain.jsonl link.
@@ -16,6 +17,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import re
 import subprocess
@@ -54,8 +56,18 @@ def changed_files(root: Path, known: list[str]) -> list[str]:
 
 
 def load(root: Path, rel: str) -> dict[str, Any] | None:
+    p = root / rel
     try:
-        d = yaml.safe_load((root / rel).read_text(encoding="utf-8"))
+        st = p.stat()
+    except OSError:
+        return None
+    return _load_cached(str(p), st.st_mtime_ns, st.st_size)
+
+
+@functools.lru_cache(maxsize=4096)
+def _load_cached(path: str, _mtime_ns: int, _size: int) -> dict[str, Any] | None:
+    try:
+        d = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError):
         return None
     return d if isinstance(d, dict) else None
@@ -63,12 +75,18 @@ def load(root: Path, rel: str) -> dict[str, Any] | None:
 
 def seal_hex(d: dict[str, Any]) -> str | None:
     m = HEX64.findall(str(d.get("seal", "")).lower())
-    return m[-1] if m else None
+    if m:
+        return m[-1]
+    if not d.get("seal"):
+        s = str(d.get("seal_sha3_256", "")).strip().lower()
+        if HEX64.fullmatch(s):
+            return s
+    return None
 
 
 def predecessor_hash(root: Path, n: int, rel: str, files: list[str]) -> str | None:
     best = None
-    for f in files:
+    for f in sorted(files):
         if f == rel:
             continue
         d = load(root, f)
@@ -81,6 +99,11 @@ def predecessor_hash(root: Path, n: int, rel: str, files: list[str]) -> str | No
         if h and (best is None or k > best[0]):
             best = (k, h)
     return best[1] if best else None
+
+
+def yaml_scalar(h: str) -> str:
+    """Plain if YAML reads it back as the same string, else single-quoted (e.g. all-digit hex)."""
+    return h if yaml.safe_load(h) == h else f"'{h}'"
 
 
 def fill_prev_hash(root: Path, rel: str, files: list[str]) -> str:
@@ -100,7 +123,7 @@ def fill_prev_hash(root: Path, rel: str, files: list[str]) -> str:
     if before == ledger_seal.VERIFIED and after != ledger_seal.VERIFIED:
         return "skip (seal covers prev_hash; writer must fill it before sealing)"
     text = (root / rel).read_text(encoding="utf-8")
-    line = f"prev_hash: {h}"
+    line = f"prev_hash: {yaml_scalar(h)}"
     if PREV_LINE.search(text):
         text = PREV_LINE.sub(line, text, count=1)
     elif SEAL_LINE.search(text):

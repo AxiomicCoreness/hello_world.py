@@ -85,3 +85,51 @@ def test_8226_is_create_only_in_cd_combinator():
     assert 'path.open("x"' in t
     assert "steps.plan.outputs.write == 'true'" in t
     assert "ledger_chore_finalize.py" in t
+
+
+sys.path.insert(0, str(ROOT / "tools"))
+import ledger_chore_finalize as lcf
+
+KNOWN_NONCONFORMING_V2 = {"ledger.v2/9253.yml", "ledger.v2/9267.yml", "ledger.v2/9268.yml", "ledger.v2/9284.yml"}
+
+
+def test_seal_hex_falls_back_to_seal_sha3_256_without_seal():
+    h = "cd" * 32
+    assert lcf.seal_hex({"seal_sha3_256": h}) == h
+    assert lcf.seal_hex({"seal": "", "seal_sha3_256": h.upper()}) == h
+    assert lcf.seal_hex({"seal": "X · SEALED · " + "ef" * 32, "seal_sha3_256": h}) == "ef" * 32
+    assert lcf.seal_hex({"seal_sha3_256": "not-a-hash"}) is None
+    assert lcf.seal_hex({}) is None
+
+
+def test_rule_reproduces_v2_chained_prev_hashes():
+    files = lcf.ledger_files(ROOT)
+    checked = 0
+    for rel in sorted(f for f in files if f.startswith("ledger.v2/")):
+        d = lcf.load(ROOT, rel)
+        if not d or not d.get("prev_hash") or rel in KNOWN_NONCONFORMING_V2:
+            continue
+        n = d.get("entry_index")
+        if not isinstance(n, int) or n < 9250:
+            continue
+        assert lcf.predecessor_hash(ROOT, n, rel, files) == str(d["prev_hash"]).lower(), rel
+        checked += 1
+    assert checked >= 50
+
+
+@needs_git
+def test_new_entry_after_seal_sha3_only_entry(repo):
+    prev = repo / "ledger.v2" / "99980.yml"
+    prev.write_text("entry_index: 99980\nevent: /chore_prev\nprev_hash: x\nseal_sha3_256: " + "12" * 32 + "\n",
+                    encoding="utf-8")
+    new = repo / "ledger.v2" / "99981.yml"
+    new.write_text("entry_index: 99981\nevent: /chore_next\n", encoding="utf-8")
+    r = _finalize(repo)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert yaml.safe_load(new.read_text(encoding="utf-8"))["prev_hash"] == "12" * 32
+
+
+def test_yaml_scalar_quotes_values_yaml_would_retype():
+    assert lcf.yaml_scalar("ab" * 32) == "ab" * 32
+    assert lcf.yaml_scalar("12" * 32) == "'" + "12" * 32 + "'"
+    assert yaml.safe_load("k: " + lcf.yaml_scalar("1e" + "0" * 62))["k"] == "1e" + "0" * 62
