@@ -227,7 +227,8 @@ jobs:
           {
             python -I tools/ios_pocket_manifest.py check-entry "ledger.v2/$N.yml"
             python -P .github/scripts/verify_ledger.py --mode hard "ledger.v2/$N.yml"
-            git add "ledger.v2/$N.yml"
+            python -I tools/ledger_chore_finalize.py --root .
+            git add "ledger.v2/$N.yml" ledger_index.jsonl ledger.chain.jsonl
             python -I scripts/ledger_iso8601_gate.py --base origin/main
           } 2>&1 | tee verify.txt
 

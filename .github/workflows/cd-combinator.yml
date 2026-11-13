@@ -116,14 +116,27 @@ jobs:
 
       # ────────────────────────────────────────────────────────────
       # 3. Seal ledger entry 8226 (SHA3-256, prev_hash chained)
+      #    Append-only: ledger/8226.yaml is created once and never
+      #    rewritten. If it exists, nothing is written or committed.
       # ────────────────────────────────────────────────────────────
+      - name: Append-only guard for ledger/8226.yaml
+        id: plan
+        run: |
+          set -euo pipefail
+          if [ -e ledger/8226.yaml ]; then
+            echo "::notice::ledger/8226.yaml already exists — append-only, refusing to overwrite"
+            echo "write=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "write=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Seal ledger entry 8226 (SHA3-256)
-        if: success() && steps.check.outputs.engine_present == 'true'
+        if: success() && steps.check.outputs.engine_present == 'true' && steps.plan.outputs.write == 'true'
         run: |
           set -euo pipefail
           mkdir -p "${LEDGER_DIR}"
           python - <<'PY'
-          import hashlib, json, os, yaml
+          import hashlib, json, os, sys, yaml
           from datetime import datetime, timezone
           from pathlib import Path
 
@@ -139,7 +152,8 @@ jobs:
               tail = seal_value.rsplit("·", 1)[-1].strip()
               return tail
 
-          # Read previous entry's terminal hex to chain
+          # Read previous entry's terminal hex to chain. 8225 is absent, so
+          # fall back to the nearest lower sealed entry (repo convention).
           prev_hash = ""
           if prev_path.exists():
               try:
@@ -147,6 +161,12 @@ jobs:
                   prev_hash = terminal_hex(prev.get("seal", ""))
               except Exception as e:
                   print(f"⚠️ could not parse {prev_path}: {e}")
+          if not prev_hash:
+              sys.path.insert(0, "tools")
+              import ledger_chore_finalize as lcf
+              prev_hash = lcf.predecessor_hash(
+                  Path("."), 8226, str(path), lcf.ledger_files(Path("."))
+              ) or ""
 
           engine_digest = ""
           if engine.exists():
@@ -175,9 +195,10 @@ jobs:
           h = hashlib.new(HASH_ALGO, canon.encode("utf-8")).hexdigest()
           entry["seal"] = entry["seal"] + " · " + h
 
-          path.write_text(yaml.dump(entry, sort_keys=False,
-                                    default_flow_style=False,
-                                    allow_unicode=True))
+          with path.open("x", encoding="utf-8") as fh:  # exclusive create
+              fh.write(yaml.dump(entry, sort_keys=False,
+                                 default_flow_style=False,
+                                 allow_unicode=True))
           print("📋 Ledger entry 8226 written.")
           print(f"✅ Sealed 8226 · {HASH_ALGO}:{h[:16]}...")
           print(f"   prev_hash = {prev_hash[:16] or '(none)'}...")
@@ -185,18 +206,22 @@ jobs:
           PY
 
       - name: Verify ledger entry 8226 (SHA3-256)
-        if: success()
+        if: success() && steps.plan.outputs.write == 'true'
         run: |
           set -euo pipefail
           python .github/scripts/verify_ledger.py ledger/8226.yaml
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success() && github.event_name != 'pull_request' && steps.plan.outputs.write == 'true'
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       # Commit only on non-PR events (fork PRs have read-only GITHUB_TOKEN)
       - name: Commit ledger entry if changed
-        if: success() && github.event_name != 'pull_request'
+        if: success() && github.event_name != 'pull_request' && steps.plan.outputs.write == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal Eridanus Dual smoke entry 8226 (sha3_256)"
-          file_pattern: ledger/8226.yaml
+          file_pattern: ledger/8226.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 

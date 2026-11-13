@@ -138,12 +138,16 @@ jobs:
       # ────────────────────────────────────────────────────────────
       # 4. Commit ledger changes if any
       # ────────────────────────────────────────────────────────────
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger changes
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: garden-surgery self_write (sha3_256)"
-          file_pattern: ledger/*.yaml
+          file_pattern: ledger/*.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_options: '--no-verify'
 
       # ────────────────────────────────────────────────────────────

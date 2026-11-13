@@ -375,13 +375,17 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: steps.decide.outputs.write_needed == 'true' && github.event_name != 'pull_request'
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 8925
         # Seal only on main; a PR run that pushes back to its own branch re-triggers itself.
         if: steps.decide.outputs.write_needed == 'true' && github.event_name != 'pull_request'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal DeepSeek NDJSON stream entry 8925 (sha3_256, no-backfill)"
-          file_pattern: ledger/8925.yaml
+          file_pattern: ledger/8925.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_options: '--no-verify'
 
       - name: Note skipped commit

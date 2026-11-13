@@ -146,12 +146,16 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 9005
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal deepseek-mesh-terminal entry 9005 (sha3_256)"
-          file_pattern: ledger/9005.yaml
+          file_pattern: ledger/9005.yaml ledger_index.jsonl ledger.chain.jsonl
 
       # ────────────────────────────────────────────────────────────────
       # 3. Summary

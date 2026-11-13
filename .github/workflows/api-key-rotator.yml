@@ -253,12 +253,16 @@ jobs:
           set -euo pipefail
           python .github/scripts/verify_ledger.py ledger/632.yaml
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 632
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal key-rotation entry 632 (sha3_256)"
-          file_pattern: ledger/632.yaml
+          file_pattern: ledger/632.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_options: '--no-verify'
 
   # ──────────────────────────────────────────────────────────────
@@ -363,12 +367,16 @@ jobs:
           set -euo pipefail
           python .github/scripts/verify_ledger.py ledger/635.yaml
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 635
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal hmac-verification entry 635 (sha3_256)"
-          file_pattern: ledger/635.yaml
+          file_pattern: ledger/635.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_options: '--no-verify'
 
   # ──────────────────────────────────────────────────────────────
@@ -577,12 +585,16 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success()
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry 636
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal mTLS boundary entry 636 (sha3_256)"
-          file_pattern: ledger/636.yaml
+          file_pattern: ledger/636.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_options: '--no-verify'
 
   # ──────────────────────────────────────────────────────────────

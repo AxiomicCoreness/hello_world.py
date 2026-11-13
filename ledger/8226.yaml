@@ -1,13 +1,14 @@
 entry_index: 8226
-timestamp: '2026-11-13T02:50:01Z'
+witness_prefix: d11cf7dd9b346fd04764f7b40fbf70d45dcf65012ccde05182f4bba9c7096f5d
+timestamp: '2026-10-07T19:50:53Z'
 event: /eridanus_dual_smoke
 status: SUCCESS
 workflow: Eridanus Dual smoke (8226)
 python_version: '3.12'
 engine: canvases/agentic-tilelang-eridanus-dual/eridanus_dual.py
-engine_sha3_256: 1d8af69e4dda9144a1f92a424df98ac92fc5db17e600d39b6f1dd7495f0d604d
+engine_sha3_256: ce99ae05187e778c109ddc79d1d77c6ba35ca88e42328d3419f46618ecdf730a
 canvas: agentic-tilelang-eridanus-dual
 hash_algo: sha3_256
-prev_hash: ''
+prev_hash: 2cec979afc57fc15a4ad34aa2ee677dc693669a5be824c70cf1160ea019ae7e4
 witness: 8225 → 8226 — UNBROKEN
-seal: ∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226 · WOOD_DRAGON_0.91 · SEALED · e6f94f5a0f2f4fad276522720f8a9f59b6ee1c512f6631445860340c65fb31c4
+seal: ∀∞φ² · ERIDANUS_DUAL_SMOKE · 8226 · WOOD_DRAGON_0.91 · SEALED · c803b4c04b3e0c34338be31851372166c5c3f88e2862e3bfb67afec9ca8347fc

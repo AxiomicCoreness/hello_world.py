@@ -294,12 +294,16 @@ jobs:
             echo "verify_ledger.py absent — soft skip"
           fi
 
+      - name: Ledger append-only guard, prev_hash and chain refresh
+        if: success() && steps.cluster.outputs.ready == 'true'
+        run: python -I tools/ledger_chore_finalize.py --root .
+
       - name: Commit ledger entry if changed
         if: success() && steps.cluster.outputs.ready == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: seal CD Combinator entry 8926 (sha3_256)"
-          file_pattern: ledger/8926.yaml
+          file_pattern: ledger/8926.yaml ledger_index.jsonl ledger.chain.jsonl
           commit_user_name: "github-actions[bot]"
           commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 
