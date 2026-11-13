@@ -1,9 +1,9 @@
 # ==================================================================
-# ClarkeYoursaTee — Java 17 / Maven on GitCode
+# ClarkeYoursaTee — Python and Java 17 / Maven (GitHub + GitCode)
 # ==================================================================
-# The repo is Java/Maven. Python patterns are kept because the
-# CodeArts Doer agent and any local tooling may drop Python
-# side-effects into the checkout. .codeartsdoer/ is GitCode-specific.
+# The repo is both Python and Java/Maven. Python patterns cover
+# local tooling and CodeArts Doer side-effects. .codeartsdoer/ is
+# GitCode-specific.
 # ==================================================================
 
 # --- Java / Maven -------------------------------------------------
@@ -41,6 +41,9 @@ dist/
 # --- Virtual environments -----------------------------------------
 .env
 *.env
+# Tracked non-secret Codespace / nonledger env snapshots
+!.devcontainer/codespace.env
+!ledger/nonledger/0006_codespace.env
 .venv/
 venv/
 env/
@@ -94,6 +97,17 @@ tests/models/offline_decode_ppl.json.tmp
 # Five-row male-cns CB2514 annotation subset. Checksum is in data/cb2514/source/checksums.json.
 !data/cb2514/source/annotations/CB2514_from_body-annotations-male-cns-v1.0-minconf-0.5.csv
 *.pkl
+
+# Runtime n-gram / engine dumps (cwd-relative defaults)
+phi_ngram_memory.json
+sovereign_markov_production.json
+sovereign_deployment_final.json
+
+# scripts/link_core.sh creates this symlink locally
+.container/ml_sovereign_core.py
+
+# GitCode-side generated layout render (union with GitCode .gitignore)
+deciphered_layout_example.png
 
 # --- Local builds / Merge state -----------------------------------
 .merge/
