@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 yaml = pytest.importorskip("yaml")
+needs_git = pytest.mark.skipif(shutil.which("git") is None, reason="git not installed")
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "tools" / "ledger_chore_finalize.py"
@@ -34,6 +35,7 @@ def _finalize(repo):
     return _run(repo, sys.executable, "-I", str(repo / "tools" / "ledger_chore_finalize.py"), "--root", ".")
 
 
+@needs_git
 def test_rewrite_of_chained_entry_is_discarded(repo):
     p = repo / "ledger" / "8226.yaml"
     before = p.read_bytes()
@@ -46,6 +48,7 @@ def test_rewrite_of_chained_entry_is_discarded(repo):
     assert "OK: index current, chain unbroken" in r.stdout
 
 
+@needs_git
 def test_new_entry_gets_prev_hash_and_chain_link(repo):
     chain_before = (repo / "ledger.chain.jsonl").read_text(encoding="utf-8").splitlines()
     new = repo / "ledger.v2" / "99990.yml"
