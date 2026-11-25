@@ -1,0 +1,118 @@
+entry_index: 9312
+event: /di_66l_f32norm_kquant_and_sign_anchors_9312
+status: SEALED
+timestamp: '2026-11-25T11:35:41-05:00'
+hash_algo: sha3_256
+measured_at_commit: 5d1bd9aa321cb4ba32a0f21a0ae70efeb0663ad6
+commander: Clarke Yoursa Tee
+sign_off: Clarke Yoursa Tee
+open_ended: true
+even_index: true
+prev_hash: 7b0d4652fa2d462efa435847beeafdef3602596e19e4172c8f886260c34c8313
+witness_chain: 9311 -> 9312
+attribution:
+  author: Clarke Yoursa Tee
+  zenodo_doi: 10.5281/zenodo.23378305
+  zenodo_url: https://doi.org/10.5281/zenodo.23378305
+note: 'New append-only entry (9311.yml and every other existing ledger file untouched). Records DeepInfer 66L -f32norm GGUF
+  artifacts (1-D F16->F32 fix of 331 tensors for PocketPal binary_op crash; sha256 digests computed from box copies under
+  /workspace/tandem_box/fixed/*-f32norm.gguf matching Deepnote output byte sizes), open PR #205 (docs/KQUANT_1D_F32_MATH_2026-11-25.md
+  at 1c782f9, unmerged), quantum/sign_convention.py anchors (DIMENSION=7, FORM_TERMS=427), and local-only ClarkePocket Q5_K
+  decoder commit fbedd49 on feat/clarkegguf-q5k. Attribution: Clarke Yoursa Tee, Zenodo DOI 10.5281/zenodo.23378305. Signed-off-by:
+  Clarke Yoursa Tee.'
+payload:
+  deepinfer_66l_f32norm:
+    fix_summary: 1-D F16->F32 fix of 331 tensors (PocketPal ggml CPU binary_op crash)
+    digest_source_note: sha256 digests computed directly from local box copies under /workspace/tandem_box/fixed/*-f32norm.gguf;
+      byte sizes match the Deepnote /work/out/* outputs.
+    artifacts:
+    - name: DI-66L-from198-ink-Q6K-f32norm.gguf
+      bytes: 2923636896
+      sha256_box_copy: 4c20a2bf8802da7bda52e419952a863dfd436e6189da1e7f665dc9043f67586e
+      box_path: /workspace/tandem_box/fixed/DI-66L-from198-ink-Q6K-f32norm.gguf
+      deepnote_path: /work/out/DI-66L-from198-ink-Q6K-f32norm.gguf
+      n_tensors: 795
+      tensor_types:
+        Q6_K: 464
+        F32: 331
+      f32_1d_tensors: 331
+      qwen2_block_count: 66
+      file_type: 18
+      converted_from: DI-66L-from198-ink-Q5_K_S-f32norm.gguf
+      converted_from_bytes: 2482474656
+      sample_max_abs: '6.608963e-03'
+      sample_worst_rms_rel: '1.950753e-02'
+      deepnote_marker: DI_Q6K_FILE_OK
+      deepnote_date: '2026-11-25'
+    - name: DI-66L-from198-ink-Q5_K_S-f32norm.gguf
+      bytes: 2482474656
+      sha256_box_copy: 93aa5ceedfef54985bd4cc949a5c2a251afc8be2037c7b420b21ed52edf362b8
+      box_path: /workspace/tandem_box/fixed/DI-66L-from198-ink-Q5_K_S-f32norm.gguf
+      deepnote_path: /work/out/DI-66L-from198-ink-Q5_K_S-f32norm.gguf
+      n_tensors: 795
+      tensor_types:
+        Q5_K: 463
+        Q6_K: 1
+        F32: 331
+      f32_1d_tensors: 331
+      qwen2_block_count: 66
+      file_type: 16
+      deepnote_marker: DI_IPHONE_FIX_OK
+      deepnote_date: '2026-11-25'
+    - name: DeepInfer-66L-from198-Q4_K_S-f32norm.gguf
+      bytes: 2081222304
+      sha256_box_copy: 0406eaaf92b303c0fbbec9c51b5d0cfca78c6073e7ccfc5cbe8fcfff52e3c4b4
+      box_path: /workspace/tandem_box/fixed/DeepInfer-66L-from198-Q4_K_S-f32norm.gguf
+      deepnote_path: /work/out/DeepInfer-66L-from198-Q4_K_S-f32norm.gguf
+      n_tensors: 795
+      tensor_types:
+        Q4_K: 451
+        Q5_K: 12
+        Q6_K: 1
+        F32: 331
+      f32_1d_tensors: 331
+      qwen2_block_count: 66
+      file_type: 14
+      deepnote_marker: DI_IPHONE_FIX_OK
+      deepnote_date: '2026-11-25'
+  kquant_doc_pr:
+    pr: 205
+    url: https://github.com/AxiomicCoreness/hello_world.py/pull/205
+    branch: docs/kquant-1d-f32-math
+    commit: 1c782f9ccd19bc41e337bba107e0a7c2aed57f7b
+    commit_short: 1c782f9
+    doc_path: docs/KQUANT_1D_F32_MATH_2026-11-25.md
+    status: open
+    merged: false
+    created_at: '2026-11-25T16:27:34Z'
+    note: 'PR #205 is open and unmerged at time of writing.'
+  quantum_sign_convention:
+    file: quantum/sign_convention.py
+    measured_at_commit: 5d1bd9aa321cb4ba32a0f21a0ae70efeb0663ad6
+    dimension: 7
+    form_terms: 427
+  clarkepocket_q5k_decoder:
+    status: local_only
+    pushed: false
+    branch: feat/clarkegguf-q5k
+    commit: fbedd4995410b7de15975a627623bf0071700a47
+    commit_short: fbedd49
+    file: ios/ClarkePocket/Sources/PocketCore/ClarkeGGUF.swift
+    note: Local-only commit on box (/tmp/hw_cmp); not pushed to origin.
+chain:
+  prev_entry: 9311
+  prev_hash: 7b0d4652fa2d462efa435847beeafdef3602596e19e4172c8f886260c34c8313
+  prev_hash_source: ledger.v2/9311.yml declared digest (terminal_hex / seal tail) on main 5d1bd9aa321cb4ba32a0f21a0ae70efeb0663ad6
+  witness_chain: 9311 -> 9312
+seal_preimage_rule: 'Regime B (verify_ledger.py event_hash / ledger_seal.py): SHA3-256(GARDEN.EVENT.v1.LEDGER || 0x00 || <entry_index>|<event>|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462),
+  ASCII payload; body is committed by ledger.chain.jsonl'
+regime_b_event_domain_sha3_256: 3dc7ecd335c18548f4d7028ee5b98cfd7a1379dd0fe9434e17d0772de10d0468
+math_origin: 'Event hash domain GARDEN.EVENT.v1.LEDGER || 0x00 ||
+
+  9312|/di_66l_f32norm_kquant_and_sign_anchors_9312|phi2=2.618033988749895|delta=b^2-4ac|theta=2.5416018462
+
+  SHA3-256 = 3dc7ecd335c18548f4d7028ee5b98cfd7a1379dd0fe9434e17d0772de10d0468
+
+  '
+terminal_hex: 3dc7ecd335c18548f4d7028ee5b98cfd7a1379dd0fe9434e17d0772de10d0468
+seal: ∀∞φ² · DI_66L_F32NORM_KQUANT_AND_SIGN_ANCHORS_9312 · WOOD_DRAGON_0.91 · SEALED · 3dc7ecd335c18548f4d7028ee5b98cfd7a1379dd0fe9434e17d0772de10d0468
