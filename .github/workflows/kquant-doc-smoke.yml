@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Clarke Yoursa Tee Luminara Atlas (MrTeanotCoffee) <mrteanotcoffee@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: K-Quant Doc Smoke
+
+on:
+  push:
+    paths:
+      - "docs/KQUANT_1D_F32_MATH_2026-11-25.md"
+      - "scripts/kquant_doc_smoke.py"
+      - ".github/workflows/kquant-doc-smoke.yml"
+  pull_request:
+    paths:
+      - "docs/KQUANT_1D_F32_MATH_2026-11-25.md"
+      - "scripts/kquant_doc_smoke.py"
+      - ".github/workflows/kquant-doc-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kquant-doc-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: K-Quant doc smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run K-Quant doc smoke checks (including Mermaid CLI render)
+        run: python -I scripts/kquant_doc_smoke.py
