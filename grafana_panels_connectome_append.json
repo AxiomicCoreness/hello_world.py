@@ -1,0 +1,291 @@
+[
+  {
+    "id": 112,
+    "title": "CB2514 Neurons (total / L / R)",
+    "description": "Neurons in neuron_index.json: total, soma side L and R. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "stat",
+    "targets": [
+      {
+        "expr": "connectome_neurons_total",
+        "legendFormat": "connectome_neurons_total",
+        "refId": "A"
+      },
+      {
+        "expr": "connectome_neurons_left_total",
+        "legendFormat": "connectome_neurons_left_total",
+        "refId": "B"
+      },
+      {
+        "expr": "connectome_neurons_right_total",
+        "legendFormat": "connectome_neurons_right_total",
+        "refId": "C"
+      }
+    ],
+    "gridPos": {
+      "h": 6,
+      "w": 6,
+      "x": 0,
+      "y": 42
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "reduceOptions": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "fields": "",
+        "values": false
+      },
+      "colorMode": "value",
+      "graphMode": "none",
+      "textMode": "auto"
+    }
+  },
+  {
+    "id": 113,
+    "title": "CB2514 Identity & Checksums",
+    "description": "1 = identity and packaged checksums verify; 0 = mismatch; no value = data absent. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "stat",
+    "targets": [
+      {
+        "expr": "cb2514_identity_ok",
+        "legendFormat": "cb2514_identity_ok",
+        "refId": "A"
+      },
+      {
+        "expr": "connectome_dataset_checksum_ok",
+        "legendFormat": "connectome_dataset_checksum_ok",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {
+      "h": 6,
+      "w": 6,
+      "x": 6,
+      "y": 42
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "reduceOptions": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "fields": "",
+        "values": false
+      },
+      "colorMode": "value",
+      "graphMode": "none",
+      "textMode": "auto"
+    }
+  },
+  {
+    "id": 114,
+    "title": "CB2514 Distillation Validation (fail-closed)",
+    "description": "validate_distillation_input(None): 0 = blocked because teacher inputs are absent; missing prerequisite count. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "stat",
+    "targets": [
+      {
+        "expr": "cb2514_distillation_validation_ok",
+        "legendFormat": "cb2514_distillation_validation_ok",
+        "refId": "A"
+      },
+      {
+        "expr": "cb2514_distillation_missing_prerequisites_total",
+        "legendFormat": "cb2514_distillation_missing_prerequisites_total",
+        "refId": "B"
+      }
+    ],
+    "gridPos": {
+      "h": 6,
+      "w": 6,
+      "x": 12,
+      "y": 42
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "reduceOptions": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "fields": "",
+        "values": false
+      },
+      "colorMode": "value",
+      "graphMode": "none",
+      "textMode": "auto"
+    }
+  },
+  {
+    "id": 115,
+    "title": "CB2514 Annotation Rows",
+    "description": "Body rows in the packaged annotation CSV. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "stat",
+    "targets": [
+      {
+        "expr": "connectome_annotation_rows_total",
+        "legendFormat": "connectome_annotation_rows_total",
+        "refId": "A"
+      }
+    ],
+    "gridPos": {
+      "h": 6,
+      "w": 6,
+      "x": 18,
+      "y": 42
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "reduceOptions": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "fields": "",
+        "values": false
+      },
+      "colorMode": "value",
+      "graphMode": "none",
+      "textMode": "auto"
+    }
+  },
+  {
+    "id": 116,
+    "title": "CB2514 Skeletons & Neurons",
+    "description": "Neurons, skeleton files present and recorded missing. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "connectome_neurons_total",
+        "legendFormat": "connectome_neurons_total",
+        "refId": "A"
+      },
+      {
+        "expr": "connectome_skeletons_present_total",
+        "legendFormat": "connectome_skeletons_present_total",
+        "refId": "B"
+      },
+      {
+        "expr": "connectome_skeletons_missing_total",
+        "legendFormat": "connectome_skeletons_missing_total",
+        "refId": "C"
+      }
+    ],
+    "gridPos": {
+      "h": 8,
+      "w": 12,
+      "x": 0,
+      "y": 48
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false,
+          "lineWidth": 2,
+          "showPoints": "never"
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi"
+      }
+    }
+  },
+  {
+    "id": 117,
+    "title": "Connectome Edges & ROI (gaps expected)",
+    "description": "No edge export or ROI synapse counts are packaged, so these series are absent (gaps, connectNulls false) until authentic data exist; PVLP(R) context and membership flags shown. Design: DeepInfer model design is by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+    "type": "timeseries",
+    "targets": [
+      {
+        "expr": "connectome_edges_total",
+        "legendFormat": "connectome_edges_total",
+        "refId": "A"
+      },
+      {
+        "expr": "connectome_roi_synapses",
+        "legendFormat": "connectome_roi_synapses",
+        "refId": "B"
+      },
+      {
+        "expr": "connectome_roi_context_present",
+        "legendFormat": "connectome_roi_context_present",
+        "refId": "C"
+      },
+      {
+        "expr": "connectome_roi_membership_verified",
+        "legendFormat": "connectome_roi_membership_verified",
+        "refId": "D"
+      }
+    ],
+    "gridPos": {
+      "h": 8,
+      "w": 12,
+      "x": 12,
+      "y": 48
+    },
+    "fieldConfig": {
+      "defaults": {
+        "unit": "none",
+        "custom": {
+          "spanNulls": false,
+          "connectNulls": false,
+          "lineWidth": 2,
+          "showPoints": "never"
+        }
+      }
+    },
+    "options": {
+      "connectNulls": false,
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom"
+      },
+      "tooltip": {
+        "mode": "multi"
+      }
+    }
+  }
+]
