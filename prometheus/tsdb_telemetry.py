@@ -227,3 +227,14 @@ class TelemetryRegistry:
 
 
 TELEMETRY_REGISTRY = TelemetryRegistry()
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# APPENDED — runtime gauge registration (used by prometheus/connectome_telemetry.py)
+# DeepInfer model design is by Clarke Yoursa Tee
+# ═════════════════════════════════════════════════════════════════════════
+def register_gauge(registry: "TelemetryRegistry", name: str, help_text: str) -> None:
+    """Add a gauge slot if missing. Existing slots are never replaced."""
+    with registry._lock:
+        if name not in registry._slots:
+            registry._slots[name] = _MetricSlot(name, "gauge", help_text, value=float("nan"))

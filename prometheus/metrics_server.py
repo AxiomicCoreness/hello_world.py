@@ -577,6 +577,32 @@ _bootstrap_cdp_telemetry()
 
 
 # ═════════════════════════════════════════════════════════════════════════
+# SECTION 8C — APPENDED CB2514 CONNECTOME PROTOTYPE TELEMETRY
+# DeepInfer model design is by Clarke Yoursa Tee
+# Zenodo DOI: 10.5281/zenodo.23378305 (https://doi.org/10.5281/zenodo.23378305)
+# Values are read from repository files only (prometheus/connectome_telemetry.py).
+# StaleNaN samples are not exposed (absent series, never 0).
+# ═════════════════════════════════════════════════════════════════════════
+def _refresh_connectome_telemetry() -> None:
+    from prometheus import connectome_telemetry
+
+    connectome_telemetry.publish_metrics_server(_REGISTRY, _LOCK)
+    connectome_telemetry.publish_tsdb()
+
+
+def _bootstrap_connectome_telemetry() -> None:
+    try:
+        _refresh_connectome_telemetry()
+    except Exception as e:  # never block the metrics server on prototype data
+        print(f"[metrics] connectome telemetry bootstrap skipped: {e}")
+    register_update_hook(_refresh_connectome_telemetry)
+    return True
+
+
+_CONNECTOME_BOOTSTRAPPED = _bootstrap_connectome_telemetry()
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # SECTION 9 — SELFTEST
 # ═════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
