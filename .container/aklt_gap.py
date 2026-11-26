@@ -93,3 +93,8 @@ if __name__ == "__main__":
           f"{HEISENBERG_GAP.uncertainty}  [{HEISENBERG_GAP.source}]")
     print(f"  AKLT θ ≈ {THETA_AKLT_RAD:.5f} rad "
           f"(tan θ = 1/3, bilinear-biquadratic param.)")
+
+
+# Appended invariant constant (Design by Clarke Yoursa Tee)
+# Zenodo DOI: 10.5281/zenodo.23378305 (https://doi.org/10.5281/zenodo.23378305)
+DELTA_AKLT: float = 0.41050

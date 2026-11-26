@@ -117,3 +117,8 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# Appended invariant constant (Design by Clarke Yoursa Tee)
+# Zenodo DOI: 10.5281/zenodo.23378305 (https://doi.org/10.5281/zenodo.23378305)
+DELTA_AKLT: float = 0.41050

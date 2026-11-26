@@ -510,6 +510,78 @@ async def mcp_tool(
 
 
 # ============================================================================
+# APPENDED CDP TELEMETRY SURFACE (/cdp/status)
+# Design by Clarke Yoursa Tee
+# Zenodo DOI: 10.5281/zenodo.23378305 (https://doi.org/10.5281/zenodo.23378305)
+# ============================================================================
+IOTA_SEAL = "DATA_MINING_CONVERGENCE_8837"
+CDP_AUTO_HANDOVER_STATUS = "auto handover established"
+
+_CDP_STATE: Dict[str, Any] = {
+    "session_status": os.environ.get("CDP_SESSION_STATUS", "disconnected"),
+    "measured_tau_handover": None,
+}
+
+
+def set_cdp_session_state(
+    session_status: str,
+    tau_handover: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Update in-process CDP handover state for /cdp/status."""
+    _CDP_STATE["session_status"] = str(session_status)
+    if tau_handover is not None:
+        val = float(tau_handover)
+        if val < 0.0:
+            raise ValueError("tau_handover must be >= 0.0")
+        _CDP_STATE["measured_tau_handover"] = val
+    return compute_cdp_status_vector()
+
+
+def compute_cdp_status_vector(
+    session_status: Optional[str] = None,
+    measured_latency: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Compute S(t) = (tau_handover(t), sigma_session(t), iota_seal)."""
+    t0 = time.perf_counter()
+    status_str = (
+        session_status
+        if session_status is not None
+        else str(
+            os.environ.get("CDP_SESSION_STATUS")
+            or _CDP_STATE.get("session_status")
+            or "disconnected"
+        )
+    )
+    sigma_session = 1 if status_str == CDP_AUTO_HANDOVER_STATUS else 0
+    elapsed = max(0.0, float(time.perf_counter() - t0))
+    if measured_latency is not None:
+        tau_handover = max(0.0, float(measured_latency))
+    elif _CDP_STATE.get("measured_tau_handover") is not None:
+        tau_handover = max(0.0, float(_CDP_STATE["measured_tau_handover"]))
+    else:
+        tau_handover = elapsed
+    return {
+        "status": "ok",
+        "service": APP_NAME,
+        "timestamp": _now(),
+        "session_status": status_str,
+        "tau_handover": float(tau_handover),
+        "sigma_session": sigma_session,
+        "iota_seal": IOTA_SEAL,
+        "S_t": [float(tau_handover), sigma_session, IOTA_SEAL],
+        "design": "Design by Clarke Yoursa Tee",
+    }
+
+
+@app.get("/cdp/status")
+async def cdp_status(session_status: Optional[str] = None):
+    """Expose S(t) = (tau_handover, sigma_session, iota_seal)."""
+    return JSONResponse(
+        content=compute_cdp_status_vector(session_status=session_status)
+    )
+
+
+# ============================================================================
 # ENTRYPOINT
 # ============================================================================
 HEALTHZ_PATH = "/healthz"
