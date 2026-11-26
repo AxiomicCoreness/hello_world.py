@@ -210,6 +210,254 @@
       "options": {
         "legend": { "displayMode": "list", "placement": "bottom" }
       }
+    },
+    {
+      "id": 100,
+      "title": "CDP Handover Latency (tau_handover)",
+      "description": "Measured CDP handover latency tau_handover(t). Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "tau_handover",
+          "legendFormat": "tau_handover",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 101,
+      "title": "CDP Handover Active (sigma_session)",
+      "description": "Binary session liveness indicator sigma_session(t) in {0,1}. Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "handover_active",
+          "legendFormat": "handover_active",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 102,
+      "title": "SIMD Batch Index (k)",
+      "description": "Monotonic SIMD batch index k(t) from orchestrator/data_miner.py. Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "batch_index",
+          "legendFormat": "batch_index",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 103,
+      "title": "Monotonic Batch Counter Rate",
+      "description": "Discrete rate estimator rate(cdp_batches_total[5m]) with reset rule. Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(cdp_batches_total[5m])",
+          "legendFormat": "batches/sec",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 104,
+      "title": "Handover Latency Min/Max Envelope",
+      "description": "Bucket envelope [min v, max v] over W_px with StaleNaN gaps. Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "min_over_time(tau_handover[$__interval])",
+          "legendFormat": "min(tau_handover)",
+          "refId": "A"
+        },
+        {
+          "expr": "max_over_time(tau_handover[$__interval])",
+          "legendFormat": "max(tau_handover)",
+          "refId": "B"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 105,
+      "title": "Entanglement",
+      "description": "Panel 105 bound to registry metric entanglement. Design by Clarke Yoursa Tee (Zenodo DOI: 10.5281/zenodo.23378305)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "entanglement",
+          "legendFormat": "entanglement",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "spanNulls": false,
+            "connectNulls": false,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "connectNulls": false,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
     }
   ],
   "refresh": "30s",

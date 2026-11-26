@@ -557,6 +557,26 @@ def main() -> None:
 
 
 # ═════════════════════════════════════════════════════════════════════════
+# SECTION 8B — APPENDED CDP & DATA MINER TELEMETRY METRICS
+# Design by Clarke Yoursa Tee
+# Zenodo DOI: 10.5281/zenodo.23378305 (https://doi.org/10.5281/zenodo.23378305)
+# ═════════════════════════════════════════════════════════════════════════
+def _bootstrap_cdp_telemetry() -> None:
+    def _reg_if_missing(name: str, val: float, help_text: str, mtype: str = "gauge") -> None:
+        with _LOCK:
+            if name not in _REGISTRY:
+                _REGISTRY[name] = (float(val), help_text, mtype, None)
+
+    _reg_if_missing("tau_handover", 0.0, "Measured CDP handover latency tau_handover(t)")
+    _reg_if_missing("batch_index", 0.0, "SIMD data_miner batch index k(t)")
+    _reg_if_missing("handover_active", 0.0, "Binary CDP session liveness sigma_session(t)")
+    _reg_if_missing("cdp_batches_total", 0.0, "Monotonic total SIMD batches processed", mtype="counter")
+
+
+_bootstrap_cdp_telemetry()
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # SECTION 9 — SELFTEST
 # ═════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
